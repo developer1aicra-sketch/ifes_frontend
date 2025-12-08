@@ -1,78 +1,106 @@
 import { useState } from 'react';
-import { Award, Cpu, Heart, Shield } from 'lucide-react';
+import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers } from 'lucide-react';
 
 const AboutLayout = ({ setView }) => {
-  const [activeSection, setActiveSection] = useState('vision');
+  const [activeSection, setActiveSection] = useState('governance');
 
   const Content = () => {
     switch (activeSection) {
-      case 'vision':
+      case 'governance':
         return (
           <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">Vision & Values</h2>
+            <div className="flex items-center gap-3 mb-4">
+              <Shield className="text-blue-600" />
+              <div>
+                <h2 className="text-3xl font-bold text-slate-900">Mission & Vision</h2>
+                <p className="text-sm text-slate-500">The root authority for a federated sport.</p>
+              </div>
+            </div>
             <p className="text-lg text-slate-600 leading-relaxed mb-6">
-              To create a unified regulatory framework for autonomous sports. We value Integrity, Innovation, and Inclusivity.
+              WORSO is the global regulatory root for the sport of robotics—writing the laws of play, publishing safety protocols, and certifying every affiliated event. Federation over
+              centralization keeps local context alive while the core stays immutable.
             </p>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="p-6 bg-slate-50 rounded-xl border border-slate-100">
-                <Shield className="text-blue-600 mb-2" />
-                <h4 className="font-bold">Integrity</h4>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="p-5 bg-slate-50 rounded-xl border border-slate-100">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase text-blue-600">
+                  <Shield size={16} /> Integrity
+                </div>
+                <p className="text-sm text-slate-600 mt-3">One rulebook, synchronized to every partner subdomain via middleware.</p>
               </div>
-              <div className="p-6 bg-slate-50 rounded-xl border border-slate-100">
-                <Award className="text-blue-600 mb-2" />
-                <h4 className="font-bold">Excellence</h4>
+              <div className="p-5 bg-slate-50 rounded-xl border border-slate-100">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase text-blue-600">
+                  <Award size={16} /> Excellence
+                </div>
+                <p className="text-sm text-slate-600 mt-3">Tiered officiating, replay, and telemetry audits ready for global finals.</p>
+              </div>
+              <div className="p-5 bg-slate-50 rounded-xl border border-slate-100">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase text-blue-600">
+                  <Cpu size={16} /> Innovation
+                </div>
+                <p className="text-sm text-slate-600 mt-3">Open APIs for scoring, video review, CMS, and partner data sync.</p>
               </div>
             </div>
           </div>
         );
-      case 'structure':
+      case 'president':
         return (
           <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">Leadership Structure</h2>
-            <div className="space-y-6">
-              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex gap-4">
-                <div className="w-12 h-12 bg-slate-200 rounded-full"></div>
-                <div>
-                  <h4 className="font-bold text-lg">Dr. Richard H. Vance</h4>
-                  <div className="text-blue-600 font-bold text-sm">PRESIDENT</div>
-                </div>
-              </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-50 rounded-lg">
-                  <h4 className="font-bold">Executive Committee</h4>
-                  <p className="text-sm text-slate-500">Daily Operations</p>
-                </div>
-                <div className="p-4 bg-slate-50 rounded-lg">
-                  <h4 className="font-bold">Advisory Board</h4>
-                  <p className="text-sm text-slate-500">Strategic Guidance</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      case 'strategy':
-        return (
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">Strategic Roadmap</h2>
+            <h2 className="text-3xl font-bold text-slate-900 mb-6">President's Message</h2>
             <p className="text-lg text-slate-600 leading-relaxed mb-6">
-              Our 5-year plan focuses on expanding the Technoxian footprint to 150 nations, standardizing robotic kits for accessibility, and launching the professional "Pro-League".
+              "Federation beats centralization. By giving every nation its own subdomain, we scale safely while protecting the sport’s DNA." — Dr. Richard H. Vance, President.
             </p>
-            <div className="p-6 bg-slate-50 rounded-xl border-l-4 border-blue-600">
-              <h4 className="font-bold mb-2">2026 Goal</h4>
-              <p className="text-sm text-slate-500">Launch the first inter-continental autonomous drone racing league.</p>
+            <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
+              <h4 className="font-bold mb-2">Global Mandate</h4>
+              <p className="text-sm text-slate-500">Codify rules, accredit partners, and run the World Cup calendar.</p>
             </div>
           </div>
         );
-      case 'tech':
+      case 'advisory':
         return (
           <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">Tech for Good</h2>
-            <p className="text-lg text-slate-600 leading-relaxed">
-              We believe competition drives innovation that solves real-world problems. Our "Innovation Challenge" category has produced patents for agricultural drones and disaster relief bots.
+            <h2 className="text-3xl font-bold text-slate-900 mb-6">Advisory Board</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              {['Safety & Compliance', 'Technology & AI', 'Fan Experience', 'Commercial'].map((track) => (
+                <div key={track} className="p-6 bg-slate-50 rounded-xl border border-slate-200 shadow-sm">
+                  <h4 className="font-bold text-lg text-slate-900">{track}</h4>
+                  <p className="text-sm text-slate-500">Subject-matter leaders who ratify updates before they propagate to partner portals.</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case 'affiliation':
+        return (
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-6">Affiliation Process</h2>
+            <p className="text-lg text-slate-600 leading-relaxed mb-6">
+              Apply for a partner subdomain (e.g., uae.worso.org). On approval, you receive admin credentials, middleware keys, and field-level CMS permissions.
             </p>
-            <div className="mt-6 flex gap-4">
-              <Cpu size={32} className="text-emerald-600" />
-              <Heart size={32} className="text-red-600" />
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="p-6 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                <div className="font-bold text-slate-900 flex items-center gap-2">
+                  <Globe2 size={18} className="text-blue-600" /> Steps
+                </div>
+                {['Submit federation charter', 'Security & safety audit', 'Assign subdomain + theme', 'Go-live with local content JSON'].map((step, i) => (
+                  <div key={step} className="flex items-center gap-3">
+                    <span className="text-sm font-bold text-blue-600">{i + 1}</span>
+                    <span className="text-sm text-slate-600">{step}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="p-6 bg-blue-50 rounded-xl border border-blue-100 space-y-2">
+                <div className="font-bold text-slate-900 flex items-center gap-2">
+                  <ClipboardList size={18} className="text-blue-600" /> What Partners Control
+                </div>
+                <ul className="text-sm text-slate-700 list-disc list-inside space-y-1">
+                  <li>Local welcome message & language</li>
+                  <li>Local event gallery and news</li>
+                  <li>Team registrations & ticketing data</li>
+                </ul>
+                <div className="flex items-center gap-2 text-xs font-bold text-amber-700 mt-3">
+                  <Lock size={14} /> Global brand, logo, and rulebook stay locked.
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -86,14 +114,49 @@ const AboutLayout = ({ setView }) => {
             </button>
           </div>
         );
-      case 'referees':
+      case 'data':
         return (
           <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">Referees Board</h2>
-            <p className="text-slate-600 mb-6">The Referees Board ensures fair play and technical compliance across all global events.</p>
-            <div className="p-4 bg-slate-50 rounded-lg">
-              <h4 className="font-bold">Certification Program</h4>
-              <p className="text-sm text-slate-500">Apply to become an accredited WORSO official.</p>
+            <h2 className="text-3xl font-bold text-slate-900 mb-6">Data Layer: Teams & Rankings</h2>
+            <p className="text-lg text-slate-600 leading-relaxed mb-6">World ranks, prize pools, rosters, and Technoxian history stay centralized and are surfaced to every micro-site.</p>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="p-5 rounded-xl border border-slate-200 bg-slate-50">
+                <div className="text-xs font-bold text-slate-500 uppercase mb-1">Global Rank</div>
+                <div className="text-2xl font-extrabold text-blue-600">#1 - #5000</div>
+                <p className="text-sm text-slate-600 mt-2">Unified ladder feeds partner directories.</p>
+              </div>
+              <div className="p-5 rounded-xl border border-slate-200 bg-slate-50">
+                <div className="text-xs font-bold text-slate-500 uppercase mb-1">Prize Money</div>
+                <div className="text-2xl font-extrabold text-slate-900">$250k+ pool</div>
+                <p className="text-sm text-slate-600 mt-2">Transparent payouts with audit-ready logs.</p>
+              </div>
+              <div className="p-5 rounded-xl border border-slate-200 bg-slate-50">
+                <div className="text-xs font-bold text-slate-500 uppercase mb-1">Roster Cards</div>
+                <div className="text-2xl font-extrabold text-emerald-600">Field-level lock</div>
+                <p className="text-sm text-slate-600 mt-2">Players sync from HQ; partners can localize bios.</p>
+              </div>
+            </div>
+          </div>
+        );
+      case 'partners':
+        return (
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-6">Partner Network</h2>
+            <p className="text-lg text-slate-600 leading-relaxed mb-6">Subdomains route through middleware: `*.worso.org` resolves tenant, injects theme, and serves local content.</p>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="p-6 rounded-xl border border-slate-200 bg-slate-50">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase text-emerald-600 mb-2">
+                  <Map size={16} /> Directory
+                </div>
+                <p className="text-sm text-slate-600">Map + list of partners with status badges (live, onboarding, prospect).</p>
+                <p className="text-xs text-slate-500 mt-2">Example: uae.worso.org, india.worso.org, korea.worso.org.</p>
+              </div>
+              <div className="p-6 rounded-xl border border-slate-200 bg-slate-50">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase text-emerald-600 mb-2">
+                  <Layers size={16} /> Micro-Site Shell
+                </div>
+                <p className="text-sm text-slate-600">One React codebase, multi-tenant middleware, JSON-driven assets (logo, hero, translations, sponsors).</p>
+              </div>
             </div>
           </div>
         );
@@ -103,33 +166,52 @@ const AboutLayout = ({ setView }) => {
   };
 
   return (
-    <div className="animate-fadeIn pt-20 bg-slate-50 min-h-screen">
-      <div className="bg-[#0f172a] text-white py-12">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-extrabold">About WORSO</h1>
-          <p className="text-slate-400 mt-2">The governing body for the sport of robotics.</p>
-        </div>
-      </div>
-      <div className="container mx-auto px-4 py-12 grid md:grid-cols-12 gap-12">
-        <div className="md:col-span-3">
-          <div className="sticky top-24 space-y-1">
-            {['Vision & Values', 'Structure', 'Strategy', 'Tech for Good', 'Working at WORSO', 'Referees'].map((item) => {
-              const id = item.split(' ')[0].toLowerCase();
-              return (
-                <button
-                  key={id}
-                  onClick={() => setActiveSection(id)}
-                  className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-all ${
-                    activeSection === id ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {item}
-                </button>
-              );
-            })}
+    <div className="animate-fadeIn pt-20 bg-gradient-to-b from-slate-50 via-white to-slate-50 min-h-screen">
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white py-14 shadow-xl">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="flex-1">
+            <h1 className="text-4xl md:text-5xl font-extrabold">Governance</h1>
+            <p className="text-slate-300 mt-3 text-lg max-w-3xl">
+              Mission, mandate, affiliation, data, and the federated partner network that powers the sport of robotics.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <div className="bg-white/10 backdrop-blur-lg px-4 py-3 rounded-xl border border-white/10">
+              <div className="text-xs font-bold uppercase text-slate-200">Mode</div>
+              <div className="text-lg font-extrabold text-white">Federated</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-lg px-4 py-3 rounded-xl border border-white/10">
+              <div className="text-xs font-bold uppercase text-slate-200">Rulebook</div>
+              <div className="text-lg font-extrabold text-emerald-200">v2.0</div>
+            </div>
           </div>
         </div>
-        <div className="md:col-span-9 bg-white p-12 rounded-2xl border border-slate-200 shadow-sm min-h-[500px]">
+      </div>
+      <div className="container mx-auto px-4">
+        <div className="flex flex-wrap justify-center gap-3 py-5">
+          {[
+            { id: 'governance', label: 'Mission & Vision' },
+            { id: 'president', label: "President's Message" },
+            { id: 'advisory', label: 'Advisory Board' },
+            { id: 'affiliation', label: 'Affiliation' },
+            { id: 'working', label: 'Working at WORSO' },
+            { id: 'data', label: 'Data Layer' },
+            { id: 'partners', label: 'Partner Network' },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveSection(item.id)}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
+                activeSection === item.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-200/40' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+      </div>
+      </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-white p-12 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 min-h-[600px] transition-all duration-300">
           <Content />
         </div>
       </div>

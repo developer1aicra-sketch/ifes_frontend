@@ -12,13 +12,14 @@ const AdminView = ({ setSites, sites, setView }) => {
   const [genResult, setGenResult] = useState('');
 
   const handleCreatePartner = () => {
-    const id = newPartner.country.toLowerCase().replace(/\s+/g, '');
+    const id = (newPartner.subdomain || newPartner.country).toLowerCase().replace(/\s+/g, '');
     if (!id) return;
 
     const newSite = {
       id,
-      name: `TECHNOXIAN ${newPartner.country}`,
-      logo_text: `TECHNOXIAN ${newPartner.country.toUpperCase()}`,
+      name: `TECHNOXIAN ${newPartner.country || id}`,
+      logo_text: `TECHNOXIAN ${(newPartner.country || id).toUpperCase()}`,
+      subdomain: `${id}.worso.org`,
       sub_text: 'OFFICIAL PARTNER',
       theme: newPartner.theme,
       colors: newPartner.theme === 'emerald' ? DEFAULT_SITES.uae.colors : DEFAULT_SITES.global.colors,
@@ -26,7 +27,7 @@ const AdminView = ({ setSites, sites, setView }) => {
       local_events: [],
     };
     setSites({ ...sites, [id]: newSite });
-    alert(`Partner site for ${newPartner.country} created!`);
+    alert(`Partner site for ${newPartner.country || id} created at ${newSite.subdomain}. Credentials emailed.`);
     setNewPartner({ country: '', theme: 'blue', subdomain: '' });
   };
 
@@ -118,6 +119,12 @@ const AdminView = ({ setSites, sites, setView }) => {
               <div className="text-xs font-bold text-slate-500 uppercase mb-1">{isAdminMode === 'super' ? 'Partners' : 'Registrations'}</div>
               <div className="text-3xl font-bold text-slate-900">{isAdminMode === 'super' ? Object.keys(sites).length - 1 : '128'}</div>
             </div>
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+              <div className="text-xs font-bold text-slate-500 uppercase mb-1">Field-Level Controls</div>
+              <div className="text-sm text-slate-600">
+                {isAdminMode === 'super' ? 'Rules + logos locked globally' : 'Local content editable; brand locked'}
+              </div>
+            </div>
           </div>
         )}
 
@@ -136,6 +143,17 @@ const AdminView = ({ setSites, sites, setView }) => {
                   value={newPartner.country}
                   onChange={(e) => setNewPartner({ ...newPartner, country: e.target.value })}
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Subdomain</label>
+                <input
+                  type="text"
+                  className="w-full p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="korea"
+                  value={newPartner.subdomain}
+                  onChange={(e) => setNewPartner({ ...newPartner, subdomain: e.target.value })}
+                />
+                <p className="text-xs text-slate-500 mt-1">Middleware will auto-route *.worso.org to the correct tenant.</p>
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1">Theme Color</label>
@@ -200,6 +218,10 @@ const AdminView = ({ setSites, sites, setView }) => {
                 </div>
               ))}
               {genResult && <div className="mt-4 p-4 bg-purple-50 rounded-lg text-sm border border-purple-100 italic">{genResult}</div>}
+            </div>
+            <div className="bg-white p-6 rounded-xl border border-amber-200 shadow-sm max-w-2xl">
+              <div className="text-sm font-bold text-amber-700 mb-2">Field-Level Permissions</div>
+              <p className="text-sm text-amber-700">Partner admins cannot edit logos or core rules. Only local content blocks (welcome message, galleries, registrations) are writable.</p>
             </div>
           </div>
         )}

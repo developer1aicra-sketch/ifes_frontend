@@ -1,10 +1,123 @@
-import { useState } from 'react';
-import { Users, Ticket, Building, CreditCard } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Users, Ticket, Building, CreditCard, MapPin, Clock3, FileText, BadgeCheck, X, Camera } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { GAME_CATEGORIES } from '../constants/data';
 
 const TechnoxianView = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [regType, setRegType] = useState('team');
+  const [modalCategory, setModalCategory] = useState(null);
+  const [activeGallery, setActiveGallery] = useState(null);
+  const [showAllGallery, setShowAllGallery] = useState(false);
+
+  useEffect(() => {
+    if (activeGallery) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [activeGallery]);
+
+  const schedule = [
+    { day: 'Day 1 • Oct 12', blocks: ['Opening Ceremony', 'Robo Race Heats', 'Innovation Pitches'], venue: 'Hall A / Arena 1' },
+    { day: 'Day 2 • Oct 13', blocks: ['Drone Racing Qualifiers', 'Sumo Bot Knockouts', 'Arena Walkthroughs'], venue: 'Hall B / Drone Dome' },
+    { day: 'Day 3 • Oct 14', blocks: ['Robo Soccer Finals', 'Agro Drone Live Demo', 'Awards & Closing'], venue: 'Central Stadium' },
+  ];
+
+  const gallery = [
+    {
+      id: 'fpv',
+      title: 'Drone Racing',
+      tag: 'FPV • Neon Gates',
+      cover: 'https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop',
+      images: [
+        'https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1471710371017-654b1b43eaa2?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop',
+      ],
+    },
+    {
+      id: 'race',
+      title: 'Robo Race',
+      tag: 'Canyon Sprint',
+      cover: 'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop',
+      images: [
+        'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1508614999368-9260051291ea?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=900&auto=format&fit=crop',
+      ],
+    },
+    {
+      id: 'soccer',
+      title: 'Robo Soccer',
+      tag: 'Hex Turf Finals',
+      cover: 'https://images.unsplash.com/photo-1521417531039-75e91486ccae?w=900&auto=format&fit=crop',
+      images: [
+        'https://images.unsplash.com/photo-1521417531039-75e91486ccae?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1497215842964-222b430dc094?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1511918984145-48de785d4c4d?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop',
+      ],
+    },
+    {
+      id: 'sumo',
+      title: 'Sumo Bot',
+      tag: 'Steel Ring',
+      cover: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=900&auto=format&fit=crop',
+      images: [
+        'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1508614999368-9260051291ea?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop',
+      ],
+    },
+    {
+      id: 'expo',
+      title: 'Innovation Expo',
+      tag: 'Prototype Lab',
+      cover: 'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?w=900&auto=format&fit=crop',
+      images: [
+        'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&auto=format&fit=crop',
+      ],
+    },
+  ];
 
   return (
     <div className="animate-fadeIn bg-slate-50 min-h-screen pt-20">
@@ -24,8 +137,16 @@ const TechnoxianView = () => {
         </div>
       </div>
 
-      {activeTab === 'overview' && (
-        <div className="container mx-auto px-4 py-12">
+      <AnimatePresence mode="wait">
+        {activeTab === 'overview' && (
+          <motion.div
+            key="overview"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="container mx-auto px-4 py-12"
+          >
           <div className="bg-[#0f172a] rounded-3xl text-white p-12 mb-12 relative overflow-hidden">
             <div className="relative z-10 max-w-2xl">
               <div className="text-yellow-400 font-bold tracking-widest text-xs uppercase mb-4">Official Championship</div>
@@ -43,11 +164,39 @@ const TechnoxianView = () => {
               </div>
             ))}
           </div>
-        </div>
-      )}
 
-      {activeTab === 'disciplines' && (
-        <div className="container mx-auto px-4 py-12">
+          <div className="mt-10 grid md:grid-cols-3 gap-6">
+            <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+              <div className="text-xs font-bold uppercase text-slate-500 mb-1">Countdown</div>
+              <div className="text-3xl font-extrabold text-slate-900">280d : 12h : 35m</div>
+              <p className="text-sm text-slate-500 mt-2">Opening ceremony — Dubai Exhibition Centre</p>
+            </div>
+            <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 mb-2">
+                <MapPin size={14} /> Venue Map
+              </div>
+              <p className="text-sm text-slate-600 leading-relaxed">Arena zones: Competition halls, Innovation Expo, Visitor concourse, Exhibitor docks.</p>
+            </div>
+            <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 mb-2">
+                <Clock3 size={14} /> Live Status
+              </div>
+              <p className="text-sm text-green-600 font-bold">Registrations open • Rulebook v2.0 active</p>
+              <p className="text-xs text-slate-500 mt-1">Realtime updates federated to partner subdomains.</p>
+            </div>
+          </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'disciplines' && (
+          <motion.div
+            key="disciplines"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="container mx-auto px-4 py-12"
+          >
           <div className="grid md:grid-cols-3 gap-8">
             {GAME_CATEGORIES.map((g) => (
               <div key={g.id} className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all group">
@@ -64,17 +213,104 @@ const TechnoxianView = () => {
                     <div className="font-bold text-green-600">{g.prize}</div>
                   </div>
                 </div>
-                <button className="w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-blue-600 transition-colors">
+                <button
+                  onClick={() => setModalCategory(g)}
+                  className="w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-blue-600 transition-colors"
+                >
                   Register for Game
                 </button>
               </div>
             ))}
           </div>
-        </div>
-      )}
+          </motion.div>
+        )}
 
-      {activeTab === 'register' && (
-        <div className="container mx-auto px-4 py-12">
+        {activeTab === 'schedule' && (
+          <motion.div
+            key="schedule"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="container mx-auto px-4 py-12"
+          >
+            <div className="grid md:grid-cols-3 gap-6">
+              {schedule.map((slot, i) => (
+                <motion.div
+                  key={slot.day}
+                  className="p-6 rounded-2xl border border-slate-200 bg-white shadow-sm"
+                  whileHover={{ y: -6, boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="text-xs font-bold uppercase text-blue-600 mb-2 flex items-center gap-2">
+                    <Clock3 size={14} /> {slot.day}
+                  </div>
+                  <div className="text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                    <MapPin size={14} className="text-slate-400" /> {slot.venue}
+                  </div>
+                  <div className="space-y-2">
+                    {slot.blocks.map((b) => (
+                      <div key={b} className="flex items-center gap-2 text-slate-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                        <span className="text-sm">{b}</span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'gallery' && (
+          <motion.div
+            key="gallery"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="container mx-auto px-4 py-12"
+          >
+            <div className="grid md:grid-cols-3 gap-6">
+              {gallery.map((cat, idx) => (
+                <motion.button
+                  type="button"
+                  key={cat.id}
+                  onClick={() => setActiveGallery(cat)}
+                  className="relative overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-900 text-left"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.04, duration: 0.25 }}
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <div
+                    className="h-48 bg-cover bg-center"
+                    style={{ backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.55)), url(${cat.cover})` }}
+                  />
+                  <div className="p-4 flex items-center justify-between text-white">
+                    <div>
+                      <div className="text-xs uppercase font-bold text-emerald-200 flex items-center gap-1">
+                        <Camera size={14} /> {cat.tag}
+                      </div>
+                      <div className="text-lg font-extrabold">{cat.title}</div>
+                    </div>
+                    <div className="text-[10px] px-2 py-1 rounded-full bg-white/10 border border-white/10">View</div>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'register' && (
+          <motion.div
+            key="register"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="container mx-auto px-4 py-12"
+          >
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
             <div className="md:w-64 bg-slate-50 border-r border-slate-200 p-6">
               <h3 className="font-bold text-slate-900 mb-6">Registration Type</h3>
@@ -101,48 +337,90 @@ const TechnoxianView = () => {
                 {regType === 'team' && <Users className="text-blue-600" />}
                 {regType === 'visitor' && <Ticket className="text-blue-600" />}
                 {regType === 'exhibitor' && <Building className="text-blue-600" />}
-                {regType.charAt(0).toUpperCase() + regType.slice(1)} Registration
+                {regType.charAt(0).toUpperCase() + regType.slice(1)} Path
               </h2>
               <div className="space-y-6 max-w-3xl">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">{regType === 'team' ? 'Team Name' : 'Full Name'}</label>
-                    <input
-                      type="text"
-                      className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                      placeholder={regType === 'team' ? 'e.g. RoboTitans' : 'John Doe'}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Country</label>
+                {regType === 'team' && (
+                  <>
+                    <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
+                      <BadgeCheck className="text-blue-600" size={18} />
+                      <div>
+                        <div className="font-bold text-slate-900">Path A: Team</div>
+                        <p className="text-sm text-slate-600">Create team profile → add players → choose 9 competition categories → pay unified entry.</p>
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Team Name</label>
+                        <input type="text" className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. RoboTitans" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Country</label>
+                        <select className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                          <option>Select Country</option>
+                          <option>India</option>
+                          <option>UAE</option>
+                          <option>USA</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Select Categories ($100/category)</label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {GAME_CATEGORIES.map((g) => (
+                          <label key={g.id} className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
+                            <input type="checkbox" className="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 custom-checkbox" />
+                            <span className="text-sm font-medium text-slate-700">{g.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {regType === 'visitor' && (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
+                      <BadgeCheck className="text-blue-600" size={18} />
+                      <div>
+                        <div className="font-bold text-slate-900">Path B: Visitor</div>
+                        <p className="text-sm text-slate-600">Choose day pass → pay → instant QR ticket.</p>
+                      </div>
+                    </div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Select Day</label>
                     <select className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                      <option>Select Country</option>
-                      <option>India</option>
-                      <option>UAE</option>
-                      <option>USA</option>
+                      <option>Day 1 - Oct 12</option>
+                      <option>Day 2 - Oct 13</option>
+                      <option>Day 3 - Oct 14</option>
                     </select>
                   </div>
-                </div>
-                {regType === 'team' && (
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Select Categories ($100/category)</label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {GAME_CATEGORIES.map((g) => (
-                        <label
-                          key={g.id}
-                          className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors"
-                        >
-                          <input type="checkbox" className="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 custom-checkbox" />
-                          <span className="text-sm font-medium text-slate-700">{g.name}</span>
-                        </label>
-                      ))}
+                )}
+
+                {regType === 'exhibitor' && (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
+                      <BadgeCheck className="text-blue-600" size={18} />
+                      <div>
+                        <div className="font-bold text-slate-900">Path C: Exhibitor</div>
+                        <p className="text-sm text-slate-600">Upload booth design → select floor space → pay deposit.</p>
+                      </div>
                     </div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Upload Booth Design</label>
+                    <input type="file" className="w-full" />
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Select Floor Space</label>
+                    <select className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option>6m x 6m</option>
+                      <option>9m x 9m</option>
+                      <option>Custom (request)</option>
+                    </select>
                   </div>
                 )}
+
                 <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 mt-8">
                   <div>
-                    <div className="text-sm text-slate-500">Total Payable Amount</div>
+                    <div className="text-sm text-slate-500">Unified Payment Gateway</div>
                     <div className="text-2xl font-bold text-slate-900">$200.00 USD</div>
+                    <div className="text-xs text-slate-500">Applies to all paths; receipts shared to partner portals.</div>
                   </div>
                   <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2">
                     <CreditCard size={18} /> Proceed to Pay
@@ -151,8 +429,107 @@ const TechnoxianView = () => {
               </div>
             </div>
           </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {modalCategory && (
+          <motion.div
+            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-2xl max-w-xl w-full shadow-2xl relative"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <button onClick={() => setModalCategory(null)} className="absolute top-4 right-4 bg-slate-100 p-2 rounded-full hover:bg-slate-200">
+                <X size={18} />
+              </button>
+              <div className="p-8 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="text-3xl">{modalCategory.icon}</div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-500 uppercase">Competition Zone</div>
+                    <h3 className="text-2xl font-bold text-slate-900">{modalCategory.name}</h3>
+                  </div>
+                </div>
+                <p className="text-slate-600">{modalCategory.desc}</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                    <div className="text-xs font-bold text-slate-500 uppercase">Rulebook PDF</div>
+                    <a className="text-blue-600 font-bold text-sm" href={modalCategory.rulebook} target="_blank" rel="noreferrer">
+                      {modalCategory.rulebook}
+                    </a>
+                  </div>
+                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                    <div className="text-xs font-bold text-slate-500 uppercase">Arena 3D Model</div>
+                    <div className="font-bold text-slate-900 text-sm">{modalCategory.model}</div>
+                  </div>
+                </div>
+                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="text-xs font-bold text-slate-500 uppercase">Scoring Criteria</div>
+                  <div className="font-bold text-slate-900 text-sm">{modalCategory.scoring}</div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {activeGallery && (
+          <motion.div
+            className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onWheel={(e) => e.stopPropagation()}
+          >
+            <motion.div
+              className="bg-white rounded-3xl max-w-5xl w-full shadow-2xl overflow-hidden"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onWheel={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+                <div>
+                  <div className="text-xs uppercase font-bold text-blue-600">{activeGallery.tag}</div>
+                  <div className="text-2xl font-extrabold text-slate-900">{activeGallery.title} Gallery</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowAllGallery((p) => !p)}
+                    className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+                  >
+                    {showAllGallery ? 'Show Less' : 'Show More'}
+                  </button>
+                  <button onClick={() => { setActiveGallery(null); setShowAllGallery(false); }} className="bg-slate-100 p-2 rounded-full hover:bg-slate-200">
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+              <div className="p-6 max-h-[70vh] overflow-y-auto overscroll-contain">
+                <div className="grid md:grid-cols-3 gap-4">
+                  {(showAllGallery ? activeGallery.images : activeGallery.images.slice(0, 6)).map((img) => (
+                    <div key={img} className="relative overflow-hidden rounded-2xl border border-slate-100 h-48">
+                      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${img})` }} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

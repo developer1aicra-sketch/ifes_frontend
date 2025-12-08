@@ -1,4 +1,4 @@
-import { Shield, Trophy, MapPin, Calendar, ArrowRight, Users, Globe, Building, ChevronRight } from 'lucide-react';
+import { Shield, Trophy, MapPin, Calendar, ArrowRight, Users, Globe, Building, ChevronRight, Network, ServerCog, LayoutDashboard } from 'lucide-react';
 import LogoTicker from '../components/LogoTicker';
 import { NEWS_ITEMS } from '../constants/data';
 
@@ -15,13 +15,13 @@ const HomeView = ({ setView, siteConfig }) => (
               </div>
             )}
             <h1 className="text-6xl md:text-7xl font-bold leading-tight tracking-tight">
-              {siteConfig.is_partner ? 'Building the' : 'Regulating the'} <br />
-              <span className={siteConfig.is_partner ? 'text-emerald-400' : 'text-blue-400'}>Sport of Robotics</span>
+              {siteConfig.is_partner ? 'Federated Control for' : 'Federated Control of'} <br />
+              <span className={siteConfig.is_partner ? 'text-emerald-400' : 'text-blue-400'}>The Sport of Robotics</span>
             </h1>
             <p className="text-lg text-slate-300 max-w-xl leading-relaxed">
               {siteConfig.is_partner
-                ? `Technoxian ${siteConfig.name.split(' ')[1]} hosts the premier regional qualifiers. Join your local club, compete in zonal events, and qualify for the World Cup.`
-                : "Worso sets the standards, affiliates nations, and governs the world's largest autonomous sports ecosystem. From local clubs to the World Cup."}
+                ? `Technoxian ${siteConfig.name.split(' ')[1]} runs autonomous qualifiers on a protected WORSO shell—local language, local sponsors, global rulebook.`
+                : 'WORSO sets the root rules, partners operate subdomains, and every chapter inherits the global brand without losing local context.'}
             </p>
 
             <div className="flex flex-wrap gap-4 pt-6">
@@ -31,11 +31,8 @@ const HomeView = ({ setView, siteConfig }) => (
               >
                 {siteConfig.is_partner ? 'View Local Events' : 'Explore Technoxian'} <ArrowRight size={18} />
               </button>
-              <button
-                onClick={() => setView('teams')}
-                className="bg-transparent border border-white/20 hover:bg-white/10 px-8 py-4 rounded-lg font-bold text-base transition-all flex items-center gap-2"
-              >
-                <Users size={18} /> Find Teams
+              <button onClick={() => setView('teams')} className="bg-transparent border border-white/20 hover:bg-white/10 px-8 py-4 rounded-lg font-bold text-base transition-all flex items-center gap-2">
+                <Users size={18} /> Teams & Rankings
               </button>
             </div>
           </div>
@@ -130,6 +127,40 @@ const HomeView = ({ setView, siteConfig }) => (
     )}
 
     {!siteConfig.is_partner && <LogoTicker />}
+
+    <section className="py-16 bg-white border-t border-slate-100">
+      <div className="container mx-auto px-4">
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">
+              <Network size={14} /> Federated Control
+            </div>
+            <h3 className="font-bold text-xl text-slate-900 mb-2">Root Governance</h3>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              WORSO Global sets the laws of the sport and synchronizes updates to every partner subdomain in real time—no fragmented rulebooks.
+            </p>
+          </div>
+          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">
+              <ServerCog size={14} /> Micro-Website Shell
+            </div>
+            <h3 className="font-bold text-xl text-slate-900 mb-2">Multi-tenant React</h3>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              One codebase; many subdomains. Middleware detects `*.worso.org`, injects logos, language packs, and partner content JSON—instantly themed for UAE, India, Korea, and beyond.
+            </p>
+          </div>
+          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-purple-600 mb-2">
+              <LayoutDashboard size={14} /> Two-tier CMS
+            </div>
+            <h3 className="font-bold text-xl text-slate-900 mb-2">HQ vs Partner Roles</h3>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Super Admins create partners, assign subdomains, and push global rules. Partner Admins edit welcome messages, galleries, registrations—never the core WORSO brand.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <section className="py-20 bg-white border-t border-slate-100">
       <div className="container mx-auto px-4">

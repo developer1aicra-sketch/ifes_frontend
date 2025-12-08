@@ -41,7 +41,7 @@ const TeamsView = () => {
 
         {viewLevel === 'list' && (
           <>
-            <h1 className="text-3xl font-extrabold text-slate-900 mb-8">Worso Clubs & Teams</h1>
+            <h1 className="text-3xl font-extrabold text-slate-900 mb-8">Teams & Global Rankings</h1>
             <div className="grid md:grid-cols-3 gap-6">
               {MOCK_TEAMS.map((team) => (
                 <div
@@ -53,12 +53,14 @@ const TeamsView = () => {
                     <img src={team.logo} className="w-16 h-16 rounded bg-slate-100" alt={team.name} />
                     <div>
                       <h3 className="text-xl font-bold text-slate-900 group-hover:text-blue-600">{team.name}</h3>
-                      <div className="text-sm text-slate-500">{team.country}</div>
+                      <div className="text-sm text-slate-500 flex items-center gap-1">
+                        <span>{team.flag}</span> {team.country}
+                      </div>
                     </div>
                   </div>
                   <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between">
-                    <span className="text-sm font-bold text-slate-500">Global Rank #{team.rank}</span>
-                    <span className="text-sm font-bold text-blue-600">View Roster →</span>
+                    <span className="text-sm font-bold text-slate-500">World Rank #{team.rank}</span>
+                    <span className="text-sm font-bold text-blue-600">Roster →</span>
                   </div>
                 </div>
               ))}
@@ -71,11 +73,35 @@ const TeamsView = () => {
             <div className="bg-slate-900 p-8 text-white flex items-center gap-6">
               <img src={selectedTeam.logo} className="w-24 h-24 bg-white rounded-xl p-2" alt={selectedTeam.name} />
               <div>
-                <h1 className="text-4xl font-bold">{selectedTeam.name}</h1>
-                <p className="text-slate-400">{selectedTeam.history}</p>
+                <h1 className="text-4xl font-bold flex items-center gap-3">
+                  {selectedTeam.flag} {selectedTeam.name}
+                </h1>
+                <p className="text-slate-400 text-sm">World Rank #{selectedTeam.rank} • Prize Money {selectedTeam.earnings}</p>
+                <p className="text-slate-300 mt-2 max-w-2xl">{selectedTeam.history}</p>
               </div>
             </div>
             <div className="p-8">
+              <div className="grid md:grid-cols-4 gap-4 mb-8">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="text-xs font-bold text-slate-500 uppercase mb-1">Matches Won</div>
+                  <div className="text-2xl font-extrabold text-slate-900">{selectedTeam.wins}</div>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="text-xs font-bold text-slate-500 uppercase mb-1">Win Rate</div>
+                  <div className="text-2xl font-extrabold text-green-600">
+                    {Math.round((selectedTeam.wins / (selectedTeam.wins + selectedTeam.losses)) * 100)}%
+                  </div>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="text-xs font-bold text-slate-500 uppercase mb-1">Total Prize Money</div>
+                  <div className="text-2xl font-extrabold text-slate-900">{selectedTeam.earnings}</div>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="text-xs font-bold text-slate-500 uppercase mb-1">World Titles</div>
+                  <div className="text-2xl font-extrabold text-blue-600">{selectedTeam.worldTitles}</div>
+                </div>
+              </div>
+
               <h2 className="text-2xl font-bold text-slate-900 mb-6">Team Roster</h2>
               <div className="grid md:grid-cols-4 gap-6">
                 {selectedTeam.players.map((p) => (
@@ -92,6 +118,18 @@ const TeamsView = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              <div className="mt-10">
+                <h3 className="text-xl font-bold text-slate-900 mb-4">Technoxian History</h3>
+                <div className="flex flex-wrap gap-3">
+                  {selectedTeam.participations?.map((entry) => (
+                    <div key={entry.year} className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg">
+                      <div className="text-xs font-bold text-slate-500 uppercase">TX {entry.year}</div>
+                      <div className="font-bold text-slate-900">{entry.placement}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -116,6 +154,10 @@ const TeamsView = () => {
                     <div className="flex justify-between border-b border-slate-100 pb-2">
                       <span className="text-slate-500">Win Rate</span>
                       <span className="font-bold text-green-600">{selectedPlayer.winRate}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-slate-100 pb-2">
+                      <span className="text-slate-500">Prize Money</span>
+                      <span className="font-bold text-slate-900">{selectedPlayer.earnings}</span>
                     </div>
                     <div className="flex justify-between border-b border-slate-100 pb-2">
                       <span className="text-slate-500">Team</span>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import './App.css';
 
 import LiveTicker from './components/LiveTicker';
@@ -99,7 +100,20 @@ export default function App() {
         siteConfig={currentSite}
         user={user}
       />
-      <main className="flex-grow">{renderView()}</main>
+      <main className="flex-grow">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentView}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="h-full"
+          >
+            {renderView()}
+          </motion.div>
+        </AnimatePresence>
+      </main>
       <AIReferee siteConfig={currentSite} />
       <Footer setView={setCurrentView} switchSite={switchSite} currentSite={currentSite} />
     </div>
