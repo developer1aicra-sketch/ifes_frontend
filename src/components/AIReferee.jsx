@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Bot, Send, X } from 'lucide-react';
 import { callGemini } from '../utils/gemini';
-
 const AIReferee = ({ siteConfig }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
