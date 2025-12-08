@@ -118,5 +118,5 @@ export default function App() {
       <Footer setView={setCurrentView} switchSite={switchSite} currentSite={currentSite} />
     </div>
   );
-}
+} 
 
