@@ -18,6 +18,37 @@ export const styles = `
   .scrollbar-hide::-webkit-scrollbar {
       display: none;
   }
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  @keyframes shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .card-shine { position: relative; overflow: hidden; }
+  .card-shine::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 35%; height: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0) 100%);
+    animation: shine 6s linear infinite;
+  }
+  .trophy-bg {
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.2) 0, transparent 40%),
+      radial-gradient(circle at 80% 0%, rgba(255,255,255,0.1) 0, transparent 40%);
+  }
+  .trophy-grid {
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(255,255,255,0.06), transparent 55%),
+      radial-gradient(ellipse at 80% 90%, rgba(255,255,255,0.06), transparent 55%),
+      linear-gradient(0deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: auto, auto, 48px 48px, 48px 48px;
+    background-position: 0 0, 0 0, 0 0, 0 0;
+  }
   .custom-checkbox:checked {
     background-color: #2563eb;
     border-color: #2563eb;
