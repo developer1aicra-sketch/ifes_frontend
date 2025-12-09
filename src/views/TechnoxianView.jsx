@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Ticket, Building, CreditCard, MapPin, Clock3, FileText, BadgeCheck, X, Camera } from 'lucide-react';
+import { Users, Ticket, Building, CreditCard, MapPin, Clock3, FileText, BadgeCheck, X, Camera, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GAME_CATEGORIES } from '../constants/data';
 
@@ -20,11 +20,118 @@ const TechnoxianView = () => {
     }
   }, [activeGallery]);
 
-  const schedule = [
-    { day: 'Day 1 • Oct 12', blocks: ['Opening Ceremony', 'Robo Race Heats', 'Innovation Pitches'], venue: 'Hall A / Arena 1' },
-    { day: 'Day 2 • Oct 13', blocks: ['Drone Racing Qualifiers', 'Sumo Bot Knockouts', 'Arena Walkthroughs'], venue: 'Hall B / Drone Dome' },
-    { day: 'Day 3 • Oct 14', blocks: ['Robo Soccer Finals', 'Agro Drone Live Demo', 'Awards & Closing'], venue: 'Central Stadium' },
+  const EVENTS = [
+    {
+      id: 'fpv',
+      title: 'Drone Racing',
+      venue: 'Drone Dome',
+      start: 'Oct 12',
+      end: 'Oct 13',
+      days: [
+        {
+          date: 'Oct 12 (Sun)',
+          items: [
+            { time: '09:00', title: 'Gate Setup & Safety Check' },
+            { time: '11:00', title: 'Qualifying Runs • Round 1' },
+            { time: '15:00', title: 'Neon Gates Heats • FPV' },
+          ],
+        },
+        {
+          date: 'Oct 13 (Mon)',
+          items: [
+            { time: '10:00', title: 'Qualifying Runs • Round 2' },
+            { time: '14:00', title: 'Semi Finals' },
+            { time: '17:30', title: 'Grand Final • Awards' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'race',
+      title: 'Robo Race',
+      venue: 'Arena 1',
+      start: 'Oct 12',
+      end: 'Oct 14',
+      days: [
+        {
+          date: 'Oct 12 (Sun)',
+          items: [
+            { time: '10:00', title: 'Track Walkthrough' },
+            { time: '13:00', title: 'Time Trial Heats' },
+            { time: '16:30', title: 'Knockout Bracket Reveal' },
+          ],
+        },
+        {
+          date: 'Oct 13 (Mon)',
+          items: [
+            { time: '09:30', title: 'Knockout Stage • Rounds 1-3' },
+            { time: '15:00', title: 'Quarter Finals' },
+          ],
+        },
+        {
+          date: 'Oct 14 (Tue)',
+          items: [
+            { time: '11:00', title: 'Semi Finals' },
+            { time: '16:00', title: 'Finals • Podium Ceremony' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'soccer',
+      title: 'Robo Soccer',
+      venue: 'Hex Turf',
+      start: 'Oct 13',
+      end: 'Oct 14',
+      days: [
+        {
+          date: 'Oct 13 (Mon)',
+          items: [
+            { time: '09:00', title: 'Group Stage • Matches A-D' },
+            { time: '14:00', title: 'Group Stage • Matches E-H' },
+          ],
+        },
+        {
+          date: 'Oct 14 (Tue)',
+          items: [
+            { time: '12:00', title: 'Semi Finals' },
+            { time: '17:00', title: 'Final • Trophy Presentation' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'expo',
+      title: 'Innovation Expo',
+      venue: 'Prototype Lab',
+      start: 'Oct 12',
+      end: 'Oct 14',
+      days: [
+        {
+          date: 'Oct 12 (Sun)',
+          items: [
+            { time: '10:00', title: 'Booth Setup & Safety Inspection' },
+            { time: '13:00', title: 'Public Showcase Window' },
+          ],
+        },
+        {
+          date: 'Oct 13 (Mon)',
+          items: [
+            { time: '11:00', title: 'Prototype Demos' },
+            { time: '16:00', title: 'Investor Pitch Hour' },
+          ],
+        },
+        {
+          date: 'Oct 14 (Tue)',
+          items: [
+            { time: '10:00', title: 'Open Floor • Audience Q&A' },
+            { time: '15:30', title: 'Awards • Best Innovation' },
+          ],
+        },
+      ],
+    },
   ];
+  const [activeEvent, setActiveEvent] = useState(EVENTS[0]);
 
   const gallery = [
     {
@@ -234,30 +341,75 @@ const TechnoxianView = () => {
             transition={{ duration: 0.25, ease: 'easeOut' }}
             className="container mx-auto px-4 py-12"
           >
-            <div className="grid md:grid-cols-3 gap-6">
-              {schedule.map((slot, i) => (
-                <motion.div
-                  key={slot.day}
-                  className="p-6 rounded-2xl border border-slate-200 bg-white shadow-sm"
-                  whileHover={{ y: -6, boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className="text-xs font-bold uppercase text-blue-600 mb-2 flex items-center gap-2">
-                    <Clock3 size={14} /> {slot.day}
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row">
+              <div className="md:w-80 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50 p-6">
+                <div className="text-xs font-bold uppercase text-slate-500 mb-3">Events</div>
+                <div className="space-y-2">
+                  {EVENTS.map((ev) => {
+                    const active = activeEvent.id === ev.id;
+                    return (
+                      <button
+                        key={ev.id}
+                        onClick={() => setActiveEvent(ev)}
+                        className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${
+                          active ? 'bg-white border-blue-600 shadow-sm text-blue-700' : 'bg-white border-slate-200 hover:border-blue-400 text-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="font-bold">{ev.title}</div>
+                          <div className={`text-[10px] px-2 py-1 rounded-full border ${active ? 'border-blue-300 text-blue-700 bg-blue-50' : 'border-slate-200 text-slate-500 bg-slate-50'}`}>View</div>
+                        </div>
+                        <div className="mt-1 text-xs flex items-center gap-2 text-slate-500">
+                          <Calendar size={12} className={active ? 'text-blue-600' : 'text-slate-400'} /> {ev.start} – {ev.end}
+                        </div>
+                        <div className="mt-1 text-xs flex items-center gap-2 text-slate-500">
+                          <MapPin size={12} className={active ? 'text-blue-600' : 'text-slate-400'} /> {ev.venue}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex-1 p-8 md:p-12">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <div className="text-xs font-bold uppercase text-blue-600 mb-1">Event Schedule</div>
+                    <h2 className="text-2xl font-bold text-slate-900">{activeEvent.title}</h2>
                   </div>
-                  <div className="text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
-                    <MapPin size={14} className="text-slate-400" /> {slot.venue}
+                  <div className="text-right">
+                    <div className="text-sm font-bold text-slate-700 flex items-center gap-2 justify-end">
+                      <Calendar size={14} className="text-blue-600" /> {activeEvent.start} – {activeEvent.end}
+                    </div>
+                    <div className="text-xs text-slate-500 flex items-center gap-2 justify-end">
+                      <MapPin size={12} className="text-slate-400" /> {activeEvent.venue}
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    {slot.blocks.map((b) => (
-                      <div key={b} className="flex items-center gap-2 text-slate-700">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                        <span className="text-sm">{b}</span>
+                </div>
+
+                <div className="space-y-6">
+                  {activeEvent.days.map((d) => (
+                    <div key={d.date} className="rounded-2xl border border-slate-200 overflow-hidden">
+                      <div className="bg-slate-50 px-5 py-3 flex items-center gap-2">
+                        <Clock3 size={14} className="text-blue-600" />
+                        <div className="text-sm font-bold text-slate-700">{d.date}</div>
                       </div>
-                    ))}
-                  </div>
-                </motion.div>
-              ))}
+                      <div className="bg-white p-5 space-y-3">
+                        {d.items.map((itm) => (
+                          <div key={itm.time + itm.title} className="flex items-start gap-4">
+                            <div className="w-20 text-right">
+                              <div className="text-xs font-bold text-slate-500">{itm.time}</div>
+                            </div>
+                            <div className="flex-1 p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-400 transition-colors">
+                              <div className="font-bold text-slate-900">{itm.title}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </motion.div>
         )}

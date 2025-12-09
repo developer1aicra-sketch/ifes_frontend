@@ -16,6 +16,8 @@ import AdminLoginView from './views/AdminLoginView';
 import MemberDashboard from './views/MemberDashboard';
 import TechnoxianView from './views/TechnoxianView';
 import AdminView from './views/AdminView';
+import NewsArticleView from './views/NewsArticleView';
+import NewsListView from './views/NewsListView';
 
 import { DEFAULT_SITES } from './constants/data';
 import { styles } from './styles/inlineStyles';
@@ -82,6 +84,14 @@ export default function App() {
       case 'admin-dashboard':
         return <AdminView setSites={setSites} sites={sites} setView={setCurrentView} />;
       default:
+        if (currentView.startsWith('news-list-')) {
+          const type = currentView.replace('news-list-', '');
+          return <NewsListView type={type} setView={setCurrentView} />;
+        }
+        if (currentView.startsWith('news-')) {
+          const articleId = parseInt(currentView.split('-')[1]);
+          return <NewsArticleView articleId={articleId} setView={setCurrentView} />;
+        }
         return <HomeView setView={setCurrentView} siteConfig={currentSite} />;
     }
   };
@@ -118,5 +128,5 @@ export default function App() {
       <Footer setView={setCurrentView} switchSite={switchSite} currentSite={currentSite} />
     </div>
   );
-} 
+}
 

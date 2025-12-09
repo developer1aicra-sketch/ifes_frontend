@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers } from 'lucide-react';
 
 const AboutLayout = ({ setView }) => {
@@ -167,7 +168,7 @@ const AboutLayout = ({ setView }) => {
 
   return (
     <div className="animate-fadeIn pt-20 bg-gradient-to-b from-slate-50 via-white to-slate-50 min-h-screen">
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white py-14 shadow-xl">
+      <div className="bg-[#0f172a] text-white py-14 shadow-xl">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-start md:items-center gap-6">
           <div className="flex-1">
             <h1 className="text-4xl md:text-5xl font-extrabold">Governance</h1>
@@ -187,8 +188,8 @@ const AboutLayout = ({ setView }) => {
           </div>
         </div>
       </div>
-      <div className="container mx-auto px-4">
-        <div className="flex flex-wrap justify-center gap-3 py-5">
+      <div className="bg-white border-b border-slate-200 sticky top-20 z-30 shadow-sm">
+        <div className="container mx-auto px-4 flex gap-8 overflow-x-auto">
           {[
             { id: 'governance', label: 'Mission & Vision' },
             { id: 'president', label: "President's Message" },
@@ -201,18 +202,28 @@ const AboutLayout = ({ setView }) => {
             <button
               key={item.id}
               onClick={() => setActiveSection(item.id)}
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
-                activeSection === item.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-200/40' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              className={`py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${
+                activeSection === item.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-900'
               }`}
             >
               {item.label}
             </button>
           ))}
-      </div>
+        </div>
       </div>
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white p-12 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 min-h-[600px] transition-all duration-300">
-          <Content />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSection}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+            >
+              <Content />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>

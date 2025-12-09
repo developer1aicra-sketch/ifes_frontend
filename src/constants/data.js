@@ -236,9 +236,106 @@ export const GAME_CATEGORIES = [
 ];
 
 export const NEWS_ITEMS = [
-  { id: 1, tag: 'REGULATION', date: 'NOV 27, 2025', title: 'New Autonomous Drone Regulations (ADR-25) Released', desc: 'The board has officially ratified the new guidelines for autonomous flight.' },
-  { id: 2, tag: 'EVENT', date: 'NOV 26, 2025', title: 'Technoxian World Cup Venue Finalized: Dubai Exhibition Centre', desc: 'The largest robotics arena in history will be constructed at DEC.' },
-  { id: 3, tag: 'PARTNERSHIP', date: 'NOV 25, 2025', title: 'Worso Welcomes South Korea as Strategic Partner', desc: 'The KRA officially joins the federation.' },
+  {
+    id: 1,
+    category: 'Regulation',
+    tag: 'REGULATION',
+    date: 'Nov 27, 2025',
+    title: 'New Autonomous Drone Regulations (ADR-25) Released',
+    desc: 'The board has officially ratified the new guidelines for autonomous flight.',
+    body: 'The World Robotics Society has officially ratified the new Autonomous Drone Regulations (ADR-25), establishing comprehensive safety protocols and operational standards for drone racing competitions worldwide. These regulations will be synchronized across all partner subdomains via middleware, ensuring consistent enforcement from local qualifiers to the World Cup finals.',
+    featuredImage: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=800&h=500&fit=crop',
+    sampleImages: [
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=300&fit=crop',
+    ],
+    fullContent: [
+      'The World Robotics Society has officially ratified the new Autonomous Drone Regulations (ADR-25), establishing comprehensive safety protocols and operational standards for drone racing competitions worldwide. These regulations will be synchronized across all partner subdomains via middleware, ensuring consistent enforcement from local qualifiers to the World Cup finals.',
+      'The ADR-25 framework introduces mandatory telemetry logging, real-time altitude restrictions, and automated collision avoidance systems. All participating teams must submit their drone specifications for pre-competition certification, with compliance checks performed by AI Referee systems at every event.',
+      'Partner nations will receive automatic rulebook updates through the federated middleware, eliminating version conflicts and ensuring all regional qualifiers operate under identical standards. This marks a significant milestone in WORSO\'s mission to create a unified, safe, and fair competitive environment for autonomous sports.',
+    ],
+  },
+  {
+    id: 2,
+    category: 'Event',
+    tag: 'EVENT',
+    date: 'Nov 26, 2025',
+    title: 'Technoxian World Cup Venue Finalized: Dubai Exhibition Centre',
+    desc: 'The largest robotics arena in history will be constructed at DEC.',
+    body: 'WORSO has announced that the Technoxian World Cup 2026 will be held at the Dubai Exhibition Centre, marking the largest robotics competition venue in history. The facility will feature nine dedicated competition zones, innovation expo halls, and spectator concourses capable of hosting over 2.5 million visitors across the four-day championship.',
+    featuredImage: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800&h=500&fit=crop',
+    sampleImages: [
+      'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
+    ],
+    fullContent: [
+      'WORSO has announced that the Technoxian World Cup 2026 will be held at the Dubai Exhibition Centre, marking the largest robotics competition venue in history. The facility will feature nine dedicated competition zones, innovation expo halls, and spectator concourses capable of hosting over 2.5 million visitors across the four-day championship.',
+      'The Dubai Exhibition Centre will undergo a $50 million transformation to accommodate the World Cup, including custom-built arenas for each competition category, state-of-the-art broadcasting facilities, and integrated AI Referee monitoring systems. The venue will serve as a model for future partner-hosted events.',
+      'Registration for teams, visitors, and exhibitors opened simultaneously across all partner subdomains, with unified payment processing and real-time availability tracking. The federated architecture ensures that capacity limits and ticket sales are synchronized globally, preventing overselling and ensuring fair access.',
+    ],
+  },
+  {
+    id: 3,
+    category: 'Partnership',
+    tag: 'PARTNERSHIP',
+    date: 'Nov 25, 2025',
+    title: 'Worso Welcomes South Korea as Strategic Partner',
+    desc: 'The KRA officially joins the federation.',
+    body: 'The Korean Robotics Association (KRA) has officially joined WORSO as a strategic partner, receiving approval for the korea.worso.org subdomain. The partnership will enable local qualifiers, Korean-language content, and regional sponsors while maintaining global rulebook compliance through federated middleware architecture.',
+    featuredImage: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&h=500&fit=crop',
+    sampleImages: [
+      'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop',
+    ],
+    fullContent: [
+      'The Korean Robotics Association (KRA) has officially joined WORSO as a strategic partner, receiving approval for the korea.worso.org subdomain. The partnership will enable local qualifiers, Korean-language content, and regional sponsors while maintaining global rulebook compliance through federated middleware architecture.',
+      'KRA will host regional qualifiers for the Technoxian World Cup, with top teams advancing to the global finals. The Korean micro-site will feature localized content, regional event calendars, and Korean-language rulebook translations, all while maintaining the core WORSO brand identity.',
+      'This partnership brings WORSO\'s total partner network to 96 nations, with South Korea representing a key market in the Asia-Pacific region. The federated model allows KRA to operate autonomously while contributing to the global rankings and data layer.',
+    ],
+  },
+  {
+    id: 4,
+    category: 'Technology',
+    tag: 'TECH',
+    date: 'Nov 24, 2025',
+    title: 'AI Referee System Launches Across All Partner Portals',
+    desc: 'Real-time officiating powered by machine learning now available globally.',
+    body: 'WORSO has deployed its AI Referee system across all partner subdomains, enabling real-time rule enforcement, scoring validation, and dispute resolution. The system uses federated learning to improve accuracy while maintaining data privacy across regional boundaries.',
+    featuredImage: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&h=500&fit=crop',
+    sampleImages: [
+      'https://images.unsplash.com/photo-1555255707-c07966088b7b?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop',
+    ],
+    fullContent: [
+      'WORSO has deployed its AI Referee system across all partner subdomains, enabling real-time rule enforcement, scoring validation, and dispute resolution. The system uses federated learning to improve accuracy while maintaining data privacy across regional boundaries.',
+      'The AI Referee analyzes telemetry data, video feeds, and sensor inputs to make instant decisions on rule violations, scoring disputes, and safety interventions. Human referees can override AI decisions, but the system\'s accuracy rate of 98.7% has significantly reduced appeals and improved event flow.',
+      'Federated learning allows the AI to improve from events across all partner nations without sharing sensitive competition data. Each partner\'s local events contribute to the global model while maintaining complete data sovereignty.',
+    ],
+  },
+  {
+    id: 5,
+    category: 'Markets',
+    tag: 'MARKETS',
+    date: 'Nov 23, 2025',
+    title: 'Prize Pool Reaches Record $250,000 for World Cup 2026',
+    desc: 'Corporate sponsorships drive unprecedented prize distribution.',
+    body: 'The Technoxian World Cup 2026 prize pool has reached a record-breaking $250,000, driven by strategic partnerships with leading technology corporations. Prize distribution will be transparent and auditable, with real-time tracking available on all partner micro-sites through unified payment gateway integration.',
+    featuredImage: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=500&fit=crop',
+    sampleImages: [
+      'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400&h=300&fit=crop',
+    ],
+    fullContent: [
+      'The Technoxian World Cup 2026 prize pool has reached a record-breaking $250,000, driven by strategic partnerships with leading technology corporations. Prize distribution will be transparent and auditable, with real-time tracking available on all partner micro-sites through unified payment gateway integration.',
+      'Prize money will be distributed across all nine competition categories, with the Innovation Challenge category receiving the largest share at $75,000. Teams can track their earnings in real-time through the unified dashboard, with automatic tax documentation generated for international participants.',
+      'Corporate sponsors including major tech firms have committed to multi-year partnerships, ensuring prize pool growth and long-term financial stability for the sport. The federated architecture allows sponsors to target specific regions while contributing to the global prize pool.',
+    ],
+  },
 ];
 
 export const DEFAULT_SITES = {

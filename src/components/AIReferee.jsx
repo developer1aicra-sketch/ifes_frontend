@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Bot, Send, X } from 'lucide-react';
 import { callGemini } from '../utils/gemini';
+
 const AIReferee = ({ siteConfig }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -39,14 +40,14 @@ const AIReferee = ({ siteConfig }) => {
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 left-6 z-50 ${siteConfig.colors.primary} text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center gap-2`}
+        className={`fixed bottom-6 right-6 z-50 ${siteConfig.colors.primary} text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center gap-2`}
       >
         <Bot size={24} />
         <span className="font-bold text-sm hidden md:inline">Ask AI Referee</span>
       </button>
 
       {isOpen && (
-        <div className="fixed bottom-24 left-6 z-50 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-fadeIn">
+        <div className="fixed bottom-24 right-6 z-50 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-fadeIn">
           <div className={`${siteConfig.colors.primary} p-4 flex justify-between items-center text-white`}>
             <div className="flex items-center gap-2">
               <Bot size={20} />

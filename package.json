@@ -12,8 +12,10 @@
   "dependencies": {
     "framer-motion": "^11.18.2",
     "lucide-react": "^0.556.0",
+    "ngrok": "^5.0.0-beta.2",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
