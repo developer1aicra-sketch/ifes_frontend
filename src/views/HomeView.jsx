@@ -201,7 +201,7 @@ const HomeView = ({ setView, siteConfig }) => {
       </div>
     </section>
 
-    <section className="py-20 bg-[#0f172a] trophy-grid">
+    <section className="py-20 bg-[#0f172a]">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
@@ -221,7 +221,7 @@ const HomeView = ({ setView, siteConfig }) => {
                   transition={{ duration: 0.2 }}
                   className="snap-start min-w-[300px] md:min-w-[360px] text-center"
                 >
-                  <div className="relative rounded-3xl bg-white/5 backdrop-blur-xl ring-1 ring-white/10 shadow-2xl flex flex-col items-center card-shine">
+                  <div className="relative rounded-3xl bg-white/5 backdrop-blur-xl ring-1 ring-white/10 shadow-2xl flex flex-col items-center">
                     <div className="relative w-full h-80 md:h-96 flex items-center justify-center">
                       <div className="absolute inset-0 opacity-20 trophy-bg" />
                       <img
