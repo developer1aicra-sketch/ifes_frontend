@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronRight, Calendar, Tag } from 'lucide-react';
-import { NEWS_ITEMS } from '../constants/data';
 
 const sortByDateDesc = (items) => {
   return [...items].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
@@ -16,22 +15,25 @@ const getReadCounts = () => {
   }
 };
 
-const NewsListView = ({ type, setView }) => {
+const NewsListView = ({ type, setView, newsItems = [], newsLoading, newsError }) => {
+  const safeItems = useMemo(() => newsItems.filter(Boolean), [newsItems]);
+
   const items = useMemo(() => {
+    if (safeItems.length === 0) return [];
     if (type === 'headline') {
-      return NEWS_ITEMS.slice(0, 5);
+      return safeItems.slice(0, 5);
     }
     if (type === 'latest') {
-      return sortByDateDesc(NEWS_ITEMS);
+      return sortByDateDesc(safeItems);
     }
     if (type === 'most') {
       const counts = getReadCounts();
-      const withCounts = NEWS_ITEMS.map((n) => ({ ...n, _reads: counts[n.id] || 0 }));
+      const withCounts = safeItems.map((n) => ({ ...n, _reads: counts[n.id] || 0 }));
       const sorted = withCounts.sort((a, b) => b._reads - a._reads);
       return sorted;
     }
-    return NEWS_ITEMS;
-  }, [type]);
+    return safeItems;
+  }, [type, safeItems]);
 
   const title = type === 'headline' ? 'Headline' : type === 'latest' ? 'Latest News' : type === 'most' ? 'Most Read' : 'News';
 
@@ -51,7 +53,11 @@ const NewsListView = ({ type, setView }) => {
           <ChevronRight size={20} className="text-slate-400" />
         </div>
 
+        {newsLoading && <div className="text-sm text-slate-500 mb-4">Loading fresh stories…</div>}
+        {newsError && <div className="text-sm text-red-500 mb-4">{newsError}</div>}
+
         <div className="grid md:grid-cols-2 gap-6">
+          {items.length === 0 && !newsLoading && <div className="text-sm text-slate-500">No news to show right now.</div>}
           {items.map((news) => (
             <motion.article
               key={`${type}-${news.id}`}

@@ -4,8 +4,9 @@ import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers } f
 
 const AboutLayout = ({ setView }) => {
   const [activeSection, setActiveSection] = useState('governance');
+  void motion;
 
-  const Content = () => {
+  const renderContent = () => {
     switch (activeSection) {
       case 'governance':
         return (
@@ -167,28 +168,8 @@ const AboutLayout = ({ setView }) => {
   };
 
   return (
-    <div className="animate-fadeIn pt-20 bg-gradient-to-b from-slate-50 via-white to-slate-50 min-h-screen">
-      <div className="bg-[#0f172a] text-white py-14 shadow-xl">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div className="flex-1">
-            <h1 className="text-4xl md:text-5xl font-extrabold">Governance</h1>
-            <p className="text-slate-300 mt-3 text-lg max-w-3xl">
-              Mission, mandate, affiliation, data, and the federated partner network that powers the sport of robotics.
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <div className="bg-white/10 backdrop-blur-lg px-4 py-3 rounded-xl border border-white/10">
-              <div className="text-xs font-bold uppercase text-slate-200">Mode</div>
-              <div className="text-lg font-extrabold text-white">Federated</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-lg px-4 py-3 rounded-xl border border-white/10">
-              <div className="text-xs font-bold uppercase text-slate-200">Rulebook</div>
-              <div className="text-lg font-extrabold text-emerald-200">v2.0</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="bg-white border-b border-slate-200 sticky top-20 z-30 shadow-sm">
+    <div className="animate-fadeIn bg-gradient-to-b from-slate-50 via-white to-slate-50 min-h-screen">
+      <div className="bg-white border-b border-slate-200 shadow-sm sticky top-[56px] z-30">
         <div className="container mx-auto px-4 flex gap-8 overflow-x-auto">
           {[
             { id: 'governance', label: 'Mission & Vision' },
@@ -202,13 +183,32 @@ const AboutLayout = ({ setView }) => {
             <button
               key={item.id}
               onClick={() => setActiveSection(item.id)}
-              className={`py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${
+              className={`py-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${
                 activeSection === item.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-900'
               }`}
             >
               {item.label}
             </button>
           ))}
+        </div>
+      </div>
+      <div className="container mx-auto px-4 py-10">
+        <div className="bg-[#0f172a] rounded-3xl text-white p-12 md:p-14 shadow-2xl relative overflow-hidden">
+          <div className="text-yellow-400 font-bold tracking-widest text-xs uppercase mb-4">Root Governance</div>
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">Governance</h1>
+          <p className="text-slate-200 text-lg max-w-3xl mb-6">
+            Mission, mandate, affiliation, data, and the federated partner network that powers the sport of robotics.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <div className="bg-white/10 px-4 py-3 rounded-xl border border-white/10">
+              <div className="text-xs font-bold uppercase text-slate-200">Mode</div>
+              <div className="text-lg font-extrabold text-white">Federated</div>
+            </div>
+            <div className="bg-white/10 px-4 py-3 rounded-xl border border-white/10">
+              <div className="text-xs font-bold uppercase text-slate-200">Rulebook</div>
+              <div className="text-lg font-extrabold text-emerald-200">v2.0</div>
+            </div>
+          </div>
         </div>
       </div>
       <div className="container mx-auto px-4 py-8">
@@ -221,7 +221,7 @@ const AboutLayout = ({ setView }) => {
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
             >
-              <Content />
+              {renderContent()}
             </motion.div>
           </AnimatePresence>
         </div>
