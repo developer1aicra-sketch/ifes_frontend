@@ -3,8 +3,8 @@ import { Calendar, Layout, Building, Plus, Sparkles, LogOut } from 'lucide-react
 import { DEFAULT_SITES } from '../constants/data';
 import { callGemini } from '../utils/gemini';
 
-const AdminView = ({ setSites, sites, setView }) => {
-  const [isAdminMode, setIsAdminMode] = useState('super');
+const AdminView = ({ setSites, sites, defaultMode }) => {
+  const [isAdminMode] = useState(defaultMode || 'super');
   const [activeTab, setActiveTab] = useState('overview');
   const [newPartner, setNewPartner] = useState({ country: '', theme: 'blue', subdomain: '' });
   const [newEvent, setNewEvent] = useState({ title: '', date: '', location: '' });
@@ -51,24 +51,13 @@ const AdminView = ({ setSites, sites, setView }) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-100 animate-fadeIn pt-16">
-      <div className="w-64 bg-slate-900 text-white fixed h-full pt-6 flex flex-col">
-        <div className="px-6 mb-8">
-          <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Admin Console</div>
+    <div className="flex min-h-screen bg-slate-100 animate-fadeIn ">
+      <div className="w-64 bg-slate-900 text-white  overflow-y-auto flex flex-col z-30">
+        <div className="px-6 mb-8 mt-12">
           <div className="font-bold text-xl">{isAdminMode === 'super' ? 'WORSO HQ' : 'Partner Portal'}</div>
         </div>
         <div className="px-4 space-y-2 flex-1">
-          <div className="bg-slate-800 rounded-lg p-1 mb-6 flex text-xs font-bold">
-            <button onClick={() => setIsAdminMode('super')} className={`flex-1 py-2 rounded ${isAdminMode === 'super' ? 'bg-blue-600' : 'hover:bg-slate-700'}`}>
-              Super
-            </button>
-            <button
-              onClick={() => setIsAdminMode('partner')}
-              className={`flex-1 py-2 rounded ${isAdminMode === 'partner' ? 'bg-emerald-600' : 'hover:bg-slate-700'}`}
-            >
-              Partner
-            </button>
-          </div>
+          <div className="text-xs font-bold text-slate-400 mb-6">{isAdminMode === 'super' ? 'Role: Super Admin' : 'Role: Partner Admin'}</div>
 
           <button
             onClick={() => setActiveTab('overview')}
@@ -93,21 +82,21 @@ const AdminView = ({ setSites, sites, setView }) => {
             </button>
           )}
 
-          <button
-            onClick={() => setView('home')}
-            className="w-full text-left px-4 py-2 text-red-400 hover:text-red-300 font-medium flex items-center gap-3 mt-8"
-          >
-            <LogOut size={18} /> Logout
-          </button>
+          
         </div>
       </div>
-      <div className="ml-64 flex-1 p-12">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">
-          {activeTab === 'overview' && 'Dashboard Overview'}
-          {activeTab === 'partners' && 'Partner Management'}
-          {activeTab === 'events' && 'Local Event Manager'}
-        </h1>
-        <p className="text-slate-500 mb-8">{isAdminMode === 'super' ? 'Global Control Panel' : `Managing: ${sites.uae.name}`}</p>
+      <div className=" flex-1">
+        <div className="bg-white/90 backdrop-blur border-b border-slate-200 px-8 py-4">
+          <div className="flex items-end justify-between">
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
+              {activeTab === 'overview' && 'Dashboard Overview'}
+              {activeTab === 'partners' && 'Partner Management'}
+              {activeTab === 'events' && 'Local Event Manager'}
+            </h1>
+            <div className="text-slate-500 text-sm">{isAdminMode === 'super' ? 'Global Control Panel' : `Managing: ${sites.uae.name}`}</div>
+          </div>
+        </div>
+        <div className="p-12">
 
         {activeTab === 'overview' && (
           <div className="grid grid-cols-3 gap-6">
@@ -225,6 +214,7 @@ const AdminView = ({ setSites, sites, setView }) => {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

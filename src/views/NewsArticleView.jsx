@@ -1,20 +1,43 @@
 import { motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ArrowLeft, Calendar, Tag, ChevronRight } from 'lucide-react';
-import { NEWS_ITEMS } from '../constants/data';
 
-const NewsArticleView = ({ articleId, setView }) => {
-  const article = NEWS_ITEMS.find((item) => item.id === articleId) || NEWS_ITEMS[0];
-  const relatedNews = NEWS_ITEMS.filter((item) => item.id !== articleId).slice(0, 4);
+const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, newsError }) => {
+  void motion;
+  const safeItems = useMemo(() => newsItems.filter(Boolean), [newsItems]);
+  const article = safeItems.find((item) => String(item.id) === String(articleId)) || safeItems[0];
+  const relatedNews = safeItems.filter((item) => String(item.id) !== String(articleId)).slice(0, 4);
 
   useEffect(() => {
+    if (!article) return;
     try {
       const raw = localStorage.getItem('news_reads');
       const counts = raw ? JSON.parse(raw) : {};
       counts[article.id] = (counts[article.id] || 0) + 1;
       localStorage.setItem('news_reads', JSON.stringify(counts));
-    } catch (e) {}
-  }, [article.id]);
+    } catch {
+      void 0;
+    }
+  }, [article?.id]);
+
+  if (newsLoading && !article) {
+    return (
+      <div className="animate-fadeIn pt-24 pb-20 bg-white min-h-screen flex items-center justify-center text-slate-500">
+        Loading article…
+      </div>
+    );
+  }
+
+  if (!article) {
+    return (
+      <div className="animate-fadeIn pt-24 pb-20 bg-white min-h-screen flex flex-col items-center justify-center text-center">
+        <p className="text-slate-600 mb-4">{newsError || 'Article not found.'}</p>
+        <button onClick={() => setView('home')} className="text-blue-600 font-semibold hover:underline flex items-center gap-2">
+          <ArrowLeft size={16} /> Back to News
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fadeIn pt-24 pb-20 bg-white min-h-screen">
@@ -52,24 +75,23 @@ const NewsArticleView = ({ articleId, setView }) => {
           )}
 
           <div className="prose prose-slate max-w-none mb-8">
-            <p className="text-lg text-slate-700 leading-relaxed mb-6">{article.body || article.desc}</p>
-            {article.fullContent && (
-              <div className="space-y-4 text-slate-700 leading-relaxed">
-                {article.fullContent.map((paragraph, idx) => (
-                  <p key={idx} className="text-base">
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
+            {article.contentHtml ? (
+              <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: article.contentHtml }} />
+            ) : (
+              <p className="text-lg text-slate-700 leading-relaxed mb-6">{article.body || article.desc}</p>
             )}
           </div>
 
-          {article.sampleImages && article.sampleImages.length > 0 && (
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              {article.sampleImages.map((img, idx) => (
-                <img key={idx} src={img} alt={`${article.title} - Image ${idx + 1}`} className="w-full h-32 object-cover rounded-lg" />
-              ))}
-            </div>
+          {article.link && (
+            <a
+              href={article.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm text-blue-600 font-semibold hover:underline"
+            >
+              Read on FutureTech
+              <ChevronRight size={14} />
+            </a>
           )}
         </article>
 

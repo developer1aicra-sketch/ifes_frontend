@@ -1,28 +1,33 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Trophy, MapPin, Calendar, ArrowRight, Users, Globe, Building, ChevronRight, Network, ServerCog, LayoutDashboard } from 'lucide-react';
 import LogoTicker from '../components/LogoTicker';
-import { NEWS_ITEMS } from '../constants/data';
 
-const HomeView = ({ setView, siteConfig }) => {
+const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError }) => {
+  void motion;
   const [latestNewsIndex, setLatestNewsIndex] = useState(0);
   const [mostReadIndex, setMostReadIndex] = useState(0);
 
+  const preparedNews = useMemo(() => newsItems.filter(Boolean), [newsItems]);
+  const headline = preparedNews[0];
+  const latestPool = preparedNews.slice(1);
+  const mostReadPool = [...preparedNews].reverse().slice(1);
+
   useEffect(() => {
+    if (latestPool.length < 2) return undefined;
     const latestInterval = setInterval(() => {
-      setLatestNewsIndex((prev) => (prev + 1) % (NEWS_ITEMS.length - 1));
+      setLatestNewsIndex((prev) => (prev + 1) % latestPool.length);
     }, 4000);
     return () => clearInterval(latestInterval);
-  }, []);
+  }, [latestPool.length]);
 
   useEffect(() => {
+    if (mostReadPool.length < 2) return undefined;
     const mostReadInterval = setInterval(() => {
-      setMostReadIndex((prev) => (prev + 1) % (NEWS_ITEMS.length - 1));
+      setMostReadIndex((prev) => (prev + 1) % mostReadPool.length);
     }, 4500);
     return () => clearInterval(mostReadInterval);
-  }, []);
-
-  
+  }, [mostReadPool.length]);
 
   return (
   <div className="animate-fadeIn bg-slate-50">
@@ -37,7 +42,7 @@ const HomeView = ({ setView, siteConfig }) => {
               </div>
             )}
             <h1 className="text-6xl md:text-7xl font-bold leading-tight tracking-tight">
-              {siteConfig.is_partner ? 'The governing body for the' : 'The governing body'} <br />
+              {siteConfig.is_partner ? 'The governing body ' : 'The governing body'} <br />
               <span className={siteConfig.is_partner ? 'text-emerald-400' : 'text-blue-400'}>for sport of robotics.</span>
             </h1>
             <p className="text-lg text-slate-300 max-w-xl leading-relaxed">
@@ -188,6 +193,7 @@ const HomeView = ({ setView, siteConfig }) => {
 
     <section className="py-20 bg-white border-t border-slate-100">
       <div className="container mx-auto px-4 max-w-7xl">
+        {newsError && <div className="text-sm text-red-500 mb-4">{newsError}</div>}
         <div className="grid md:grid-cols-5 gap-6">
           {/* Headline Section */}
           <div className="md:col-span-3">
@@ -198,31 +204,33 @@ const HomeView = ({ setView, siteConfig }) => {
               </button>
             </div>
             <div className="bg-gradient-to-br from-white via-slate-50 to-white rounded-xl shadow-lg border border-slate-200 p-5 h-[440px] flex flex-col overflow-hidden">
-              {NEWS_ITEMS.slice(0, 1).map((news) => (
-                <article key={news.id} className="flex flex-col h-full space-y-3">
-                  {news.featuredImage && (
+              {newsLoading && !headline && <div className="text-sm text-slate-500">Loading latest news…</div>}
+              {!newsLoading && !headline && <div className="text-sm text-slate-500">No news available right now.</div>}
+              {headline && (
+                <article key={headline.id} className="flex flex-col h-full space-y-3">
+                  {headline.featuredImage && (
                     <div className="rounded-lg overflow-hidden shadow-md">
                       <img
-                        src={news.featuredImage}
-                        alt={news.title}
+                        src={headline.featuredImage}
+                        alt={headline.title}
                         className="w-full h-[180px] object-cover"
                       />
                     </div>
                   )}
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-slate-600 uppercase">{news.category}</span>
-                    <span className="text-xs text-slate-400">{news.date}</span>
+                    <span className="text-xs font-bold text-slate-600 uppercase">{headline.category}</span>
+                    <span className="text-xs text-slate-400">{headline.date}</span>
                   </div>
                   <h3
                     className="text-xl font-extrabold text-slate-900 hover:text-blue-600 transition-colors cursor-pointer leading-snug line-clamp-2"
-                    onClick={() => setView(`news-${news.id}`)}
+                    onClick={() => setView(`news-${headline.id}`)}
                   >
-                    {news.title}
+                    {headline.title}
                   </h3>
-                  <p className="text-sm text-slate-600 leading-relaxed flex-grow line-clamp-3">{news.body || news.desc}</p>
+                  <p className="text-sm text-slate-600 leading-relaxed flex-grow line-clamp-3">{headline.body || headline.desc}</p>
                   <div>
                     <button
-                      onClick={() => setView(`news-${news.id}`)}
+                      onClick={() => setView(`news-${headline.id}`)}
                       className="text-sm text-blue-600 font-medium hover:underline inline-flex items-center gap-1 self-start"
                     >
                       Continue Reading
@@ -230,7 +238,7 @@ const HomeView = ({ setView, siteConfig }) => {
                     </button>
                   </div>
                 </article>
-              ))}
+              )}
             </div>
           </div>
 
@@ -243,43 +251,48 @@ const HomeView = ({ setView, siteConfig }) => {
               </button>
             </div>
             <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-4 h-[440px] overflow-hidden">
-              <motion.div
-                key={latestNewsIndex}
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -24 }}
-                transition={{ duration: 0.45, ease: 'easeOut' }}
-                className="space-y-3"
-              >
-                {(() => {
-                  const items = NEWS_ITEMS.slice(1);
-                  const extended = [...items, ...items];
-                  const start = latestNewsIndex % items.length;
-                  const windowItems = extended.slice(start, start + 3);
-                  return windowItems.map((news, i) => (
-                    <article key={`${news.id}-latest-${start}-${i}`} className="border border-slate-200 rounded-lg p-3 shadow-sm bg-white">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[11px] font-bold text-slate-600 uppercase">{news.category}</span>
-                        <span className="text-[11px] text-slate-400">{news.date}</span>
-                      </div>
-                      <h3
-                        className="text-sm font-bold text-slate-900 mb-2 hover:text-blue-600 transition-colors cursor-pointer line-clamp-2"
-                        onClick={() => setView(`news-${news.id}`)}
-                      >
-                        {news.title}
-                      </h3>
-                      <p className="text-xs text-slate-600 leading-relaxed mb-2 line-clamp-3">{news.body || news.desc}</p>
-                      <button
-                        onClick={() => setView(`news-${news.id}`)}
-                        className="text-[11px] text-blue-600 font-medium hover:underline inline-flex items-center gap-1"
-                      >
-                        Continue Reading
-                        <ArrowRight size={12} />
-                      </button>
-                    </article>
-                  ));
-                })()}
-              </motion.div>
+              {newsLoading && !latestPool.length ? (
+                <div className="text-xs text-slate-500">Loading latest news…</div>
+              ) : latestPool.length === 0 ? (
+                <div className="text-xs text-slate-500">No updates yet.</div>
+              ) : (
+                <motion.div
+                  key={latestNewsIndex}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -24 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                  className="space-y-3"
+                >
+                  {(() => {
+                    const extended = [...latestPool, ...latestPool];
+                    const start = latestNewsIndex % latestPool.length;
+                    const windowItems = extended.slice(start, start + 3);
+                    return windowItems.map((news, i) => (
+                      <article key={`${news.id}-latest-${start}-${i}`} className="border border-slate-200 rounded-lg p-3 shadow-sm bg-white">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-[11px] font-bold text-slate-600 uppercase">{news.category}</span>
+                          <span className="text-[11px] text-slate-400">{news.date}</span>
+                        </div>
+                        <h3
+                          className="text-sm font-bold text-slate-900 mb-2 hover:text-blue-600 transition-colors cursor-pointer line-clamp-2"
+                          onClick={() => setView(`news-${news.id}`)}
+                        >
+                          {news.title}
+                        </h3>
+                        <p className="text-xs text-slate-600 leading-relaxed mb-2 line-clamp-3">{news.body || news.desc}</p>
+                        <button
+                          onClick={() => setView(`news-${news.id}`)}
+                          className="text-[11px] text-blue-600 font-medium hover:underline inline-flex items-center gap-1"
+                        >
+                          Continue Reading
+                          <ArrowRight size={12} />
+                        </button>
+                      </article>
+                    ));
+                  })()}
+                </motion.div>
+              )}
             </div>
           </div>
 
@@ -292,43 +305,48 @@ const HomeView = ({ setView, siteConfig }) => {
               </button>
             </div>
             <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-4 h-[440px] overflow-hidden">
-              <motion.div
-                key={mostReadIndex}
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -24 }}
-                transition={{ duration: 0.45, ease: 'easeOut' }}
-                className="space-y-3"
-              >
-                {(() => {
-                  const items = NEWS_ITEMS.slice(1).reverse();
-                  const extended = [...items, ...items];
-                  const start = mostReadIndex % items.length;
-                  const windowItems = extended.slice(start, start + 3);
-                  return windowItems.map((news, i) => (
-                    <article key={`${news.id}-most-${start}-${i}`} className="border border-slate-200 rounded-lg p-3 shadow-sm bg-white">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[11px] font-bold text-slate-600 uppercase">{news.category}</span>
-                        <span className="text-[11px] text-slate-400">{news.date}</span>
-                      </div>
-                      <h3
-                        className="text-sm font-bold text-slate-900 mb-2 hover:text-blue-600 transition-colors cursor-pointer line-clamp-2"
-                        onClick={() => setView(`news-${news.id}`)}
-                      >
-                        {news.title}
-                      </h3>
-                      <p className="text-xs text-slate-600 leading-relaxed mb-2 line-clamp-3">{news.body || news.desc}</p>
-                      <button
-                        onClick={() => setView(`news-${news.id}`)}
-                        className="text-[11px] text-blue-600 font-medium hover:underline inline-flex items-center gap-1"
-                      >
-                        Continue Reading
-                        <ArrowRight size={12} />
-                      </button>
-                    </article>
-                  ));
-                })()}
-              </motion.div>
+              {newsLoading && !mostReadPool.length ? (
+                <div className="text-xs text-slate-500">Loading most read…</div>
+              ) : mostReadPool.length === 0 ? (
+                <div className="text-xs text-slate-500">No reads yet.</div>
+              ) : (
+                <motion.div
+                  key={mostReadIndex}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -24 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                  className="space-y-3"
+                >
+                  {(() => {
+                    const extended = [...mostReadPool, ...mostReadPool];
+                    const start = mostReadIndex % mostReadPool.length;
+                    const windowItems = extended.slice(start, start + 3);
+                    return windowItems.map((news, i) => (
+                      <article key={`${news.id}-most-${start}-${i}`} className="border border-slate-200 rounded-lg p-3 shadow-sm bg-white">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-[11px] font-bold text-slate-600 uppercase">{news.category}</span>
+                          <span className="text-[11px] text-slate-400">{news.date}</span>
+                        </div>
+                        <h3
+                          className="text-sm font-bold text-slate-900 mb-2 hover:text-blue-600 transition-colors cursor-pointer line-clamp-2"
+                          onClick={() => setView(`news-${news.id}`)}
+                        >
+                          {news.title}
+                        </h3>
+                        <p className="text-xs text-slate-600 leading-relaxed mb-2 line-clamp-3">{news.body || news.desc}</p>
+                        <button
+                          onClick={() => setView(`news-${news.id}`)}
+                          className="text-[11px] text-blue-600 font-medium hover:underline inline-flex items-center gap-1"
+                        >
+                          Continue Reading
+                          <ArrowRight size={12} />
+                        </button>
+                      </article>
+                    ));
+                  })()}
+                </motion.div>
+              )}
             </div>
           </div>
         </div>
@@ -339,4 +357,3 @@ const HomeView = ({ setView, siteConfig }) => {
 };
 
 export default HomeView;
-

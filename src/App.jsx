@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import './App.css';
 
 import LiveTicker from './components/LiveTicker';
@@ -12,23 +13,82 @@ import AssociatesView from './views/AssociatesView';
 import AboutLayout from './views/AboutLayout';
 import TeamsView from './views/TeamsView';
 import CareersView from './views/CareersView';
-import AdminLoginView from './views/AdminLoginView';
+import MemberLoginView from './views/MemberLoginView';
+import SuperAdminLoginView from './views/SuperAdminLoginView';
+import PartnerAdminLoginView from './views/PartnerAdminLoginView';
 import MemberDashboard from './views/MemberDashboard';
+import AdminLoginView from './views/AdminLoginView';
 import TechnoxianView from './views/TechnoxianView';
 import AdminView from './views/AdminView';
 import NewsArticleView from './views/NewsArticleView';
 import NewsListView from './views/NewsListView';
 
-import { DEFAULT_SITES } from './constants/data';
+import { DEFAULT_SITES, NEWS_ITEMS } from './constants/data';
 import { styles } from './styles/inlineStyles';
+import { fetchTechnoxianFeed } from './utils/rss';
 
-export default function App() {
+const viewToPath = (view) => {
+  if (!view) return '/';
+  if (view.startsWith('news-list-')) {
+    const type = view.replace('news-list-', '');
+    if (type === 'headline') return '/news/headline';
+    if (type === 'latest') return '/news/latest';
+    if (type === 'most') return '/news/most';
+  }
+  if (view.startsWith('news-')) {
+    const id = view.replace('news-', '');
+    return `/news/${id}`;
+  }
+  switch (view) {
+    case 'home':
+      return '/';
+    case 'teams':
+      return '/teams';
+    case 'technoxian':
+      return '/technoxian';
+    case 'about':
+    case 'governance':
+      return '/governance';
+    case 'associates':
+      return '/associates';
+    case 'careers':
+      return '/careers';
+    case 'partners':
+      return '/partners';
+    case 'login':
+      return '/login';
+    case 'staff-login':
+      return '/staff-login';
+    case 'login-super-admin':
+      return '/login-super-admin';
+    case 'login-partner-admin':
+      return '/login-partner-admin';
+    case 'member-dashboard':
+      return '/member-dashboard';
+    case 'admin-dashboard':
+      return '/admin-dashboard';
+    default:
+      return '/';
+  }
+};
+
+const NewsArticleRoute = (props) => {
+  const { id } = useParams();
+  return <NewsArticleView articleId={id} {...props} />;
+};
+
+const App = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [currentView, setCurrentView] = useState('home');
   const [sites, setSites] = useState(DEFAULT_SITES);
   const [currentSite, setCurrentSite] = useState(DEFAULT_SITES.global);
   const [user, setUser] = useState(null);
   const [tickerText] = useState('BREAKING: Zonal Round registrations for Asia Pacific are now OPEN!');
+  const [newsItems, setNewsItems] = useState(NEWS_ITEMS);
+  const [newsLoading, setNewsLoading] = useState(false);
+  const [newsError, setNewsError] = useState('');
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const styleSheet = document.createElement('style');
@@ -39,64 +99,57 @@ export default function App() {
 
   const switchSite = (siteId) => {
     setCurrentSite(sites[siteId]);
-    setCurrentView('home');
+    navigate('/');
     window.scrollTo(0, 0);
   };
 
-  const renderView = () => {
-    switch (currentView) {
-      case 'home':
-        return <HomeView setView={setCurrentView} siteConfig={currentSite} />;
-      case 'teams':
-        return <TeamsView />;
-      case 'technoxian':
-        return <TechnoxianView />;
-      case 'about':
-      case 'governance':
-        return <AboutLayout setView={setCurrentView} />;
-      case 'associates':
-        return <AssociatesView />;
-      case 'careers':
-        return <CareersView />;
-      case 'partners':
-        return <HomeView setView={setCurrentView} siteConfig={currentSite} />;
-      case 'login':
-        return (
-          <div className="animate-fadeIn pt-32 pb-20 bg-slate-50 min-h-screen flex justify-center">
-            <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full">
-              <h2 className="text-2xl font-bold mb-6">Member Login</h2>
-              <button
-                onClick={() => {
-                  setUser({ name: 'John Doe', type: 'member' });
-                  setCurrentView('member-dashboard');
-                }}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold"
-              >
-                Login as Team/Member
-              </button>
-            </div>
-          </div>
-        );
-      case 'staff-login':
-        return <AdminLoginView setView={setCurrentView} setUser={setUser} />;
-      case 'member-dashboard':
-        return <MemberDashboard user={user} />;
-      case 'admin-dashboard':
-        return <AdminView setSites={setSites} sites={sites} setView={setCurrentView} />;
-      default:
-        if (currentView.startsWith('news-list-')) {
-          const type = currentView.replace('news-list-', '');
-          return <NewsListView type={type} setView={setCurrentView} />;
-        }
-        if (currentView.startsWith('news-')) {
-          const articleId = parseInt(currentView.split('-')[1]);
-          return <NewsArticleView articleId={articleId} setView={setCurrentView} />;
-        }
-        return <HomeView setView={setCurrentView} siteConfig={currentSite} />;
-    }
+  const setView = (view) => {
+    const path = viewToPath(view);
+    navigate(path);
+    window.scrollTo(0, 0);
   };
 
+  useEffect(() => {
+    let mounted = true;
+    const loadFeed = async () => {
+      setNewsLoading(true);
+      try {
+        const latest = await fetchTechnoxianFeed();
+        if (mounted && latest.length > 0) {
+          setNewsItems(latest);
+          setNewsError('');
+        }
+      } catch (err) {
+        if (mounted) {
+          setNewsError('Unable to load latest Technoxian news right now.');
+        }
+      } finally {
+        if (mounted) {
+          setNewsLoading(false);
+        }
+      }
+    };
+
+    loadFeed();
+    const interval = setInterval(loadFeed, 60_000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const newsProps = useMemo(
+    () => ({
+      newsItems,
+      newsLoading,
+      newsError,
+      setView,
+    }),
+    [newsItems, newsLoading, newsError]
+  );
+
   return (
+    (void motion),
     <div
       className={`font-sans antialiased text-slate-900 bg-white min-h-screen flex flex-col ${
         currentSite.is_partner ? 'selection:bg-emerald-100 selection:text-emerald-900' : 'selection:bg-blue-100 selection:text-blue-900'
@@ -104,29 +157,54 @@ export default function App() {
     >
       <LiveTicker tickerText={tickerText} siteConfig={currentSite} />
       <Navigation
-        setView={setCurrentView}
+        setView={setView}
         toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         isMobileMenuOpen={isMobileMenuOpen}
         siteConfig={currentSite}
         user={user}
+        setUser={setUser}
       />
       <main className="flex-grow">
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentView}
+            key={location.pathname}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
             className="h-full"
           >
-            {renderView()}
+            <Routes location={location}>
+              <Route path="/" element={<HomeView setView={setView} siteConfig={currentSite} {...newsProps} />} />
+              <Route path="/teams" element={<TeamsView />} />
+              <Route path="/technoxian" element={<TechnoxianView />} />
+              <Route path="/governance" element={<AboutLayout setView={setView} />} />
+              <Route path="/associates" element={<AssociatesView />} />
+              <Route path="/careers" element={<CareersView />} />
+              <Route path="/partners" element={<HomeView setView={setView} siteConfig={currentSite} {...newsProps} />} />
+              <Route path="/login" element={<MemberLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
+              <Route path="/staff-login" element={<AdminLoginView setView={setView} setUser={setUser} />} />
+              <Route path="/login-super-admin" element={<SuperAdminLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
+              <Route path="/login-partner-admin" element={<PartnerAdminLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
+              <Route path="/member-dashboard" element={<MemberDashboard user={user} />} />
+              <Route path="/admin-dashboard" element={<AdminView setSites={setSites} sites={sites} setView={setView} defaultMode={user?.role} />} />
+
+              <Route path="/news" element={<NewsListView type="latest" {...newsProps} />} />
+              <Route path="/news/headline" element={<NewsListView type="headline" {...newsProps} />} />
+              <Route path="/news/latest" element={<NewsListView type="latest" {...newsProps} />} />
+              <Route path="/news/most" element={<NewsListView type="most" {...newsProps} />} />
+              <Route path="/news/:id" element={<NewsArticleRoute {...newsProps} />} />
+
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           </motion.div>
         </AnimatePresence>
       </main>
       <AIReferee siteConfig={currentSite} />
-      <Footer setView={setCurrentView} switchSite={switchSite} currentSite={currentSite} />
+      <Footer setView={setView} switchSite={switchSite} currentSite={currentSite} />
     </div>
   );
-}
+};
+
+export default App;
 
