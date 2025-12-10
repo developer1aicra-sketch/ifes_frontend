@@ -22,24 +22,7 @@ const HomeView = ({ setView, siteConfig }) => {
     return () => clearInterval(mostReadInterval);
   }, []);
 
-  const FALLBACK_TROPHY_URL = 'https://worso.org/images/25-Trophy.png';
-  const TROPHY_IMAGES = Array.from({ length: 11 }, () => FALLBACK_TROPHY_URL);
-  const trophyScrollRef = useRef(null);
-
-  useEffect(() => {
-    const el = trophyScrollRef.current;
-    if (!el) return;
-    const id = setInterval(() => {
-      if (!el) return;
-      const max = el.scrollWidth - el.clientWidth;
-      if (el.scrollLeft >= max - 2) {
-        el.scrollLeft = 0;
-      } else {
-        el.scrollLeft += 1;
-      }
-    }, 30);
-    return () => clearInterval(id);
-  }, []);
+  
 
   return (
   <div className="animate-fadeIn bg-slate-50">
@@ -54,8 +37,8 @@ const HomeView = ({ setView, siteConfig }) => {
               </div>
             )}
             <h1 className="text-6xl md:text-7xl font-bold leading-tight tracking-tight">
-              {siteConfig.is_partner ? 'Federated Control for' : 'Federated Control of'} <br />
-              <span className={siteConfig.is_partner ? 'text-emerald-400' : 'text-blue-400'}>The Sport of Robotics</span>
+              {siteConfig.is_partner ? 'The governing body for the' : 'The governing body'} <br />
+              <span className={siteConfig.is_partner ? 'text-emerald-400' : 'text-blue-400'}>for sport of robotics.</span>
             </h1>
             <p className="text-lg text-slate-300 max-w-xl leading-relaxed">
               {siteConfig.is_partner
@@ -201,54 +184,7 @@ const HomeView = ({ setView, siteConfig }) => {
       </div>
     </section>
 
-    <section className="py-20 bg-[#0f172a]">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-extrabold text-white">Technoxian Trophies</h2>
-            <ChevronRight size={20} className="text-white/40" />
-          </div>
-        </div>
-        <div className="relative">
-          <div className="pointer-events-none absolute left-0 top-0 h-full w-12 bg-gradient-to-r from-[#0f172a] to-transparent"></div>
-          <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-[#0f172a] to-transparent"></div>
-          <div ref={trophyScrollRef} className="overflow-x-auto scrollbar-hide pb-0" style={{ scrollbarWidth: 'none' }}>
-            <div className="flex gap-8 snap-x snap-mandatory">
-              {Array.from({ length: 11 }, (_, i) => 2025 - i).map((year, idx) => (
-                <motion.div
-                  key={year}
-                  whileHover={{ y: -6, scale: 1.02, rotateX: 1 }}
-                  transition={{ duration: 0.2 }}
-                  className="snap-start min-w-[300px] md:min-w-[360px] text-center"
-                >
-                  <div className="relative rounded-3xl bg-white/5 backdrop-blur-xl ring-1 ring-white/10 shadow-2xl flex flex-col items-center">
-                    <div className="relative w-full h-80 md:h-96 flex items-center justify-center">
-                      <div className="absolute inset-0 opacity-20 trophy-bg" />
-                      <img
-                        src={TROPHY_IMAGES[idx % TROPHY_IMAGES.length]}
-                        alt={`Technoxian World Cup ${year}`}
-                        className="max-h-[18rem] md:max-h-[22rem] object-contain drop-shadow-2xl"
-                        onError={(e) => (e.currentTarget.src = FALLBACK_TROPHY_URL)}
-                      />
-                    </div>
-                    <div
-                      className={`${
-                        siteConfig.is_partner
-                          ? 'bg-emerald-600/20 text-emerald-200 ring-1 ring-emerald-500/30'
-                          : 'bg-blue-600/20 text-blue-200 ring-1 ring-blue-500/30'
-                      } px-5 py-2 rounded-xl font-bold tracking-wider uppercase text-xs -mt-2`}
-                    >
-                      {year}
-                    </div>
-                  </div>
-                  <div className="mt-3 text-white font-bold text-sm">{`Technoxian World Cup '${String(year).slice(2)}`}</div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    
 
     <section className="py-20 bg-white border-t border-slate-100">
       <div className="container mx-auto px-4 max-w-7xl">
