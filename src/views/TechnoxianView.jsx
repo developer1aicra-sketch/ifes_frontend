@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Ticket, Building, CreditCard, MapPin, Clock3, FileText, BadgeCheck, X, Camera, Calendar } from 'lucide-react';
+import { Users, Ticket, Building, CreditCard, MapPin, Clock3, FileText, BadgeCheck, X, Camera, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GAME_CATEGORIES } from '../constants/data';
 
@@ -9,6 +9,14 @@ const TechnoxianView = () => {
   const [modalCategory, setModalCategory] = useState(null);
   const [activeGallery, setActiveGallery] = useState(null);
   const [showAllGallery, setShowAllGallery] = useState(false);
+  const [trophyIndex, setTrophyIndex] = useState(0);
+  const [imageErrors, setImageErrors] = useState({});
+  
+  // Schedule navigation states
+  const [selectedChampionship, setSelectedChampionship] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [sidebarLevel, setSidebarLevel] = useState('championship'); // 'championship', 'event', 'game'
 
   useEffect(() => {
     if (activeGallery) {
@@ -132,6 +140,93 @@ const TechnoxianView = () => {
     },
   ];
   const [activeEvent, setActiveEvent] = useState(EVENTS[0]);
+
+  // Schedule data structure with multi-level hierarchy
+  const generateGames = (year, count, prefix) =>
+    Array.from({ length: count }, (_, i) => {
+      const startDate = new Date(year, 5, 10 + i * 2);
+      const endDate = new Date(year, 5, 11 + i * 2);
+      return {
+        id: `${prefix}-g-${year}-${i + 1}`,
+        name: `Game ${i + 1}`,
+        venue: `Arena ${(i % 5) + 1}`,
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+        schedule: [
+          { date: startDate.toISOString().split('T')[0], time: '09:00', title: 'Setup & Safety Check' },
+          { date: startDate.toISOString().split('T')[0], time: '11:00', title: 'Qualifying Rounds' },
+          { date: endDate.toISOString().split('T')[0], time: '14:00', title: 'Finals & Awards' },
+        ],
+      };
+    });
+
+  const generateYearEvents = (type, startYear = 2025, endYear = 2015, gameCount = 3) =>
+    Array.from({ length: startYear - endYear + 1 }, (_, idx) => {
+      const year = startYear - idx;
+      return {
+        id: `${type}-${year}`,
+        name: `${type === 'worldcup' ? 'Technoxian World Cup' : type === 'national' ? 'National' : 'Zonal'} ${year}`,
+        games: type === 'worldcup' ? generateGames(year, 15, 'wc') : generateGames(year, gameCount, type === 'national' ? 'nat' : 'zon'),
+      };
+    });
+
+  const SCHEDULE_DATA = [
+    {
+      id: 'zonals',
+      name: 'Zonals',
+      events: generateYearEvents('zonal'),
+    },
+    {
+      id: 'national',
+      name: 'National',
+      events: generateYearEvents('national', 2025, 2015, 5),
+    },
+    {
+      id: 'worldcup',
+      name: 'World Cup',
+      events: generateYearEvents('worldcup'),
+    },
+  ];
+
+  // Ensure sidebar starts at the championship level
+  useEffect(() => {
+    setSidebarLevel('championship');
+  }, []);
+
+  // Trophy data for years 2025-2015 (decreasing order)
+  const trophies = Array.from({ length: 11 }, (_, i) => {
+    const year = 2025 - i;
+    return {
+      year,
+      name: `Technoxian World Cup ${year}`,
+      image: `/trophies/trophy-${year}.png`,
+    };
+  });
+
+  // Create a data URI placeholder image (SVG)
+  const createPlaceholderImage = (year) => {
+    const svg = `<svg width="200" height="150" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="150" fill="#f1f5f9"/><text x="50%" y="40%" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#64748b" text-anchor="middle" dominant-baseline="middle">🏆</text><text x="50%" y="65%" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#475569" text-anchor="middle" dominant-baseline="middle">${year}</text></svg>`;
+    // Use URL encoding for better compatibility
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  };
+
+  const handleImageError = (year) => {
+    setImageErrors((prev) => ({ ...prev, [year]: true }));
+  };
+
+  const nextTrophy = () => {
+    setTrophyIndex((prev) => {
+      const maxIndex = Math.max(0, trophies.length - 3);
+      return prev >= maxIndex ? 0 : prev + 1;
+    });
+  };
+
+  const prevTrophy = () => {
+    setTrophyIndex((prev) => {
+      const maxIndex = Math.max(0, trophies.length - 3);
+      return prev <= 0 ? maxIndex : prev - 1;
+    });
+  };
 
   const gallery = [
     {
@@ -292,6 +387,74 @@ const TechnoxianView = () => {
               <p className="text-xs text-slate-500 mt-1">Realtime updates federated to partner subdomains.</p>
             </div>
           </div>
+
+          {/* Trophies Section */}
+          <div className="mt-10">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 mb-4">
+              <BadgeCheck size={14} className="text-blue-600" /> Trophies
+            </div>
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+              <div className="relative">
+                {/* Carousel Container */}
+                <div className="overflow-hidden rounded-xl">
+                  <motion.div
+                    className="flex"
+                    animate={{ x: `-${trophyIndex * (100 / 3)}%` }}
+                    transition={{ duration: 0.5, ease: 'easeInOut' }}
+                  >
+                    {trophies.map((trophy) => (
+                      <div key={trophy.year} className="min-w-[33.333%] flex flex-col items-center justify-center px-3">
+                        <div className="w-full max-w-[200px] mb-4">
+                          <img
+                            src={imageErrors[trophy.year] ? createPlaceholderImage(trophy.year) : trophy.image}
+                            alt={trophy.name}
+                            className="w-full h-auto object-contain rounded-lg bg-slate-50 border border-slate-200"
+                            onError={() => handleImageError(trophy.year)}
+                            loading="lazy"
+                          />
+                        </div>
+                        <h3 className="text-sm font-bold text-slate-900 text-center leading-tight">{trophy.name}</h3>
+                      </div>
+                    ))}
+                  </motion.div>
+                </div>
+
+                {/* Navigation Buttons */}
+                <button
+                  onClick={prevTrophy}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 bg-white border border-slate-200 rounded-full p-2 shadow-sm hover:bg-slate-50 hover:border-blue-400 transition-colors z-10"
+                  aria-label="Previous trophy"
+                >
+                  <ChevronLeft size={20} className="text-slate-600" />
+                </button>
+                <button
+                  onClick={nextTrophy}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 bg-white border border-slate-200 rounded-full p-2 shadow-sm hover:bg-slate-50 hover:border-blue-400 transition-colors z-10"
+                  aria-label="Next trophy"
+                >
+                  <ChevronRight size={20} className="text-slate-600" />
+                </button>
+
+                {/* Carousel Indicators */}
+                <div className="flex justify-center gap-2 mt-4">
+                  {Array.from({ length: Math.ceil(trophies.length / 3) }).map((_, index) => {
+                    const startIndex = index * 3;
+                    const isActive = trophyIndex >= startIndex && trophyIndex < startIndex + 3;
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => setTrophyIndex(startIndex)}
+                        className={`h-1.5 rounded-full transition-all ${
+                          isActive ? 'w-6 bg-blue-600' : 'w-1.5 bg-slate-300 hover:bg-slate-400'
+                        }`}
+                        aria-label={`Go to trophy group ${index + 1}`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
           </motion.div>
         )}
 
@@ -341,74 +504,239 @@ const TechnoxianView = () => {
             transition={{ duration: 0.25, ease: 'easeOut' }}
             className="container mx-auto px-4 py-12"
           >
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row">
-              <div className="md:w-80 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50 p-6">
-                <div className="text-xs font-bold uppercase text-slate-500 mb-3">Events</div>
-                <div className="space-y-2">
-                  {EVENTS.map((ev) => {
-                    const active = activeEvent.id === ev.id;
-                    return (
-                      <button
-                        key={ev.id}
-                        onClick={() => setActiveEvent(ev)}
-                        className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${
-                          active ? 'bg-white border-blue-600 shadow-sm text-blue-700' : 'bg-white border-slate-200 hover:border-blue-400 text-slate-700'
-                        }`}
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col lg:flex-row h-[calc(100vh-200px)] min-h-[640px]">
+              {/* Animated single-level drill-down sidebar */}
+              <div className="lg:w-96 bg-slate-900 text-white relative overflow-hidden border-r border-slate-800">
+                <div className="relative h-full">
+                  <AnimatePresence initial={false} mode="wait">
+                    {sidebarLevel === 'championship' && (
+                      <motion.div
+                        key="championship"
+                        initial={{ x: 20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: -20, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeOut' }}
+                        className="h-full p-5 space-y-4 overflow-y-auto"
+                        style={{ scrollbarColor: '#1d4ed8 #0f172a', scrollbarWidth: 'thin' }}
                       >
                         <div className="flex items-center justify-between">
-                          <div className="font-bold">{ev.title}</div>
-                          <div className={`text-[10px] px-2 py-1 rounded-full border ${active ? 'border-blue-300 text-blue-700 bg-blue-50' : 'border-slate-200 text-slate-500 bg-slate-50'}`}>View</div>
+                          <div>
+                            <div className="text-[11px] font-bold uppercase text-blue-200">Schedule</div>
+                            <div className="text-xl font-extrabold">Championship Levels</div>
+                          </div>
                         </div>
-                        <div className="mt-1 text-xs flex items-center gap-2 text-slate-500">
-                          <Calendar size={12} className={active ? 'text-blue-600' : 'text-slate-400'} /> {ev.start} – {ev.end}
+                        <div className="space-y-3">
+                          {SCHEDULE_DATA.map((champ) => (
+                            <button
+                              key={champ.id}
+                              onClick={() => {
+                                setSelectedChampionship(champ.id);
+                                setSidebarLevel('event');
+                              }}
+                              className="w-full text-left px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all shadow-sm"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-sm text-white">{champ.name}</span>
+                                <ChevronRight size={14} className="text-blue-200" />
+                              </div>
+                            </button>
+                          ))}
                         </div>
-                        <div className="mt-1 text-xs flex items-center gap-2 text-slate-500">
-                          <MapPin size={12} className={active ? 'text-blue-600' : 'text-slate-400'} /> {ev.venue}
+                      </motion.div>
+                    )}
+
+                    {sidebarLevel === 'event' && selectedChampionship && (
+                      <motion.div
+                        key="event"
+                        initial={{ x: 30, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: -30, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeOut' }}
+                        className="absolute inset-0 z-20 bg-slate-900 p-5 space-y-4 border-l border-slate-800 overflow-y-auto"
+                        style={{ scrollbarColor: '#1d4ed8 #0f172a', scrollbarWidth: 'thin' }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <button
+                            onClick={() => {
+                              setSidebarLevel('championship');
+                              setSelectedEvent(null);
+                              setSelectedGame(null);
+                            }}
+                            className="flex items-center gap-2 text-sm text-blue-100 hover:text-white transition-colors"
+                          >
+                            <ChevronLeft size={16} />
+                            <span>Back</span>
+                          </button>
                         </div>
-                      </button>
-                    );
-                  })}
+                        <div>
+                          <div className="text-[11px] font-bold uppercase text-blue-200 mb-1">Events</div>
+                          <div className="text-lg font-extrabold text-white">
+                            {SCHEDULE_DATA.find((c) => c.id === selectedChampionship)?.name}
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          {SCHEDULE_DATA.find((c) => c.id === selectedChampionship)?.events.map((event) => (
+                            <button
+                              key={event.id}
+                              onClick={() => {
+                                const firstGame = event.games?.[0];
+                                setSelectedEvent(event.id);
+                                setSelectedGame(null);
+                                setSidebarLevel('game');
+                              }}
+                              className="w-full text-left px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all shadow-sm"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-semibold text-sm text-white">{event.name}</span>
+                                <div className="flex items-center gap-2 text-blue-200 text-[11px]">
+                                  <span className="uppercase tracking-wide">{event.games.length} games</span>
+                                  <ChevronRight size={14} />
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {sidebarLevel === 'game' && selectedChampionship && selectedEvent && (
+                      <motion.div
+                        key="game"
+                        initial={{ x: 40, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: -40, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeOut' }}
+                        className="absolute inset-0 bg-slate-900 p-5 space-y-4 border-l border-slate-800 overflow-y-auto"
+                        style={{ scrollbarColor: '#1d4ed8 #0f172a', scrollbarWidth: 'thin' }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <button
+                            onClick={() => {
+                              setSidebarLevel('event');
+                              setSelectedGame(null);
+                            }}
+                            className="flex items-center gap-2 text-sm text-blue-100 hover:text-white transition-colors"
+                          >
+                            <ChevronLeft size={16} />
+                            <span>Back</span>
+                          </button>
+                        </div>
+                        <div>
+                          <div className="text-[11px] font-bold uppercase text-blue-200 mb-1">Games</div>
+                          <div className="text-lg font-extrabold text-white">
+                            {SCHEDULE_DATA.find((c) => c.id === selectedChampionship)
+                              ?.events.find((e) => e.id === selectedEvent)?.name}
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          {SCHEDULE_DATA.find((c) => c.id === selectedChampionship)
+                            ?.events.find((e) => e.id === selectedEvent)
+                            ?.games.map((game) => {
+                              const isActive = selectedGame === game.id;
+                              return (
+                                <button
+                                  key={game.id}
+                                  onClick={() => setSelectedGame(game.id)}
+                                  className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm ${
+                                    isActive
+                                      ? 'bg-slate-800 border-blue-400 text-white shadow-md'
+                                      : 'bg-slate-800 border-slate-700 hover:border-blue-400 text-blue-50'
+                                  }`}
+                                >
+                                  <div className="font-semibold text-sm">{game.name}</div>
+                                  <div className="text-xs text-blue-100 mt-1 flex items-center gap-2">
+                                    <MapPin size={10} /> {game.venue}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
-              <div className="flex-1 p-8 md:p-12">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <div className="text-xs font-bold uppercase text-blue-600 mb-1">Event Schedule</div>
-                    <h2 className="text-2xl font-bold text-slate-900">{activeEvent.title}</h2>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-slate-700 flex items-center gap-2 justify-end">
-                      <Calendar size={14} className="text-blue-600" /> {activeEvent.start} – {activeEvent.end}
-                    </div>
-                    <div className="text-xs text-slate-500 flex items-center gap-2 justify-end">
-                      <MapPin size={12} className="text-slate-400" /> {activeEvent.venue}
-                    </div>
-                  </div>
-                </div>
+              {/* Main Content Area - Event Details */}
+              <div className="flex-1 overflow-y-auto p-8">
+                {selectedChampionship && selectedEvent && selectedGame ? (
+                  (() => {
+                    const championship = SCHEDULE_DATA.find(c => c.id === selectedChampionship);
+                    const event = championship?.events.find(e => e.id === selectedEvent);
+                    const game = event?.games.find(g => g.id === selectedGame);
+                    
+                    if (!game) return null;
 
-                <div className="space-y-6">
-                  {activeEvent.days.map((d) => (
-                    <div key={d.date} className="rounded-2xl border border-slate-200 overflow-hidden">
-                      <div className="bg-slate-50 px-5 py-3 flex items-center gap-2">
-                        <Clock3 size={14} className="text-blue-600" />
-                        <div className="text-sm font-bold text-slate-700">{d.date}</div>
-                      </div>
-                      <div className="bg-white p-5 space-y-3">
-                        {d.items.map((itm) => (
-                          <div key={itm.time + itm.title} className="flex items-start gap-4">
-                            <div className="w-20 text-right">
-                              <div className="text-xs font-bold text-slate-500">{itm.time}</div>
-                            </div>
-                            <div className="flex-1 p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-400 transition-colors">
-                              <div className="font-bold text-slate-900">{itm.title}</div>
+                    const formatDate = (dateStr) => {
+                      const date = new Date(dateStr);
+                      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    };
+
+                    return (
+                      <div>
+                        <div className="flex items-center justify-between mb-6 pb-6 border-b border-slate-200">
+                          <div>
+                            <div className="text-xs font-bold uppercase text-blue-600 mb-1">Game Schedule</div>
+                            <h2 className="text-3xl font-bold text-slate-900">{game.name}</h2>
+                            <div className="mt-2 flex items-center gap-4 text-sm text-slate-600">
+                              <div className="flex items-center gap-2">
+                                <Calendar size={14} className="text-blue-600" />
+                                {formatDate(game.startDate)} – {formatDate(game.endDate)}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <MapPin size={14} className="text-blue-600" />
+                                {game.venue}
+                              </div>
                             </div>
                           </div>
-                        ))}
+                          <button
+                            onClick={() => setActiveTab('register')}
+                            className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-blue-700 transition-colors text-sm"
+                          >
+                            Register
+                          </button>
+                        </div>
+
+                        <div className="space-y-4">
+                          {game.schedule.map((item, idx) => (
+                            <div key={idx} className="rounded-xl border border-slate-200 overflow-hidden">
+                              <div className="bg-slate-50 px-5 py-3 flex items-center gap-3">
+                                <Calendar size={14} className="text-blue-600" />
+                                <div className="text-sm font-bold text-slate-700">{formatDate(item.date)}</div>
+                                <div className="ml-auto flex items-center gap-2">
+                                  <Clock3 size={14} className="text-blue-600" />
+                                  <div className="text-sm font-bold text-slate-700">{item.time}</div>
+                                </div>
+                              </div>
+                              <div className="bg-white p-5">
+                                <div className="font-bold text-slate-900">{item.title}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="mt-8 p-6 bg-slate-50 rounded-xl border border-slate-200">
+                          <div className="text-sm font-bold text-slate-900 mb-2">Event Information</div>
+                          <div className="text-sm text-slate-600 space-y-1">
+                            <div><strong>Championship:</strong> {championship?.name}</div>
+                            <div><strong>Event:</strong> {event?.name}</div>
+                            <div><strong>Game:</strong> {game.name}</div>
+                            <div><strong>Duration:</strong> {formatDate(game.startDate)} to {formatDate(game.endDate)}</div>
+                            <div><strong>Venue:</strong> {game.venue}</div>
+                          </div>
+                        </div>
                       </div>
+                    );
+                  })()
+                ) : (
+                  <div className="flex items-center justify-center h-full text-slate-400">
+                    <div className="text-center">
+                      <Calendar size={48} className="mx-auto mb-4 opacity-50" />
+                      <div className="text-lg font-bold mb-2">Select a Game</div>
+                      <div className="text-sm">Choose a championship level, event, and game to view the schedule</div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
