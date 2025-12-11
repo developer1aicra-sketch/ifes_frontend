@@ -1,7 +1,7 @@
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaYoutube } from "react-icons/fa";
 
 const Footer = ({ setView, switchSite, currentSite }) => (
-  <footer className="bg-[#0f172a] text-slate-400 py-16 border-t border-slate-800">
+<footer className="bg-[#0f172a] text-slate-400 py-16">
     <div className="container mx-auto px-4">
       <div className="grid md:grid-cols-4 gap-12 mb-12">
 
@@ -86,7 +86,7 @@ const Footer = ({ setView, switchSite, currentSite }) => (
                 Careers at Worso
               </button>
             </li>
-            <li className="pt-2 border-t border-slate-800">
+            <li className="pt-2">
               <a href="#" className="hover:text-white">Privacy Policy</a>
             </li>
             <li>
@@ -97,7 +97,7 @@ const Footer = ({ setView, switchSite, currentSite }) => (
       </div>
 
       {/* FOOTER BOTTOM */}
-      <div className="border-t border-slate-800 pt-8">
+      <div className="pt-8">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
           <div className="flex items-center gap-4 flex-wrap">
             <button
