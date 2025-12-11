@@ -77,11 +77,18 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
             {user ? 'My Dashboard' : 'Member Login'}
           </button>
           {user && isDashMenuOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-[#0f172a] border border-white/10 rounded-lg shadow-xl p-2 text-slate-300">
-              <button onClick={goHome} className="w-full text-left px-3 py-2 rounded hover:bg-white/5 flex items-center gap-2">
+            <div className="absolute right-0 mt-3 w-48 bg-slate-900/95 backdrop-blur border border-slate-700 rounded-2xl shadow-2xl p-3 text-slate-200 overflow-hidden">
+              <div className="text-[11px] uppercase font-bold text-blue-200 mb-2 px-1">Quick Actions</div>
+              <button
+                onClick={goHome}
+                className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-white/5 flex items-center gap-2 transition-colors"
+              >
                 <Home size={14} /> Home
               </button>
-              <button onClick={logout} className="w-full text-left px-3 py-2 rounded hover:bg-red-600/20 flex items-center gap-2 text-red-600">
+              <button
+                onClick={logout}
+                className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-red-600/15 flex items-center gap-2 text-red-400 transition-colors"
+              >
                 <LogOut size={14} /> Logout
               </button>
             </div>

@@ -216,15 +216,15 @@ const TechnoxianView = () => {
 
   const nextTrophy = () => {
     setTrophyIndex((prev) => {
-      const maxIndex = Math.max(0, trophies.length - 3);
-      return prev >= maxIndex ? 0 : prev + 1;
+      const maxIndex = Math.max(0, Math.ceil(trophies.length / 4) - 1) * 4;
+      return prev >= maxIndex ? 0 : prev + 4;
     });
   };
 
   const prevTrophy = () => {
     setTrophyIndex((prev) => {
-      const maxIndex = Math.max(0, trophies.length - 3);
-      return prev <= 0 ? maxIndex : prev - 1;
+      const maxIndex = Math.max(0, Math.ceil(trophies.length / 4) - 1) * 4;
+      return prev <= 0 ? maxIndex : prev - 4;
     });
   };
 
@@ -399,11 +399,11 @@ const TechnoxianView = () => {
                 <div className="overflow-hidden rounded-xl">
                   <motion.div
                     className="flex"
-                    animate={{ x: `-${trophyIndex * (100 / 3)}%` }}
+                    animate={{ x: `-${trophyIndex * (100 / 4)}%` }}
                     transition={{ duration: 0.5, ease: 'easeInOut' }}
                   >
                     {trophies.map((trophy) => (
-                      <div key={trophy.year} className="min-w-[33.333%] flex flex-col items-center justify-center px-3">
+                      <div key={trophy.year} className="min-w-[25%] flex flex-col items-center justify-center px-3">
                         <div className="w-full max-w-[200px] mb-4">
                           <img
                             src={imageErrors[trophy.year] ? createPlaceholderImage(trophy.year) : trophy.image}
@@ -437,9 +437,9 @@ const TechnoxianView = () => {
 
                 {/* Carousel Indicators */}
                 <div className="flex justify-center gap-2 mt-4">
-                  {Array.from({ length: Math.ceil(trophies.length / 3) }).map((_, index) => {
-                    const startIndex = index * 3;
-                    const isActive = trophyIndex >= startIndex && trophyIndex < startIndex + 3;
+                  {Array.from({ length: Math.ceil(trophies.length / 4) }).map((_, index) => {
+                    const startIndex = index * 4;
+                    const isActive = trophyIndex >= startIndex && trophyIndex < startIndex + 4;
                     return (
                       <button
                         key={index}
@@ -505,8 +505,8 @@ const TechnoxianView = () => {
             className="container mx-auto px-4 py-12"
           >
             <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col lg:flex-row h-[calc(100vh-200px)] min-h-[640px]">
-              {/* Animated single-level drill-down sidebar */}
-              <div className="lg:w-96 bg-slate-900 text-white relative overflow-hidden border-r border-slate-800">
+              {/* Schedule sidebar */}
+              <div className="w-72 bg-[#0f172a] text-white relative overflow-hidden border-r border-slate-800">
                 <div className="relative h-full">
                   <AnimatePresence initial={false} mode="wait">
                     {sidebarLevel === 'championship' && (
@@ -516,16 +516,14 @@ const TechnoxianView = () => {
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: -20, opacity: 0 }}
                         transition={{ duration: 0.25, ease: 'easeOut' }}
-                        className="h-full p-5 space-y-4 overflow-y-auto"
+                        className="relative p-6 space-y-4 overflow-y-auto"
                         style={{ scrollbarColor: '#1d4ed8 #0f172a', scrollbarWidth: 'thin' }}
                       >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="text-[11px] font-bold uppercase text-blue-200">Schedule</div>
-                            <div className="text-xl font-extrabold">Championship Levels</div>
-                          </div>
+                        <div className="mb-4">
+                          <div className="text-[11px] font-bold uppercase text-blue-200">Schedule</div>
+                          <div className="text-xl font-extrabold">Championship Levels</div>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                           {SCHEDULE_DATA.map((champ) => (
                             <button
                               key={champ.id}
@@ -533,12 +531,14 @@ const TechnoxianView = () => {
                                 setSelectedChampionship(champ.id);
                                 setSidebarLevel('event');
                               }}
-                              className="w-full text-left px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all shadow-sm"
+                              className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between ${
+                                selectedChampionship === champ.id
+                                  ? 'bg-white/15 border-blue-400 text-white'
+                                  : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
+                              }`}
                             >
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-sm text-white">{champ.name}</span>
-                                <ChevronRight size={14} className="text-blue-200" />
-                              </div>
+                              <span className="font-semibold text-sm">{champ.name}</span>
+                              <ChevronRight size={14} className="text-blue-200" />
                             </button>
                           ))}
                         </div>
@@ -552,7 +552,7 @@ const TechnoxianView = () => {
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: -30, opacity: 0 }}
                         transition={{ duration: 0.25, ease: 'easeOut' }}
-                        className="absolute inset-0 z-20 bg-slate-900 p-5 space-y-4 border-l border-slate-800 overflow-y-auto"
+                        className="absolute inset-0 z-20 bg-[#0f172a] p-6 space-y-4 overflow-y-auto"
                         style={{ scrollbarColor: '#1d4ed8 #0f172a', scrollbarWidth: 'thin' }}
                       >
                         <div className="flex items-center justify-between">
@@ -574,7 +574,7 @@ const TechnoxianView = () => {
                             {SCHEDULE_DATA.find((c) => c.id === selectedChampionship)?.name}
                           </div>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                           {SCHEDULE_DATA.find((c) => c.id === selectedChampionship)?.events.map((event) => (
                             <button
                               key={event.id}
@@ -584,9 +584,13 @@ const TechnoxianView = () => {
                                 setSelectedGame(null);
                                 setSidebarLevel('game');
                               }}
-                              className="w-full text-left px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all shadow-sm"
+                              className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between ${
+                                selectedEvent === event.id
+                                  ? 'bg-white/15 border-blue-400 text-white'
+                                  : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
+                              }`}
                             >
-                              <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-8 justify-between">
                                 <span className="font-semibold text-sm text-white">{event.name}</span>
                                 <div className="flex items-center gap-2 text-blue-200 text-[11px]">
                                   <span className="uppercase tracking-wide">{event.games.length} games</span>
@@ -606,7 +610,7 @@ const TechnoxianView = () => {
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: -40, opacity: 0 }}
                         transition={{ duration: 0.25, ease: 'easeOut' }}
-                        className="absolute inset-0 bg-slate-900 p-5 space-y-4 border-l border-slate-800 overflow-y-auto"
+                        className="absolute inset-0 bg-[#0f172a] p-6 space-y-4 overflow-y-auto"
                         style={{ scrollbarColor: '#1d4ed8 #0f172a', scrollbarWidth: 'thin' }}
                       >
                         <div className="flex items-center justify-between">
@@ -639,8 +643,8 @@ const TechnoxianView = () => {
                                   onClick={() => setSelectedGame(game.id)}
                                   className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm ${
                                     isActive
-                                      ? 'bg-slate-800 border-blue-400 text-white shadow-md'
-                                      : 'bg-slate-800 border-slate-700 hover:border-blue-400 text-blue-50'
+                                      ? 'bg-white/15 border-blue-400 text-white'
+                                      : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
                                   }`}
                                 >
                                   <div className="font-semibold text-sm">{game.name}</div>
@@ -791,9 +795,9 @@ const TechnoxianView = () => {
             transition={{ duration: 0.25, ease: 'easeOut' }}
             className="container mx-auto px-4 py-12"
           >
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
-            <div className="md:w-64 bg-slate-50 border-r border-slate-200 p-6">
-              <h3 className="font-bold text-slate-900 mb-6">Registration Type</h3>
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
+            <div className="md:w-64 bg-[#0f172a] p-6 text-white">
+              <h3 className="font-bold text-white mb-6">Registration Type</h3>
               <div className="space-y-2">
                 {['Team Registration', 'Visitor Pass', 'Exhibitor Space'].map((type) => {
                   const id = type.split(' ')[0].toLowerCase();
@@ -801,11 +805,14 @@ const TechnoxianView = () => {
                     <button
                       key={id}
                       onClick={() => setRegType(id)}
-                      className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                        regType === id ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-900'
+                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between ${
+                        regType === id
+                          ? 'bg-white/15 border-blue-400 text-white'
+                          : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
                       }`}
                     >
-                      {type}
+                      <span className="font-semibold text-sm">{type}</span>
+                      {regType === id && <ChevronRight size={14} className="text-blue-200" />}
                     </button>
                   );
                 })}
@@ -932,7 +939,7 @@ const TechnoxianView = () => {
                 <X size={18} />
               </button>
               <div className="p-8 space-y-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <div className="text-3xl">{modalCategory.icon}</div>
                   <div>
                     <div className="text-xs font-bold text-slate-500 uppercase">Competition Zone</div>
@@ -942,10 +949,22 @@ const TechnoxianView = () => {
                 <p className="text-slate-600">{modalCategory.desc}</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                    <div className="text-xs font-bold text-slate-500 uppercase">Rulebook PDF</div>
-                    <a className="text-blue-600 font-bold text-sm" href={modalCategory.rulebook} target="_blank" rel="noreferrer">
-                      {modalCategory.rulebook}
-                    </a>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold text-slate-500 uppercase">Rulebook</span>
+                      <a 
+                        href={modalCategory.rulebook} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="p-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                        title="Download Rulebook"
+                        download
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-down">
+                          <path d="M12 5v14"/>
+                          <path d="m19 12-7 7-7-7"/>
+                        </svg>
+                      </a>
+                    </div>
                   </div>
                   <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
                     <div className="text-xs font-bold text-slate-500 uppercase">Arena 3D Model</div>
