@@ -51,52 +51,79 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-100 animate-fadeIn ">
-      <div className="w-64 bg-slate-900 text-white  overflow-y-auto flex flex-col z-30">
-        <div className="px-6 mb-8 mt-12">
-          <div className="font-bold text-xl">{isAdminMode === 'super' ? 'WORSO HQ' : 'Partner Portal'}</div>
-        </div>
-        <div className="px-4 space-y-2 flex-1">
-          <div className="text-xs font-bold text-slate-400 mb-6">{isAdminMode === 'super' ? 'Role: Super Admin' : 'Role: Partner Admin'}</div>
+    <div className="bg-slate-50 animate-fadeIn min-h-screen flex flex-col">
+      <div className="container mx-auto px-4 flex-1 pb-16 pt-12">
+        <div className="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden flex flex-col lg:flex-row h-full min-h-[80vh]">
+      <div className="w-72 bg-[#0f172a] text-white relative overflow-hidden border-r border-slate-800">
+        <div className="relative px-6 pt-12 pb-6 space-y-6 overflow-y-auto" style={{ scrollbarColor: '#1d4ed8 #0f172a', scrollbarWidth: 'thin' }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-[11px] font-bold uppercase text-blue-200">Portal</div>
+              <div className="font-extrabold text-xl">{isAdminMode === 'super' ? 'WORSO HQ' : 'Partner Portal'}</div>
+            </div>
+            <div className="px-3 py-1 rounded-full bg-white/10 text-[11px] font-semibold border border-white/10">
+              {isAdminMode === 'super' ? 'Super' : 'Partner'}
+            </div>
+          </div>
 
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`w-full text-left px-4 py-2 text-slate-400 hover:text-white font-medium flex items-center gap-3 ${activeTab === 'overview' ? 'text-white' : ''}`}
-          >
-            <Layout size={18} /> Overview
-          </button>
-
-          {isAdminMode === 'super' ? (
+          <div className="space-y-2">
             <button
-              onClick={() => setActiveTab('partners')}
-              className={`w-full text-left px-4 py-2 text-slate-400 hover:text-white font-medium flex items-center gap-3 ${activeTab === 'partners' ? 'text-white' : ''}`}
+              onClick={() => setActiveTab('overview')}
+              className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${
+                activeTab === 'overview'
+                  ? 'bg-white/15 border-blue-400 text-white'
+                  : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
+              }`}
             >
-              <Building size={18} /> Manage Partners
+              <Layout size={18} /> Overview
             </button>
-          ) : (
-            <button
-              onClick={() => setActiveTab('events')}
-              className={`w-full text-left px-4 py-2 text-slate-400 hover:text-white font-medium flex items-center gap-3 ${activeTab === 'events' ? 'text-white' : ''}`}
-            >
-              <Calendar size={18} /> My Events
-            </button>
-          )}
 
-          
-        </div>
-      </div>
-      <div className=" flex-1">
-        <div className="bg-white/90 backdrop-blur border-b border-slate-200 px-8 py-4">
-          <div className="flex items-end justify-between">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
-              {activeTab === 'overview' && 'Dashboard Overview'}
-              {activeTab === 'partners' && 'Partner Management'}
-              {activeTab === 'events' && 'Local Event Manager'}
-            </h1>
-            <div className="text-slate-500 text-sm">{isAdminMode === 'super' ? 'Global Control Panel' : `Managing: ${sites.uae.name}`}</div>
+            {isAdminMode === 'super' ? (
+              <button
+                onClick={() => setActiveTab('partners')}
+                className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${
+                  activeTab === 'partners'
+                    ? 'bg-white/15 border-blue-400 text-white'
+                    : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
+                }`}
+              >
+                <Building size={18} /> Manage Partners
+              </button>
+            ) : (
+              <button
+                onClick={() => setActiveTab('events')}
+                className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${
+                  activeTab === 'events'
+                    ? 'bg-white/15 border-blue-400 text-white'
+                    : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
+                }`}
+              >
+                <Calendar size={18} /> My Events
+              </button>
+            )}
           </div>
         </div>
-        <div className="p-12">
+      </div>
+      <div className="flex-1 bg-white flex flex-col">
+        <div className="px-8 py-6 border-b border-slate-100 bg-white/90 backdrop-blur">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="text-xs font-bold uppercase text-blue-600 mb-1">Admin Console</div>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
+                {activeTab === 'overview' && 'Dashboard Overview'}
+                {activeTab === 'partners' && 'Partner Management'}
+                {activeTab === 'events' && 'Local Event Manager'}
+              </h1>
+            </div>
+            <div className="px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-semibold border border-slate-200">
+              {isAdminMode === 'super' ? 'Global Control Panel' : `Managing: ${sites.uae.name}`}
+            </div>
+          </div>
+        </div>
+        <div
+          className="p-8 lg:p-12 flex-1 overflow-y-auto"
+          style={{ scrollbarColor: '#1d4ed8 #f8fafc', scrollbarWidth: 'thin' }}
+        >
 
         {activeTab === 'overview' && (
           <div className="grid grid-cols-3 gap-6">
@@ -214,6 +241,8 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
             </div>
           </div>
         )}
+        </div>
+      </div>
         </div>
       </div>
     </div>
