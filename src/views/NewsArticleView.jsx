@@ -51,48 +51,66 @@ const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, news
         </button>
 
         <article className="mb-16">
-          <div className="flex items-center gap-4 mb-6">
-            <span className="flex items-center gap-2 text-xs font-bold text-slate-600 uppercase">
-              <Tag size={14} />
-              {article.category}
-            </span>
-            <span className="flex items-center gap-2 text-xs text-slate-400">
-              <Calendar size={14} />
-              {article.date}
-            </span>
-          </div>
-
-          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">{article.title}</h1>
-
+          {/* Banner Image - Full Width */}
           {article.featuredImage && (
-            <div className="mb-8">
+            <div className="w-full mb-10 overflow-hidden rounded-2xl shadow-xl">
               <img
                 src={article.featuredImage}
                 alt={article.title}
-                className="w-full h-[400px] md:h-[500px] object-cover rounded-2xl shadow-lg"
+                className="w-full h-[250px] md:h-[450px] object-cover"
               />
             </div>
           )}
 
-          <div className="prose prose-slate max-w-none mb-8">
-            {article.contentHtml ? (
-              <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: article.contentHtml }} />
-            ) : (
-              <p className="text-lg text-slate-700 leading-relaxed mb-6">{article.body || article.desc}</p>
+          <div className="max-w-4xl mx-auto">
+            {/* Article Meta */}
+            <div className="flex items-center gap-4 mb-6">
+              <span className="flex items-center gap-2 text-xs font-bold text-blue-600 uppercase">
+                <Tag size={14} />
+                {article.category}
+              </span>
+              <span className="flex items-center gap-2 text-xs text-slate-400">
+                <Calendar size={14} />
+                {article.date}
+              </span>
+            </div>
+
+            {/* Article Title */}
+            <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-8 leading-tight">
+              {article.title}
+            </h1>
+
+            {/* Article Content */}
+            <div className="prose prose-lg max-w-none text-slate-700 mb-8">
+              {article.contentHtml ? (
+                <div 
+                  className="prose prose-lg max-w-none" 
+                  dangerouslySetInnerHTML={{ 
+                    __html: article.contentHtml 
+                      .replace(/<img[^>]*>/g, '') // Remove any remaining images
+                      .replace(/<h1[^>]*>.*<\/h1>/g, '') // Remove any h1 tags
+                  }} 
+                />
+              ) : (
+                <div className="space-y-6">
+                  <p className="text-lg leading-relaxed">{article.body || article.desc}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Read More Link */}
+            {article.link && (
+              <a
+                href={article.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-blue-600 font-semibold hover:underline text-lg"
+              >
+                Read More
+                <ChevronRight size={16} />
+              </a>
             )}
           </div>
-
-          {article.link && (
-            <a
-              href={article.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-blue-600 font-semibold hover:underline"
-            >
-              Read on FutureTech
-              <ChevronRight size={14} />
-            </a>
-          )}
         </article>
 
         <div className="border-t border-slate-200 pt-12">

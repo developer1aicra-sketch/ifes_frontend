@@ -155,6 +155,127 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
 
     {!siteConfig.is_partner && <LogoTicker />}
 
+    {/* Video Section */}
+    <section className="py-16 bg-white border-t border-slate-100">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold text-slate-900">Latest Videos</h2>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setView('videos')}
+              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+            >
+              See More
+              <ChevronRight size={18} />
+            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  const container = document.getElementById('video-carousel');
+                  container.scrollBy({ left: -400, behavior: 'smooth' });
+                }}
+                className="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+                aria-label="Previous videos"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left">
+                  <path d="m15 18-6-6 6-6"/>
+                </svg>
+              </button>
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  const container = document.getElementById('video-carousel');
+                  container.scrollBy({ left: 400, behavior: 'smooth' });
+                }}
+                className="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+                aria-label="Next videos"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right">
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div className="relative group">
+          <div id="video-carousel" className="flex overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory">
+            <div className="flex space-x-8">
+              {[
+                {
+                  id: 1,
+                  title: 'Championship Finals 2023 Highlights',
+                  date: 'Mar 15, 2023',
+                  description: 'Watch the most exciting moments from the championship finals.',
+                  duration: '12:45'
+                },
+                {
+                  id: 2,
+                  title: 'Behind the Scenes: Team Preparations',
+                  date: 'Feb 28, 2023',
+                  description: 'Exclusive look at how teams prepare for the big competition.',
+                  duration: '8:22'
+                },
+                {
+                  id: 3,
+                  title: 'Robot Showcase: Best of 2023',
+                  date: 'Feb 15, 2023',
+                  description: 'See the most innovative robot designs from this year\'s competition.',
+                  duration: '15:30'
+                },
+                {
+                  id: 4,
+                  title: 'Interview with the Champions',
+                  date: 'Feb 1, 2023',
+                  description: 'Hear from the winning team about their journey to victory.',
+                  duration: '9:45'
+                },
+                {
+                  id: 5,
+                  title: 'Judges Panel Discussion',
+                  date: 'Jan 20, 2023',
+                  description: 'Our judges discuss what makes a winning performance.',
+                  duration: '18:15'
+                },
+                {
+                  id: 6,
+                  title: 'Future of Robotics Competition',
+                  date: 'Jan 5, 2023',
+                  description: 'Experts discuss emerging trends in competitive robotics.',
+                  duration: '22:10'
+                }
+              ].map((video) => (
+                <div key={video.id} className="flex-shrink-0 w-[320px] snap-start bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition-all hover:-translate-y-1">
+                  <div className="relative pt-[56.25%] bg-slate-100 overflow-hidden group">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center transform transition-all duration-300 group-hover:scale-110">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600 ml-1">
+                          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="absolute bottom-4 left-4 bg-black/70 text-white text-sm px-3 py-1 rounded-full">
+                      {video.duration}
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    <div className="text-sm text-slate-500 mb-2 font-medium">{video.date}</div>
+                    <h3 className="font-semibold text-lg text-slate-900 line-clamp-2 mb-3 leading-tight">
+                      {video.title}
+                    </h3>
+                    <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                      {video.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section className="py-16 bg-white border-t border-slate-100">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-3 gap-6">
