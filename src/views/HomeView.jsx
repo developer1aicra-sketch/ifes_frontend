@@ -310,8 +310,6 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
       </div>
     </section>
 
-    
-
     <section className="py-20 bg-white border-t border-slate-100">
       <div className="container mx-auto px-4 max-w-7xl">
         {newsError && <div className="text-sm text-red-500 mb-4">{newsError}</div>}

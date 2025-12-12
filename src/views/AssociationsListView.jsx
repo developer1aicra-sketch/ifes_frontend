@@ -158,7 +158,7 @@ const AssociationsListView = () => {
       <div className="container mx-auto px-4 max-w-7xl">
         {/* Back button */}
         <button
-          onClick={() => navigate('/associates')}
+          onClick={() => navigate('/governance')}
           className="flex items-center gap-2 text-slate-600 hover:text-blue-600 mb-8 transition-colors"
         >
           <ArrowLeft size={20} />
@@ -335,11 +335,11 @@ const AssociationsListView = () => {
                     <button
                       onClick={() => {
                         // You can add a detailed view modal or page here
-                        console.log('View details:', association.id);
+                        console.log('View website:', association.id);
                       }}
                       className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-1 group"
                     >
-                      View Details
+                      visit website
                       <ArrowLeft size={16} className="rotate-180 transform group-hover:translate-x-1 transition-transform" />
                     </button>
                   </div>

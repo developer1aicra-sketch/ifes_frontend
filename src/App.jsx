@@ -9,7 +9,6 @@ import AIReferee from './components/AIReferee';
 import Footer from './components/Footer';
 
 import HomeView from './views/HomeView';
-import AssociatesView from './views/AssociatesView';
 import JoinWorsoView from './views/JoinWorsoView';
 import AssociationsListView from './views/AssociationsListView';
 import AboutLayout from './views/AboutLayout';
@@ -191,7 +190,6 @@ const App = () => {
               <Route path="/teams" element={<TeamsView />} />
               <Route path="/technoxian" element={<TechnoxianView />} />
               <Route path="/governance" element={<AboutLayout setView={setView} />} />
-              <Route path="/associates" element={<AssociatesView />} />
               <Route path="/associates/join-worso" element={<JoinWorsoView />} />
               <Route path="/associates/list" element={<AssociationsListView />} />
               <Route path="/careers" element={<CareersView />} />

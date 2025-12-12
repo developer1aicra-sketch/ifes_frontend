@@ -28,163 +28,108 @@ const TechnoxianView = () => {
     }
   }, [activeGallery]);
 
-  const EVENTS = [
-    {
-      id: 'fpv',
-      title: 'Drone Racing',
-      venue: 'Drone Dome',
-      start: 'Oct 12',
-      end: 'Oct 13',
-      days: [
-        {
-          date: 'Oct 12 (Sun)',
-          items: [
-            { time: '09:00', title: 'Gate Setup & Safety Check' },
-            { time: '11:00', title: 'Qualifying Runs • Round 1' },
-            { time: '15:00', title: 'Neon Gates Heats • FPV' },
-          ],
-        },
-        {
-          date: 'Oct 13 (Mon)',
-          items: [
-            { time: '10:00', title: 'Qualifying Runs • Round 2' },
-            { time: '14:00', title: 'Semi Finals' },
-            { time: '17:30', title: 'Grand Final • Awards' },
-          ],
-        },
-      ],
-    },
-    {
-      id: 'race',
-      title: 'Robo Race',
-      venue: 'Arena 1',
-      start: 'Oct 12',
-      end: 'Oct 14',
-      days: [
-        {
-          date: 'Oct 12 (Sun)',
-          items: [
-            { time: '10:00', title: 'Track Walkthrough' },
-            { time: '13:00', title: 'Time Trial Heats' },
-            { time: '16:30', title: 'Knockout Bracket Reveal' },
-          ],
-        },
-        {
-          date: 'Oct 13 (Mon)',
-          items: [
-            { time: '09:30', title: 'Knockout Stage • Rounds 1-3' },
-            { time: '15:00', title: 'Quarter Finals' },
-          ],
-        },
-        {
-          date: 'Oct 14 (Tue)',
-          items: [
-            { time: '11:00', title: 'Semi Finals' },
-            { time: '16:00', title: 'Finals • Podium Ceremony' },
-          ],
-        },
-      ],
-    },
-    {
-      id: 'soccer',
-      title: 'Robo Soccer',
-      venue: 'Hex Turf',
-      start: 'Oct 13',
-      end: 'Oct 14',
-      days: [
-        {
-          date: 'Oct 13 (Mon)',
-          items: [
-            { time: '09:00', title: 'Group Stage • Matches A-D' },
-            { time: '14:00', title: 'Group Stage • Matches E-H' },
-          ],
-        },
-        {
-          date: 'Oct 14 (Tue)',
-          items: [
-            { time: '12:00', title: 'Semi Finals' },
-            { time: '17:00', title: 'Final • Trophy Presentation' },
-          ],
-        },
-      ],
-    },
-    {
-      id: 'expo',
-      title: 'Innovation Expo',
-      venue: 'Prototype Lab',
-      start: 'Oct 12',
-      end: 'Oct 14',
-      days: [
-        {
-          date: 'Oct 12 (Sun)',
-          items: [
-            { time: '10:00', title: 'Booth Setup & Safety Inspection' },
-            { time: '13:00', title: 'Public Showcase Window' },
-          ],
-        },
-        {
-          date: 'Oct 13 (Mon)',
-          items: [
-            { time: '11:00', title: 'Prototype Demos' },
-            { time: '16:00', title: 'Investor Pitch Hour' },
-          ],
-        },
-        {
-          date: 'Oct 14 (Tue)',
-          items: [
-            { time: '10:00', title: 'Open Floor • Audience Q&A' },
-            { time: '15:30', title: 'Awards • Best Innovation' },
-          ],
-        },
-      ],
-    },
+  // Define the 11 games
+  const GAMES_LIST = [
+    { id: 'innovation-jr', name: 'Innovation Jr.' },
+    { id: 'innovation-open', name: 'Innovation Open' },
+    { id: 'robo-soccer', name: 'Robo Soccer' },
+    { id: 'robo-race', name: 'Robo Race' },
+    { id: 'sumo-bot', name: 'Sumo Bot' },
+    { id: 'flf-jr', name: 'FLF Jr.' },
+    { id: 'flf-sr', name: 'FLF Sr.' },
+    { id: 'water-rocket', name: 'Water Rocket' },
+    { id: 'maze-solver', name: 'Maze Solver' },
+    { id: 'rc-craft', name: 'Rc Craft' },
+    { id: 'drone-rescue', name: 'Drone Rescue' },
+    { id: 'rc-electric', name: 'Rc Electric' },
+    { id: 'robo-hockey', name: 'Robo Hockey' }
   ];
-  const [activeEvent, setActiveEvent] = useState(EVENTS[0]);
 
-  // Schedule data structure with multi-level hierarchy
-  const generateGames = (year, count, prefix) =>
-    Array.from({ length: count }, (_, i) => {
-      const startDate = new Date(year, 5, 10 + i * 2);
-      const endDate = new Date(year, 5, 11 + i * 2);
-      return {
-        id: `${prefix}-g-${year}-${i + 1}`,
-        name: `Game ${i + 1}`,
-        venue: `Arena ${(i % 5) + 1}`,
-        startDate: startDate.toISOString().split('T')[0],
-        endDate: endDate.toISOString().split('T')[0],
-        schedule: [
-          { date: startDate.toISOString().split('T')[0], time: '09:00', title: 'Setup & Safety Check' },
-          { date: startDate.toISOString().split('T')[0], time: '11:00', title: 'Qualifying Rounds' },
-          { date: endDate.toISOString().split('T')[0], time: '14:00', title: 'Finals & Awards' },
-        ],
-      };
-    });
+  // Define zonal categories
+  const ZONAL_CATEGORIES = [
+    { id: 'zonal-west', name: 'Zonal West' },
+    { id: 'zonal-east', name: 'Zonal East' },
+    { id: 'zonal-south', name: 'Zonal South' },
+    { id: 'zonal-north', name: 'Zonal North' },
+    { id: 'zonal-center', name: 'Zonal Center' }
+  ];
 
-  const generateYearEvents = (type, startYear = 2025, endYear = 2015, gameCount = 3) =>
-    Array.from({ length: startYear - endYear + 1 }, (_, idx) => {
+  // Generate games with schedules
+  const generateGameSchedule = (gameId, gameName, zone) => {
+    const startDate = new Date(2025, 5, 10);
+    const endDate = new Date(2025, 5, 11);
+    return {
+      id: gameId,
+      name: gameName,
+      zone: zone,
+      venue: `Arena ${Math.floor(Math.random() * 5) + 1}`,
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
+      schedule: [
+        { date: startDate.toISOString().split('T')[0], time: '09:00', title: 'Setup & Safety Check' },
+        { date: startDate.toISOString().split('T')[0], time: '11:00', title: 'Qualifying Rounds' },
+        { date: endDate.toISOString().split('T')[0], time: '14:00', title: 'Finals & Awards' },
+      ],
+      description: `${gameName} competition in the ${zone} zone. Showcase your skills and compete for the championship title.`,
+      registrationLink: `/register/${gameId}`
+    };
+  };
+
+  // Generate zonal events with all games
+  const generateZonalEvents = () => {
+    return ZONAL_CATEGORIES.map(zone => ({
+      id: zone.id,
+      name: zone.name,
+      games: GAMES_LIST.map(game => 
+        generateGameSchedule(`${zone.id}-${game.id}`, game.name, zone.name)
+      )
+    }));
+  };
+
+  // Generate national events
+  const generateNationalEvents = (startYear = 2025, endYear = 2015) => {
+    return Array.from({ length: startYear - endYear + 1 }, (_, idx) => {
       const year = startYear - idx;
       return {
-        id: `${type}-${year}`,
-        name: `${type === 'worldcup' ? 'Technoxian World Cup' : type === 'national' ? 'National' : 'Zonal'} ${year}`,
-        games: type === 'worldcup' ? generateGames(year, 15, 'wc') : generateGames(year, gameCount, type === 'national' ? 'nat' : 'zon'),
+        id: `national-${year}`,
+        name: `National Championship ${year}`,
+        games: GAMES_LIST.slice(0, 5).map(game => 
+          generateGameSchedule(`nat-${year}-${game.id}`, game.name, `National ${year}`)
+        )
       };
     });
+  };
 
+  // Generate world cup events
+  const generateWorldCupEvents = (startYear = 2025, endYear = 2015) => {
+    return Array.from({ length: startYear - endYear + 1 }, (_, idx) => {
+      const year = startYear - idx;
+      return {
+        id: `worldcup-${year}`,
+        name: `Technoxian World Cup ${year}`,
+        games: GAMES_LIST.map(game => 
+          generateGameSchedule(`wc-${year}-${game.id}`, game.name, `World Cup ${year}`)
+        )
+      };
+    });
+  };
+
+  // Updated schedule data structure
   const SCHEDULE_DATA = [
     {
       id: 'zonals',
       name: 'Zonals',
-      events: generateYearEvents('zonal'),
+      events: generateZonalEvents(),
     },
     {
       id: 'national',
       name: 'National',
-      events: generateYearEvents('national', 2025, 2015, 5),
+      events: generateNationalEvents(),
     },
     {
       id: 'worldcup',
       name: 'World Cup',
-      events: generateYearEvents('worldcup'),
+      events: generateWorldCupEvents(),
     },
   ];
 
@@ -579,7 +524,6 @@ const TechnoxianView = () => {
                             <button
                               key={event.id}
                               onClick={() => {
-                                const firstGame = event.games?.[0];
                                 setSelectedEvent(event.id);
                                 setSelectedGame(null);
                                 setSidebarLevel('game');
@@ -661,7 +605,7 @@ const TechnoxianView = () => {
                 </div>
               </div>
 
-              {/* Main Content Area - Event Details */}
+              {/* Main Content Area - Game Details */}
               <div className="flex-1 overflow-y-auto p-8">
                 {selectedChampionship && selectedEvent && selectedGame ? (
                   (() => {
@@ -691,17 +635,40 @@ const TechnoxianView = () => {
                                 <MapPin size={14} className="text-blue-600" />
                                 {game.venue}
                               </div>
+                              {game.zone && (
+                                <div className="flex items-center gap-2">
+                                  <MapPin size={14} className="text-green-600" />
+                                  <span className="bg-green-50 text-green-700 px-2 py-1 rounded text-xs font-medium">
+                                    {game.zone}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           </div>
-                          <button
-                            onClick={() => setActiveTab('register')}
-                            className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-blue-700 transition-colors text-sm"
-                          >
-                            Register
-                          </button>
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() => window.open(game.registrationLink, '_blank')}
+                              className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-blue-700 transition-colors text-sm"
+                            >
+                              Register to Game
+                            </button>
+                            <button
+                              onClick={() => setActiveTab('register')}
+                              className="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg font-bold hover:bg-slate-200 transition-colors text-sm"
+                            >
+                              View Registration
+                            </button>
+                          </div>
                         </div>
 
-                        <div className="space-y-4">
+                        {game.description && (
+                          <div className="mb-8 p-6 bg-blue-50 rounded-xl border border-blue-100">
+                            <p className="text-slate-700 leading-relaxed">{game.description}</p>
+                          </div>
+                        )}
+
+                        <h3 className="text-xl font-bold text-slate-900 mb-4">Schedule Details</h3>
+                        <div className="space-y-4 mb-8">
                           {game.schedule.map((item, idx) => (
                             <div key={idx} className="rounded-xl border border-slate-200 overflow-hidden">
                               <div className="bg-slate-50 px-5 py-3 flex items-center gap-3">
@@ -719,14 +686,51 @@ const TechnoxianView = () => {
                           ))}
                         </div>
 
-                        <div className="mt-8 p-6 bg-slate-50 rounded-xl border border-slate-200">
-                          <div className="text-sm font-bold text-slate-900 mb-2">Event Information</div>
-                          <div className="text-sm text-slate-600 space-y-1">
-                            <div><strong>Championship:</strong> {championship?.name}</div>
-                            <div><strong>Event:</strong> {event?.name}</div>
-                            <div><strong>Game:</strong> {game.name}</div>
-                            <div><strong>Duration:</strong> {formatDate(game.startDate)} to {formatDate(game.endDate)}</div>
-                            <div><strong>Venue:</strong> {game.venue}</div>
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
+                            <div className="text-sm font-bold text-slate-900 mb-4">Event Information</div>
+                            <div className="space-y-3">
+                              <div className="flex justify-between">
+                                <span className="text-sm text-slate-600">Championship:</span>
+                                <span className="text-sm font-medium text-slate-900">{championship?.name}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-slate-600">Event:</span>
+                                <span className="text-sm font-medium text-slate-900">{event?.name}</span>
+                              </div>
+                              {game.zone && (
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-slate-600">Zone:</span>
+                                  <span className="text-sm font-medium text-slate-900">{game.zone}</span>
+                                </div>
+                              )}
+                              <div className="flex justify-between">
+                                <span className="text-sm text-slate-600">Venue:</span>
+                                <span className="text-sm font-medium text-slate-900">{game.venue}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-slate-600">Duration:</span>
+                                <span className="text-sm font-medium text-slate-900">
+                                  {formatDate(game.startDate)} to {formatDate(game.endDate)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="p-6 bg-blue-50 rounded-xl border border-blue-100">
+                            <div className="text-sm font-bold text-slate-900 mb-4">Registration</div>
+                            <p className="text-sm text-slate-600 mb-4">
+                              Ready to compete in {game.name}? Register now to secure your spot in the competition.
+                            </p>
+                            <button
+                              onClick={() => window.open(game.registrationLink, '_blank')}
+                              className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors"
+                            >
+                              Register Now
+                            </button>
+                            <p className="text-xs text-slate-500 mt-3 text-center">
+                              Early registration discounts available until March 31, 2025
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -738,6 +742,11 @@ const TechnoxianView = () => {
                       <Calendar size={48} className="mx-auto mb-4 opacity-50" />
                       <div className="text-lg font-bold mb-2">Select a Game</div>
                       <div className="text-sm">Choose a championship level, event, and game to view the schedule</div>
+                      <div className="mt-4 text-xs text-slate-500">
+                        <div>• Zonals: West, East, South, North, Center zones</div>
+                        <div>• National: Yearly national championships</div>
+                        <div>• World Cup: International championships</div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -852,12 +861,23 @@ const TechnoxianView = () => {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2">Select Categories ($100/category)</label>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Select Zonal Category</label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                        {ZONAL_CATEGORIES.map((zone) => (
+                          <label key={zone.id} className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
+                            <input type="radio" name="zone" className="w-5 h-5 text-blue-600 rounded-full border-slate-300 focus:ring-blue-500" />
+                            <span className="text-sm font-medium text-slate-700">{zone.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Select Games ($100/game)</label>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {GAME_CATEGORIES.map((g) => (
-                          <label key={g.id} className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
+                        {GAMES_LIST.map((game) => (
+                          <label key={game.id} className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
                             <input type="checkbox" className="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 custom-checkbox" />
-                            <span className="text-sm font-medium text-slate-700">{g.name}</span>
+                            <span className="text-sm font-medium text-slate-700">{game.name}</span>
                           </label>
                         ))}
                       </div>
@@ -1034,4 +1054,3 @@ const TechnoxianView = () => {
 };
 
 export default TechnoxianView;
-
