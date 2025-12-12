@@ -87,10 +87,10 @@ const Footer = ({ setView, switchSite, currentSite }) => (
               </button>
             </li>
             <li className="pt-2">
-              <a href="#" className="hover:text-white">Privacy Policy</a>
+              <button onClick={() => setView("privacy-policy")} className="hover:text-white">Privacy Policy</button>
             </li>
             <li>
-              <a href="#" className="hover:text-white">Terms of Use</a>
+              <button onClick={() => setView("terms-of-use")} className="hover:text-white">Terms of Use</button>
             </li>
           </ul>
         </div>
