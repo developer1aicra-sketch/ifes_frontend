@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers } from 'lucide-react';
+import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers, ArrowRight, Building, Trophy, FileText, Mail, Phone, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const AboutLayout = ({ setView }) => {
   const [activeSection, setActiveSection] = useState('governance');
+  const navigate = useNavigate();
   void motion;
 
   const renderContent = () => {
@@ -100,7 +102,7 @@ const AboutLayout = ({ setView }) => {
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLjUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+'
+                      e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLiUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+'
                     }}
                   />
                 </div>
@@ -248,7 +250,7 @@ const AboutLayout = ({ setView }) => {
                       className="absolute top-0 left-0 w-full h-full object-cover"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLjUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+'
+                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLiUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+'
                       }}
                     />
                   </div>
@@ -262,6 +264,183 @@ const AboutLayout = ({ setView }) => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        );
+      case 'associates':
+        return (
+          <div className="space-y-8">
+            {/* Associates Header */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Building className="text-blue-600" />
+                <h2 className="text-3xl font-bold text-slate-900">Associates & Partners</h2>
+              </div>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                WORSO collaborates with sports associations and federations worldwide to build a global ecosystem for robotics and esports. Our network includes international, continental, and national bodies that promote competitive gaming, fairness, and growth.
+              </p>
+            </div>
+
+            {/* Two Main Cards */}
+            <div className="grid md:grid-cols-2 gap-8 mt-8">
+              {/* Sports Associations/Federations Card */}
+              <div className="bg-slate-50 rounded-2xl p-8 border border-slate-200 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="bg-white p-4 rounded-xl shadow-sm">
+                    <Award className="text-blue-600" size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 mb-2">Sports Associations/Federations</h3>
+                    <p className="text-slate-600">
+                      Sports associations promoting competitive gaming, fairness, and growth can apply to join WORSO for global recognition.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button 
+                    onClick={() => navigate('/associates/join-worso')}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold shadow-sm hover:bg-blue-700 transition-all"
+                  >
+                    Join WORSO
+                  </button>
+                  <button 
+                    onClick={() => navigate('/associates/list')}
+                    className="bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-lg font-bold hover:bg-slate-100 transition-all flex items-center gap-2"
+                  >
+                    View All <ArrowRight size={16} />
+                  </button>
+                </div>
+              </div>
+
+              {/* National Esports Partner Card */}
+              {/* <div className="bg-[#0f172a] rounded-2xl p-8 text-white hover:shadow-lg transition-all duration-300">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="bg-white/10 p-4 rounded-xl border border-white/10">
+                    <Trophy className="text-purple-400" size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-2">National Esports Partner</h3>
+                    <p className="text-slate-400">
+                      NEP plays a key role in fostering and organizing Esports in respective countries in collaboration with WORSO and Gaming Associations.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button className="bg-purple-600 text-white px-6 py-3 rounded-lg font-bold shadow-sm hover:bg-purple-700 transition-all">
+                    Apply for NEP
+                  </button>
+                  <button className="bg-transparent border border-white/20 text-white px-6 py-3 rounded-lg font-bold hover:bg-white/10 transition-all flex items-center gap-2">
+                    View All <ArrowRight size={16} />
+                  </button>
+                </div>
+              </div> */}
+            </div>
+
+            {/* Quick Application Info */}
+            <div className="mt-12 bg-gradient-to-r from-blue-50 to-slate-50 rounded-2xl p-8 border border-blue-100">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">Ready to Join WORSO?</h3>
+                  <p className="text-slate-600">
+                    Start your application process today and become part of our global network.
+                  </p>
+                </div>
+                <button 
+                  onClick={() => navigate('/associates/join-worso')}
+                  className="bg-blue-600 text-white px-8 py-4 rounded-lg font-bold text-lg shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all duration-300 whitespace-nowrap"
+                >
+                  Start Application
+                </button>
+              </div>
+            </div>
+
+            {/* Benefits Section */}
+            <div className="mt-12 pt-8 border-t border-slate-200">
+              <h3 className="text-2xl font-bold text-slate-900 mb-6">Benefits of Partnership</h3>
+              <div className="grid md:grid-cols-3 gap-6">
+                {[
+                  {
+                    icon: <Globe2 className="text-blue-600" size={24} />,
+                    title: 'Global Recognition',
+                    description: 'Get recognized as an official WORSO partner with international credibility and visibility.'
+                  },
+                  {
+                    icon: <Shield className="text-green-600" size={24} />,
+                    title: 'Standardized Rules',
+                    description: 'Access and implement standardized competition rules and safety protocols.'
+                  },
+                  {
+                    icon: <Users className="text-purple-600" size={24} />,
+                    title: 'Community Access',
+                    description: 'Connect with a global network of associations, teams, and industry experts.'
+                  },
+                  {
+                    icon: <Award className="text-amber-600" size={24} />,
+                    title: 'Event Support',
+                    description: 'Receive support for organizing and promoting local and international events.'
+                  },
+                  {
+                    icon: <Cpu className="text-cyan-600" size={24} />,
+                    title: 'Tech Infrastructure',
+                    description: 'Access to WORSOs technical platforms for registration, ranking, and management.'
+                  },
+                  {
+                    icon: <Map className="text-emerald-600" size={24} />,
+                    title: 'Market Expansion',
+                    description: 'Expand your reach and grow esports participation in your region.'
+                  }
+                ].map((benefit, index) => (
+                  <div key={index} className="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-md transition-shadow">
+                    <div className="mb-4">
+                      {benefit.icon}
+                    </div>
+                    <h4 className="font-bold text-slate-900 mb-2">{benefit.title}</h4>
+                    <p className="text-sm text-slate-600">{benefit.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="mt-12 bg-gradient-to-r from-blue-50 to-slate-50 rounded-2xl p-8 border border-blue-100">
+              <h3 className="text-2xl font-bold text-slate-900 mb-6">Our Global Network</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {[
+                  { value: '95+', label: 'Member Nations' },
+                  { value: '120k+', label: 'Registered Teams' },
+                  { value: '2.5M', label: 'Global Spectators' },
+                  { value: '$250k', label: 'Prize Pool' }
+                ].map((stat, index) => (
+                  <div key={index} className="text-center">
+                    <div className="text-3xl font-extrabold text-blue-600">{stat.value}</div>
+                    <div className="text-sm font-medium text-slate-600 mt-2">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Contact */}
+            <div className="mt-12 bg-slate-900 rounded-2xl p-8 text-white">
+              <h3 className="text-2xl font-bold text-white mb-4">Need Help With Your Application?</h3>
+              <p className="text-slate-300 mb-6">
+                Our team is here to assist you through the application process. Contact us for any queries or support.
+              </p>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="flex items-center gap-3">
+                  <Mail className="text-blue-400" size={20} />
+                  <div>
+                    <div className="text-sm text-slate-400">Email</div>
+                    <div className="font-medium">partners@worso.org</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Phone className="text-green-400" size={20} />
+                  <div>
+                    <div className="text-sm text-slate-400">Phone</div>
+                    <div className="font-medium">+1 (555) 123-4567</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -298,16 +477,6 @@ const AboutLayout = ({ setView }) => {
                 </div>
               </div>
             </div>
-          </div>
-        );
-      case 'working':
-        return (
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">Working at WORSO</h2>
-            <p className="text-slate-600 mb-6">Join a team of visionaries, engineers, and sports management professionals.</p>
-            <button onClick={() => setView('careers')} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold">
-              View Openings
-            </button>
           </div>
         );
       case 'data':
@@ -369,6 +538,7 @@ const AboutLayout = ({ setView }) => {
             { id: 'governance', label: 'Mission & Vision' },
             { id: 'president', label: "President's Message" },
             { id: 'advisory', label: 'Advisory Board' },
+            { id: 'associates', label: 'Associates & Partners' },
             { id: 'affiliation', label: 'Affiliation' },
             { id: 'data', label: 'Data Layer' },
             { id: 'partners', label: 'Partner Network' },
@@ -398,8 +568,8 @@ const AboutLayout = ({ setView }) => {
               <div className="text-lg font-extrabold text-white">Federated</div>
             </div>
             <div className="bg-white/10 px-4 py-3 rounded-xl border border-white/10">
-              <div className="text-xs font-bold uppercase text-slate-200">Rulebook</div>
-              <div className="text-lg font-extrabold text-emerald-200">v2.0</div>
+              <div className="text-xs font-bold uppercase text-slate-200">Associations</div>
+              <div className="text-lg font-extrabold text-emerald-200">95+ Nations</div>
             </div>
           </div>
         </div>
@@ -424,4 +594,3 @@ const AboutLayout = ({ setView }) => {
 };
 
 export default AboutLayout;
-

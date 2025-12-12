@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronRight, Trophy, Menu, X, User, Home, LogOut } from 'lucide-react';
+import { Trophy, Menu, X, User, Home, LogOut } from 'lucide-react';
 
 const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user, setUser }) => {
   const [isDashMenuOpen, setIsDashMenuOpen] = useState(false);
@@ -39,20 +39,9 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
       <div className="hidden md:flex items-center gap-8 font-bold text-[11px] uppercase tracking-widest text-slate-300">
         {!siteConfig.is_partner && (
           <div className="relative group">
-            <button className="hover:text-white transition-colors py-2 flex items-center gap-1">
-              About Worso <ChevronRight size={10} className="rotate-90" />
+            <button onClick={() => setView('governance')} className="hover:text-white transition-colors py-2 flex items-center gap-1">
+              About Worso
             </button>
-            <div className="absolute top-full left-0 w-48 bg-[#0f172a] border border-white/10 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all transform translate-y-2 group-hover:translate-y-0 z-50">
-              <button onClick={() => setView('about')} className="block w-full text-left px-4 py-3 hover:bg-white/5 border-b border-white/5">
-                Vision & Strategy
-              </button>
-              <button onClick={() => setView('careers')} className="block w-full text-left px-4 py-3 hover:bg-white/5 border-b border-white/5">
-                Careers
-              </button>
-              <button onClick={() => setView('associates')} className="block w-full text-left px-4 py-3 hover:bg-white/5">
-                Associates
-              </button>
-            </div>
           </div>
         )}
         <button onClick={() => setView('teams')} className="hover:text-white transition-colors">
