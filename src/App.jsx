@@ -10,6 +10,8 @@ import Footer from './components/Footer';
 
 import HomeView from './views/HomeView';
 import AssociatesView from './views/AssociatesView';
+import JoinWorsoView from './views/JoinWorsoView';
+import AssociationsListView from './views/AssociationsListView';
 import AboutLayout from './views/AboutLayout';
 import TeamsView from './views/TeamsView';
 import CareersView from './views/CareersView';
@@ -22,6 +24,8 @@ import TechnoxianView from './views/TechnoxianView';
 import AdminView from './views/AdminView';
 import NewsArticleView from './views/NewsArticleView';
 import NewsListView from './views/NewsListView';
+import PrivacyPolicyView from './views/PrivacyPolicyView';
+import TermsOfUseView from './views/TermsOfUseView';
 
 import { DEFAULT_SITES, NEWS_ITEMS } from './constants/data';
 import { styles } from './styles/inlineStyles';
@@ -51,6 +55,10 @@ const viewToPath = (view) => {
       return '/governance';
     case 'associates':
       return '/associates';
+    case 'join-worso':
+      return '/associates/join-worso';
+    case 'associations-list':
+      return '/associates/list';
     case 'careers':
       return '/careers';
     case 'partners':
@@ -67,6 +75,10 @@ const viewToPath = (view) => {
       return '/member-dashboard';
     case 'admin-dashboard':
       return '/admin-dashboard';
+    case 'privacy-policy':
+      return '/privacy-policy';
+    case 'terms-of-use':
+      return '/terms-of-use';
     default:
       return '/';
   }
@@ -180,13 +192,23 @@ const App = () => {
               <Route path="/technoxian" element={<TechnoxianView />} />
               <Route path="/governance" element={<AboutLayout setView={setView} />} />
               <Route path="/associates" element={<AssociatesView />} />
+              <Route path="/associates/join-worso" element={<JoinWorsoView />} />
+              <Route path="/associates/list" element={<AssociationsListView />} />
               <Route path="/careers" element={<CareersView />} />
               <Route path="/partners" element={<HomeView setView={setView} siteConfig={currentSite} {...newsProps} />} />
               <Route path="/login" element={<MemberLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
               <Route path="/staff-login" element={<AdminLoginView setView={setView} setUser={setUser} />} />
               <Route path="/login-super-admin" element={<SuperAdminLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
               <Route path="/login-partner-admin" element={<PartnerAdminLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
-              <Route path="/member-dashboard" element={<MemberDashboard user={user} />} />
+              <Route path="/member-dashboard" element={
+                <MemberDashboard currentSite={currentSite} setView={setView} />
+              } />
+              <Route path="/privacy-policy" element={
+                <PrivacyPolicyView />
+              } />
+              <Route path="/terms-of-use" element={
+                <TermsOfUseView />
+              } />
               <Route path="/admin-dashboard" element={<AdminView setSites={setSites} sites={sites} setView={setView} defaultMode={user?.role} />} />
 
               <Route path="/news" element={<NewsListView type="latest" {...newsProps} />} />
@@ -207,4 +229,3 @@ const App = () => {
 };
 
 export default App;
-

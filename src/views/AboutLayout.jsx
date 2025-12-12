@@ -10,62 +10,256 @@ const AboutLayout = ({ setView }) => {
     switch (activeSection) {
       case 'governance':
         return (
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <Shield className="text-blue-600" />
-              <div>
-                <h2 className="text-3xl font-bold text-slate-900">Mission & Vision</h2>
-                <p className="text-sm text-slate-500">The root authority for a federated sport.</p>
+          <div className="space-y-8">
+            {/* Mission Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Shield className="text-blue-600" />
+                <h2 className="text-3xl font-bold text-slate-900">Our Mission</h2>
               </div>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                WORSO is the global regulatory root for the sport of robotics—writing the laws of play, publishing safety protocols, and certifying every affiliated event. Federation over
+                centralization keeps local context alive while the core stays immutable.
+              </p>
             </div>
-            <p className="text-lg text-slate-600 leading-relaxed mb-6">
-              WORSO is the global regulatory root for the sport of robotics—writing the laws of play, publishing safety protocols, and certifying every affiliated event. Federation over
-              centralization keeps local context alive while the core stays immutable.
-            </p>
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="p-5 bg-slate-50 rounded-xl border border-slate-100">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase text-blue-600">
-                  <Shield size={16} /> Integrity
-                </div>
-                <p className="text-sm text-slate-600 mt-3">One rulebook, synchronized to every partner subdomain via middleware.</p>
+
+            {/* Vision Section */}
+            <div className="space-y-4 pt-6 border-t border-slate-100">
+              <h3 className="text-2xl font-bold text-slate-900">Our Vision</h3>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                To be the recognized global leader in eSport, driving its growth and development as a legitimate and respected sport, fostering a thriving professional landscape, and promoting its positive impact on society.
+              </p>
+            </div>
+
+            {/* Values Section */}
+            <div className="space-y-6 pt-6 border-t border-slate-100">
+              <h3 className="text-2xl font-bold text-slate-900">Our Core Values</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                {[
+                  {
+                    icon: <Shield size={16} />,
+                    title: "Integrity",
+                    description: "We uphold the highest standards of ethical conduct and fair play in all aspects of eSport.",
+                    color: "blue"
+                  },
+                  {
+                    icon: <Cpu size={16} />,
+                    title: "Innovation",
+                    description: "We embrace innovation and technological advancements to continuously improve the eSport experience for all stakeholders.",
+                    color: "purple"
+                  },
+                  {
+                    icon: <Users size={16} />,
+                    title: "Inclusivity",
+                    description: "We are committed to fostering a diverse and inclusive eSport community where everyone feels welcome and empowered to participate.",
+                    color: "pink"
+                  },
+                  {
+                    icon: <Award size={16} />,
+                    title: "Excellence",
+                    description: "We strive for excellence in all aspects of our operations, setting the highest benchmarks for professional eSport.",
+                    color: "green"
+                  },
+                  {
+                    icon: <Globe2 size={16} />,
+                    title: "Sustainability",
+                    description: "We advocate for responsible and sustainable practices within the eSport industry, ensuring its long-term growth and positive impact.",
+                    color: "emerald"
+                  },
+                  {
+                    icon: <Users size={16} />,
+                    title: "Community",
+                    description: "We are committed to building a strong and engaged eSport community where players, fans, and organizers can connect and thrive.",
+                    color: "indigo"
+                  }
+                ].map((value, index) => (
+                  <div key={index} className="p-5 bg-slate-50 rounded-xl border border-slate-100 hover:shadow-md transition-shadow">
+                    <div className={`flex items-center gap-2 text-xs font-bold uppercase text-${value.color}-600`}>
+                      {value.icon} {value.title}
+                    </div>
+                    <p className="text-sm text-slate-600 mt-3">{value.description}</p>
+                  </div>
+                ))}
               </div>
-              <div className="p-5 bg-slate-50 rounded-xl border border-slate-100">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase text-blue-600">
-                  <Award size={16} /> Excellence
-                </div>
-                <p className="text-sm text-slate-600 mt-3">Tiered officiating, replay, and telemetry audits ready for global finals.</p>
-              </div>
-              <div className="p-5 bg-slate-50 rounded-xl border border-slate-100">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase text-blue-600">
-                  <Cpu size={16} /> Innovation
-                </div>
-                <p className="text-sm text-slate-600 mt-3">Open APIs for scoring, video review, CMS, and partner data sync.</p>
-              </div>
+              <p className="text-sm text-slate-500 italic mt-4">
+                Through these core values, WORSO aims to establish eSport as a mainstream sport, recognized for its athleticism, competitive spirit, and positive impact on society.
+              </p>
             </div>
           </div>
         );
       case 'president':
         return (
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">President's Message</h2>
-            <p className="text-lg text-slate-600 leading-relaxed mb-6">
-              "Federation beats centralization. By giving every nation its own subdomain, we scale safely while protecting the sport’s DNA." — Dr. Richard H. Vance, President.
-            </p>
-            <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
+          <div className="space-y-8">
+            <div className="flex flex-col md:flex-row gap-8">
+              {/* President's Image and Name - Left Side */}
+              <div className="md:w-1/4 space-y-4">
+                <div className="bg-slate-100 rounded-xl overflow-hidden aspect-[3/4] max-w-[280px] mx-auto">
+                  <img 
+                    src="https://worso.org/images/executive-committee/rajkumar.png" 
+                    alt="Raj Kumar Sharma, President of International Federation of Esports"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLjUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+'
+                    }}
+                  />
+                </div>
+                <div className="text-center">
+                  <p className="text-xl font-bold text-slate-900">Raj Kumar Sharma</p>
+                  <p className="text-blue-600 font-medium">President, International Federation of Esports</p>
+                </div>
+              </div>
+              
+              {/* President's Message - Right Side */}
+              <div className="md:w-3/4 space-y-6">
+                <div>
+                  <h2 className="text-3xl font-bold text-slate-900 mb-2">WORSO Leadership</h2>
+                  <div className="w-16 h-1 bg-blue-600 mb-6"></div>
+                </div>
+                
+                
+                <p className="text-lg text-slate-700 leading-relaxed">
+                  Attention all esports associations, fans, players, and pioneers!
+                </p>
+                
+                <p className="text-slate-600 leading-relaxed">
+                  As we stand at the threshold of a new year, brimming with potential and possibility, I wanted to take this moment to address you, the vibrant heart of the global esports community.
+                </p>
+                
+                <p className="text-slate-600 leading-relaxed">
+                  The past year has been nothing short of extraordinary for esports. We've witnessed breathtaking moments of skill, witnessed esports break new barriers of mainstream acceptance, and experienced the power of our community coming together as one.
+                </p>
+                
+                <p className="text-slate-600 leading-relaxed">
+                  From the electrifying finals of the World Cup 7.0 - TechnoXian, where nations battled for esports glory, to the record-breaking viewership of major tournaments, to the grassroots passion evident in local communities around the world, we've seen the undeniable growth and resilience of our beloved sport.
+                </p>
+                
+                <p className="text-slate-600 leading-relaxed">
+                  But this, my friends, is just the beginning. As the International Federation of Esports (WORSO), We are committed to nurturing this momentum and propelling esports to even greater heights. In the coming year, we will strive to:
+                </p>
+                
+                <ul className="space-y-3 list-disc pl-5 text-slate-600">
+                  <li><span className="font-medium">Champion a level playing field:</span> We will continue to advocate for fair competition at all levels, ensuring everyone has the opportunity to reach their full potential.</li>
+                  <li><span className="font-medium">Foster sustainable growth:</span> We will work tirelessly to support infrastructure development, empower local communities, and create pathways for aspiring players and professionals.</li>
+                  <li><span className="font-medium">Bridge the digital divide:</span> We will break down barriers to entry and ensure that everyone, regardless of socioeconomic background, can access the incredible opportunities esports offers.</li>
+                  <li><span className="font-medium">Promote responsible gameplay:</span> We will champion principles of sportsmanship, ethical conduct, and player well-being, ensuring that esports remains a healthy and inclusive environment for all.</li>
+                  <li><span className="font-medium">Elevate esports to its rightful place:</span> We will continue to collaborate with key stakeholders, including traditional sports organizations, governments, and educational institutions, to secure esports' rightful place as a respected and recognized sport.</li>
+                </ul>
+                
+                <p className="text-slate-600 leading-relaxed">
+                  But none of this will be possible without you, the incredible esports community. We need your passion, your dedication, and your unwavering belief in the power of esports.
+                </p>
+                
+                <p className="text-slate-600 leading-relaxed">
+                  So, let's step into this new year together, united by our love for the game and our shared vision for the future. Let's strive for excellence, inspire each other, and continue to build a vibrant, inclusive, and sustainable esports landscape that benefits players, teams, organizations, and fans alike.
+                </p>
+                
+                <p className="text-slate-700 font-medium text-lg">
+                  Together, we can make esports more than just a game. We can make it a platform for connection, opportunity, and positive impact. Let's make this year the year esports truly reaches its full potential!
+                </p>
+                
+                <p className="text-slate-800 font-medium mt-8 text-lg">
+                  Onward and upward, esport family!
+                </p>
+                
+                <p className="text-slate-600 mt-10">
+                  With unwavering support,
+                </p>
+                <p className="text-slate-900 font-semibold">
+                  Raj Kumar Sharma
+                </p>
+              </div>
+            </div>
+            
+            <div className="p-6 bg-slate-50 rounded-xl border border-slate-200 mt-8">
               <h4 className="font-bold mb-2">Global Mandate</h4>
-              <p className="text-sm text-slate-500">Codify rules, accredit partners, and run the World Cup calendar.</p>
+              <p className="text-slate-600">As the International Federation of Esports, WORSO is committed to governing and promoting esports worldwide, ensuring fair play, integrity, and the continued growth of our sport.</p>
             </div>
           </div>
         );
       case 'advisory':
         return (
           <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">Advisory Board</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {['Safety & Compliance', 'Technology & AI', 'Fan Experience', 'Commercial'].map((track) => (
-                <div key={track} className="p-6 bg-slate-50 rounded-xl border border-slate-200 shadow-sm">
-                  <h4 className="font-bold text-lg text-slate-900">{track}</h4>
-                  <p className="text-sm text-slate-500">Subject-matter leaders who ratify updates before they propagate to partner portals.</p>
+            <h2 className="text-3xl font-bold text-slate-900 mb-8">Advisory Board</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                {
+                  name: 'Dr. Sarah Chen',
+                  role: 'Technology & AI Expert',
+                  country: 'Singapore',
+                  flag: '🇸🇬',
+                  image: 'https://randomuser.me/api/portraits/women/44.jpg'
+                },
+                {
+                  name: 'James Wilson',
+                  role: 'Sports Governance',
+                  country: 'United Kingdom',
+                  flag: '🇬🇧',
+                  image: 'https://randomuser.me/api/portraits/men/32.jpg'
+                },
+                {
+                  name: 'Aisha Al-Mansoori',
+                  role: 'Fan Engagement',
+                  country: 'UAE',
+                  flag: '🇦🇪',
+                  image: 'https://randomuser.me/api/portraits/women/68.jpg'
+                },
+                {
+                  name: 'Carlos Mendez',
+                  role: 'Esports Integrity',
+                  country: 'Brazil',
+                  flag: '🇧🇷',
+                  image: 'https://randomuser.me/api/portraits/men/75.jpg'
+                },
+                {
+                  name: 'Yuki Tanaka',
+                  role: 'Event Operations',
+                  country: 'Japan',
+                  flag: '🇯🇵',
+                  image: 'https://randomuser.me/api/portraits/women/33.jpg'
+                },
+                {
+                  name: 'Marcus Johnson',
+                  role: 'Broadcast & Media',
+                  country: 'USA',
+                  flag: '🇺🇸',
+                  image: 'https://randomuser.me/api/portraits/men/45.jpg'
+                },
+                {
+                  name: 'Fatima Zahra',
+                  role: 'Youth Development',
+                  country: 'Morocco',
+                  flag: '🇲🇦',
+                  image: 'https://randomuser.me/api/portraits/women/52.jpg'
+                },
+                {
+                  name: 'Andrei Petrov',
+                  role: 'Technical Director',
+                  country: 'Russia',
+                  flag: '🇷🇺',
+                  image: 'https://randomuser.me/api/portraits/men/67.jpg'
+                }
+              ].map((member, index) => (
+                <div key={index} className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div className="relative pt-[100%] bg-slate-100">
+                    <img 
+                      src={member.image} 
+                      alt={member.name}
+                      className="absolute top-0 left-0 w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLjUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+'
+                      }}
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-bold text-slate-900 text-lg">{member.name}</h3>
+                    <p className="text-sm text-slate-600 mt-1">{member.role}</p>
+                    <div className="mt-3 flex items-center text-sm text-slate-500">
+                      <span className="text-lg mr-2">{member.flag}</span>
+                      {member.country}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -176,7 +370,6 @@ const AboutLayout = ({ setView }) => {
             { id: 'president', label: "President's Message" },
             { id: 'advisory', label: 'Advisory Board' },
             { id: 'affiliation', label: 'Affiliation' },
-            { id: 'working', label: 'Working at WORSO' },
             { id: 'data', label: 'Data Layer' },
             { id: 'partners', label: 'Partner Network' },
           ].map((item) => (
