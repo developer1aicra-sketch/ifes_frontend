@@ -1,103 +1,145 @@
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaYoutube } from "react-icons/fa";
+import { Mail, Phone } from "lucide-react";
 
 const Footer = ({ setView, switchSite, currentSite }) => (
-<footer className="bg-[#0f172a] text-slate-400 py-16">
+  <footer className="bg-[#0f172a] text-slate-400 py-16">
     <div className="container mx-auto px-4">
       <div className="grid md:grid-cols-4 gap-12 mb-12">
 
-        {/* LOGO + SOCIAL ICONS */}
-        <div className="col-span-1 md:col-span-2">
-          <div className="flex items-center gap-3 mb-6">
-            <div
-              className={`w-8 h-8 rounded flex items-center justify-center text-white font-bold ${currentSite.colors.primary}`}
-            >
-              {currentSite.is_partner ? "T" : "W"}
+        {/* LOGO + CONTACT INFO + SOCIAL - LEFT SIDE */}
+        <div className="md:col-span-3">
+          <div className="flex flex-col">
+            {/* Logo and Contact Section */}
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div
+                  className={`w-8 h-8 rounded flex items-center justify-center text-white font-bold ${currentSite.colors.primary}`}
+                >
+                  {currentSite.is_partner ? "T" : "W"}
+                </div>
+                <span className="text-white font-bold text-xl tracking-tight">
+                  {currentSite.is_partner ? "TECHNOXIAN" : "WORSO"}
+                </span>
+              </div>
+              
+              {/* Contact Info - Email & Phone */}
+              <div className="mb-6 space-y-4">
+              <p className="max-w-md mb-8 leading-relaxed text-sm">
+                {currentSite.is_partner
+                  ? "The official regional chapter of the World Robotics Championship."
+                  : "The World Robotics Sports Organization is the global regulatory body for robotics competitions and esports."}
+              </p>
             </div>
-            <span className="text-white font-bold text-xl tracking-tight">
-              {currentSite.is_partner ? "TECHNOXIAN" : "WORSO"}
-            </span>
-          </div>
-          <p className="max-w-sm mb-6 leading-relaxed text-sm">
-            {currentSite.is_partner
-              ? "The official regional chapter of the World Robotics Championship."
-              : "The World Robotics Society is the global regulatory body."}
-          </p>
-          {/* SOCIAL ICONS */}
-          <div className="flex gap-4 text-xl mb-6">
-            <a href="https://www.facebook.com/WORSOcommunity" className="hover:text-white transition">
-              <FaFacebookF />
-            </a>
-            <a href="https://in.linkedin.com/company/worso" className="hover:text-white transition">
-              <FaLinkedinIn />
-            </a>
-            <a href="https://www.youtube.com/@WORSOassociation" className="hover:text-white transition">
-              <FaYoutube />
-            </a>
+                <div className="flex items-center gap-3">
+                  <Mail size={16} className="text-slate-500" />
+                  <a 
+                    href="mailto:info@worso.org" 
+                    className="text-sm hover:text-white transition-colors"
+                  >
+                    info@worso.org
+                  </a>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Phone size={16} className="text-slate-500" />
+                  <a 
+                    href="tel:+15551234567" 
+                    className="text-sm hover:text-white transition-colors"
+                  >
+                    +1 (555) 123-4567
+                  </a>
+                </div>
+              </div>
+              
+            
+            {/* SOCIAL ICONS */}
+            <div>
+              <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">Follow Us</h4>
+              <div className="flex gap-4 text-xl">
+                <a 
+                  href="https://www.facebook.com/WORSOcommunity" 
+                  className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
+                  aria-label="Facebook"
+                >
+                  <FaFacebookF />
+                </a>
+                <a 
+                  href="https://in.linkedin.com/company/worso" 
+                  className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
+                  aria-label="LinkedIn"
+                >
+                  <FaLinkedinIn />
+                </a>
+                <a 
+                  href="https://www.youtube.com/@WORSOassociation" 
+                  className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
+                  aria-label="YouTube"
+                >
+                  <FaYoutube />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* GOVERNANCE */}
-        <div>
-          {!currentSite.is_partner && (
-            <>
-              <h4 className="text-white font-bold mb-6">Governance</h4>
-              <ul className="space-y-3 text-sm">
-                <li>
-                  <button onClick={() => setView("about")} className="hover:text-white">
-                    Board of Directors
-                  </button>
-                </li>
-                <li>
-                  <button onClick={() => setView("about")} className="hover:text-white">
-                    Constitution
-                  </button>
-                </li>
-                <li>
-                  <button onClick={() => setView("about")} className="hover:text-white">
-                    Ethics Committee
-                  </button>
-                </li>
-              </ul>
-            </>
-          )}
-        </div>
-
-        {/* QUICK LINKS */}
-        <div>
-          <h4 className="text-white font-bold mb-6">Quick Links</h4>
+        {/* QUICK LINKS - RIGHT SIDE */}
+        <div className="md:col-span-1">
+          <h4 className="text-white font-bold mb-6 text-lg">Quick Links</h4>
           <ul className="space-y-3 text-sm">
             <li>
-              <button onClick={() => setView("technoxian")} className="hover:text-white">
+              <button 
+                onClick={() => setView("technoxian")} 
+                className="hover:text-white transition-colors text-left w-full py-1"
+              >
                 Technoxian Games
               </button>
             </li>
             <li>
-              <button onClick={() => setView("teams")} className="hover:text-white">
+              <button 
+                onClick={() => setView("teams")} 
+                className="hover:text-white transition-colors text-left w-full py-1"
+              >
                 Teams & Rankings
               </button>
             </li>
             <li>
-              <button onClick={() => setView("login")} className="hover:text-white">
+              <button 
+                onClick={() => setView("login")} 
+                className="hover:text-white transition-colors text-left w-full py-1"
+              >
                 Verify Certificates
               </button>
             </li>
             <li>
-              <button onClick={() => setView("careers")} className="hover:text-white">
+              <button 
+                onClick={() => setView("careers")} 
+                className="hover:text-white transition-colors text-left w-full py-1"
+              >
                 Careers at Worso
               </button>
             </li>
-            <li className="pt-2">
-              <button onClick={() => setView("privacy-policy")} className="hover:text-white">Privacy Policy</button>
+            <li className="pt-4 mt-4 border-t border-slate-800">
+              <button 
+                onClick={() => setView("privacy-policy")} 
+                className="hover:text-white transition-colors text-left w-full py-1"
+              >
+                Privacy Policy
+              </button>
             </li>
             <li>
-              <button onClick={() => setView("terms-of-use")} className="hover:text-white">Terms of Use</button>
+              <button 
+                onClick={() => setView("terms-of-use")} 
+                className="hover:text-white transition-colors text-left w-full py-1"
+              >
+                Terms of Use
+              </button>
             </li>
           </ul>
         </div>
+
       </div>
 
       {/* FOOTER BOTTOM */}
-      <div className="pt-8">
+      <div className="pt-8 border-t border-slate-800">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
           <div className="flex items-center gap-4 flex-wrap">
             <button
@@ -133,7 +175,7 @@ const Footer = ({ setView, switchSite, currentSite }) => (
           </div>
 
           <div className="text-xs text-slate-400 md:mx-auto">
-            © 2025. All Rights Reserved.
+            © 2025 World Robotics Sports Organization. All Rights Reserved.
           </div>
         </div>
       </div>

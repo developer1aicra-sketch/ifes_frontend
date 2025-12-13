@@ -7,6 +7,8 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
   void motion;
   const [latestNewsIndex, setLatestNewsIndex] = useState(0);
   const [mostReadIndex, setMostReadIndex] = useState(0);
+  const [selectedMembership, setSelectedMembership] = useState(null);
+
 
   const preparedNews = useMemo(() => newsItems.filter(Boolean), [newsItems]);
   const headline = preparedNews[0];
@@ -310,6 +312,192 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
       </div>
     </section>
 
+    <section className="py-20 bg-slate-50 border-t border-slate-200">
+  <div className="container mx-auto px-4 max-w-7xl">
+    <div className="text-center mb-14">
+      <span className="text-xs font-bold uppercase tracking-widest text-blue-600">
+        WORSO Membership
+      </span>
+      <h2 className="text-4xl font-extrabold text-slate-900 mt-3">
+        Choose Your Membership Plan
+      </h2>
+      <p className="text-slate-600 max-w-3xl mx-auto mt-4">
+        Become a part of the global robotics sports ecosystem with institutional,
+        professional, or corporate membership privileges.
+      </p>
+    </div>
+
+    <div className="grid md:grid-cols-3 gap-8">
+      {[
+        {
+          id: 'institute',
+          title: 'Institute Membership',
+          price: 'USD 200/year',
+          audience: 'Schools / Colleges / Universities / Vocational Institutes',
+          icon: Shield,
+          highlights: [
+            'Accredited as a WORSO Robotics Sports Institution',
+            'Official WORSO Institutional Member Badge for branding & promotions',
+            'Recognition on the global WORSO website & partner directories',
+            'Support to set up Robotics Labs, STEM Labs & AI Labs and RoboClubs',
+            'Eligibility to become a WORSO Authorized Training & Competition Center',
+            'Access to a global network of mentors, trainers & industry leaders',
+            'Participation in WORSO talent drives & internship fairs',
+            'Opportunities for scholarships, international contests & innovation grants',
+            'Access to WORSO Championships including Technoxian (Entries via RoboClub)',
+            'Hosting opportunities (District Championships / Bootcamps / Events)',
+            'Discounts on event registrations, booths & travel packages',
+            'Collaboration opportunities with CSR partners for student outreach',
+            'Opportunity to run CSR-funded STEM sessions led by WORSO experts',
+            'Industry partnerships for innovation, research & technology adoption',
+            'Opportunity to co-create robotics competitions or STEM programs',
+            'Business linkage support for robotics procurement & facility setup',
+            'Collaboration with industry, research labs & universities',
+            'Opportunities for funding / discounts on showcasing innovations',
+            'Invitations to global panel discussions, seminars & B2B meets',
+            'Participation in international collaboration & exchange programs',
+            'Connection with global robotics sports federations & teams',
+            'Student & faculty discounts on WORSO certifications',
+            'Year-round training in robotics, AI, drones, IoT & prototyping',
+            'Structured modules for curricular & extracurricular integration',
+            'Participation in STEM education policy roundtables',
+            'Opportunity to join WORSO Academic Advisory Board',
+            'Eligibility to become District / State WORSO Partner Institution',
+            'Rights to host district/state-level robotics competitions'
+          ]
+        },
+        {
+          id: 'professional',
+          title: 'Professional Membership',
+          price: 'USD 100/year',
+          audience: 'Coaches / Trainers / Innovators / High Value Partners',
+          icon: Users,
+          highlights: [
+            'WORSO Certified Professional Member Badge',
+            'Global listing in the WORSO Certified Experts Directory',
+            'Use of WORSO branding for personal workshops & training programs',
+            'Authorized Trainer status for WORSO-certified training centers',
+            'Priority selection to set up Robotics Clubs & Training Labs',
+            'Visibility among schools & colleges seeking mentors',
+            'Participation in WORSO talent drives',
+            'Opportunity to build high-performing robotics teams & portfolios',
+            'Mentorship opportunities in national & international competitions',
+            'Priority access to WORSO & Partner events',
+            'Invitations for speaker slots, panel discussions & jury roles',
+            'Discounted or free passes to events & conferences',
+            'Paid or volunteer CSR STEM program opportunities',
+            'Priority involvement in government & NGO-backed initiatives',
+            'Access to coaching & training opportunities',
+            'Opportunity to become WORSO Certified Trainer',
+            'Ability to create & publish modules on WORSO Learning Platform',
+            'Eligibility to register projects under WORSO Innovation Network',
+            'Access to industry connections & technology hubs',
+            'Opportunity to submit whitepapers or research',
+            'Invitations to global seminars & B2B meets',
+            'Connection with global robotics coaches & innovators',
+            'International visibility & representation opportunities',
+            'Collaborations with startups, institutions & corporates',
+            'Discounted WORSO & partner certification programs',
+            'Free access to selected webinars & career sessions',
+            'Access to exclusive knowledge hubs & research papers',
+            'Contribution to global robotics sports framework',
+            'Eligibility to become District / State WORSO Partner',
+            'Recognition as WORSO Ambassador for your region'
+          ]
+        },
+        {
+          id: 'corporate',
+          title: 'Corporate Membership',
+          price: 'USD 500/year',
+          audience: 'Companies / NGOs / Startups',
+          icon: Building,
+          highlights: [
+            'Official WORSO Corporate Member Badge for brand credibility',
+            'Listing on WORSO Global Directory as recognized partner',
+            'Brand exposure across WORSO social media & press releases',
+            'Priority access to Robotics Labs, STEM Labs & AI Centers',
+            'Ability to co-establish WORSO-branded Maker Spaces',
+            'Priority access to top student innovators from WORSO leagues',
+            'Campus outreach programs coordinated by WORSO',
+            'Internship & placement support through robotics institutions',
+            'Priority invitations to Technoxian & global tournaments',
+            'Discounted exhibition booths & sponsorship packages',
+            'Live product demos & technology showcases',
+            'Ready-to-deploy STEM labs & robotics programs for CSR',
+            'Opportunities to sponsor underprivileged students & teams',
+            'Access to high-quality network of institutions & startups',
+            'Partnership opportunities for innovation labs & R&D',
+            'B2B matchmaking with robotics manufacturers & solution providers',
+            'Joint R&D programs with universities & labs',
+            'Opportunity to submit whitepapers & research',
+            'Exclusive access to global forums with industry leaders',
+            'Participation in international delegations & trade missions',
+            'Networking with policymakers & academic experts',
+            'Corporate discounts on WORSO certifications & training',
+            'Priority access to executive-level workshops',
+            'Access to WORSO policy discussions & industry standards',
+            'Eligibility to become WORSO Technology / Event / Regional Partner',
+            'Opportunity to host state & district robotics leagues'
+          ]
+        }
+      ].map((plan) => {
+        const Icon = plan.icon;
+        const isSelected = selectedMembership === plan.id;
+
+        return (
+          <div
+            key={plan.id}
+            onClick={() => setSelectedMembership(plan.id)}
+            className={`relative cursor-pointer rounded-3xl border transition-all duration-300 p-8 bg-white
+              ${isSelected
+                ? 'border-blue-600 shadow-xl scale-[1.03]'
+                : 'border-slate-200 hover:shadow-lg hover:-translate-y-1'
+              }`}
+          >
+            {isSelected && (
+              <div className="absolute top-4 right-4 text-xs font-bold px-3 py-1 rounded-full bg-blue-600 text-white">
+                Selected
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                <Icon size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-slate-900">{plan.title}</h3>
+                <p className="text-xs text-slate-500">{plan.audience}</p>
+              </div>
+            </div>
+
+            <div className="text-3xl font-extrabold text-slate-900 mb-6">
+              {plan.price}
+            </div>
+
+            <ul className="space-y-2 mb-8 max-h-[420px] overflow-y-auto pr-2 scrollbar-thin">
+              {plan.highlights.map((item, i) => (
+                <li key={i} className="text-sm text-slate-600 flex items-start gap-2">
+                  <span className="mt-1 w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <button
+              className={`w-full py-3 rounded-xl font-bold transition-all
+                ${isSelected
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white'
+                }`}
+            >
+              Select Plan
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</section>
     <section className="py-20 bg-white border-t border-slate-100">
       <div className="container mx-auto px-4 max-w-7xl">
         {newsError && <div className="text-sm text-red-500 mb-4">{newsError}</div>}

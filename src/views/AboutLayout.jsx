@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers, ArrowRight, Building, Trophy, FileText, Mail, Phone, Calendar } from 'lucide-react';
+import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers, ArrowRight, Building, Trophy, FileText, Mail, Phone, Calendar, BookOpen, Code, GraduationCap, Megaphone, Target, Rocket, BarChart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const AboutLayout = ({ setView }) => {
@@ -13,6 +13,25 @@ const AboutLayout = ({ setView }) => {
       case 'governance':
         return (
           <div className="space-y-8">
+            <div className="container mx-auto px-4 py-10">
+              <div className="bg-[#0f172a] rounded-3xl text-white p-12 md:p-14 shadow-2xl relative overflow-hidden">
+                <div className="text-yellow-400 font-bold tracking-widest text-xs uppercase mb-4">Root Governance</div>
+                <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">Governance</h1>
+                <p className="text-slate-200 text-lg max-w-3xl mb-6">
+                  Mission, mandate, affiliation, data, and the federated partner network that powers the sport of robotics.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <div className="bg-white/10 px-4 py-3 rounded-xl border border-white/10">
+                    <div className="text-xs font-bold uppercase text-slate-200">Mode</div>
+                    <div className="text-lg font-extrabold text-white">Federated</div>
+                  </div>
+                  <div className="bg-white/10 px-4 py-3 rounded-xl border border-white/10">
+                    <div className="text-xs font-bold uppercase text-slate-200">Associations</div>
+                    <div className="text-lg font-extrabold text-emerald-200">95+ Nations</div>
+                  </div>
+                </div>
+              </div>
+            </div>
             {/* Mission Section */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
@@ -89,6 +108,168 @@ const AboutLayout = ({ setView }) => {
             </div>
           </div>
         );
+      
+      case 'board':
+        return (
+          <div className="space-y-8">
+            {/* Board Header */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Users className="text-blue-600" />
+                <h2 className="text-3xl font-bold text-slate-900">Board of Directors</h2>
+              </div>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                The Executive Committee of the World Robotics Sports Organization (WORSO) is composed of esteemed leaders in the esports industry, tasked with guiding the federation's strategic vision and policies. They oversee global initiatives, drive the growth of competitive gaming, and ensure fair, inclusive practices. By fostering collaboration with national organizations, governments, and stakeholders, the committee plays a pivotal role in shaping the future of esports worldwide and ensuring its sustainable development.
+              </p>
+            </div>
+
+            {/* Board Members Grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[
+                { 
+                  name: 'Raj Kumar Sharma', 
+                  role: 'President, World Robotics Sports Organization (WORSO)', 
+                  img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face',
+                  email: 'raj.sharma@worso.org',
+                  phone: '+1 (555) 123-4567'
+                },
+                { 
+                  name: 'Ajay Pratap Singh', 
+                  role: 'Director Marketing', 
+                  img: 'https://images.unsplash.com/photo-1554151228-14d9def5d8b3?w=400&h=400&fit=crop&crop=face',
+                  email: 'ajay.singh@worso.org',
+                  phone: '+1 (555) 123-4568'
+                },
+                { 
+                  name: 'Navin Chhabra', 
+                  role: 'Director Operations', 
+                  img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop&crop=face',
+                  email: 'navin.chhabra@worso.org',
+                  phone: '+1 (555) 123-4569'
+                },
+                { 
+                  name: 'Rahul Chakraborty', 
+                  role: 'Director - Esports Startups', 
+                  img: 'https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=400&h=400&fit=crop&crop=face',
+                  email: 'rahul.chakraborty@worso.org',
+                  phone: '+1 (555) 123-4570'
+                },
+                { 
+                  name: 'Homa Siddiqui', 
+                  role: 'Strategy Manager- Tech Sports', 
+                  img: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+                  email: 'homa.siddiqui@worso.org',
+                  phone: '+1 (555) 123-4571'
+                },
+              ].map((member, index) => (
+                <div 
+                  key={member.name} 
+                  className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 p-8 flex flex-col items-center text-center hover:border-blue-200"
+                >
+                  {/* Circular Image Container */}
+                  <div className="relative w-48 h-48 mb-6">
+                    <div className="absolute inset-0 rounded-full overflow-hidden border-4 border-white shadow-lg group-hover:border-blue-100 transition-colors duration-300">
+                      <img
+                        src={member.img}
+                        alt={member.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = `data:image/svg+xml;base64,${btoa(`
+                            <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+                              <rect width="400" height="400" fill="#f1f5f9"/>
+                              <circle cx="200" cy="150" r="80" fill="#9da8ab"/>
+                              <circle cx="200" cy="380" r="120" fill="#9da8ab"/>
+                            </svg>
+                          `)}`;
+                        }}
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Member Info */}
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">
+                      {member.name}
+                    </h3>
+                    <p className="text-sm text-slate-600 mb-4 leading-relaxed">
+                      {member.role}
+                    </p>
+                    
+                    {/* Contact Info */}
+                    <div className="mt-4 pt-4 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
+                          <Mail size={14} />
+                          <span className="truncate">{member.email}</span>
+                        </div>
+                        <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
+                          <Phone size={14} />
+                          <span>{member.phone}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* View Profile Button */}
+                  <button 
+                    className="mt-6 px-6 py-2 bg-blue-50 text-blue-600 rounded-lg font-medium hover:bg-blue-100 transition-colors duration-200 text-sm opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300"
+                    onClick={() => console.log(`View ${member.name}'s profile`)}
+                  >
+                    View Profile
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Additional Info Section */}
+            <div className="mt-12 pt-8 border-t border-slate-200">
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* Meeting Info */}
+                <div className="bg-gradient-to-br from-blue-50 to-slate-50 rounded-2xl p-8 border border-blue-100">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Calendar className="text-blue-600" size={24} />
+                    <h3 className="text-xl font-bold text-slate-900">Board Meetings</h3>
+                  </div>
+                  <p className="text-slate-600 mb-4">
+                    The Board of Directors convenes quarterly to review progress, set strategic direction, and make key decisions for WORSO's global operations.
+                  </p>
+                  <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
+                    <Calendar size={16} />
+                    <span>Next Meeting: March 15, 2024</span>
+                  </div>
+                </div>
+
+                {/* Responsibilities */}
+                <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-8 border border-slate-200">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Shield className="text-slate-600" size={24} />
+                    <h3 className="text-xl font-bold text-slate-900">Key Responsibilities</h3>
+                  </div>
+                  <ul className="space-y-2 text-slate-600">
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <span>Strategic planning and policy development</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <span>Financial oversight and budget approval</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <span>Global partnership and stakeholder management</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <span>Esports development and growth initiatives</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      
       case 'president':
         return (
           <div className="space-y-8">
@@ -118,7 +299,6 @@ const AboutLayout = ({ setView }) => {
                   <h2 className="text-3xl font-bold text-slate-900 mb-2">WORSO Leadership</h2>
                   <div className="w-16 h-1 bg-blue-600 mb-6"></div>
                 </div>
-                
                 
                 <p className="text-lg text-slate-700 leading-relaxed">
                   Attention all esports associations, fans, players, and pioneers!
@@ -179,6 +359,7 @@ const AboutLayout = ({ setView }) => {
             </div>
           </div>
         );
+      
       case 'advisory':
         return (
           <div>
@@ -267,6 +448,161 @@ const AboutLayout = ({ setView }) => {
             </div>
           </div>
         );
+      
+      case 'federation-services':
+        return (
+          <div className="space-y-8">
+            {/* Header */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Globe2 className="text-blue-600" />
+                <h2 className="text-3xl font-bold text-slate-900">Federation Services</h2>
+              </div>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                The World Robotics Sports Organization (WORSO) plays a multifaceted role in fostering the growth and development of esports on a global scale. Here's a breakdown of potential services the IFES could offer to its members.
+              </p>
+            </div>
+
+            {/* Services Grid */}
+            <div className="space-y-12">
+              {/* Development and Standardization */}
+              <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-8 border border-blue-100">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-blue-100 p-3 rounded-lg">
+                    <Code className="text-blue-600" size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-slate-900">Development and Standardization</h3>
+                    <p className="text-slate-600 mt-2">Establishing global standards and ethical frameworks</p>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">Competitive Guidelines</h4>
+                    <p className="text-sm text-slate-600">Establish standardized rules and regulations for different esports genres, ensuring fair play and consistency across tournaments.</p>
+                  </div>
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">Discipline Development</h4>
+                    <p className="text-sm text-slate-600">Define and recognize new esports disciplines, potentially in collaboration with game developers and publishers.</p>
+                  </div>
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">Ethical Conduct</h4>
+                    <p className="text-sm text-slate-600">Implement and enforce anti-doping rules, anti-cheating measures, and ethical guidelines for players, teams, and organizers.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Education and Support */}
+              <div className="bg-gradient-to-br from-emerald-50 to-white rounded-2xl p-8 border border-emerald-100">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-emerald-100 p-3 rounded-lg">
+                    <GraduationCap className="text-emerald-600" size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-slate-900">Education and Support</h3>
+                    <p className="text-slate-600 mt-2">Empowering the esports community through education</p>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">Educational Programs</h4>
+                    <p className="text-sm text-slate-600">Create educational programs and resources for players, coaches, administrators, and the general public to raise awareness and understanding of esports.</p>
+                  </div>
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">Professional Training</h4>
+                    <p className="text-sm text-slate-600">Offer training and certification programs for esports professionals, such as referees, coaches, and event organizers.</p>
+                  </div>
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">Grassroots Support</h4>
+                    <p className="text-sm text-slate-600">Support and empower local and regional esports organizations through funding, knowledge sharing, and networking opportunities.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Advocacy and Representation */}
+              <div className="bg-gradient-to-br from-purple-50 to-white rounded-2xl p-8 border border-purple-100">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-purple-100 p-3 rounded-lg">
+                    <Megaphone className="text-purple-600" size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-slate-900">Advocacy and Representation</h3>
+                    <p className="text-slate-600 mt-2">Championing esports on the global stage</p>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">Government Recognition</h4>
+                    <p className="text-sm text-slate-600">Advocate for the recognition of esports as a legitimate sport by governments and international sports organizations.</p>
+                  </div>
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">Stakeholder Collaboration</h4>
+                    <p className="text-sm text-slate-600">Partner with game developers, publishers, technology companies, and other stakeholders to improve the esports ecosystem.</p>
+                  </div>
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">Social Impact</h4>
+                    <p className="text-sm text-slate-600">Highlight the positive benefits of esports, such as its potential to promote inclusivity, diversity, and development.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Competition and Events */}
+              <div className="bg-gradient-to-br from-amber-50 to-white rounded-2xl p-8 border border-amber-100">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-amber-100 p-3 rounded-lg">
+                    <Trophy className="text-amber-600" size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-slate-900">Competition and Events</h3>
+                    <p className="text-slate-600 mt-2">Organizing and supporting world-class esports competitions</p>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">International Championships</h4>
+                    <p className="text-sm text-slate-600">Host major international esports tournaments and events, potentially including regional qualifiers and culminating in a global championship.</p>
+                  </div>
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">Tournament Support</h4>
+                    <p className="text-sm text-slate-600">Partner and support existing major esports tournaments and leagues to ensure alignment with international standards and regulations.</p>
+                  </div>
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">Sustainable Development</h4>
+                    <p className="text-sm text-slate-600">Encourage game developers and publishers to implement practices that promote the long-term health and sustainability of esports ecosystems.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Research and Development */}
+              <div className="bg-gradient-to-br from-cyan-50 to-white rounded-2xl p-8 border border-cyan-100">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-cyan-100 p-3 rounded-lg">
+                    <BarChart className="text-cyan-600" size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-slate-900">Research and Development</h3>
+                    <p className="text-slate-600 mt-2">Advancing the esports industry through innovation</p>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">Industry Research</h4>
+                    <p className="text-sm text-slate-600">Invest in research on the economic, social, and cultural impact of esports to inform future development strategies.</p>
+                  </div>
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">Technology Innovation</h4>
+                    <p className="text-sm text-slate-600">Explore and develop new technologies and tools that can benefit the esports industry, such as anti-doping measures, spectator engagement platforms, and training tools.</p>
+                  </div>
+                  <div className="bg-white p-6 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 mb-3">Knowledge Sharing</h4>
+                    <p className="text-sm text-slate-600">Facilitate knowledge sharing and the exchange of best practices within the esports community through conferences, workshops, and online resources.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      
       case 'associates':
         return (
           <div className="space-y-8">
@@ -444,87 +780,7 @@ const AboutLayout = ({ setView }) => {
             </div>
           </div>
         );
-      case 'affiliation':
-        return (
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">Affiliation Process</h2>
-            <p className="text-lg text-slate-600 leading-relaxed mb-6">
-              Apply for a partner subdomain (e.g., uae.worso.org). On approval, you receive admin credentials, middleware keys, and field-level CMS permissions.
-            </p>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="p-6 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                <div className="font-bold text-slate-900 flex items-center gap-2">
-                  <Globe2 size={18} className="text-blue-600" /> Steps
-                </div>
-                {['Submit federation charter', 'Security & safety audit', 'Assign subdomain + theme', 'Go-live with local content JSON'].map((step, i) => (
-                  <div key={step} className="flex items-center gap-3">
-                    <span className="text-sm font-bold text-blue-600">{i + 1}</span>
-                    <span className="text-sm text-slate-600">{step}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="p-6 bg-blue-50 rounded-xl border border-blue-100 space-y-2">
-                <div className="font-bold text-slate-900 flex items-center gap-2">
-                  <ClipboardList size={18} className="text-blue-600" /> What Partners Control
-                </div>
-                <ul className="text-sm text-slate-700 list-disc list-inside space-y-1">
-                  <li>Local welcome message & language</li>
-                  <li>Local event gallery and news</li>
-                  <li>Team registrations & ticketing data</li>
-                </ul>
-                <div className="flex items-center gap-2 text-xs font-bold text-amber-700 mt-3">
-                  <Lock size={14} /> Global brand, logo, and rulebook stay locked.
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      case 'data':
-        return (
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">Data Layer: Teams & Rankings</h2>
-            <p className="text-lg text-slate-600 leading-relaxed mb-6">World ranks, prize pools, rosters, and Technoxian history stay centralized and are surfaced to every micro-site.</p>
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="p-5 rounded-xl border border-slate-200 bg-slate-50">
-                <div className="text-xs font-bold text-slate-500 uppercase mb-1">Global Rank</div>
-                <div className="text-2xl font-extrabold text-blue-600">#1 - #5000</div>
-                <p className="text-sm text-slate-600 mt-2">Unified ladder feeds partner directories.</p>
-              </div>
-              <div className="p-5 rounded-xl border border-slate-200 bg-slate-50">
-                <div className="text-xs font-bold text-slate-500 uppercase mb-1">Prize Money</div>
-                <div className="text-2xl font-extrabold text-slate-900">$250k+ pool</div>
-                <p className="text-sm text-slate-600 mt-2">Transparent payouts with audit-ready logs.</p>
-              </div>
-              <div className="p-5 rounded-xl border border-slate-200 bg-slate-50">
-                <div className="text-xs font-bold text-slate-500 uppercase mb-1">Roster Cards</div>
-                <div className="text-2xl font-extrabold text-emerald-600">Field-level lock</div>
-                <p className="text-sm text-slate-600 mt-2">Players sync from HQ; partners can localize bios.</p>
-              </div>
-            </div>
-          </div>
-        );
-      case 'partners':
-        return (
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">Partner Network</h2>
-            <p className="text-lg text-slate-600 leading-relaxed mb-6">Subdomains route through middleware: `*.worso.org` resolves tenant, injects theme, and serves local content.</p>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="p-6 rounded-xl border border-slate-200 bg-slate-50">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase text-emerald-600 mb-2">
-                  <Map size={16} /> Directory
-                </div>
-                <p className="text-sm text-slate-600">Map + list of partners with status badges (live, onboarding, prospect).</p>
-                <p className="text-xs text-slate-500 mt-2">Example: uae.worso.org, india.worso.org, korea.worso.org.</p>
-              </div>
-              <div className="p-6 rounded-xl border border-slate-200 bg-slate-50">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase text-emerald-600 mb-2">
-                  <Layers size={16} /> Micro-Site Shell
-                </div>
-                <p className="text-sm text-slate-600">One React codebase, multi-tenant middleware, JSON-driven assets (logo, hero, translations, sponsors).</p>
-              </div>
-            </div>
-          </div>
-        );
+      
       default:
         return <div>Select a section</div>;
     }
@@ -538,10 +794,9 @@ const AboutLayout = ({ setView }) => {
             { id: 'governance', label: 'Mission & Vision' },
             { id: 'president', label: "President's Message" },
             { id: 'advisory', label: 'Advisory Board' },
+            { id: 'board', label: 'Board of Directors' },
+            { id: 'federation-services', label: 'Federation Services' },
             { id: 'associates', label: 'Associates & Partners' },
-            { id: 'affiliation', label: 'Affiliation' },
-            { id: 'data', label: 'Data Layer' },
-            { id: 'partners', label: 'Partner Network' },
           ].map((item) => (
             <button
               key={item.id}
@@ -553,25 +808,6 @@ const AboutLayout = ({ setView }) => {
               {item.label}
             </button>
           ))}
-        </div>
-      </div>
-      <div className="container mx-auto px-4 py-10">
-        <div className="bg-[#0f172a] rounded-3xl text-white p-12 md:p-14 shadow-2xl relative overflow-hidden">
-          <div className="text-yellow-400 font-bold tracking-widest text-xs uppercase mb-4">Root Governance</div>
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">Governance</h1>
-          <p className="text-slate-200 text-lg max-w-3xl mb-6">
-            Mission, mandate, affiliation, data, and the federated partner network that powers the sport of robotics.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <div className="bg-white/10 px-4 py-3 rounded-xl border border-white/10">
-              <div className="text-xs font-bold uppercase text-slate-200">Mode</div>
-              <div className="text-lg font-extrabold text-white">Federated</div>
-            </div>
-            <div className="bg-white/10 px-4 py-3 rounded-xl border border-white/10">
-              <div className="text-xs font-bold uppercase text-slate-200">Associations</div>
-              <div className="text-lg font-extrabold text-emerald-200">95+ Nations</div>
-            </div>
-          </div>
         </div>
       </div>
       <div className="container mx-auto px-4 py-8">
