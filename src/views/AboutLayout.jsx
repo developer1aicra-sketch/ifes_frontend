@@ -108,7 +108,7 @@ const AboutLayout = ({ setView }) => {
             </div>
           </div>
         );
-      
+
       case 'board':
         return (
           <div className="space-y-8">
@@ -126,44 +126,44 @@ const AboutLayout = ({ setView }) => {
             {/* Board Members Grid */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {[
-                { 
-                  name: 'Raj Kumar Sharma', 
-                  role: 'President, World Robotics Sports Organization (WORSO)', 
-                  img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face',
+                {
+                  name: 'Raj Kumar Sharma',
+                  role: 'President, World Robotics Sports Organization (WORSO)',
+                  img: 'https://worso.org/images/executive-committee/rajkumar.png',
                   email: 'raj.sharma@worso.org',
                   phone: '+1 (555) 123-4567'
                 },
-                { 
-                  name: 'Ajay Pratap Singh', 
-                  role: 'Director Marketing', 
-                  img: 'https://images.unsplash.com/photo-1554151228-14d9def5d8b3?w=400&h=400&fit=crop&crop=face',
+                {
+                  name: 'Ajay Pratap Singh',
+                  role: 'Director Marketing',
+                  img: 'https://worso.org/images/executive-committee/AjayPratapSingh.png',
                   email: 'ajay.singh@worso.org',
                   phone: '+1 (555) 123-4568'
                 },
-                { 
-                  name: 'Navin Chhabra', 
-                  role: 'Director Operations', 
-                  img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop&crop=face',
+                {
+                  name: 'Navin Chhabra',
+                  role: 'Director Operations',
+                  img: 'https://worso.org/images/executive-committee/navin.png',
                   email: 'navin.chhabra@worso.org',
                   phone: '+1 (555) 123-4569'
                 },
-                { 
-                  name: 'Rahul Chakraborty', 
-                  role: 'Director - Esports Startups', 
-                  img: 'https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=400&h=400&fit=crop&crop=face',
+                {
+                  name: 'Rahul Chakraborty',
+                  role: 'Director - Esports Startups',
+                  img: 'https://worso.org/images/executive-committee/rahul.png',
                   email: 'rahul.chakraborty@worso.org',
                   phone: '+1 (555) 123-4570'
                 },
-                { 
-                  name: 'Homa Siddiqui', 
-                  role: 'Strategy Manager- Tech Sports', 
-                  img: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+                {
+                  name: 'Homa Siddiqui',
+                  role: 'Strategy Manager- Tech Sports',
+                  img: 'https://worso.org/images/executive-committee/homa.png',
                   email: 'homa.siddiqui@worso.org',
                   phone: '+1 (555) 123-4571'
                 },
               ].map((member, index) => (
-                <div 
-                  key={member.name} 
+                <div
+                  key={member.name}
                   className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 p-8 flex flex-col items-center text-center hover:border-blue-200"
                 >
                   {/* Circular Image Container */}
@@ -186,7 +186,7 @@ const AboutLayout = ({ setView }) => {
                       />
                     </div>
                   </div>
-                  
+
                   {/* Member Info */}
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">
@@ -195,7 +195,7 @@ const AboutLayout = ({ setView }) => {
                     <p className="text-sm text-slate-600 mb-4 leading-relaxed">
                       {member.role}
                     </p>
-                    
+
                     {/* Contact Info */}
                     <div className="mt-4 pt-4 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <div className="space-y-2">
@@ -210,9 +210,9 @@ const AboutLayout = ({ setView }) => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* View Profile Button */}
-                  <button 
+                  <button
                     className="mt-6 px-6 py-2 bg-blue-50 text-blue-600 rounded-lg font-medium hover:bg-blue-100 transition-colors duration-200 text-sm opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300"
                     onClick={() => console.log(`View ${member.name}'s profile`)}
                   >
@@ -269,7 +269,7 @@ const AboutLayout = ({ setView }) => {
             </div>
           </div>
         );
-      
+
       case 'president':
         return (
           <div className="space-y-8">
@@ -277,8 +277,8 @@ const AboutLayout = ({ setView }) => {
               {/* President's Image and Name - Left Side */}
               <div className="md:w-1/4 space-y-4">
                 <div className="bg-slate-100 rounded-xl overflow-hidden aspect-[3/4] max-w-[280px] mx-auto">
-                  <img 
-                    src="https://worso.org/images/executive-committee/rajkumar.png" 
+                  <img
+                    src="https://worso.org/images/executive-committee/rajkumar.png"
                     alt="Raj Kumar Sharma, President of International Federation of Esports"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -292,34 +292,34 @@ const AboutLayout = ({ setView }) => {
                   <p className="text-blue-600 font-medium">President, International Federation of Esports</p>
                 </div>
               </div>
-              
+
               {/* President's Message - Right Side */}
               <div className="md:w-3/4 space-y-6">
                 <div>
                   <h2 className="text-3xl font-bold text-slate-900 mb-2">WORSO Leadership</h2>
                   <div className="w-16 h-1 bg-blue-600 mb-6"></div>
                 </div>
-                
+
                 <p className="text-lg text-slate-700 leading-relaxed">
                   Attention all esports associations, fans, players, and pioneers!
                 </p>
-                
+
                 <p className="text-slate-600 leading-relaxed">
                   As we stand at the threshold of a new year, brimming with potential and possibility, I wanted to take this moment to address you, the vibrant heart of the global esports community.
                 </p>
-                
+
                 <p className="text-slate-600 leading-relaxed">
                   The past year has been nothing short of extraordinary for esports. We've witnessed breathtaking moments of skill, witnessed esports break new barriers of mainstream acceptance, and experienced the power of our community coming together as one.
                 </p>
-                
+
                 <p className="text-slate-600 leading-relaxed">
                   From the electrifying finals of the World Cup 7.0 - TechnoXian, where nations battled for esports glory, to the record-breaking viewership of major tournaments, to the grassroots passion evident in local communities around the world, we've seen the undeniable growth and resilience of our beloved sport.
                 </p>
-                
+
                 <p className="text-slate-600 leading-relaxed">
                   But this, my friends, is just the beginning. As the International Federation of Esports (WORSO), We are committed to nurturing this momentum and propelling esports to even greater heights. In the coming year, we will strive to:
                 </p>
-                
+
                 <ul className="space-y-3 list-disc pl-5 text-slate-600">
                   <li><span className="font-medium">Champion a level playing field:</span> We will continue to advocate for fair competition at all levels, ensuring everyone has the opportunity to reach their full potential.</li>
                   <li><span className="font-medium">Foster sustainable growth:</span> We will work tirelessly to support infrastructure development, empower local communities, and create pathways for aspiring players and professionals.</li>
@@ -327,23 +327,23 @@ const AboutLayout = ({ setView }) => {
                   <li><span className="font-medium">Promote responsible gameplay:</span> We will champion principles of sportsmanship, ethical conduct, and player well-being, ensuring that esports remains a healthy and inclusive environment for all.</li>
                   <li><span className="font-medium">Elevate esports to its rightful place:</span> We will continue to collaborate with key stakeholders, including traditional sports organizations, governments, and educational institutions, to secure esports' rightful place as a respected and recognized sport.</li>
                 </ul>
-                
+
                 <p className="text-slate-600 leading-relaxed">
                   But none of this will be possible without you, the incredible esports community. We need your passion, your dedication, and your unwavering belief in the power of esports.
                 </p>
-                
+
                 <p className="text-slate-600 leading-relaxed">
                   So, let's step into this new year together, united by our love for the game and our shared vision for the future. Let's strive for excellence, inspire each other, and continue to build a vibrant, inclusive, and sustainable esports landscape that benefits players, teams, organizations, and fans alike.
                 </p>
-                
+
                 <p className="text-slate-700 font-medium text-lg">
                   Together, we can make esports more than just a game. We can make it a platform for connection, opportunity, and positive impact. Let's make this year the year esports truly reaches its full potential!
                 </p>
-                
+
                 <p className="text-slate-800 font-medium mt-8 text-lg">
                   Onward and upward, esport family!
                 </p>
-                
+
                 <p className="text-slate-600 mt-10">
                   With unwavering support,
                 </p>
@@ -352,14 +352,14 @@ const AboutLayout = ({ setView }) => {
                 </p>
               </div>
             </div>
-            
+
             <div className="p-6 bg-slate-50 rounded-xl border border-slate-200 mt-8">
               <h4 className="font-bold mb-2">Global Mandate</h4>
               <p className="text-slate-600">As the International Federation of Esports, WORSO is committed to governing and promoting esports worldwide, ensuring fair play, integrity, and the continued growth of our sport.</p>
             </div>
           </div>
         );
-      
+
       case 'advisory':
         return (
           <div>
@@ -425,8 +425,8 @@ const AboutLayout = ({ setView }) => {
               ].map((member, index) => (
                 <div key={index} className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   <div className="relative pt-[100%] bg-slate-100">
-                    <img 
-                      src={member.image} 
+                    <img
+                      src={member.image}
                       alt={member.name}
                       className="absolute top-0 left-0 w-full h-full object-cover"
                       onError={(e) => {
@@ -448,7 +448,7 @@ const AboutLayout = ({ setView }) => {
             </div>
           </div>
         );
-      
+
       case 'federation-services':
         return (
           <div className="space-y-8">
@@ -602,7 +602,7 @@ const AboutLayout = ({ setView }) => {
             </div>
           </div>
         );
-      
+
       case 'associates':
         return (
           <div className="space-y-8">
@@ -633,13 +633,13 @@ const AboutLayout = ({ setView }) => {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <button 
+                  <button
                     onClick={() => navigate('/associates/join-worso')}
                     className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold shadow-sm hover:bg-blue-700 transition-all"
                   >
                     Join WORSO
                   </button>
-                  <button 
+                  <button
                     onClick={() => navigate('/associates/list')}
                     className="bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-lg font-bold hover:bg-slate-100 transition-all flex items-center gap-2"
                   >
@@ -681,7 +681,7 @@ const AboutLayout = ({ setView }) => {
                     Start your application process today and become part of our global network.
                   </p>
                 </div>
-                <button 
+                <button
                   onClick={() => navigate('/associates/join-worso')}
                   className="bg-blue-600 text-white px-8 py-4 rounded-lg font-bold text-lg shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all duration-300 whitespace-nowrap"
                 >
@@ -754,33 +754,9 @@ const AboutLayout = ({ setView }) => {
                 ))}
               </div>
             </div>
-
-            {/* Quick Contact */}
-            <div className="mt-12 bg-slate-900 rounded-2xl p-8 text-white">
-              <h3 className="text-2xl font-bold text-white mb-4">Need Help With Your Application?</h3>
-              <p className="text-slate-300 mb-6">
-                Our team is here to assist you through the application process. Contact us for any queries or support.
-              </p>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="flex items-center gap-3">
-                  <Mail className="text-blue-400" size={20} />
-                  <div>
-                    <div className="text-sm text-slate-400">Email</div>
-                    <div className="font-medium">partners@worso.org</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="text-green-400" size={20} />
-                  <div>
-                    <div className="text-sm text-slate-400">Phone</div>
-                    <div className="font-medium">+1 (555) 123-4567</div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         );
-      
+
       default:
         return <div>Select a section</div>;
     }
@@ -801,9 +777,8 @@ const AboutLayout = ({ setView }) => {
             <button
               key={item.id}
               onClick={() => setActiveSection(item.id)}
-              className={`py-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${
-                activeSection === item.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-900'
-              }`}
+              className={`py-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeSection === item.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-900'
+                }`}
             >
               {item.label}
             </button>

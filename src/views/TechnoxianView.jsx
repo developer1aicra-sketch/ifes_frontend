@@ -29,6 +29,7 @@ import {
   Dumbbell,
   Puzzle,
   Drone,
+  ChevronDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GAME_CATEGORIES } from "../constants/data";
@@ -43,6 +44,8 @@ const TechnoxianView = () => {
   const [imageErrors, setImageErrors] = useState({});
   const [selectedTechnoxianMembership, setSelectedTechnoxianMembership] =
     useState(null);
+  const [openTechRows, setOpenTechRows] = useState({});
+
 
   // Schedule navigation states
   const [selectedChampionship, setSelectedChampionship] = useState(null);
@@ -80,6 +83,15 @@ const TechnoxianView = () => {
     { id: "rc-electric", name: "Rc Electric" },
     { id: "robo-hockey", name: "Robo Hockey" },
   ];
+
+  // Add this near your other constants (after ZONAL_CATEGORIES)
+  const ZONE_CITIES = {
+    "zonal-west": "Gujarat",
+    "zonal-east": "Kolkata",
+    "zonal-south": "Chennai",
+    "zonal-north": "Chandigarh",
+    "zonal-center": "Indore",
+  };
 
   // Define the games for discipline section
   const DISCIPLINE_GAMES = [
@@ -556,6 +568,49 @@ const TechnoxianView = () => {
     DISCIPLINE_GAMES.find((game) => game.name === selectedDisciplineGame) ||
     DISCIPLINE_GAMES[0];
 
+  function TechComparisonRow({ row, index }) {
+    const isOpen = !!openTechRows[index];
+
+    return (
+      <tr className="hover:bg-slate-50">
+        <td className="p-5 align-top">
+          <button
+            onClick={() =>
+              setOpenTechRows(prev => ({
+                ...prev,
+                [index]: !prev[index],
+              }))
+            }
+            className="flex items-start gap-2 text-left w-full"
+          >
+            <ChevronDown
+              size={16}
+              className={`mt-1 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            />
+            <span className="font-medium text-slate-800">
+              {row.title}
+            </span>
+          </button>
+
+          {isOpen && (
+            <p className="mt-3 text-sm text-slate-600 max-w-xl">
+              {row.desc}
+            </p>
+          )}
+        </td>
+
+        {row.values.map((v, i) => (
+          <td key={i} className="p-5 text-center text-lg">
+            {v === true && '✔️'}
+            {v === false && '✖️'}
+            {v === null && '—'}
+          </td>
+        ))}
+      </tr>
+    );
+  }
+
+
   return (
     <div className="animate-fadeIn bg-slate-50 min-h-screen">
       <div className="bg-white border-b border-slate-200 sticky top-[56px] z-30 shadow-sm">
@@ -565,11 +620,10 @@ const TechnoxianView = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${
-                  activeTab === tab
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-slate-500 hover:text-slate-900"
-                }`}
+                className={`py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === tab
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-slate-500 hover:text-slate-900"
+                  }`}
               >
                 {tab}
               </button>
@@ -721,11 +775,10 @@ const TechnoxianView = () => {
                         key={plan.id}
                         onClick={() => setSelectedTechnoxianMembership(plan.id)}
                         className={`cursor-pointer rounded-3xl border p-8 bg-white transition-all
-              ${
-                isSelected
-                  ? "border-blue-600 shadow-xl scale-[1.03]"
-                  : "border-slate-200 hover:shadow-lg hover:-translate-y-1"
-              }`}
+              ${isSelected
+                            ? "border-blue-600 shadow-xl scale-[1.03]"
+                            : "border-slate-200 hover:shadow-lg hover:-translate-y-1"
+                          }`}
                       >
                         <div className="flex items-center gap-3 mb-6">
                           <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
@@ -759,11 +812,10 @@ const TechnoxianView = () => {
 
                         <button
                           className={`w-full py-3 rounded-xl font-bold transition-all
-                ${
-                  isSelected
-                    ? "bg-blue-600 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white"
-                }`}
+                ${isSelected
+                              ? "bg-blue-600 text-white"
+                              : "bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white"
+                            }`}
                         >
                           {isSelected ? "Selected" : "Select Plan"}
                         </button>
@@ -774,59 +826,112 @@ const TechnoxianView = () => {
               </div>
             </section>
 
-            <section className="py-24 bg-white border-t border-slate-200">
-              <div className="container mx-auto px-4 max-w-7xl">
-                <div className="text-center mb-12">
-                  <h3 className="text-3xl font-extrabold text-slate-900">
-                    Compare Student Membership Benefits
-                  </h3>
-                  <p className="text-slate-600 mt-3">
-                    See what you unlock with each Technoxian student membership.
+            <section className="bg-white border-t border-slate-200">
+              <div className="container mx-auto px-6 max-w-7xl py-24">
+
+                {/* Header */}
+                <div className="text-center mb-16">
+                  <span className="text-xs font-bold uppercase tracking-widest text-blue-600">
+                    Technoxian Membership
+                  </span>
+                  <h2 className="text-4xl font-extrabold text-slate-900 mt-4">
+                    Compare all student membership features
+                  </h2>
+                  <p className="text-slate-600 mt-4 max-w-3xl mx-auto">
+                    Explore benefits across Student, Basic, and Premium memberships.
+                    Click on each feature to understand what’s included.
                   </p>
                 </div>
 
-                <div className="overflow-x-auto rounded-3xl border border-slate-200">
-                  <table className="w-full text-sm">
-                    <thead className="bg-slate-50">
+                {/* Comparison Table */}
+                <div className="overflow-x-auto rounded-3xl border bg-white">
+                  <table className="w-full border-collapse">
+                    <thead className="bg-slate-100">
                       <tr>
-                        <th className="p-4 text-left font-semibold">
-                          Features
+                        <th className="p-5 text-left text-sm font-bold text-slate-700">
+                          Feature
                         </th>
-                        <th className="p-4 text-center font-semibold">Basic</th>
-                        <th className="p-4 text-center font-semibold">
-                          Premium
-                        </th>
+                        <th className="p-5 text-center text-sm font-bold">Student</th>
+                        <th className="p-5 text-center text-sm font-bold">Basic</th>
+                        <th className="p-5 text-center text-sm font-bold">Premium</th>
                       </tr>
                     </thead>
+
                     <tbody className="divide-y">
                       {[
-                        ["Student Membership ID & Certificate", "✔", "✔"],
-                        ["Global Student Directory Listing", "✔", "✔"],
-                        ["Competitions Access (via RoboClub)", "✔", "✔"],
-                        ["Internship & Project Listings", "✔", "✔"],
-                        ["Advanced AI Labs & Simulation Tools", "—", "✔"],
-                        ["Priority Internship Interviews", "—", "✔"],
-                        ["Mentorship & Career Planning", "—", "✔"],
-                        ["Leadership & Advisory Roles", "—", "✔"],
-                        ["International Leagues & Exchange Camps", "—", "✔"],
-                        ["Startup & Innovation Support", "—", "✔"],
-                        ["Discounts on Robotics / AI Courses", "✔", "✔"],
-                        ["Early Access to Masterclasses", "—", "✔"],
-                        ["CSR & Outreach Leadership", "—", "✔"],
-                      ].map(([feature, basic, premium], idx) => (
-                        <tr key={idx}>
-                          <td className="p-4 font-medium text-slate-700">
-                            {feature}
-                          </td>
-                          <td className="p-4 text-center">{basic}</td>
-                          <td className="p-4 text-center">{premium}</td>
-                        </tr>
+                        {
+                          title: 'Official Technoxian Student Membership',
+                          desc:
+                            'Official student membership ID with digital certificate and QR verification under WORSO & Technoxian.',
+                          values: [true, true, true],
+                        },
+                        {
+                          title: 'Global Student Directory & Digital Badges',
+                          desc:
+                            'Listing in the WORSO student community directory and global young innovators directory with verifiable digital badges.',
+                          values: [true, true, true],
+                        },
+                        {
+                          title: 'Workshops, Webinars & Learning Access',
+                          desc:
+                            'Access to workshops, monthly webinars, resume-building sessions, and selected masterclasses.',
+                          values: [true, true, true],
+                        },
+                        {
+                          title: 'Internships, Mentorship & Placement Support',
+                          desc:
+                            'Access to internships, priority interviews, mentorship for innovation, career planning, and placement opportunities.',
+                          values: [false, true, true],
+                        },
+                        {
+                          title: 'Competitions & Events Access',
+                          desc:
+                            'Eligibility to register for district, state, national & international competitions via RoboClubs.',
+                          values: [true, true, true],
+                        },
+                        {
+                          title: 'Innovation, Hackathons & Research',
+                          desc:
+                            'Participation in hackathons, innovation challenges, student research submissions, and innovation council access.',
+                          values: [false, true, true],
+                        },
+                        {
+                          title: 'Leadership, Chapters & Policy Roles',
+                          desc:
+                            'Eligibility to form student chapters, leadership titles, advisory roles, and youth policy discussions.',
+                          values: [false, false, true],
+                        },
+                        {
+                          title: 'International Exposure & Exchange Programs',
+                          desc:
+                            'Priority selection for international exchange camps, leadership meets, global forums, and sponsored participation.',
+                          values: [false, false, true],
+                        },
+                        {
+                          title: 'Discounts & Premium Learning Benefits',
+                          desc:
+                            'Discounts on robotics, AI & drone courses, early access to advanced courses, and premium masterclasses.',
+                          values: [true, true, true],
+                        },
+                        {
+                          title: 'CSR, Volunteering & Outreach',
+                          desc:
+                            'Opportunities to volunteer in STEM outreach, lead CSR workshops, and earn certificates for social impact.',
+                          values: [true, true, true],
+                        },
+                      ].map((row, i) => (
+                        <TechComparisonRow
+                          key={i}
+                          row={row}
+                          index={i}
+                        />
                       ))}
                     </tbody>
                   </table>
                 </div>
               </div>
             </section>
+
 
             {/* Trophies Section */}
             <div className="mt-10">
@@ -896,11 +1001,10 @@ const TechnoxianView = () => {
                           <button
                             key={index}
                             onClick={() => setTrophyIndex(startIndex)}
-                            className={`h-1.5 rounded-full transition-all ${
-                              isActive
-                                ? "w-6 bg-blue-600"
-                                : "w-1.5 bg-slate-300 hover:bg-slate-400"
-                            }`}
+                            className={`h-1.5 rounded-full transition-all ${isActive
+                              ? "w-6 bg-blue-600"
+                              : "w-1.5 bg-slate-300 hover:bg-slate-400"
+                              }`}
                             aria-label={`Go to trophy group ${index + 1}`}
                           />
                         );
@@ -924,62 +1028,73 @@ const TechnoxianView = () => {
           >
             <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col lg:flex-row h-[calc(100vh-200px)] min-h-[640px]">
               {/* Discipline Sidebar - Game List - UPDATED */}
-              <div className="w-72 bg-[#0f172a] text-white relative overflow-hidden border-r border-slate-800">
+              <div className="w-72 bg-gradient-to-b from-[#0f172a] via-[#0b1220] to-[#020617] text-white relative overflow-hidden">
                 <div className="relative h-full">
-                  <div className="relative h-full">
-                    {/* Fixed Header */}
-                    <div className="absolute top-0 left-0 right-0 z-10 bg-[#0f172a] p-6 border-b border-slate-800">
-                      <div>
-                        <div className="text-[11px] font-bold uppercase text-blue-200">
-                          Games & Disciplines
-                        </div>
-                        <div className="text-xl font-extrabold">All Games</div>
-                      </div>
-                    </div>
 
-                    {/* Scrollable Game List - Now matches schedule sidebar exactly */}
-                    <div className="absolute top-24 bottom-0 left-0 right-0 overflow-y-auto">
-                      <div className="p-6 space-y-2">
-                        {DISCIPLINE_GAMES.map((game) => (
+                  {/* Soft ambient glow */}
+                  <div className="absolute -top-24 -left-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute bottom-0 -right-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                  {/* Fixed Header */}
+                  <div className="absolute top-0 left-0 right-0 z-10 p-6 backdrop-blur-md bg-[#0f172a]/80">
+                    <div className="text-[11px] font-bold uppercase tracking-widest text-blue-300">
+                      Games & Disciplines
+                    </div>
+                    <div className="text-xl font-extrabold text-white mt-1">
+                      All Games
+                    </div>
+                  </div>
+
+                  {/* Scrollable List */}
+                  <div className="absolute top-24 bottom-0 left-0 right-0 overflow-y-auto scroll-smooth scrollbar-hide">
+                    <div className="p-5 space-y-1.5">
+                      {DISCIPLINE_GAMES.map((game) => {
+                        const active = selectedDisciplineGame === game.name;
+
+                        return (
                           <button
                             key={game.id}
                             onClick={() => setSelectedDisciplineGame(game.name)}
-                            className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${
-                              selectedDisciplineGame === game.name
-                                ? "bg-white/15 border-blue-400 text-white"
-                                : "bg-white/5 border-white/10 hover:border-blue-300 text-blue-100"
-                            }`}
-                          >
-                            <div
-                              className={`p-2 rounded-lg ${
-                                selectedDisciplineGame === game.name
-                                  ? "bg-white/20"
-                                  : "bg-white/10"
+                            className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all duration-200
+                ${active
+                                ? 'bg-gradient-to-r from-blue-500/20 to-indigo-500/10 text-white shadow-lg'
+                                : 'text-blue-100/80 hover:bg-white/5'
                               }`}
+                          >
+                            {/* Icon */}
+                            <div
+                              className={`p-2 rounded-lg transition-colors
+                  ${active ? 'bg-blue-400/20' : 'bg-white/5'}
+                `}
                             >
                               {game.icon}
                             </div>
+
+                            {/* Text */}
                             <div className="flex-1 min-w-0">
                               <div className="font-semibold text-sm truncate">
                                 {game.name}
                               </div>
-                              <div className="text-xs text-blue-200/70 mt-1 truncate">
+                              <div className="text-xs text-blue-200/60 truncate mt-0.5">
                                 {game.category}
                               </div>
                             </div>
-                            {selectedDisciplineGame === game.name && (
+
+                            {/* Active Indicator */}
+                            {active && (
                               <ChevronRight
                                 size={14}
-                                className="text-blue-200 flex-shrink-0"
+                                className="text-blue-300 flex-shrink-0"
                               />
                             )}
                           </button>
-                        ))}
-                      </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
               </div>
+
 
               {/* Main Content Area - Game Details */}
               <div className="flex-1 overflow-y-auto p-8">
@@ -1231,9 +1346,15 @@ const TechnoxianView = () => {
           >
             <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col lg:flex-row h-[calc(100vh-200px)] min-h-[640px]">
               {/* Schedule sidebar - UPDATED to match discipline */}
-              <div className="w-72 bg-[#0f172a] text-white relative overflow-hidden border-r border-slate-800">
+              <div className="w-72 bg-gradient-to-b from-[#0f172a] via-[#0b1220] to-[#020617] text-white relative overflow-hidden">
+                {/* Ambient glow */}
+                <div className="absolute -top-24 -left-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 -right-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
                 <div className="relative h-full">
                   <AnimatePresence initial={false} mode="wait">
+
+                    {/* ================= CHAMPIONSHIP ================= */}
                     {sidebarLevel === "championship" && (
                       <motion.div
                         key="championship"
@@ -1243,48 +1364,47 @@ const TechnoxianView = () => {
                         transition={{ duration: 0.25, ease: "easeOut" }}
                         className="relative h-full"
                       >
-                        {/* Fixed Header */}
-                        <div className="absolute top-0 left-0 right-0 z-10 bg-[#0f172a] p-6 border-b border-slate-800">
-                          <div className="mb-4">
-                            <div className="text-[11px] font-bold uppercase text-blue-200">
-                              Schedule
-                            </div>
-                            <div className="text-xl font-extrabold">
-                              Championship Levels
-                            </div>
+                        {/* Header */}
+                        <div className="absolute top-0 left-0 right-0 z-10 p-6 backdrop-blur-md bg-[#0f172a]/80">
+                          <div className="text-[11px] font-bold uppercase tracking-widest text-blue-300">
+                            Schedule
+                          </div>
+                          <div className="text-xl font-extrabold text-white mt-1">
+                            Championship Levels
                           </div>
                         </div>
 
-                        {/* Scrollable Content */}
-                        <div className="absolute top-24 bottom-0 left-0 right-0 overflow-y-auto">
-                          <div className="p-6 space-y-2">
-                            {SCHEDULE_DATA.map((champ) => (
-                              <button
-                                key={champ.id}
-                                onClick={() => {
-                                  setSelectedChampionship(champ.id);
-                                  setSidebarLevel("event");
-                                }}
-                                className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between ${
-                                  selectedChampionship === champ.id
-                                    ? "bg-white/15 border-blue-400 text-white"
-                                    : "bg-white/5 border-white/10 hover:border-blue-300 text-blue-100"
-                                }`}
-                              >
-                                <span className="font-semibold text-sm">
-                                  {champ.name}
-                                </span>
-                                <ChevronRight
-                                  size={14}
-                                  className="text-blue-200"
-                                />
-                              </button>
-                            ))}
+                        {/* Content */}
+                        <div className="absolute top-24 bottom-0 left-0 right-0 overflow-y-auto scroll-smooth scrollbar-hide">
+                          <div className="p-5 space-y-1.5">
+                            {SCHEDULE_DATA.map((champ) => {
+                              const active = selectedChampionship === champ.id;
+                              return (
+                                <button
+                                  key={champ.id}
+                                  onClick={() => {
+                                    setSelectedChampionship(champ.id);
+                                    setSidebarLevel("event");
+                                  }}
+                                  className={`w-full text-left px-4 py-3 rounded-xl flex items-center justify-between transition-all
+                      ${active
+                                      ? "bg-gradient-to-r from-blue-500/20 to-indigo-500/10 shadow-lg"
+                                      : "hover:bg-white/5 text-blue-100/80"
+                                    }`}
+                                >
+                                  <span className="font-semibold text-sm text-white">
+                                    {champ.name}
+                                  </span>
+                                  <ChevronRight size={14} className="text-blue-300" />
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       </motion.div>
                     )}
 
+                    {/* ================= EVENT ================= */}
                     {sidebarLevel === "event" && selectedChampionship && (
                       <motion.div
                         key="event"
@@ -1292,149 +1412,161 @@ const TechnoxianView = () => {
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: -30, opacity: 0 }}
                         transition={{ duration: 0.25, ease: "easeOut" }}
-                        className="absolute inset-0 z-20 bg-[#0f172a] h-full"
+                        className="absolute inset-0 h-full"
                       >
-                        {/* Fixed Header */}
-                        <div className="absolute top-0 left-0 right-0 z-10 bg-[#0f172a] p-6 border-b border-slate-800">
-                          <div className="flex items-center justify-between">
-                            <button
-                              onClick={() => {
-                                setSidebarLevel("championship");
-                                setSelectedEvent(null);
-                                setSelectedGame(null);
-                              }}
-                              className="flex items-center gap-2 text-sm text-blue-100 hover:text-white transition-colors"
-                            >
-                              <ChevronLeft size={16} />
-                              <span>Back</span>
-                            </button>
-                          </div>
+                        {/* Header */}
+                        <div className="absolute top-0 left-0 right-0 z-10 p-6 backdrop-blur-md bg-[#0f172a]/80">
+                          <button
+                            onClick={() => {
+                              setSidebarLevel("championship");
+                              setSelectedEvent(null);
+                              setSelectedGame(null);
+                            }}
+                            className="flex items-center gap-2 text-sm text-blue-200 hover:text-white transition"
+                          >
+                            <ChevronLeft size={16} />
+                            Back
+                          </button>
+
                           <div className="mt-4">
-                            <div className="text-[11px] font-bold uppercase text-blue-200 mb-1">
+                            <div className="text-[11px] font-bold uppercase tracking-widest text-blue-300">
                               Events
                             </div>
-                            <div className="text-lg font-extrabold text-white">
+                            <div className="text-lg font-extrabold text-white mt-1">
                               {
-                                SCHEDULE_DATA.find(
-                                  (c) => c.id === selectedChampionship,
-                                )?.name
+                                SCHEDULE_DATA.find(c => c.id === selectedChampionship)?.name
                               }
                             </div>
                           </div>
                         </div>
 
-                        {/* Scrollable Content */}
-                        <div className="absolute top-36 bottom-0 left-0 right-0 overflow-y-auto">
-                          <div className="p-6 space-y-2">
-                            {SCHEDULE_DATA.find(
-                              (c) => c.id === selectedChampionship,
-                            )?.events.map((event) => (
-                              <button
-                                key={event.id}
-                                onClick={() => {
-                                  setSelectedEvent(event.id);
-                                  setSelectedGame(null);
-                                  setSidebarLevel("game");
-                                }}
-                                className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between ${
-                                  selectedEvent === event.id
-                                    ? "bg-white/15 border-blue-400 text-white"
-                                    : "bg-white/5 border-white/10 hover:border-blue-300 text-blue-100"
-                                }`}
-                              >
-                                <div className="flex items-center gap-8 justify-between">
+                        {/* Content */}
+                        <div className="absolute top-36 bottom-0 left-0 right-0 overflow-y-auto scroll-smooth scrollbar-hide">
+                          <div className="p-5 space-y-1.5">
+                            {SCHEDULE_DATA.find(c => c.id === selectedChampionship)?.events.map(event => {
+                              const active = selectedEvent === event.id;
+                              return (
+                                <button
+                                  key={event.id}
+                                  onClick={() => {
+                                    setSelectedEvent(event.id);
+                                    setSelectedGame(null);
+                                    setSidebarLevel("game");
+                                  }}
+                                  className={`w-full px-4 py-3 rounded-xl flex items-center justify-between transition-all
+                      ${active
+                                      ? "bg-gradient-to-r from-blue-500/20 to-indigo-500/10 shadow-lg"
+                                      : "hover:bg-white/5 text-blue-100/80"
+                                    }`}
+                                >
                                   <span className="font-semibold text-sm text-white">
                                     {event.name}
                                   </span>
-                                  <div className="flex items-center gap-2 text-blue-200 text-[11px]">
-                                    <span className="uppercase tracking-wide">
-                                      {event.games.length} games
-                                    </span>
+                                  <div className="flex items-center gap-2 text-blue-300 text-[11px] uppercase">
+                                    <MapPin size={10} />
+                                    {ZONE_CITIES[event.id] || ""}
                                     <ChevronRight size={14} />
                                   </div>
-                                </div>
-                              </button>
-                            ))}
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       </motion.div>
                     )}
 
-                    {sidebarLevel === "game" &&
-                      selectedChampionship &&
-                      selectedEvent && (
-                        <motion.div
-                          key="game"
-                          initial={{ x: 40, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          exit={{ x: -40, opacity: 0 }}
-                          transition={{ duration: 0.25, ease: "easeOut" }}
-                          className="absolute inset-0 bg-[#0f172a] h-full"
-                        >
-                          {/* Fixed Header */}
-                          <div className="absolute top-0 left-0 right-0 z-10 bg-[#0f172a] p-6 border-b border-slate-800">
-                            <div className="flex items-center justify-between">
-                              <button
-                                onClick={() => {
-                                  setSidebarLevel("event");
-                                  setSelectedGame(null);
-                                }}
-                                className="flex items-center gap-2 text-sm text-blue-100 hover:text-white transition-colors"
-                              >
-                                <ChevronLeft size={16} />
-                                <span>Back</span>
-                              </button>
+                    {/* ================= GAME ================= */}
+                    {sidebarLevel === "game" && selectedChampionship && selectedEvent && (
+                      <motion.div
+                        key="game"
+                        initial={{ x: 40, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: -40, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                        className="absolute inset-0 h-full"
+                      >
+                        {/* Header */}
+                        <div className="absolute top-0 left-0 right-0 z-10 p-6 backdrop-blur-md bg-[#0f172a]/80">
+                          <button
+                            onClick={() => {
+                              setSidebarLevel("event");
+                              setSelectedGame(null);
+                            }}
+                            className="flex items-center gap-2 text-sm text-blue-200 hover:text-white transition"
+                          >
+                            <ChevronLeft size={16} />
+                            Back
+                          </button>
+
+                          <div className="mt-4">
+                            <div className="text-[11px] font-bold uppercase tracking-widest text-blue-300">
+                              Games
                             </div>
-                            <div className="mt-4">
-                              <div className="text-[11px] font-bold uppercase text-blue-200 mb-1">
-                                Games
-                              </div>
-                              <div className="text-lg font-extrabold text-white">
-                                {
-                                  SCHEDULE_DATA.find(
-                                    (c) => c.id === selectedChampionship,
-                                  )?.events.find((e) => e.id === selectedEvent)
-                                    ?.name
-                                }
-                              </div>
+                            <div className="text-lg font-extrabold text-white mt-1">
+                              {
+                                SCHEDULE_DATA
+                                  .find(c => c.id === selectedChampionship)
+                                  ?.events.find(e => e.id === selectedEvent)?.name
+                              }
                             </div>
                           </div>
+                        </div>
 
-                          {/* Scrollable Content */}
-                          <div className="absolute top-36 bottom-0 left-0 right-0 overflow-y-auto">
-                            <div className="p-6 space-y-3">
-                              {SCHEDULE_DATA.find(
-                                (c) => c.id === selectedChampionship,
-                              )
-                                ?.events.find((e) => e.id === selectedEvent)
-                                ?.games.map((game) => {
-                                  const isActive = selectedGame === game.id;
-                                  return (
-                                    <button
-                                      key={game.id}
-                                      onClick={() => setSelectedGame(game.id)}
-                                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm ${
-                                        isActive
-                                          ? "bg-white/15 border-blue-400 text-white"
-                                          : "bg-white/5 border-white/10 hover:border-blue-300 text-blue-100"
+                        {/* Content */}
+                        <div className="absolute top-36 bottom-0 left-0 right-0 overflow-y-auto scroll-smooth scrollbar-hide">
+                          <div className="p-5 space-y-2">
+                            {SCHEDULE_DATA
+                              .find(c => c.id === selectedChampionship)
+                              ?.events.find(e => e.id === selectedEvent)
+                              ?.games.map(game => {
+                                const active = selectedGame === game.id;
+                                return (
+                                  <button
+                                    key={game.id}
+                                    onClick={() => setSelectedGame(game.id)}
+                                    className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all duration-200
+    ${active
+                                        ? 'bg-gradient-to-r from-blue-500/20 to-indigo-500/10 text-white shadow-lg'
+                                        : 'text-blue-100/80 hover:bg-white/5'
                                       }`}
+                                  >
+                                    {/* Icon - using a generic one, or you can map per game later */}
+                                    <div
+                                      className={`p-2 rounded-lg transition-colors
+      ${active ? 'bg-blue-400/20' : 'bg-white/5'}
+    `}
                                     >
-                                      <div className="font-semibold text-sm">
+                                      <Target size={18} className="text-blue-300" />
+                                    </div>
+
+                                    <div className="flex-1 min-w-0">
+                                      <div className="font-semibold text-sm truncate">
                                         {game.name}
                                       </div>
-                                      <div className="text-xs text-blue-100 mt-1 flex items-center gap-2">
-                                        <MapPin size={10} /> {game.venue}
+                                      <div className="text-xs text-blue-200/60 truncate mt-0.5">
+                                        {game.venue}
                                       </div>
-                                    </button>
-                                  );
-                                })}
-                            </div>
+                                    </div>
+
+                                    {active && (
+                                      <ChevronRight size={14} className="text-blue-300 flex-shrink-0" />
+                                    )}
+
+                                    {!active && (
+                                      <ChevronRight size={14} className="text-blue-200/40 flex-shrink-0" />
+                                    )}
+                                  </button>
+                                );
+                              })}
                           </div>
-                        </motion.div>
-                      )}
+                        </div>
+                      </motion.div>
+                    )}
+
                   </AnimatePresence>
                 </div>
               </div>
+
 
               {/* Main Content Area - Game Details */}
               <div className="flex-1 overflow-y-auto p-8">
@@ -1717,11 +1849,10 @@ const TechnoxianView = () => {
                         <button
                           key={id}
                           onClick={() => setRegType(id)}
-                          className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between ${
-                            regType === id
-                              ? "bg-white/15 border-blue-400 text-white"
-                              : "bg-white/5 border-white/10 hover:border-blue-300 text-blue-100"
-                          }`}
+                          className={`w-full text-left px-4 py-3 rounded-xl  transition-all shadow-sm flex items-center justify-between ${regType === id
+                            ? 'bg-gradient-to-r from-blue-500/20 to-indigo-500/10 text-white shadow-lg'
+                            : 'text-blue-100/80 hover:bg-white/5'
+                            }`}
                         >
                           <span className="font-semibold text-sm">{type}</span>
                           {regType === id && (
