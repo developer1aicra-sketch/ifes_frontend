@@ -1,5 +1,6 @@
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaYoutube } from "react-icons/fa";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react"; import logo from '../assets/logo.png';
+
 
 const Footer = ({ setView, switchSite, currentSite }) => (
   <footer className="bg-[#0f172a] text-slate-400 py-16">
@@ -12,65 +13,65 @@ const Footer = ({ setView, switchSite, currentSite }) => (
             {/* Logo and Contact Section */}
             <div className="mb-8">
               <div className="flex items-center gap-3 mb-6">
-                <div
-                  className={`w-8 h-8 rounded flex items-center justify-center text-white font-bold ${currentSite.colors.primary}`}
-                >
-                  {currentSite.is_partner ? "T" : "W"}
-                </div>
+                <img
+                  src={logo}
+                  alt="WORSO Logo"
+                  className="h-12 w-auto object-contain"
+                />
                 <span className="text-white font-bold text-xl tracking-tight">
                   {currentSite.is_partner ? "TECHNOXIAN" : "WORSO"}
                 </span>
               </div>
-              
+
               {/* Contact Info - Email & Phone */}
               <div className="mb-6 space-y-4">
-              <p className="max-w-md mb-8 leading-relaxed text-sm">
-                {currentSite.is_partner
-                  ? "The official regional chapter of the World Robotics Championship."
-                  : "The World Robotics Sports Organization is the global regulatory body for robotics competitions and esports."}
-              </p>
-            </div>
-                <div className="flex items-center gap-3">
-                  <Mail size={16} className="text-slate-500" />
-                  <a 
-                    href="mailto:info@worso.org" 
-                    className="text-sm hover:text-white transition-colors"
-                  >
-                    info@worso.org
-                  </a>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone size={16} className="text-slate-500" />
-                  <a 
-                    href="tel:+15551234567" 
-                    className="text-sm hover:text-white transition-colors"
-                  >
-                    +1 (555) 123-4567
-                  </a>
-                </div>
+                <p className="max-w-md mb-8 leading-relaxed text-sm">
+                  {currentSite.is_partner
+                    ? "The official regional chapter of the World Robotics Championship."
+                    : "The World Robotics Sports Organization is the global regulatory body for robotics competitions and esports."}
+                </p>
               </div>
-              
-            
+              <div className="flex items-center gap-3">
+                <Mail size={16} className="text-slate-500" />
+                <a
+                  href="mailto:info@worso.org"
+                  className="text-sm hover:text-white transition-colors"
+                >
+                  info@worso.org
+                </a>
+              </div>
+              <div className="flex items-center gap-3">
+                <Phone size={16} className="text-slate-500" />
+                <a
+                  href="tel:+15551234567"
+                  className="text-sm hover:text-white transition-colors"
+                >
+                  +1 (555) 123-4567
+                </a>
+              </div>
+            </div>
+
+
             {/* SOCIAL ICONS */}
             <div>
               <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">Follow Us</h4>
               <div className="flex gap-4 text-xl">
-                <a 
-                  href="https://www.facebook.com/WORSOcommunity" 
+                <a
+                  href="https://www.facebook.com/WORSOcommunity"
                   className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
                   aria-label="Facebook"
                 >
                   <FaFacebookF />
                 </a>
-                <a 
-                  href="https://in.linkedin.com/company/worso" 
+                <a
+                  href="https://in.linkedin.com/company/worso"
                   className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
                   aria-label="LinkedIn"
                 >
                   <FaLinkedinIn />
                 </a>
-                <a 
-                  href="https://www.youtube.com/@WORSOassociation" 
+                <a
+                  href="https://www.youtube.com/@WORSOassociation"
                   className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
                   aria-label="YouTube"
                 >
@@ -86,48 +87,48 @@ const Footer = ({ setView, switchSite, currentSite }) => (
           <h4 className="text-white font-bold mb-6 text-lg">Quick Links</h4>
           <ul className="space-y-3 text-sm">
             <li>
-              <button 
-                onClick={() => setView("technoxian")} 
+              <button
+                onClick={() => setView("technoxian")}
                 className="hover:text-white transition-colors text-left w-full py-1"
               >
                 Technoxian Games
               </button>
             </li>
             <li>
-              <button 
-                onClick={() => setView("teams")} 
+              <button
+                onClick={() => setView("teams")}
                 className="hover:text-white transition-colors text-left w-full py-1"
               >
                 Teams & Rankings
               </button>
             </li>
             <li>
-              <button 
-                onClick={() => setView("login")} 
+              <button
+                onClick={() => setView("login")}
                 className="hover:text-white transition-colors text-left w-full py-1"
               >
                 Verify Certificates
               </button>
             </li>
             <li>
-              <button 
-                onClick={() => setView("careers")} 
+              <button
+                onClick={() => setView("careers")}
                 className="hover:text-white transition-colors text-left w-full py-1"
               >
                 Careers at Worso
               </button>
             </li>
             <li className="pt-4 mt-4 border-t border-slate-800">
-              <button 
-                onClick={() => setView("privacy-policy")} 
+              <button
+                onClick={() => setView("privacy-policy")}
                 className="hover:text-white transition-colors text-left w-full py-1"
               >
                 Privacy Policy
               </button>
             </li>
             <li>
-              <button 
-                onClick={() => setView("terms-of-use")} 
+              <button
+                onClick={() => setView("terms-of-use")}
                 className="hover:text-white transition-colors text-left w-full py-1"
               >
                 Terms of Use
@@ -157,18 +158,16 @@ const Footer = ({ setView, switchSite, currentSite }) => (
 
             <button
               onClick={() => switchSite("global")}
-              className={`text-[10px] font-bold transition-colors ${
-                currentSite.id === "global" ? "text-blue-500" : "text-slate-400 hover:text-white"
-              }`}
+              className={`text-[10px] font-bold transition-colors ${currentSite.id === "global" ? "text-blue-500" : "text-slate-400 hover:text-white"
+                }`}
             >
               Global
             </button>
 
             <button
               onClick={() => switchSite("uae")}
-              className={`text-[10px] font-bold transition-colors ${
-                currentSite.id === "uae" ? "text-emerald-500" : "text-slate-400 hover:text-white"
-              }`}
+              className={`text-[10px] font-bold transition-colors ${currentSite.id === "uae" ? "text-emerald-500" : "text-slate-400 hover:text-white"
+                }`}
             >
               UAE
             </button>
