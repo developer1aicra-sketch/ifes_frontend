@@ -1,32 +1,63 @@
-import { useState, useEffect } from 'react';
-import { Users, Ticket, Building, CreditCard, MapPin, Clock3, FileText, BadgeCheck, X, Camera, Calendar, ChevronLeft, ChevronRight,  Brain, Rocket,  Shield, Flag,  Package, Car, Target, GraduationCap, Star ,Award, Globe2, Users as UsersIcon, Trophy, Dumbbell, Puzzle, Drone } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { GAME_CATEGORIES } from '../constants/data';
+import { useState, useEffect } from "react";
+import {
+  Users,
+  Ticket,
+  Building,
+  CreditCard,
+  MapPin,
+  Clock3,
+  FileText,
+  BadgeCheck,
+  X,
+  Camera,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Brain,
+  Rocket,
+  Shield,
+  Flag,
+  Package,
+  Car,
+  Target,
+  GraduationCap,
+  Star,
+  Award,
+  Globe2,
+  Users as UsersIcon,
+  Trophy,
+  Dumbbell,
+  Puzzle,
+  Drone,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { GAME_CATEGORIES } from "../constants/data";
 
 const TechnoxianView = () => {
   void motion;
-  const [activeTab, setActiveTab] = useState('overview');
-  const [regType, setRegType] = useState('team');
+  const [activeTab, setActiveTab] = useState("overview");
+  const [regType, setRegType] = useState("team");
   const [activeGallery, setActiveGallery] = useState(null);
   const [showAllGallery, setShowAllGallery] = useState(false);
   const [trophyIndex, setTrophyIndex] = useState(0);
   const [imageErrors, setImageErrors] = useState({});
-  const [selectedTechnoxianMembership, setSelectedTechnoxianMembership] = useState(null);
+  const [selectedTechnoxianMembership, setSelectedTechnoxianMembership] =
+    useState(null);
 
-  
   // Schedule navigation states
   const [selectedChampionship, setSelectedChampionship] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedGame, setSelectedGame] = useState(null);
-  const [sidebarLevel, setSidebarLevel] = useState('championship');
+  const [sidebarLevel, setSidebarLevel] = useState("championship");
 
   // Discipline sidebar states
-  const [selectedDisciplineGame, setSelectedDisciplineGame] = useState('Innovation Jr.');
+  const [selectedDisciplineGame, setSelectedDisciplineGame] =
+    useState("Innovation Jr.");
 
   useEffect(() => {
     if (activeGallery) {
       const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
       return () => {
         document.body.style.overflow = prev;
       };
@@ -35,212 +66,257 @@ const TechnoxianView = () => {
 
   // Define the 11 games for registration
   const GAMES_LIST = [
-    { id: 'innovation-jr', name: 'Innovation Jr.' },
-    { id: 'innovation-open', name: 'Innovation Open' },
-    { id: 'robo-soccer', name: 'Robo Soccer' },
-    { id: 'robo-race', name: 'Robo Race' },
-    { id: 'sumo-bot', name: 'Sumo Bot' },
-    { id: 'flf-jr', name: 'FLF Jr.' },
-    { id: 'flf-sr', name: 'FLF Sr.' },
-    { id: 'water-rocket', name: 'Water Rocket' },
-    { id: 'maze-solver', name: 'Maze Solver' },
-    { id: 'rc-craft', name: 'Rc Craft' },
-    { id: 'drone-rescue', name: 'Drone Rescue' },
-    { id: 'rc-electric', name: 'Rc Electric' },
-    { id: 'robo-hockey', name: 'Robo Hockey' }
+    { id: "innovation-jr", name: "Innovation Jr." },
+    { id: "innovation-open", name: "Innovation Open" },
+    { id: "robo-soccer", name: "Robo Soccer" },
+    { id: "robo-race", name: "Robo Race" },
+    { id: "sumo-bot", name: "Sumo Bot" },
+    { id: "flf-jr", name: "FLF Jr." },
+    { id: "flf-sr", name: "FLF Sr." },
+    { id: "water-rocket", name: "Water Rocket" },
+    { id: "maze-solver", name: "Maze Solver" },
+    { id: "rc-craft", name: "Rc Craft" },
+    { id: "drone-rescue", name: "Drone Rescue" },
+    { id: "rc-electric", name: "Rc Electric" },
+    { id: "robo-hockey", name: "Robo Hockey" },
   ];
 
   // Define the games for discipline section
   const DISCIPLINE_GAMES = [
-    { 
-      id: 'innovation-jr', 
-      name: 'Innovation Jr.',
+    {
+      id: "innovation-jr",
+      name: "Innovation Jr.",
       icon: <Brain size={20} />,
-      category: 'Innovation',
-      description: 'Junior innovation challenge for young minds (ages 10-15) to showcase creative problem-solving skills using basic robotics and electronics.',
-      rules: 'Participants design innovative solutions for real-world problems using robotics. Robots must be autonomous and complete tasks within time limits. No hazardous materials allowed.',
-      teamSize: '1-3 members',
-      duration: '2 days',
-      prize: '$5,000',
-      image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=900&auto=format&fit=crop'
+      category: "Innovation",
+      description:
+        "Junior innovation challenge for young minds (ages 10-15) to showcase creative problem-solving skills using basic robotics and electronics.",
+      rules:
+        "Participants design innovative solutions for real-world problems using robotics. Robots must be autonomous and complete tasks within time limits. No hazardous materials allowed.",
+      teamSize: "1-3 members",
+      duration: "2 days",
+      prize: "$5,000",
+      image:
+        "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=900&auto=format&fit=crop",
     },
-    { 
-      id: 'innovation-open', 
-      name: 'Innovation Open',
+    {
+      id: "innovation-open",
+      name: "Innovation Open",
       icon: <Rocket size={20} />,
-      category: 'Innovation',
-      description: 'Open innovation competition for advanced robotics solutions targeting industrial and societal challenges.',
-      rules: 'Advanced robotics innovation with practical implementation requirements. Projects must include working prototypes and detailed documentation. Commercial potential is evaluated.',
-      teamSize: '2-5 members',
-      duration: '3 days',
-      prize: '$15,000',
-      image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=900&auto=format&fit=crop'
+      category: "Innovation",
+      description:
+        "Open innovation competition for advanced robotics solutions targeting industrial and societal challenges.",
+      rules:
+        "Advanced robotics innovation with practical implementation requirements. Projects must include working prototypes and detailed documentation. Commercial potential is evaluated.",
+      teamSize: "2-5 members",
+      duration: "3 days",
+      prize: "$15,000",
+      image:
+        "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=900&auto=format&fit=crop",
     },
-    { 
-      id: 'robo-soccer', 
-      name: 'Robo Soccer',
+    {
+      id: "robo-soccer",
+      name: "Robo Soccer",
       icon: <Dumbbell size={20} />,
-      category: 'Sports',
-      description: 'Autonomous robot soccer competition played on specialized artificial turf fields with electronic goal systems.',
-      rules: 'Autonomous robots compete in soccer matches on specialized fields. No remote control allowed. Robot must identify ball, opponents, and goals using onboard sensors.',
-      teamSize: '3-5 members',
-      duration: '2 days',
-      prize: '$10,000',
-      image: 'https://images.unsplash.com/photo-1521417531039-75e91486ccae?w=900&auto=format&fit=crop'
+      category: "Sports",
+      description:
+        "Autonomous robot soccer competition played on specialized artificial turf fields with electronic goal systems.",
+      rules:
+        "Autonomous robots compete in soccer matches on specialized fields. No remote control allowed. Robot must identify ball, opponents, and goals using onboard sensors.",
+      teamSize: "3-5 members",
+      duration: "2 days",
+      prize: "$10,000",
+      image:
+        "https://images.unsplash.com/photo-1521417531039-75e91486ccae?w=900&auto=format&fit=crop",
     },
-    { 
-      id: 'robo-race', 
-      name: 'Robo Race',
+    {
+      id: "robo-race",
+      name: "Robo Race",
       icon: <Car size={20} />,
-      category: 'Racing',
-      description: 'High-speed autonomous robot racing competition on complex tracks with obstacles and elevation changes.',
-      rules: 'Robots navigate complex tracks autonomously at high speeds. Must complete laps within time limits. No external guidance systems permitted.',
-      teamSize: '2-4 members',
-      duration: '1 day',
-      prize: '$8,000',
-      image: 'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop'
+      category: "Racing",
+      description:
+        "High-speed autonomous robot racing competition on complex tracks with obstacles and elevation changes.",
+      rules:
+        "Robots navigate complex tracks autonomously at high speeds. Must complete laps within time limits. No external guidance systems permitted.",
+      teamSize: "2-4 members",
+      duration: "1 day",
+      prize: "$8,000",
+      image:
+        "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop",
     },
-    { 
-      id: 'sumo-bot', 
-      name: 'Sumo Bot',
+    {
+      id: "sumo-bot",
+      name: "Sumo Bot",
       icon: <Shield size={20} />,
-      category: 'Combat',
-      description: 'Robot sumo wrestling in a circular ring. Robots must push opponents out while staying within boundaries.',
-      rules: 'Robots push opponents out of the ring using various strategies. No projectiles or hazardous mechanisms. Maximum weight: 3kg. Ring diameter: 154cm.',
-      teamSize: '1-2 members',
-      duration: '1 day',
-      prize: '$6,000',
-      image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=900&auto=format&fit=crop'
+      category: "Combat",
+      description:
+        "Robot sumo wrestling in a circular ring. Robots must push opponents out while staying within boundaries.",
+      rules:
+        "Robots push opponents out of the ring using various strategies. No projectiles or hazardous mechanisms. Maximum weight: 3kg. Ring diameter: 154cm.",
+      teamSize: "1-2 members",
+      duration: "1 day",
+      prize: "$6,000",
+      image:
+        "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=900&auto=format&fit=crop",
     },
-    { 
-      id: 'flf', 
-      name: 'FLF',
+    {
+      id: "flf",
+      name: "FLF",
       icon: <Flag size={20} />,
-      category: 'Aerospace',
-      description: 'Future Launch Facility - Advanced rocket launch competition focusing on payload delivery and precision landing.',
-      rules: 'Design and launch model rockets with payload delivery systems. Rockets must reach minimum altitude of 100m and deploy payload. Recovery systems required.',
-      teamSize: '3-6 members',
-      duration: '3 days',
-      prize: '$12,000',
-      image: 'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=900&auto=format&fit=crop'
+      category: "Aerospace",
+      description:
+        "Future Launch Facility - Advanced rocket launch competition focusing on payload delivery and precision landing.",
+      rules:
+        "Design and launch model rockets with payload delivery systems. Rockets must reach minimum altitude of 100m and deploy payload. Recovery systems required.",
+      teamSize: "3-6 members",
+      duration: "3 days",
+      prize: "$12,000",
+      image:
+        "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=900&auto=format&fit=crop",
     },
-    { 
-      id: 'water-rocket', 
-      name: 'Water Rocket',
+    {
+      id: "water-rocket",
+      name: "Water Rocket",
       icon: <Rocket size={20} />,
-      category: 'Aerospace',
-      description: 'Water-powered rocket launch competition focusing on maximum altitude and payload accuracy.',
-      rules: 'Design and launch water rockets for maximum altitude and accuracy. Pressure limited to 8 bar. Rockets must be constructed from approved materials.',
-      teamSize: '2-4 members',
-      duration: '1 day',
-      prize: '$4,000',
-      image: 'https://images.unsplash.com/photo-1468276311594-df7cb65d8df6?w=900&auto=format&fit=crop'
+      category: "Aerospace",
+      description:
+        "Water-powered rocket launch competition focusing on maximum altitude and payload accuracy.",
+      rules:
+        "Design and launch water rockets for maximum altitude and accuracy. Pressure limited to 8 bar. Rockets must be constructed from approved materials.",
+      teamSize: "2-4 members",
+      duration: "1 day",
+      prize: "$4,000",
+      image:
+        "https://images.unsplash.com/photo-1468276311594-df7cb65d8df6?w=900&auto=format&fit=crop",
     },
-    { 
-      id: 'maze-solver', 
-      name: 'Maze Solver',
+    {
+      id: "maze-solver",
+      name: "Maze Solver",
       icon: <Puzzle size={20} />,
-      category: 'Navigation',
-      description: 'Autonomous maze navigation challenge with changing layouts and dead-end detection requirements.',
-      rules: 'Robots must solve and navigate through complex mazes autonomously. No external sensors. Time-based scoring with bonus for optimal paths.',
-      teamSize: '1-3 members',
-      duration: '1 day',
-      prize: '$5,000',
-      image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=900&auto=format&fit=crop'
+      category: "Navigation",
+      description:
+        "Autonomous maze navigation challenge with changing layouts and dead-end detection requirements.",
+      rules:
+        "Robots must solve and navigate through complex mazes autonomously. No external sensors. Time-based scoring with bonus for optimal paths.",
+      teamSize: "1-3 members",
+      duration: "1 day",
+      prize: "$5,000",
+      image:
+        "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=900&auto=format&fit=crop",
     },
-    { 
-      id: 'rc-craft', 
-      name: 'Rc Craft',
+    {
+      id: "rc-craft",
+      name: "Rc Craft",
       icon: <Package size={20} />,
-      category: 'RC Vehicles',
-      description: 'Remote-controlled aircraft competition focusing on aerobatics, payload delivery, and obstacle courses.',
-      rules: 'Design and operate remote-controlled aircraft for various missions. Weight restrictions apply. Must complete timed missions with precision tasks.',
-      teamSize: '2-4 members',
-      duration: '2 days',
-      prize: '$7,000',
-      image: 'https://images.unsplash.com/photo-1507582020474-9a35b7d455b9?w=900&auto=format&fit=crop'
+      category: "RC Vehicles",
+      description:
+        "Remote-controlled aircraft competition focusing on aerobatics, payload delivery, and obstacle courses.",
+      rules:
+        "Design and operate remote-controlled aircraft for various missions. Weight restrictions apply. Must complete timed missions with precision tasks.",
+      teamSize: "2-4 members",
+      duration: "2 days",
+      prize: "$7,000",
+      image:
+        "https://images.unsplash.com/photo-1507582020474-9a35b7d455b9?w=900&auto=format&fit=crop",
     },
-    { 
-      id: 'drone-rescue', 
-      name: 'Drone Rescue',
+    {
+      id: "drone-rescue",
+      name: "Drone Rescue",
       icon: <Drone size={20} />,
-      category: 'Drones',
-      description: 'Drone-based search and rescue missions in simulated disaster environments with time constraints.',
-      rules: 'Drones perform search and rescue operations in simulated environments. Must locate and identify victims, deliver supplies. Autonomous flight bonus points.',
-      teamSize: '3-5 members',
-      duration: '2 days',
-      prize: '$9,000',
-      image: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=900&auto=format&fit=crop'
+      category: "Drones",
+      description:
+        "Drone-based search and rescue missions in simulated disaster environments with time constraints.",
+      rules:
+        "Drones perform search and rescue operations in simulated environments. Must locate and identify victims, deliver supplies. Autonomous flight bonus points.",
+      teamSize: "3-5 members",
+      duration: "2 days",
+      prize: "$9,000",
+      image:
+        "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=900&auto=format&fit=crop",
     },
-    { 
-      id: 'rc-electric-car-racing', 
-      name: 'Rc Electric car racing',
+    {
+      id: "rc-electric-car-racing",
+      name: "Rc Electric car racing",
       icon: <Car size={20} />,
-      category: 'Racing',
-      description: 'Electric RC car racing competition on custom tracks with jumps, banked turns, and obstacle sections.',
-      rules: 'High-speed RC car racing on custom tracks with obstacles. Battery voltage limited to 11.1V. Must complete qualifying laps for main event.',
-      teamSize: '2-3 members',
-      duration: '1 day',
-      prize: '$5,000',
-      image: 'https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=900&auto=format&fit=crop'
+      category: "Racing",
+      description:
+        "Electric RC car racing competition on custom tracks with jumps, banked turns, and obstacle sections.",
+      rules:
+        "High-speed RC car racing on custom tracks with obstacles. Battery voltage limited to 11.1V. Must complete qualifying laps for main event.",
+      teamSize: "2-3 members",
+      duration: "1 day",
+      prize: "$5,000",
+      image:
+        "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=900&auto=format&fit=crop",
     },
-    { 
-      id: 'robo-hockey', 
-      name: 'Robo Hockey',
+    {
+      id: "robo-hockey",
+      name: "Robo Hockey",
       icon: <Dumbbell size={20} />,
-      category: 'Sports',
-      description: 'Robot hockey competition on low-friction surfaces with electronic puck tracking and scoring systems.',
-      rules: 'Autonomous robots play hockey with specialized equipment. Must detect puck and goal positions. No pushing opponents beyond allowed force.',
-      teamSize: '3-5 members',
-      duration: '2 days',
-      prize: '$8,000',
-      image: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=900&auto=format&fit=crop'
+      category: "Sports",
+      description:
+        "Robot hockey competition on low-friction surfaces with electronic puck tracking and scoring systems.",
+      rules:
+        "Autonomous robots play hockey with specialized equipment. Must detect puck and goal positions. No pushing opponents beyond allowed force.",
+      teamSize: "3-5 members",
+      duration: "2 days",
+      prize: "$8,000",
+      image:
+        "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=900&auto=format&fit=crop",
     },
-    { 
-      id: 'bots-combat', 
-      name: 'Bots Combat',
+    {
+      id: "bots-combat",
+      name: "Bots Combat",
       icon: <Shield size={20} />,
-      category: 'Combat',
-      description: 'Robot combat tournament with various weight classes and elimination-style brackets.',
-      rules: 'Combat robots compete in elimination-style tournaments. Weight classes: 1kg, 3kg, 15kg. No flames, explosives, or entanglement weapons.',
-      teamSize: '2-4 members',
-      duration: '2 days',
-      prize: '$10,000',
-      image: 'https://images.unsplash.com/photo-1589256469067-ea99122bbdc4?w=900&auto=format&fit=crop'
+      category: "Combat",
+      description:
+        "Robot combat tournament with various weight classes and elimination-style brackets.",
+      rules:
+        "Combat robots compete in elimination-style tournaments. Weight classes: 1kg, 3kg, 15kg. No flames, explosives, or entanglement weapons.",
+      teamSize: "2-4 members",
+      duration: "2 days",
+      prize: "$10,000",
+      image:
+        "https://images.unsplash.com/photo-1589256469067-ea99122bbdc4?w=900&auto=format&fit=crop",
     },
-    { 
-      id: 'drone-racing-circuit', 
-      name: 'Drone Racing Circuit (DRC)',
+    {
+      id: "drone-racing-circuit",
+      name: "Drone Racing Circuit (DRC)",
       icon: <Drone size={20} />,
-      category: 'Racing',
-      description: 'High-speed FPV drone racing through obstacle courses with LED gates and timing systems.',
-      rules: 'FPV drones race through complex obstacle courses at high speeds. Pilot must use FPV goggles. Drone specs: 250mm max, 4S battery limit.',
-      teamSize: '1-2 members',
-      duration: '2 days',
-      prize: '$12,000',
-      image: 'https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop'
+      category: "Racing",
+      description:
+        "High-speed FPV drone racing through obstacle courses with LED gates and timing systems.",
+      rules:
+        "FPV drones race through complex obstacle courses at high speeds. Pilot must use FPV goggles. Drone specs: 250mm max, 4S battery limit.",
+      teamSize: "1-2 members",
+      duration: "2 days",
+      prize: "$12,000",
+      image:
+        "https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop",
     },
-    { 
-      id: 'theme-bot-challenge', 
-      name: 'Theme Bot Challenge',
+    {
+      id: "theme-bot-challenge",
+      name: "Theme Bot Challenge",
       icon: <Target size={20} />,
-      category: 'Innovation',
-      description: 'Theme-based robot design and performance challenge focusing on artistic and technical execution.',
-      rules: 'Robots designed around specific themes perform themed tasks. Judged on creativity, technical execution, and theme adherence. Annual theme announced 6 months prior.',
-      teamSize: '2-4 members',
-      duration: '2 days',
-      prize: '$6,000',
-      image: 'https://images.unsplash.com/photo-1589256469067-ea99122bbdc4?w=900&auto=format&fit=crop'
+      category: "Innovation",
+      description:
+        "Theme-based robot design and performance challenge focusing on artistic and technical execution.",
+      rules:
+        "Robots designed around specific themes perform themed tasks. Judged on creativity, technical execution, and theme adherence. Annual theme announced 6 months prior.",
+      teamSize: "2-4 members",
+      duration: "2 days",
+      prize: "$6,000",
+      image:
+        "https://images.unsplash.com/photo-1589256469067-ea99122bbdc4?w=900&auto=format&fit=crop",
     },
   ];
 
   // Define zonal categories
   const ZONAL_CATEGORIES = [
-    { id: 'zonal-west', name: 'Zonal West' },
-    { id: 'zonal-east', name: 'Zonal East' },
-    { id: 'zonal-south', name: 'Zonal South' },
-    { id: 'zonal-north', name: 'Zonal North' },
-    { id: 'zonal-center', name: 'Zonal Center' }
+    { id: "zonal-west", name: "Zonal West" },
+    { id: "zonal-east", name: "Zonal East" },
+    { id: "zonal-south", name: "Zonal South" },
+    { id: "zonal-north", name: "Zonal North" },
+    { id: "zonal-center", name: "Zonal Center" },
   ];
 
   // Generate games with schedules
@@ -253,26 +329,38 @@ const TechnoxianView = () => {
       name: gameName,
       zone: zone,
       venue: `Arena ${venueIndex}`,
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0],
+      startDate: startDate.toISOString().split("T")[0],
+      endDate: endDate.toISOString().split("T")[0],
       schedule: [
-        { date: startDate.toISOString().split('T')[0], time: '09:00', title: 'Setup & Safety Check' },
-        { date: startDate.toISOString().split('T')[0], time: '11:00', title: 'Qualifying Rounds' },
-        { date: endDate.toISOString().split('T')[0], time: '14:00', title: 'Finals & Awards' },
+        {
+          date: startDate.toISOString().split("T")[0],
+          time: "09:00",
+          title: "Setup & Safety Check",
+        },
+        {
+          date: startDate.toISOString().split("T")[0],
+          time: "11:00",
+          title: "Qualifying Rounds",
+        },
+        {
+          date: endDate.toISOString().split("T")[0],
+          time: "14:00",
+          title: "Finals & Awards",
+        },
       ],
       description: `${gameName} competition in the ${zone} zone. Showcase your skills and compete for the championship title.`,
-      registrationLink: `/register/${gameId}`
+      registrationLink: `/register/${gameId}`,
     };
   };
 
   // Generate zonal events with all games
   const generateZonalEvents = () => {
-    return ZONAL_CATEGORIES.map(zone => ({
+    return ZONAL_CATEGORIES.map((zone) => ({
       id: zone.id,
       name: zone.name,
-      games: GAMES_LIST.map(game => 
-        generateGameSchedule(`${zone.id}-${game.id}`, game.name, zone.name)
-      )
+      games: GAMES_LIST.map((game) =>
+        generateGameSchedule(`${zone.id}-${game.id}`, game.name, zone.name),
+      ),
     }));
   };
 
@@ -283,9 +371,13 @@ const TechnoxianView = () => {
       return {
         id: `national-${year}`,
         name: `National Championship ${year}`,
-        games: GAMES_LIST.slice(0, 5).map(game => 
-          generateGameSchedule(`nat-${year}-${game.id}`, game.name, `National ${year}`)
-        )
+        games: GAMES_LIST.slice(0, 5).map((game) =>
+          generateGameSchedule(
+            `nat-${year}-${game.id}`,
+            game.name,
+            `National ${year}`,
+          ),
+        ),
       };
     });
   };
@@ -297,9 +389,13 @@ const TechnoxianView = () => {
       return {
         id: `worldcup-${year}`,
         name: `Technoxian World Cup ${year}`,
-        games: GAMES_LIST.map(game => 
-          generateGameSchedule(`wc-${year}-${game.id}`, game.name, `World Cup ${year}`)
-        )
+        games: GAMES_LIST.map((game) =>
+          generateGameSchedule(
+            `wc-${year}-${game.id}`,
+            game.name,
+            `World Cup ${year}`,
+          ),
+        ),
       };
     });
   };
@@ -307,18 +403,18 @@ const TechnoxianView = () => {
   // Updated schedule data structure
   const SCHEDULE_DATA = [
     {
-      id: 'zonals',
-      name: 'Zonals',
+      id: "zonals",
+      name: "Zonals",
       events: generateZonalEvents(),
     },
     {
-      id: 'national',
-      name: 'National',
+      id: "national",
+      name: "National",
       events: generateNationalEvents(),
     },
     {
-      id: 'worldcup',
-      name: 'World Cup',
+      id: "worldcup",
+      name: "World Cup",
       events: generateWorldCupEvents(),
     },
   ];
@@ -359,399 +455,471 @@ const TechnoxianView = () => {
 
   const gallery = [
     {
-      id: 'fpv',
-      title: 'Drone Racing',
-      tag: 'FPV • Neon Gates',
-      cover: 'https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop',
+      id: "fpv",
+      title: "Drone Racing",
+      tag: "FPV • Neon Gates",
+      cover:
+        "https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop",
       images: [
-        'https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1471710371017-654b1b43eaa2?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop',
+        "https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1471710371017-654b1b43eaa2?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop",
       ],
     },
     {
-      id: 'race',
-      title: 'Robo Race',
-      tag: 'Canyon Sprint',
-      cover: 'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop',
+      id: "race",
+      title: "Robo Race",
+      tag: "Canyon Sprint",
+      cover:
+        "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop",
       images: [
-        'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1508614999368-9260051291ea?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=900&auto=format&fit=crop',
+        "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1508614999368-9260051291ea?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=900&auto=format&fit=crop",
       ],
     },
     {
-      id: 'soccer',
-      title: 'Robo Soccer',
-      tag: 'Hex Turf Finals',
-      cover: 'https://images.unsplash.com/photo-1521417531039-75e91486ccae?w=900&auto=format&fit=crop',
+      id: "soccer",
+      title: "Robo Soccer",
+      tag: "Hex Turf Finals",
+      cover:
+        "https://images.unsplash.com/photo-1521417531039-75e91486ccae?w=900&auto=format&fit=crop",
       images: [
-        'https://images.unsplash.com/photo-1521417531039-75e91486ccae?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1497215842964-222b430dc094?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1511918984145-48de785d4c4d?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop',
+        "https://images.unsplash.com/photo-1521417531039-75e91486ccae?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1497215842964-222b430dc094?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1511918984145-48de785d4c4d?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop",
       ],
     },
     {
-      id: 'sumo',
-      title: 'Sumo Bot',
-      tag: 'Steel Ring',
-      cover: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=900&auto=format&fit=crop',
+      id: "sumo",
+      title: "Sumo Bot",
+      tag: "Steel Ring",
+      cover:
+        "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=900&auto=format&fit=crop",
       images: [
-        'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1508614999368-9260051291ea?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop',
+        "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1508614999368-9260051291ea?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop",
       ],
     },
     {
-      id: 'expo',
-      title: 'Innovation Expo',
-      tag: 'Prototype Lab',
-      cover: 'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?w=900&auto=format&fit=crop',
+      id: "expo",
+      title: "Innovation Expo",
+      tag: "Prototype Lab",
+      cover:
+        "https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?w=900&auto=format&fit=crop",
       images: [
-        'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&auto=format&fit=crop',
+        "https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&auto=format&fit=crop",
       ],
     },
   ];
 
   // Get currently selected game
-  const currentGame = DISCIPLINE_GAMES.find(game => game.name === selectedDisciplineGame) || DISCIPLINE_GAMES[0];
+  const currentGame =
+    DISCIPLINE_GAMES.find((game) => game.name === selectedDisciplineGame) ||
+    DISCIPLINE_GAMES[0];
 
   return (
     <div className="animate-fadeIn bg-slate-50 min-h-screen">
       <div className="bg-white border-b border-slate-200 sticky top-[56px] z-30 shadow-sm">
         <div className="container mx-auto px-4 flex gap-8 overflow-x-auto">
-          {['overview', 'disciplines', 'schedule', 'gallery', 'register'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === tab ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+          {["overview", "disciplines", "schedule", "gallery", "register"].map(
+            (tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === tab
+                    ? "border-blue-600 text-blue-600"
+                    : "border-transparent text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                {tab}
+              </button>
+            ),
+          )}
         </div>
       </div>
 
       <AnimatePresence mode="wait">
-        {activeTab === 'overview' && (
+        {activeTab === "overview" && (
           <motion.div
             key="overview"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
             className="container mx-auto px-4 py-12"
           >
-          <div className="bg-[#0f172a] rounded-3xl text-white p-12 mb-12 relative overflow-hidden">
-            <div className="relative z-10 max-w-2xl">
-              <div className="text-yellow-400 font-bold tracking-widest text-xs uppercase mb-4">Official Championship</div>
-              <h1 className="text-5xl font-extrabold mb-6">Technoxian World Cup '26</h1>
-              <button onClick={() => setActiveTab('register')} className="bg-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors">
-                Register Now
-              </button>
-            </div>
-          </div>
-          <div className="grid md:grid-cols-4 gap-6">
-            {[{ l: 'Prize Pool', v: '$250k' }, { l: 'Teams', v: '120k+' }, { l: 'Countries', v: '95+' }, { l: 'Spectators', v: '2.5M' }].map((s, i) => (
-              <div key={i} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
-                <div className="text-4xl font-extrabold text-blue-600 mb-2">{s.v}</div>
-                <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">{s.l}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-10 grid md:grid-cols-3 gap-6">
-            <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
-              <div className="text-xs font-bold uppercase text-slate-500 mb-1">Countdown</div>
-              <div className="text-3xl font-extrabold text-slate-900">280d : 12h : 35m</div>
-              <p className="text-sm text-slate-500 mt-2">Opening ceremony — Dubai Exhibition Centre</p>
-            </div>
-            <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 mb-2">
-                <MapPin size={14} /> Venue Map
-              </div>
-              <p className="text-sm text-slate-600 leading-relaxed">Arena zones: Competition halls, Innovation Expo, Visitor concourse, Exhibitor docks.</p>
-            </div>
-            <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 mb-2">
-                <Clock3 size={14} /> Live Status
-              </div>
-              <p className="text-sm text-green-600 font-bold">Registrations open • Rulebook v2.0 active</p>
-              <p className="text-xs text-slate-500 mt-1">Realtime updates federated to partner subdomains.</p>
-            </div>
-          </div>
-          <br></br>
-          
-          {/* membership plan */}
-
-          <section className="py-20 bg-slate-50 border-t border-slate-200">
-  <div className="container mx-auto px-4 max-w-7xl">
-    <div className="bg-white rounded-3xl p-10 md:p-14 shadow-sm">
-      {/* Header */}
-      <div className="text-center mb-14">
-        <span className="text-xs font-bold uppercase tracking-widest text-blue-600">
-          Technoxian Membership
-        </span>
-        <h2 className="text-4xl font-extrabold text-slate-900 mt-3">
-          Student Membership Plans
-        </h2>
-        <p className="text-slate-600 max-w-3xl mx-auto mt-4">
-          Join the Technoxian student ecosystem and unlock competitions,
-          innovation, internships, leadership opportunities, and global exposure.
-        </p>
-        <p className="text-sm text-slate-500 mt-2">
-          * All membership charges are billed <strong>per year</strong>
-        </p>
-      </div>
-
-      {/* Cards */}
-      <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-        {[
-          {
-            id: 'basic',
-            title: 'Basic Student Membership',
-            price: 'USD 10 / Year',
-            audience: 'Learners',
-            icon: Users,
-            highlights: [
-              'WORSO Student Membership ID with Digital Certificate',
-              'Listed in the WORSO student community directory',
-              'Access to DIY robotics project kits at discounted rates',
-              'Access to internship listings & project opportunities',
-              'Resume-building workshops',
-              'Registration for District/State/National/International competitions (Must be part of a RoboClub)',
-              'Tech conferences & event access by WORSO & partners',
-              'Chance to volunteer in basic STEM outreach programs',
-              'Access to team formation forums for competitions',
-              'Networking with student innovators',
-              'Access to innovation challenges & hackathons',
-              'Submission rights for student research papers',
-              'Access to global student community groups',
-              'Participation in virtual meet-ups',
-              'Discounts on robotics, AI & drone courses by WORSO partners',
-              'Free access to monthly webinars',
-              'Access to student surveys & public consultations',
-              'Viewing rights for policy webinars',
-              'Eligibility to form local student chapters',
-              'Opportunity to volunteer at regional WORSO events'
-            ]
-          },
-          {
-            id: 'premium',
-            title: 'Premium Student Membership',
-            price: 'USD 50 / Year',
-            audience: 'High-Potential Student Innovators',
-            icon: Star,
-            highlights: [
-              'Personalized membership ID card with QR verification',
-              'WORSO Premium Digital Badge for CV & LinkedIn',
-              'Priority listing in the Global Young Innovators Directory',
-              'Exclusive access to advanced simulation tools & AI labs',
-              'Workshops & advanced webinars',
-              'Priority internship interviews through WORSO partners',
-              'Mentorship for innovation & career planning',
-              'Placement opportunities with WORSO partners',
-              'Eligibility for sponsored participation in international leagues',
-              'Lead CSR-driven STEM workshops as Student Mentor',
-              'Certificate for social impact contributions',
-              'Priority matchmaking with startups & student founders',
-              'Support in launching campus robotics clubs or micro-startups',
-              'Opportunity to co-develop student-led robotics projects',
-              'Opportunity to join WORSO Innovation Council',
-              'Access to WORSO international community & knowledge base',
-              'Invitation to WORSO Annual Student Leadership Meet',
-              'Priority selection for International Exchange Camps',
-              'Early access to new courses & advanced masterclasses',
-              'Additional discounts on robotics, AI & drone courses',
-              'Opportunity to participate in WORSO youth policy discussions',
-              'Eligibility to join Student Advisory Board',
-              'Eligibility for leadership titles: Student Coordinator / WORSO Youth Representative',
-              'Opportunity to host certified workshops under the WORSO banner'
-            ]
-          }
-        ].map((plan) => {
-          const Icon = plan.icon;
-          const isSelected = selectedTechnoxianMembership === plan.id;
-
-          return (
-            <div
-              key={plan.id}
-              onClick={() => setSelectedTechnoxianMembership(plan.id)}
-              className={`relative cursor-pointer rounded-3xl border transition-all duration-300 p-8 bg-white
-                ${isSelected
-                  ? 'border-blue-600 shadow-xl scale-[1.03]'
-                  : 'border-slate-200 hover:shadow-lg hover:-translate-y-1'
-                }`}
-            >
-              {isSelected && (
-                <div className="absolute top-4 right-4 text-xs font-bold px-3 py-1 rounded-full bg-blue-600 text-white">
-                  Selected
+            <div className="bg-[#0f172a] rounded-3xl text-white p-12 mb-12 relative overflow-hidden">
+              <div className="relative z-10 max-w-2xl">
+                <div className="text-yellow-400 font-bold tracking-widest text-xs uppercase mb-4">
+                  Official Championship
                 </div>
-              )}
-
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-                  <Icon size={24} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900">
-                    {plan.title}
-                  </h3>
-                  <p className="text-xs text-slate-500">{plan.audience}</p>
-                </div>
-              </div>
-
-              <div className="text-3xl font-extrabold text-slate-900 mb-6">
-                {plan.price}
-              </div>
-
-              <ul className="space-y-2 mb-8 max-h-[420px] overflow-y-auto pr-2 scrollbar-thin">
-                {plan.highlights.map((item, i) => (
-                  <li
-                    key={i}
-                    className="text-sm text-slate-600 flex items-start gap-2"
-                  >
-                    <span className="mt-1 w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                className={`w-full py-3 rounded-xl font-bold transition-all
-                  ${isSelected
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white'
-                  }`}
-              >
-                Select Plan
-              </button>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  </div>
-</section>
-
-
-
-          {/* Trophies Section */}
-          <div className="mt-10">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 mb-4">
-              <BadgeCheck size={14} className="text-blue-600" /> Trophies
-            </div>
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-              <div className="relative">
-                {/* Carousel Container */}
-                <div className="overflow-hidden rounded-xl">
-                  <motion.div
-                    className="flex"
-                    animate={{ x: `-${trophyIndex * (100 / 4)}%` }}
-                    transition={{ duration: 0.5, ease: 'easeInOut' }}
-                  >
-                    {trophies.map((trophy) => (
-                      <div key={trophy.year} className="min-w-[25%] flex flex-col items-center justify-center px-3">
-                        <div className="w-full max-w-[200px] mb-4">
-                          <img
-                            src={imageErrors[trophy.year] ? createPlaceholderImage(trophy.year) : trophy.image}
-                            alt={trophy.name}
-                            className="w-full h-full object-contain rounded-lg bg-slate-50 border border-slate-200"
-                            onError={() => handleImageError(trophy.year)}
-                            loading="lazy"
-                          />
-                        </div>
-                        <h3 className="text-sm font-bold text-slate-900 text-center leading-tight">{trophy.name}</h3>
-                      </div>
-                    ))}
-                  </motion.div>
-                </div>
-
-                {/* Navigation Buttons */}
+                <h1 className="text-5xl font-extrabold mb-6">
+                  Technoxian World Cup '26
+                </h1>
                 <button
-                  onClick={prevTrophy}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 bg-white border border-slate-200 rounded-full p-2 shadow-sm hover:bg-slate-50 hover:border-blue-400 transition-colors z-10"
-                  aria-label="Previous trophy"
+                  onClick={() => setActiveTab("register")}
+                  className="bg-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors"
                 >
-                  <ChevronLeft size={20} className="text-slate-600" />
+                  Register Now
                 </button>
-                <button
-                  onClick={nextTrophy}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 bg-white border border-slate-200 rounded-full p-2 shadow-sm hover:bg-slate-50 hover:border-blue-400 transition-colors z-10"
-                  aria-label="Next trophy"
+              </div>
+            </div>
+            <div className="grid md:grid-cols-4 gap-6">
+              {[
+                { l: "Prize Pool", v: "$250k" },
+                { l: "Teams", v: "120k+" },
+                { l: "Countries", v: "95+" },
+                { l: "Spectators", v: "2.5M" },
+              ].map((s, i) => (
+                <div
+                  key={i}
+                  className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center"
                 >
-                  <ChevronRight size={20} className="text-slate-600" />
-                </button>
+                  <div className="text-4xl font-extrabold text-blue-600 mb-2">
+                    {s.v}
+                  </div>
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    {s.l}
+                  </div>
+                </div>
+              ))}
+            </div>
 
-                {/* Carousel Indicators */}
-                <div className="flex justify-center gap-2 mt-4">
-                  {Array.from({ length: Math.ceil(trophies.length / 4) }).map((_, index) => {
-                    const startIndex = index * 4;
-                    const isActive = trophyIndex >= startIndex && trophyIndex < startIndex + 4;
+            <div className="mt-10 grid md:grid-cols-3 gap-6">
+              <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                <div className="text-xs font-bold uppercase text-slate-500 mb-1">
+                  Countdown
+                </div>
+                <div className="text-3xl font-extrabold text-slate-900">
+                  280d : 12h : 35m
+                </div>
+                <p className="text-sm text-slate-500 mt-2">
+                  Opening ceremony — Dubai Exhibition Centre
+                </p>
+              </div>
+              <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 mb-2">
+                  <MapPin size={14} /> Venue Map
+                </div>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Arena zones: Competition halls, Innovation Expo, Visitor
+                  concourse, Exhibitor docks.
+                </p>
+              </div>
+              <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 mb-2">
+                  <Clock3 size={14} /> Live Status
+                </div>
+                <p className="text-sm text-green-600 font-bold">
+                  Registrations open • Rulebook v2.0 active
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Realtime updates federated to partner subdomains.
+                </p>
+              </div>
+            </div>
+            <br></br>
+
+            {/* membership plan */}
+
+            <section className="min-h-screen flex items-center bg-slate-50 border-t border-slate-200">
+              <div className="container mx-auto px-4 max-w-7xl">
+                <div className="text-center mb-14">
+                  <span className="text-xs font-bold uppercase tracking-widest text-blue-600">
+                    Technoxian Membership
+                  </span>
+                  <h2 className="text-4xl font-extrabold text-slate-900 mt-3">
+                    Choose Your Student Membership
+                  </h2>
+                  <p className="text-slate-600 max-w-3xl mx-auto mt-4">
+                    Designed for learners, innovators, and future tech leaders.
+                    Compare plans in detail below before making your choice.
+                  </p>
+                  <p className="text-sm text-slate-500 mt-2">
+                    * Membership charges are billed <strong>per year</strong>
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                  {[
+                    {
+                      id: "basic",
+                      title: "Basic Student Membership",
+                      price: "USD 10 / year",
+                      audience: "Learners",
+                      icon: Users,
+                      highlights: [
+                        "Digital student membership ID & certificate",
+                        "Access to competitions (via RoboClub)",
+                        "Internship & project listings",
+                        "DIY robotics kits at discounted rates",
+                        "Hackathons & innovation challenges",
+                        "Monthly webinars & workshops",
+                      ],
+                    },
+                    {
+                      id: "premium",
+                      title: "Premium Student Membership",
+                      price: "USD 50 / year",
+                      audience: "High-Potential Student Innovators",
+                      icon: Star,
+                      highlights: [
+                        "Premium digital badge for CV & LinkedIn",
+                        "Priority internship interviews",
+                        "Advanced AI labs & simulation tools",
+                        "Mentorship & career planning",
+                        "International leagues & exchange camps",
+                        "Leadership & startup opportunities",
+                      ],
+                    },
+                  ].map((plan) => {
+                    const Icon = plan.icon;
+                    const isSelected = selectedTechnoxianMembership === plan.id;
+
                     return (
-                      <button
-                        key={index}
-                        onClick={() => setTrophyIndex(startIndex)}
-                        className={`h-1.5 rounded-full transition-all ${
-                          isActive ? 'w-6 bg-blue-600' : 'w-1.5 bg-slate-300 hover:bg-slate-400'
-                        }`}
-                        aria-label={`Go to trophy group ${index + 1}`}
-                      />
+                      <div
+                        key={plan.id}
+                        onClick={() => setSelectedTechnoxianMembership(plan.id)}
+                        className={`cursor-pointer rounded-3xl border p-8 bg-white transition-all
+              ${
+                isSelected
+                  ? "border-blue-600 shadow-xl scale-[1.03]"
+                  : "border-slate-200 hover:shadow-lg hover:-translate-y-1"
+              }`}
+                      >
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                            <Icon size={24} />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-slate-900">
+                              {plan.title}
+                            </h3>
+                            <p className="text-xs text-slate-500">
+                              {plan.audience}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="text-3xl font-extrabold text-slate-900 mb-6">
+                          {plan.price}
+                        </div>
+
+                        <ul className="space-y-3 mb-8">
+                          {plan.highlights.map((item, i) => (
+                            <li
+                              key={i}
+                              className="text-sm text-slate-600 flex gap-2"
+                            >
+                              <span className="mt-1 w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+
+                        <button
+                          className={`w-full py-3 rounded-xl font-bold transition-all
+                ${
+                  isSelected
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white"
+                }`}
+                        >
+                          {isSelected ? "Selected" : "Select Plan"}
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
               </div>
+            </section>
+
+            <section className="py-24 bg-white border-t border-slate-200">
+              <div className="container mx-auto px-4 max-w-7xl">
+                <div className="text-center mb-12">
+                  <h3 className="text-3xl font-extrabold text-slate-900">
+                    Compare Student Membership Benefits
+                  </h3>
+                  <p className="text-slate-600 mt-3">
+                    See what you unlock with each Technoxian student membership.
+                  </p>
+                </div>
+
+                <div className="overflow-x-auto rounded-3xl border border-slate-200">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="p-4 text-left font-semibold">
+                          Features
+                        </th>
+                        <th className="p-4 text-center font-semibold">Basic</th>
+                        <th className="p-4 text-center font-semibold">
+                          Premium
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {[
+                        ["Student Membership ID & Certificate", "✔", "✔"],
+                        ["Global Student Directory Listing", "✔", "✔"],
+                        ["Competitions Access (via RoboClub)", "✔", "✔"],
+                        ["Internship & Project Listings", "✔", "✔"],
+                        ["Advanced AI Labs & Simulation Tools", "—", "✔"],
+                        ["Priority Internship Interviews", "—", "✔"],
+                        ["Mentorship & Career Planning", "—", "✔"],
+                        ["Leadership & Advisory Roles", "—", "✔"],
+                        ["International Leagues & Exchange Camps", "—", "✔"],
+                        ["Startup & Innovation Support", "—", "✔"],
+                        ["Discounts on Robotics / AI Courses", "✔", "✔"],
+                        ["Early Access to Masterclasses", "—", "✔"],
+                        ["CSR & Outreach Leadership", "—", "✔"],
+                      ].map(([feature, basic, premium], idx) => (
+                        <tr key={idx}>
+                          <td className="p-4 font-medium text-slate-700">
+                            {feature}
+                          </td>
+                          <td className="p-4 text-center">{basic}</td>
+                          <td className="p-4 text-center">{premium}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            {/* Trophies Section */}
+            <div className="mt-10">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 mb-4">
+                <BadgeCheck size={14} className="text-blue-600" /> Trophies
+              </div>
+              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+                <div className="relative">
+                  {/* Carousel Container */}
+                  <div className="overflow-hidden rounded-xl">
+                    <motion.div
+                      className="flex"
+                      animate={{ x: `-${trophyIndex * (100 / 4)}%` }}
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                    >
+                      {trophies.map((trophy) => (
+                        <div
+                          key={trophy.year}
+                          className="min-w-[25%] flex flex-col items-center justify-center px-3"
+                        >
+                          <div className="w-full max-w-[200px] mb-4">
+                            <img
+                              src={
+                                imageErrors[trophy.year]
+                                  ? createPlaceholderImage(trophy.year)
+                                  : trophy.image
+                              }
+                              alt={trophy.name}
+                              className="w-full h-full object-contain rounded-lg bg-slate-50 border border-slate-200"
+                              onError={() => handleImageError(trophy.year)}
+                              loading="lazy"
+                            />
+                          </div>
+                          <h3 className="text-sm font-bold text-slate-900 text-center leading-tight">
+                            {trophy.name}
+                          </h3>
+                        </div>
+                      ))}
+                    </motion.div>
+                  </div>
+
+                  {/* Navigation Buttons */}
+                  <button
+                    onClick={prevTrophy}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 bg-white border border-slate-200 rounded-full p-2 shadow-sm hover:bg-slate-50 hover:border-blue-400 transition-colors z-10"
+                    aria-label="Previous trophy"
+                  >
+                    <ChevronLeft size={20} className="text-slate-600" />
+                  </button>
+                  <button
+                    onClick={nextTrophy}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 bg-white border border-slate-200 rounded-full p-2 shadow-sm hover:bg-slate-50 hover:border-blue-400 transition-colors z-10"
+                    aria-label="Next trophy"
+                  >
+                    <ChevronRight size={20} className="text-slate-600" />
+                  </button>
+
+                  {/* Carousel Indicators */}
+                  <div className="flex justify-center gap-2 mt-4">
+                    {Array.from({ length: Math.ceil(trophies.length / 4) }).map(
+                      (_, index) => {
+                        const startIndex = index * 4;
+                        const isActive =
+                          trophyIndex >= startIndex &&
+                          trophyIndex < startIndex + 4;
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => setTrophyIndex(startIndex)}
+                            className={`h-1.5 rounded-full transition-all ${
+                              isActive
+                                ? "w-6 bg-blue-600"
+                                : "w-1.5 bg-slate-300 hover:bg-slate-400"
+                            }`}
+                            aria-label={`Go to trophy group ${index + 1}`}
+                          />
+                        );
+                      },
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
           </motion.div>
         )}
 
-        {activeTab === 'disciplines' && (
+        {activeTab === "disciplines" && (
           <motion.div
             key="disciplines"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
             className="container mx-auto px-4 py-12"
           >
             <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col lg:flex-row h-[calc(100vh-200px)] min-h-[640px]">
@@ -762,11 +930,13 @@ const TechnoxianView = () => {
                     {/* Fixed Header */}
                     <div className="absolute top-0 left-0 right-0 z-10 bg-[#0f172a] p-6 border-b border-slate-800">
                       <div>
-                        <div className="text-[11px] font-bold uppercase text-blue-200">Games & Disciplines</div>
+                        <div className="text-[11px] font-bold uppercase text-blue-200">
+                          Games & Disciplines
+                        </div>
                         <div className="text-xl font-extrabold">All Games</div>
                       </div>
                     </div>
-                    
+
                     {/* Scrollable Game List - Now matches schedule sidebar exactly */}
                     <div className="absolute top-24 bottom-0 left-0 right-0 overflow-y-auto">
                       <div className="p-6 space-y-2">
@@ -776,21 +946,32 @@ const TechnoxianView = () => {
                             onClick={() => setSelectedDisciplineGame(game.name)}
                             className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${
                               selectedDisciplineGame === game.name
-                                ? 'bg-white/15 border-blue-400 text-white'
-                                : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
+                                ? "bg-white/15 border-blue-400 text-white"
+                                : "bg-white/5 border-white/10 hover:border-blue-300 text-blue-100"
                             }`}
                           >
-                            <div className={`p-2 rounded-lg ${
-                              selectedDisciplineGame === game.name ? 'bg-white/20' : 'bg-white/10'
-                            }`}>
+                            <div
+                              className={`p-2 rounded-lg ${
+                                selectedDisciplineGame === game.name
+                                  ? "bg-white/20"
+                                  : "bg-white/10"
+                              }`}
+                            >
                               {game.icon}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="font-semibold text-sm truncate">{game.name}</div>
-                              <div className="text-xs text-blue-200/70 mt-1 truncate">{game.category}</div>
+                              <div className="font-semibold text-sm truncate">
+                                {game.name}
+                              </div>
+                              <div className="text-xs text-blue-200/70 mt-1 truncate">
+                                {game.category}
+                              </div>
                             </div>
                             {selectedDisciplineGame === game.name && (
-                              <ChevronRight size={14} className="text-blue-200 flex-shrink-0" />
+                              <ChevronRight
+                                size={14}
+                                className="text-blue-200 flex-shrink-0"
+                              />
                             )}
                           </button>
                         ))}
@@ -806,8 +987,8 @@ const TechnoxianView = () => {
                   {/* Game Header with Image */}
                   <div className="mb-8">
                     <div className="relative h-64 rounded-2xl overflow-hidden mb-6">
-                      <img 
-                        src={currentGame.image} 
+                      <img
+                        src={currentGame.image}
                         alt={currentGame.name}
                         className="w-full h-full object-cover"
                       />
@@ -816,18 +997,28 @@ const TechnoxianView = () => {
                         <div className="text-xs font-bold uppercase tracking-wider text-blue-200 mb-1">
                           {currentGame.category} • {currentGame.duration}
                         </div>
-                        <h1 className="text-3xl font-bold">{currentGame.name}</h1>
+                        <h1 className="text-3xl font-bold">
+                          {currentGame.name}
+                        </h1>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between mb-6">
                       <div>
-                        <h2 className="text-2xl font-bold text-slate-900">{currentGame.name} Details</h2>
-                        <p className="text-slate-600 mt-2">{currentGame.description}</p>
+                        <h2 className="text-2xl font-bold text-slate-900">
+                          {currentGame.name} Details
+                        </h2>
+                        <p className="text-slate-600 mt-2">
+                          {currentGame.description}
+                        </p>
                       </div>
                       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl text-center">
-                        <div className="text-xs font-bold uppercase">Prize Pool</div>
-                        <div className="text-2xl font-extrabold">{currentGame.prize}</div>
+                        <div className="text-xs font-bold uppercase">
+                          Prize Pool
+                        </div>
+                        <div className="text-2xl font-extrabold">
+                          {currentGame.prize}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -840,11 +1031,17 @@ const TechnoxianView = () => {
                           <UsersIcon size={20} className="text-blue-600" />
                         </div>
                         <div>
-                          <h3 className="font-bold text-slate-900">Team Requirements</h3>
-                          <div className="text-2xl font-extrabold text-blue-600 mt-1">{currentGame.teamSize}</div>
+                          <h3 className="font-bold text-slate-900">
+                            Team Requirements
+                          </h3>
+                          <div className="text-2xl font-extrabold text-blue-600 mt-1">
+                            {currentGame.teamSize}
+                          </div>
                         </div>
                       </div>
-                      <p className="text-sm text-slate-600">Team members including mentors and participants</p>
+                      <p className="text-sm text-slate-600">
+                        Team members including mentors and participants
+                      </p>
                     </div>
 
                     <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-100">
@@ -854,10 +1051,14 @@ const TechnoxianView = () => {
                         </div>
                         <div>
                           <h3 className="font-bold text-slate-900">Duration</h3>
-                          <div className="text-2xl font-extrabold text-emerald-600 mt-1">{currentGame.duration}</div>
+                          <div className="text-2xl font-extrabold text-emerald-600 mt-1">
+                            {currentGame.duration}
+                          </div>
                         </div>
                       </div>
-                      <p className="text-sm text-slate-600">Competition timeline including setup and matches</p>
+                      <p className="text-sm text-slate-600">
+                        Competition timeline including setup and matches
+                      </p>
                     </div>
 
                     <div className="bg-amber-50 p-6 rounded-xl border border-amber-100">
@@ -867,10 +1068,14 @@ const TechnoxianView = () => {
                         </div>
                         <div>
                           <h3 className="font-bold text-slate-900">Category</h3>
-                          <div className="text-2xl font-extrabold text-amber-600 mt-1">{currentGame.category}</div>
+                          <div className="text-2xl font-extrabold text-amber-600 mt-1">
+                            {currentGame.category}
+                          </div>
                         </div>
                       </div>
-                      <p className="text-sm text-slate-600">Primary competition category and focus area</p>
+                      <p className="text-sm text-slate-600">
+                        Primary competition category and focus area
+                      </p>
                     </div>
                   </div>
 
@@ -881,29 +1086,51 @@ const TechnoxianView = () => {
                         <FileText size={24} className="text-slate-600" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-slate-900">Rules & Regulations</h3>
-                        <p className="text-slate-600 mt-1">Official competition guidelines</p>
+                        <h3 className="text-xl font-bold text-slate-900">
+                          Rules & Regulations
+                        </h3>
+                        <p className="text-slate-600 mt-1">
+                          Official competition guidelines
+                        </p>
                       </div>
                     </div>
                     <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
-                      <p className="text-slate-700 leading-relaxed">{currentGame.rules}</p>
+                      <p className="text-slate-700 leading-relaxed">
+                        {currentGame.rules}
+                      </p>
                     </div>
                     <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="text-center p-4 bg-slate-50 rounded-lg">
-                        <div className="text-xs font-bold text-slate-500 uppercase">Robot Weight</div>
-                        <div className="text-lg font-bold text-slate-900">Max 5kg</div>
+                        <div className="text-xs font-bold text-slate-500 uppercase">
+                          Robot Weight
+                        </div>
+                        <div className="text-lg font-bold text-slate-900">
+                          Max 5kg
+                        </div>
                       </div>
                       <div className="text-center p-4 bg-slate-50 rounded-lg">
-                        <div className="text-xs font-bold text-slate-500 uppercase">Battery</div>
-                        <div className="text-lg font-bold text-slate-900">LiPo 3S Max</div>
+                        <div className="text-xs font-bold text-slate-500 uppercase">
+                          Battery
+                        </div>
+                        <div className="text-lg font-bold text-slate-900">
+                          LiPo 3S Max
+                        </div>
                       </div>
                       <div className="text-center p-4 bg-slate-50 rounded-lg">
-                        <div className="text-xs font-bold text-slate-500 uppercase">Arena Size</div>
-                        <div className="text-lg font-bold text-slate-900">8x8m</div>
+                        <div className="text-xs font-bold text-slate-500 uppercase">
+                          Arena Size
+                        </div>
+                        <div className="text-lg font-bold text-slate-900">
+                          8x8m
+                        </div>
                       </div>
                       <div className="text-center p-4 bg-slate-50 rounded-lg">
-                        <div className="text-xs font-bold text-slate-500 uppercase">Judges</div>
-                        <div className="text-lg font-bold text-slate-900">3+ Panel</div>
+                        <div className="text-xs font-bold text-slate-500 uppercase">
+                          Judges
+                        </div>
+                        <div className="text-lg font-bold text-slate-900">
+                          3+ Panel
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -912,14 +1139,17 @@ const TechnoxianView = () => {
                   <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                       <div>
-                        <h3 className="text-2xl font-bold mb-2">Ready to Compete?</h3>
+                        <h3 className="text-2xl font-bold mb-2">
+                          Ready to Compete?
+                        </h3>
                         <p className="text-blue-100">
-                          Register your team for {currentGame.name} and showcase your skills on the global stage.
+                          Register your team for {currentGame.name} and showcase
+                          your skills on the global stage.
                         </p>
                       </div>
                       <div className="flex gap-3">
-                        <button 
-                          onClick={() => setActiveTab('register')}
+                        <button
+                          onClick={() => setActiveTab("register")}
                           className="bg-white text-blue-600 px-6 py-3 rounded-lg font-bold hover:bg-blue-50 transition-colors"
                         >
                           Register Now
@@ -938,9 +1168,13 @@ const TechnoxianView = () => {
                         <div className="bg-blue-100 p-2 rounded-lg">
                           <GraduationCap size={20} className="text-blue-600" />
                         </div>
-                        <h4 className="font-bold text-slate-900">Training Resources</h4>
+                        <h4 className="font-bold text-slate-900">
+                          Training Resources
+                        </h4>
                       </div>
-                      <p className="text-sm text-slate-600 mb-4">Access tutorials, guides, and practice materials</p>
+                      <p className="text-sm text-slate-600 mb-4">
+                        Access tutorials, guides, and practice materials
+                      </p>
                       <button className="text-sm text-blue-600 font-medium hover:text-blue-700">
                         View Resources →
                       </button>
@@ -951,9 +1185,13 @@ const TechnoxianView = () => {
                         <div className="bg-emerald-100 p-2 rounded-lg">
                           <Award size={20} className="text-emerald-600" />
                         </div>
-                        <h4 className="font-bold text-slate-900">Past Winners</h4>
+                        <h4 className="font-bold text-slate-900">
+                          Past Winners
+                        </h4>
                       </div>
-                      <p className="text-sm text-slate-600 mb-4">See previous champions and their innovative solutions</p>
+                      <p className="text-sm text-slate-600 mb-4">
+                        See previous champions and their innovative solutions
+                      </p>
                       <button className="text-sm text-blue-600 font-medium hover:text-blue-700">
                         View Gallery →
                       </button>
@@ -964,9 +1202,13 @@ const TechnoxianView = () => {
                         <div className="bg-purple-100 p-2 rounded-lg">
                           <Globe2 size={20} className="text-purple-600" />
                         </div>
-                        <h4 className="font-bold text-slate-900">Global Rankings</h4>
+                        <h4 className="font-bold text-slate-900">
+                          Global Rankings
+                        </h4>
                       </div>
-                      <p className="text-sm text-slate-600 mb-4">Check international rankings and team standings</p>
+                      <p className="text-sm text-slate-600 mb-4">
+                        Check international rankings and team standings
+                      </p>
                       <button className="text-sm text-blue-600 font-medium hover:text-blue-700">
                         View Rankings →
                       </button>
@@ -978,13 +1220,13 @@ const TechnoxianView = () => {
           </motion.div>
         )}
 
-        {activeTab === 'schedule' && (
+        {activeTab === "schedule" && (
           <motion.div
             key="schedule"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
             className="container mx-auto px-4 py-12"
           >
             <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col lg:flex-row h-[calc(100vh-200px)] min-h-[640px]">
@@ -992,23 +1234,27 @@ const TechnoxianView = () => {
               <div className="w-72 bg-[#0f172a] text-white relative overflow-hidden border-r border-slate-800">
                 <div className="relative h-full">
                   <AnimatePresence initial={false} mode="wait">
-                    {sidebarLevel === 'championship' && (
+                    {sidebarLevel === "championship" && (
                       <motion.div
                         key="championship"
                         initial={{ x: 20, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: -20, opacity: 0 }}
-                        transition={{ duration: 0.25, ease: 'easeOut' }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
                         className="relative h-full"
                       >
                         {/* Fixed Header */}
                         <div className="absolute top-0 left-0 right-0 z-10 bg-[#0f172a] p-6 border-b border-slate-800">
                           <div className="mb-4">
-                            <div className="text-[11px] font-bold uppercase text-blue-200">Schedule</div>
-                            <div className="text-xl font-extrabold">Championship Levels</div>
+                            <div className="text-[11px] font-bold uppercase text-blue-200">
+                              Schedule
+                            </div>
+                            <div className="text-xl font-extrabold">
+                              Championship Levels
+                            </div>
                           </div>
                         </div>
-                        
+
                         {/* Scrollable Content */}
                         <div className="absolute top-24 bottom-0 left-0 right-0 overflow-y-auto">
                           <div className="p-6 space-y-2">
@@ -1017,16 +1263,21 @@ const TechnoxianView = () => {
                                 key={champ.id}
                                 onClick={() => {
                                   setSelectedChampionship(champ.id);
-                                  setSidebarLevel('event');
+                                  setSidebarLevel("event");
                                 }}
                                 className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between ${
                                   selectedChampionship === champ.id
-                                    ? 'bg-white/15 border-blue-400 text-white'
-                                    : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
+                                    ? "bg-white/15 border-blue-400 text-white"
+                                    : "bg-white/5 border-white/10 hover:border-blue-300 text-blue-100"
                                 }`}
                               >
-                                <span className="font-semibold text-sm">{champ.name}</span>
-                                <ChevronRight size={14} className="text-blue-200" />
+                                <span className="font-semibold text-sm">
+                                  {champ.name}
+                                </span>
+                                <ChevronRight
+                                  size={14}
+                                  className="text-blue-200"
+                                />
                               </button>
                             ))}
                           </div>
@@ -1034,13 +1285,13 @@ const TechnoxianView = () => {
                       </motion.div>
                     )}
 
-                    {sidebarLevel === 'event' && selectedChampionship && (
+                    {sidebarLevel === "event" && selectedChampionship && (
                       <motion.div
                         key="event"
                         initial={{ x: 30, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: -30, opacity: 0 }}
-                        transition={{ duration: 0.25, ease: 'easeOut' }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
                         className="absolute inset-0 z-20 bg-[#0f172a] h-full"
                       >
                         {/* Fixed Header */}
@@ -1048,7 +1299,7 @@ const TechnoxianView = () => {
                           <div className="flex items-center justify-between">
                             <button
                               onClick={() => {
-                                setSidebarLevel('championship');
+                                setSidebarLevel("championship");
                                 setSelectedEvent(null);
                                 setSelectedGame(null);
                               }}
@@ -1059,34 +1310,46 @@ const TechnoxianView = () => {
                             </button>
                           </div>
                           <div className="mt-4">
-                            <div className="text-[11px] font-bold uppercase text-blue-200 mb-1">Events</div>
+                            <div className="text-[11px] font-bold uppercase text-blue-200 mb-1">
+                              Events
+                            </div>
                             <div className="text-lg font-extrabold text-white">
-                              {SCHEDULE_DATA.find((c) => c.id === selectedChampionship)?.name}
+                              {
+                                SCHEDULE_DATA.find(
+                                  (c) => c.id === selectedChampionship,
+                                )?.name
+                              }
                             </div>
                           </div>
                         </div>
-                        
+
                         {/* Scrollable Content */}
                         <div className="absolute top-36 bottom-0 left-0 right-0 overflow-y-auto">
                           <div className="p-6 space-y-2">
-                            {SCHEDULE_DATA.find((c) => c.id === selectedChampionship)?.events.map((event) => (
+                            {SCHEDULE_DATA.find(
+                              (c) => c.id === selectedChampionship,
+                            )?.events.map((event) => (
                               <button
                                 key={event.id}
                                 onClick={() => {
                                   setSelectedEvent(event.id);
                                   setSelectedGame(null);
-                                  setSidebarLevel('game');
+                                  setSidebarLevel("game");
                                 }}
                                 className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between ${
                                   selectedEvent === event.id
-                                    ? 'bg-white/15 border-blue-400 text-white'
-                                    : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
+                                    ? "bg-white/15 border-blue-400 text-white"
+                                    : "bg-white/5 border-white/10 hover:border-blue-300 text-blue-100"
                                 }`}
                               >
                                 <div className="flex items-center gap-8 justify-between">
-                                  <span className="font-semibold text-sm text-white">{event.name}</span>
+                                  <span className="font-semibold text-sm text-white">
+                                    {event.name}
+                                  </span>
                                   <div className="flex items-center gap-2 text-blue-200 text-[11px]">
-                                    <span className="uppercase tracking-wide">{event.games.length} games</span>
+                                    <span className="uppercase tracking-wide">
+                                      {event.games.length} games
+                                    </span>
                                     <ChevronRight size={14} />
                                   </div>
                                 </div>
@@ -1097,66 +1360,78 @@ const TechnoxianView = () => {
                       </motion.div>
                     )}
 
-                    {sidebarLevel === 'game' && selectedChampionship && selectedEvent && (
-                      <motion.div
-                        key="game"
-                        initial={{ x: 40, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        exit={{ x: -40, opacity: 0 }}
-                        transition={{ duration: 0.25, ease: 'easeOut' }}
-                        className="absolute inset-0 bg-[#0f172a] h-full"
-                      >
-                        {/* Fixed Header */}
-                        <div className="absolute top-0 left-0 right-0 z-10 bg-[#0f172a] p-6 border-b border-slate-800">
-                          <div className="flex items-center justify-between">
-                            <button
-                              onClick={() => {
-                                setSidebarLevel('event');
-                                setSelectedGame(null);
-                              }}
-                              className="flex items-center gap-2 text-sm text-blue-100 hover:text-white transition-colors"
-                            >
-                              <ChevronLeft size={16} />
-                              <span>Back</span>
-                            </button>
-                          </div>
-                          <div className="mt-4">
-                            <div className="text-[11px] font-bold uppercase text-blue-200 mb-1">Games</div>
-                            <div className="text-lg font-extrabold text-white">
-                              {SCHEDULE_DATA.find((c) => c.id === selectedChampionship)
-                                ?.events.find((e) => e.id === selectedEvent)?.name}
+                    {sidebarLevel === "game" &&
+                      selectedChampionship &&
+                      selectedEvent && (
+                        <motion.div
+                          key="game"
+                          initial={{ x: 40, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          exit={{ x: -40, opacity: 0 }}
+                          transition={{ duration: 0.25, ease: "easeOut" }}
+                          className="absolute inset-0 bg-[#0f172a] h-full"
+                        >
+                          {/* Fixed Header */}
+                          <div className="absolute top-0 left-0 right-0 z-10 bg-[#0f172a] p-6 border-b border-slate-800">
+                            <div className="flex items-center justify-between">
+                              <button
+                                onClick={() => {
+                                  setSidebarLevel("event");
+                                  setSelectedGame(null);
+                                }}
+                                className="flex items-center gap-2 text-sm text-blue-100 hover:text-white transition-colors"
+                              >
+                                <ChevronLeft size={16} />
+                                <span>Back</span>
+                              </button>
+                            </div>
+                            <div className="mt-4">
+                              <div className="text-[11px] font-bold uppercase text-blue-200 mb-1">
+                                Games
+                              </div>
+                              <div className="text-lg font-extrabold text-white">
+                                {
+                                  SCHEDULE_DATA.find(
+                                    (c) => c.id === selectedChampionship,
+                                  )?.events.find((e) => e.id === selectedEvent)
+                                    ?.name
+                                }
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        
-                        {/* Scrollable Content */}
-                        <div className="absolute top-36 bottom-0 left-0 right-0 overflow-y-auto">
-                          <div className="p-6 space-y-3">
-                            {SCHEDULE_DATA.find((c) => c.id === selectedChampionship)
-                              ?.events.find((e) => e.id === selectedEvent)
-                              ?.games.map((game) => {
-                                const isActive = selectedGame === game.id;
-                                return (
-                                  <button
-                                    key={game.id}
-                                    onClick={() => setSelectedGame(game.id)}
-                                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm ${
-                                      isActive
-                                        ? 'bg-white/15 border-blue-400 text-white'
-                                        : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
-                                    }`}
-                                  >
-                                    <div className="font-semibold text-sm">{game.name}</div>
-                                    <div className="text-xs text-blue-100 mt-1 flex items-center gap-2">
-                                      <MapPin size={10} /> {game.venue}
-                                    </div>
-                                  </button>
-                                );
-                              })}
+
+                          {/* Scrollable Content */}
+                          <div className="absolute top-36 bottom-0 left-0 right-0 overflow-y-auto">
+                            <div className="p-6 space-y-3">
+                              {SCHEDULE_DATA.find(
+                                (c) => c.id === selectedChampionship,
+                              )
+                                ?.events.find((e) => e.id === selectedEvent)
+                                ?.games.map((game) => {
+                                  const isActive = selectedGame === game.id;
+                                  return (
+                                    <button
+                                      key={game.id}
+                                      onClick={() => setSelectedGame(game.id)}
+                                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm ${
+                                        isActive
+                                          ? "bg-white/15 border-blue-400 text-white"
+                                          : "bg-white/5 border-white/10 hover:border-blue-300 text-blue-100"
+                                      }`}
+                                    >
+                                      <div className="font-semibold text-sm">
+                                        {game.name}
+                                      </div>
+                                      <div className="text-xs text-blue-100 mt-1 flex items-center gap-2">
+                                        <MapPin size={10} /> {game.venue}
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                            </div>
                           </div>
-                        </div>
-                      </motion.div>
-                    )}
+                        </motion.div>
+                      )}
                   </AnimatePresence>
                 </div>
               </div>
@@ -1165,27 +1440,42 @@ const TechnoxianView = () => {
               <div className="flex-1 overflow-y-auto p-8">
                 {selectedChampionship && selectedEvent && selectedGame ? (
                   (() => {
-                    const championship = SCHEDULE_DATA.find(c => c.id === selectedChampionship);
-                    const event = championship?.events.find(e => e.id === selectedEvent);
-                    const game = event?.games.find(g => g.id === selectedGame);
-                    
+                    const championship = SCHEDULE_DATA.find(
+                      (c) => c.id === selectedChampionship,
+                    );
+                    const event = championship?.events.find(
+                      (e) => e.id === selectedEvent,
+                    );
+                    const game = event?.games.find(
+                      (g) => g.id === selectedGame,
+                    );
+
                     if (!game) return null;
 
                     const formatDate = (dateStr) => {
                       const date = new Date(dateStr);
-                      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                      return date.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      });
                     };
 
                     return (
                       <div>
                         <div className="flex items-center justify-between mb-6 pb-6 border-b border-slate-200">
                           <div>
-                            <div className="text-xs font-bold uppercase text-blue-600 mb-1">Game Schedule</div>
-                            <h2 className="text-3xl font-bold text-slate-900">{game.name}</h2>
+                            <div className="text-xs font-bold uppercase text-blue-600 mb-1">
+                              Game Schedule
+                            </div>
+                            <h2 className="text-3xl font-bold text-slate-900">
+                              {game.name}
+                            </h2>
                             <div className="mt-2 flex items-center gap-4 text-sm text-slate-600">
                               <div className="flex items-center gap-2">
                                 <Calendar size={14} className="text-blue-600" />
-                                {formatDate(game.startDate)} – {formatDate(game.endDate)}
+                                {formatDate(game.startDate)} –{" "}
+                                {formatDate(game.endDate)}
                               </div>
                               <div className="flex items-center gap-2">
                                 <MapPin size={14} className="text-blue-600" />
@@ -1193,7 +1483,10 @@ const TechnoxianView = () => {
                               </div>
                               {game.zone && (
                                 <div className="flex items-center gap-2">
-                                  <MapPin size={14} className="text-green-600" />
+                                  <MapPin
+                                    size={14}
+                                    className="text-green-600"
+                                  />
                                   <span className="bg-green-50 text-green-700 px-2 py-1 rounded text-xs font-medium">
                                     {game.zone}
                                   </span>
@@ -1203,13 +1496,15 @@ const TechnoxianView = () => {
                           </div>
                           <div className="flex gap-3">
                             <button
-                              onClick={() => window.open(game.registrationLink, '_blank')}
+                              onClick={() =>
+                                window.open(game.registrationLink, "_blank")
+                              }
                               className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-blue-700 transition-colors text-sm"
                             >
                               Register to Game
                             </button>
                             <button
-                              onClick={() => setActiveTab('register')}
+                              onClick={() => setActiveTab("register")}
                               className="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg font-bold hover:bg-slate-200 transition-colors text-sm"
                             >
                               View Registration
@@ -1219,24 +1514,37 @@ const TechnoxianView = () => {
 
                         {game.description && (
                           <div className="mb-8 p-6 bg-blue-50 rounded-xl border border-blue-100">
-                            <p className="text-slate-700 leading-relaxed">{game.description}</p>
+                            <p className="text-slate-700 leading-relaxed">
+                              {game.description}
+                            </p>
                           </div>
                         )}
 
-                        <h3 className="text-xl font-bold text-slate-900 mb-4">Schedule Details</h3>
+                        <h3 className="text-xl font-bold text-slate-900 mb-4">
+                          Schedule Details
+                        </h3>
                         <div className="space-y-4 mb-8">
                           {game.schedule.map((item, idx) => (
-                            <div key={idx} className="rounded-xl border border-slate-200 overflow-hidden">
+                            <div
+                              key={idx}
+                              className="rounded-xl border border-slate-200 overflow-hidden"
+                            >
                               <div className="bg-slate-50 px-5 py-3 flex items-center gap-3">
                                 <Calendar size={14} className="text-blue-600" />
-                                <div className="text-sm font-bold text-slate-700">{formatDate(item.date)}</div>
+                                <div className="text-sm font-bold text-slate-700">
+                                  {formatDate(item.date)}
+                                </div>
                                 <div className="ml-auto flex items-center gap-2">
                                   <Clock3 size={14} className="text-blue-600" />
-                                  <div className="text-sm font-bold text-slate-700">{item.time}</div>
+                                  <div className="text-sm font-bold text-slate-700">
+                                    {item.time}
+                                  </div>
                                 </div>
                               </div>
                               <div className="bg-white p-5">
-                                <div className="font-bold text-slate-900">{item.title}</div>
+                                <div className="font-bold text-slate-900">
+                                  {item.title}
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -1244,48 +1552,75 @@ const TechnoxianView = () => {
 
                         <div className="grid md:grid-cols-2 gap-6">
                           <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
-                            <div className="text-sm font-bold text-slate-900 mb-4">Event Information</div>
+                            <div className="text-sm font-bold text-slate-900 mb-4">
+                              Event Information
+                            </div>
                             <div className="space-y-3">
                               <div className="flex justify-between">
-                                <span className="text-sm text-slate-600">Championship:</span>
-                                <span className="text-sm font-medium text-slate-900">{championship?.name}</span>
+                                <span className="text-sm text-slate-600">
+                                  Championship:
+                                </span>
+                                <span className="text-sm font-medium text-slate-900">
+                                  {championship?.name}
+                                </span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm text-slate-600">Event:</span>
-                                <span className="text-sm font-medium text-slate-900">{event?.name}</span>
+                                <span className="text-sm text-slate-600">
+                                  Event:
+                                </span>
+                                <span className="text-sm font-medium text-slate-900">
+                                  {event?.name}
+                                </span>
                               </div>
                               {game.zone && (
                                 <div className="flex justify-between">
-                                  <span className="text-sm text-slate-600">Zone:</span>
-                                  <span className="text-sm font-medium text-slate-900">{game.zone}</span>
+                                  <span className="text-sm text-slate-600">
+                                    Zone:
+                                  </span>
+                                  <span className="text-sm font-medium text-slate-900">
+                                    {game.zone}
+                                  </span>
                                 </div>
                               )}
                               <div className="flex justify-between">
-                                <span className="text-sm text-slate-600">Venue:</span>
-                                <span className="text-sm font-medium text-slate-900">{game.venue}</span>
+                                <span className="text-sm text-slate-600">
+                                  Venue:
+                                </span>
+                                <span className="text-sm font-medium text-slate-900">
+                                  {game.venue}
+                                </span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm text-slate-600">Duration:</span>
+                                <span className="text-sm text-slate-600">
+                                  Duration:
+                                </span>
                                 <span className="text-sm font-medium text-slate-900">
-                                  {formatDate(game.startDate)} to {formatDate(game.endDate)}
+                                  {formatDate(game.startDate)} to{" "}
+                                  {formatDate(game.endDate)}
                                 </span>
                               </div>
                             </div>
                           </div>
 
                           <div className="p-6 bg-blue-50 rounded-xl border border-blue-100">
-                            <div className="text-sm font-bold text-slate-900 mb-4">Registration</div>
+                            <div className="text-sm font-bold text-slate-900 mb-4">
+                              Registration
+                            </div>
                             <p className="text-sm text-slate-600 mb-4">
-                              Ready to compete in {game.name}? Register now to secure your spot in the competition.
+                              Ready to compete in {game.name}? Register now to
+                              secure your spot in the competition.
                             </p>
                             <button
-                              onClick={() => window.open(game.registrationLink, '_blank')}
+                              onClick={() =>
+                                window.open(game.registrationLink, "_blank")
+                              }
                               className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors"
                             >
                               Register Now
                             </button>
                             <p className="text-xs text-slate-500 mt-3 text-center">
-                              Early registration discounts available until March 31, 2025
+                              Early registration discounts available until March
+                              31, 2025
                             </p>
                           </div>
                         </div>
@@ -1296,10 +1631,17 @@ const TechnoxianView = () => {
                   <div className="flex items-center justify-center h-full text-slate-400">
                     <div className="text-center">
                       <Calendar size={48} className="mx-auto mb-4 opacity-50" />
-                      <div className="text-lg font-bold mb-2">Select a Game</div>
-                      <div className="text-sm">Choose a championship level, event, and game to view the schedule</div>
+                      <div className="text-lg font-bold mb-2">
+                        Select a Game
+                      </div>
+                      <div className="text-sm">
+                        Choose a championship level, event, and game to view the
+                        schedule
+                      </div>
                       <div className="mt-4 text-xs text-slate-500">
-                        <div>• Zonals: West, East, South, North, Center zones</div>
+                        <div>
+                          • Zonals: West, East, South, North, Center zones
+                        </div>
                         <div>• National: Yearly national championships</div>
                         <div>• World Cup: International championships</div>
                       </div>
@@ -1311,13 +1653,13 @@ const TechnoxianView = () => {
           </motion.div>
         )}
 
-        {activeTab === 'gallery' && (
+        {activeTab === "gallery" && (
           <motion.div
             key="gallery"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
             className="container mx-auto px-4 py-12"
           >
             <div className="grid md:grid-cols-3 gap-6">
@@ -1334,7 +1676,9 @@ const TechnoxianView = () => {
                 >
                   <div
                     className="h-48 bg-cover bg-center"
-                    style={{ backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.55)), url(${cat.cover})` }}
+                    style={{
+                      backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.55)), url(${cat.cover})`,
+                    }}
                   />
                   <div className="p-4 flex items-center justify-between text-white">
                     <div>
@@ -1343,7 +1687,9 @@ const TechnoxianView = () => {
                       </div>
                       <div className="text-lg font-extrabold">{cat.title}</div>
                     </div>
-                    <div className="text-[10px] px-2 py-1 rounded-full bg-white/10 border border-white/10">View</div>
+                    <div className="text-[10px] px-2 py-1 rounded-full bg-white/10 border border-white/10">
+                      View
+                    </div>
                   </div>
                 </motion.button>
               ))}
@@ -1351,147 +1697,211 @@ const TechnoxianView = () => {
           </motion.div>
         )}
 
-        {activeTab === 'register' && (
+        {activeTab === "register" && (
           <motion.div
             key="register"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
             className="container mx-auto px-4 py-12"
           >
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
-            <div className="md:w-64 bg-[#0f172a] p-6 text-white">
-              <h3 className="font-bold text-white mb-6">Registration Type</h3>
-              <div className="space-y-2">
-                {['Team Registration', 'Visitor Pass', 'Exhibitor Space'].map((type) => {
-                  const id = type.split(' ')[0].toLowerCase();
-                  return (
-                    <button
-                      key={id}
-                      onClick={() => setRegType(id)}
-                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between ${
-                        regType === id
-                          ? 'bg-white/15 border-blue-400 text-white'
-                          : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
-                      }`}
-                    >
-                      <span className="font-semibold text-sm">{type}</span>
-                      {regType === id && <ChevronRight size={14} className="text-blue-200" />}
-                    </button>
-                  );
-                })}
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
+              <div className="md:w-64 bg-[#0f172a] p-6 text-white">
+                <h3 className="font-bold text-white mb-6">Registration Type</h3>
+                <div className="space-y-2">
+                  {["Team Registration", "Visitor Pass", "Exhibitor Space"].map(
+                    (type) => {
+                      const id = type.split(" ")[0].toLowerCase();
+                      return (
+                        <button
+                          key={id}
+                          onClick={() => setRegType(id)}
+                          className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between ${
+                            regType === id
+                              ? "bg-white/15 border-blue-400 text-white"
+                              : "bg-white/5 border-white/10 hover:border-blue-300 text-blue-100"
+                          }`}
+                        >
+                          <span className="font-semibold text-sm">{type}</span>
+                          {regType === id && (
+                            <ChevronRight size={14} className="text-blue-200" />
+                          )}
+                        </button>
+                      );
+                    },
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className="flex-1 p-8 md:p-12">
-              <h2 className="text-2xl font-bold text-slate-900 mb-8 flex items-center gap-2">
-                {regType === 'team' && <Users className="text-blue-600" />}
-                {regType === 'visitor' && <Ticket className="text-blue-600" />}
-                {regType === 'exhibitor' && <Building className="text-blue-600" />}
-                {regType.charAt(0).toUpperCase() + regType.slice(1)} Path
-              </h2>
-              <div className="space-y-6 max-w-3xl">
-                {regType === 'team' && (
-                  <>
-                    <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
-                      <BadgeCheck className="text-blue-600" size={18} />
-                      <div>
-                        <div className="font-bold text-slate-900">Path A: Team</div>
-                        <p className="text-sm text-slate-600">Create team profile → add players → choose 9 competition categories → pay unified entry.</p>
+              <div className="flex-1 p-8 md:p-12">
+                <h2 className="text-2xl font-bold text-slate-900 mb-8 flex items-center gap-2">
+                  {regType === "team" && <Users className="text-blue-600" />}
+                  {regType === "visitor" && (
+                    <Ticket className="text-blue-600" />
+                  )}
+                  {regType === "exhibitor" && (
+                    <Building className="text-blue-600" />
+                  )}
+                  {regType.charAt(0).toUpperCase() + regType.slice(1)} Path
+                </h2>
+                <div className="space-y-6 max-w-3xl">
+                  {regType === "team" && (
+                    <>
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
+                        <BadgeCheck className="text-blue-600" size={18} />
+                        <div>
+                          <div className="font-bold text-slate-900">
+                            Path A: Team
+                          </div>
+                          <p className="text-sm text-slate-600">
+                            Create team profile → add players → choose 9
+                            competition categories → pay unified entry.
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Team Name</label>
-                        <input type="text" className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. RoboTitans" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Country</label>
-                        <select className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                          <option>Select Country</option>
-                          <option>India</option>
-                          <option>UAE</option>
-                          <option>USA</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2">Select Zonal Category</label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-                        {ZONAL_CATEGORIES.map((zone) => (
-                          <label key={zone.id} className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
-                            <input type="radio" name="zone" className="w-5 h-5 text-blue-600 rounded-full border-slate-300 focus:ring-blue-500" />
-                            <span className="text-sm font-medium text-slate-700">{zone.name}</span>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-2">
+                            Team Name
                           </label>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2">Select Games ($100/game)</label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {GAMES_LIST.map((game) => (
-                          <label key={game.id} className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
-                            <input type="checkbox" className="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 custom-checkbox" />
-                            <span className="text-sm font-medium text-slate-700">{game.name}</span>
+                          <input
+                            type="text"
+                            className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            placeholder="e.g. RoboTitans"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-2">
+                            Country
                           </label>
-                        ))}
+                          <select className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option>Select Country</option>
+                            <option>India</option>
+                            <option>UAE</option>
+                            <option>USA</option>
+                          </select>
+                        </div>
                       </div>
-                    </div>
-                  </>
-                )}
-
-                {regType === 'visitor' && (
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
-                      <BadgeCheck className="text-blue-600" size={18} />
                       <div>
-                        <div className="font-bold text-slate-900">Path B: Visitor</div>
-                        <p className="text-sm text-slate-600">Choose day pass → pay → instant QR ticket.</p>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">
+                          Select Zonal Category
+                        </label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                          {ZONAL_CATEGORIES.map((zone) => (
+                            <label
+                              key={zone.id}
+                              className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors"
+                            >
+                              <input
+                                type="radio"
+                                name="zone"
+                                className="w-5 h-5 text-blue-600 rounded-full border-slate-300 focus:ring-blue-500"
+                              />
+                              <span className="text-sm font-medium text-slate-700">
+                                {zone.name}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Select Day</label>
-                    <select className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                      <option>Day 1 - Oct 12</option>
-                      <option>Day 2 - Oct 13</option>
-                      <option>Day 3 - Oct 14</option>
-                    </select>
-                  </div>
-                )}
-
-                {regType === 'exhibitor' && (
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
-                      <BadgeCheck className="text-blue-600" size={18} />
                       <div>
-                        <div className="font-bold text-slate-900">Path C: Exhibitor</div>
-                        <p className="text-sm text-slate-600">Upload booth design → select floor space → pay deposit.</p>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">
+                          Select Games ($100/game)
+                        </label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {GAMES_LIST.map((game) => (
+                            <label
+                              key={game.id}
+                              className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors"
+                            >
+                              <input
+                                type="checkbox"
+                                className="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 custom-checkbox"
+                              />
+                              <span className="text-sm font-medium text-slate-700">
+                                {game.name}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {regType === "visitor" && (
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
+                        <BadgeCheck className="text-blue-600" size={18} />
+                        <div>
+                          <div className="font-bold text-slate-900">
+                            Path B: Visitor
+                          </div>
+                          <p className="text-sm text-slate-600">
+                            Choose day pass → pay → instant QR ticket.
+                          </p>
+                        </div>
+                      </div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">
+                        Select Day
+                      </label>
+                      <select className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <option>Day 1 - Oct 12</option>
+                        <option>Day 2 - Oct 13</option>
+                        <option>Day 3 - Oct 14</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {regType === "exhibitor" && (
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
+                        <BadgeCheck className="text-blue-600" size={18} />
+                        <div>
+                          <div className="font-bold text-slate-900">
+                            Path C: Exhibitor
+                          </div>
+                          <p className="text-sm text-slate-600">
+                            Upload booth design → select floor space → pay
+                            deposit.
+                          </p>
+                        </div>
+                      </div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">
+                        Upload Booth Design
+                      </label>
+                      <input type="file" className="w-full" />
+                      <label className="block text-sm font-bold text-slate-700 mb-2">
+                        Select Floor Space
+                      </label>
+                      <select className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <option>6m x 6m</option>
+                        <option>9m x 9m</option>
+                        <option>Custom (request)</option>
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 mt-8">
+                    <div>
+                      <div className="text-sm text-slate-500">
+                        Unified Payment Gateway
+                      </div>
+                      <div className="text-2xl font-bold text-slate-900">
+                        $200.00 USD
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        Applies to all paths; receipts shared to partner
+                        portals.
                       </div>
                     </div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Upload Booth Design</label>
-                    <input type="file" className="w-full" />
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Select Floor Space</label>
-                    <select className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                      <option>6m x 6m</option>
-                      <option>9m x 9m</option>
-                      <option>Custom (request)</option>
-                    </select>
+                    <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2">
+                      <CreditCard size={18} /> Proceed to Pay
+                    </button>
                   </div>
-                )}
-
-                <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 mt-8">
-                  <div>
-                    <div className="text-sm text-slate-500">Unified Payment Gateway</div>
-                    <div className="text-2xl font-bold text-slate-900">$200.00 USD</div>
-                    <div className="text-xs text-slate-500">Applies to all paths; receipts shared to partner portals.</div>
-                  </div>
-                  <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2">
-                    <CreditCard size={18} /> Proceed to Pay
-                  </button>
                 </div>
               </div>
             </div>
-          </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1514,26 +1924,45 @@ const TechnoxianView = () => {
             >
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
                 <div>
-                  <div className="text-xs uppercase font-bold text-blue-600">{activeGallery.tag}</div>
-                  <div className="text-2xl font-extrabold text-slate-900">{activeGallery.title} Gallery</div>
+                  <div className="text-xs uppercase font-bold text-blue-600">
+                    {activeGallery.tag}
+                  </div>
+                  <div className="text-2xl font-extrabold text-slate-900">
+                    {activeGallery.title} Gallery
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowAllGallery((p) => !p)}
                     className="text-sm font-semibold text-blue-600 hover:text-blue-800"
                   >
-                    {showAllGallery ? 'Show Less' : 'Show More'}
+                    {showAllGallery ? "Show Less" : "Show More"}
                   </button>
-                  <button onClick={() => { setActiveGallery(null); setShowAllGallery(false); }} className="bg-slate-100 p-2 rounded-full hover:bg-slate-200">
+                  <button
+                    onClick={() => {
+                      setActiveGallery(null);
+                      setShowAllGallery(false);
+                    }}
+                    className="bg-slate-100 p-2 rounded-full hover:bg-slate-200"
+                  >
                     <X size={18} />
                   </button>
                 </div>
               </div>
               <div className="p-6 max-h-[70vh] overflow-y-auto overscroll-contain">
                 <div className="grid md:grid-cols-3 gap-4">
-                  {(showAllGallery ? activeGallery.images : activeGallery.images.slice(0, 6)).map((img) => (
-                    <div key={img} className="relative overflow-hidden rounded-2xl border border-slate-100 h-48">
-                      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${img})` }} />
+                  {(showAllGallery
+                    ? activeGallery.images
+                    : activeGallery.images.slice(0, 6)
+                  ).map((img) => (
+                    <div
+                      key={img}
+                      className="relative overflow-hidden rounded-2xl border border-slate-100 h-48"
+                    >
+                      <div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url(${img})` }}
+                      />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent"></div>
                     </div>
                   ))}
