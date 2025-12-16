@@ -45,14 +45,11 @@ const TechnoxianView = () => {
   const [selectedTechnoxianMembership, setSelectedTechnoxianMembership] =
     useState(null);
   const [openTechRows, setOpenTechRows] = useState({});
-
-
   // Schedule navigation states
   const [selectedChampionship, setSelectedChampionship] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedGame, setSelectedGame] = useState(null);
   const [sidebarLevel, setSidebarLevel] = useState("championship");
-
   // Discipline sidebar states
   const [selectedDisciplineGame, setSelectedDisciplineGame] =
     useState("Innovation Jr.");
@@ -715,8 +712,8 @@ const TechnoxianView = () => {
             <br></br>
 
             {/* membership plan */}
-
-            <section className="min-h-screen flex items-center bg-slate-50 border-t border-slate-200">
+            {/* Membership Section */}
+            <section className="min-h-screen flex items-center bg-slate-50 border-t border-slate-200 py-20">
               <div className="container mx-auto px-4 max-w-7xl">
                 <div className="text-center mb-14">
                   <span className="text-xs font-bold uppercase tracking-widest text-blue-600">
@@ -769,7 +766,6 @@ const TechnoxianView = () => {
                   ].map((plan) => {
                     const Icon = plan.icon;
                     const isSelected = selectedTechnoxianMembership === plan.id;
-
                     return (
                       <div
                         key={plan.id}
@@ -793,11 +789,9 @@ const TechnoxianView = () => {
                             </p>
                           </div>
                         </div>
-
                         <div className="text-3xl font-extrabold text-slate-900 mb-6">
                           {plan.price}
                         </div>
-
                         <ul className="space-y-3 mb-8">
                           {plan.highlights.map((item, i) => (
                             <li
@@ -809,7 +803,6 @@ const TechnoxianView = () => {
                             </li>
                           ))}
                         </ul>
-
                         <button
                           className={`w-full py-3 rounded-xl font-bold transition-all
                 ${isSelected
@@ -823,115 +816,24 @@ const TechnoxianView = () => {
                     );
                   })}
                 </div>
-              </div>
-            </section>
 
-            <section className="bg-white border-t border-slate-200">
-              <div className="container mx-auto px-6 max-w-7xl py-24">
-
-                {/* Header */}
-                <div className="text-center mb-16">
-                  <span className="text-xs font-bold uppercase tracking-widest text-blue-600">
-                    Technoxian Membership
-                  </span>
-                  <h2 className="text-4xl font-extrabold text-slate-900 mt-4">
-                    Compare all student membership features
-                  </h2>
-                  <p className="text-slate-600 mt-4 max-w-3xl mx-auto">
-                    Explore benefits across Student, Basic, and Premium memberships.
-                    Click on each feature to understand what’s included.
+                {/* === NEW: Compare Plans Button === */}
+                <div className="text-center mt-12">
+                  <a
+                    href="https://technoxian-webapp-developer.vercel.app/membership"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-3 bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl"
+                  >
+                    <span>Compare Membership Plans in Detail</span>
+                    <ChevronRight size={20} />
+                  </a>
+                  <p className="text-sm text-slate-500 mt-4">
+                    See a full side-by-side comparison of all benefits and features
                   </p>
                 </div>
-
-                {/* Comparison Table */}
-                <div className="overflow-x-auto rounded-3xl border bg-white">
-                  <table className="w-full border-collapse">
-                    <thead className="bg-slate-100">
-                      <tr>
-                        <th className="p-5 text-left text-sm font-bold text-slate-700">
-                          Feature
-                        </th>
-                        <th className="p-5 text-center text-sm font-bold">Student</th>
-                        <th className="p-5 text-center text-sm font-bold">Basic</th>
-                        <th className="p-5 text-center text-sm font-bold">Premium</th>
-                      </tr>
-                    </thead>
-
-                    <tbody className="divide-y">
-                      {[
-                        {
-                          title: 'Official Technoxian Student Membership',
-                          desc:
-                            'Official student membership ID with digital certificate and QR verification under WORSO & Technoxian.',
-                          values: [true, true, true],
-                        },
-                        {
-                          title: 'Global Student Directory & Digital Badges',
-                          desc:
-                            'Listing in the WORSO student community directory and global young innovators directory with verifiable digital badges.',
-                          values: [true, true, true],
-                        },
-                        {
-                          title: 'Workshops, Webinars & Learning Access',
-                          desc:
-                            'Access to workshops, monthly webinars, resume-building sessions, and selected masterclasses.',
-                          values: [true, true, true],
-                        },
-                        {
-                          title: 'Internships, Mentorship & Placement Support',
-                          desc:
-                            'Access to internships, priority interviews, mentorship for innovation, career planning, and placement opportunities.',
-                          values: [false, true, true],
-                        },
-                        {
-                          title: 'Competitions & Events Access',
-                          desc:
-                            'Eligibility to register for district, state, national & international competitions via RoboClubs.',
-                          values: [true, true, true],
-                        },
-                        {
-                          title: 'Innovation, Hackathons & Research',
-                          desc:
-                            'Participation in hackathons, innovation challenges, student research submissions, and innovation council access.',
-                          values: [false, true, true],
-                        },
-                        {
-                          title: 'Leadership, Chapters & Policy Roles',
-                          desc:
-                            'Eligibility to form student chapters, leadership titles, advisory roles, and youth policy discussions.',
-                          values: [false, false, true],
-                        },
-                        {
-                          title: 'International Exposure & Exchange Programs',
-                          desc:
-                            'Priority selection for international exchange camps, leadership meets, global forums, and sponsored participation.',
-                          values: [false, false, true],
-                        },
-                        {
-                          title: 'Discounts & Premium Learning Benefits',
-                          desc:
-                            'Discounts on robotics, AI & drone courses, early access to advanced courses, and premium masterclasses.',
-                          values: [true, true, true],
-                        },
-                        {
-                          title: 'CSR, Volunteering & Outreach',
-                          desc:
-                            'Opportunities to volunteer in STEM outreach, lead CSR workshops, and earn certificates for social impact.',
-                          values: [true, true, true],
-                        },
-                      ].map((row, i) => (
-                        <TechComparisonRow
-                          key={i}
-                          row={row}
-                          index={i}
-                        />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
               </div>
             </section>
-
 
             {/* Trophies Section */}
             <div className="mt-10">

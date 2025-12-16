@@ -8,6 +8,24 @@ const AboutLayout = ({ setView }) => {
   const navigate = useNavigate();
   void motion;
 
+  /* ------------------ REFEREE DATA ------------------ */
+  const referees = [
+    { name: 'Group Captain Rajiv Kumar Narang', role: 'Referee', game: 'Drone Rescue' },
+    { name: 'Lt. Luv Ravi', role: 'Judge', game: 'RC Electric Car Racing' },
+    { name: 'Dharmendra Sahu', role: 'Referee', game: 'Robo Soccer' },
+    { name: 'Rakesh Arya', role: 'Referee', game: 'Robo Race' },
+    { name: 'Mahabir Rawat', role: 'Judge', game: 'Drone Soccer' },
+    { name: 'Prashanta Bag', role: 'Referee', game: 'Robo Soccer' },
+    { name: 'Colonel Laxmi Kant Yadav', role: 'Referee', game: 'RC Craft' },
+    { name: 'Ganesh Pandit Suryawanshi', role: 'Referee', game: 'Bots Combat' },
+    { name: 'Satyajit Pangaonkar', role: 'Referee', game: 'Maze Solve' },
+    { name: 'Ashish Kumar', role: 'Referee', game: 'Water Rocket' },
+    { name: 'Dr. Munish Jindal', role: 'Referee', game: 'RC Electric Car Racing' },
+    { name: 'Sonu', role: 'Referee', game: 'Robo Hockey' },
+    { name: 'Sameer Sharma', role: 'Judge', game: 'Bots Combat' },
+    { name: 'Prashant Teke', role: 'Judge', game: 'Water Rocket' },
+  ];
+
   const renderContent = () => {
     switch (activeSection) {
       case 'governance':
@@ -105,6 +123,57 @@ const AboutLayout = ({ setView }) => {
               <p className="text-sm text-slate-500 italic mt-4">
                 Through these core values, WORSO aims to establish eSport as a mainstream sport, recognized for its athleticism, competitive spirit, and positive impact on society.
               </p>
+            </div>
+          </div>
+        );
+
+        case 'referees':
+        return (
+          <div className="space-y-10">
+            {/* Header */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <ClipboardList className="text-blue-600" />
+                <h2 className="text-3xl font-bold text-slate-900">
+                  Official Referees & Judges
+                </h2>
+              </div>
+              <p className="text-lg text-slate-600 max-w-3xl">
+                Certified referees and judges appointed by WORSO to ensure fair play,
+                rule compliance, and professional evaluation across all robotics competitions.
+              </p>
+            </div>
+
+            {/* Referees Grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {referees.map((ref, index) => (
+                <div
+                  key={index}
+                  className="group bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-sm hover:shadow-xl transition-all duration-300"
+                >
+                  {/* Image */}
+                  <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-slate-100 shadow">
+                    <img
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(ref.name)}&background=0f172a&color=fff&size=256`}
+                      alt={ref.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {/* Info */}
+                  <h3 className="text-xl font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors">
+                    {ref.name}
+                  </h3>
+
+                  <p className="text-sm font-semibold text-blue-600">
+                    {ref.role}
+                  </p>
+
+                  <div className="mt-4 inline-block bg-slate-100 px-4 py-2 rounded-full text-sm text-slate-700 font-medium">
+                    Expertise: <span className="font-bold">{ref.game}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         );
@@ -773,6 +842,7 @@ const AboutLayout = ({ setView }) => {
             { id: 'board', label: 'Board of Directors' },
             { id: 'federation-services', label: 'Federation Services' },
             { id: 'associates', label: 'Associates & Partners' },
+            { id: 'referees', label: 'Referees' },
           ].map((item) => (
             <button
               key={item.id}

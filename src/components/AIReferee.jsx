@@ -40,11 +40,16 @@ const AIReferee = ({ siteConfig }) => {
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 ${siteConfig.colors.primary} text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center gap-2`}
+        className={`fixed bottom-6 right-6 z-50 ${siteConfig.colors.primary}
+    w-12 h-12 rounded-full
+    flex items-center justify-center
+    text-white shadow-xl
+    hover:scale-110 active:scale-95
+    transition-transform`}
       >
-        <Bot size={24} />
-        <span className="font-bold text-sm hidden md:inline">Ask AI Referee</span>
+        <Bot size={20} />
       </button>
+
 
       {isOpen && (
         <div className="fixed bottom-24 right-6 z-50 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-fadeIn">
@@ -62,11 +67,10 @@ const AIReferee = ({ siteConfig }) => {
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
-                  className={`max-w-[80%] p-3 rounded-lg text-sm ${
-                    msg.role === 'user'
+                  className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.role === 'user'
                       ? 'bg-blue-600 text-white rounded-br-none'
                       : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-sm'
-                  }`}
+                    }`}
                 >
                   {msg.text}
                 </div>

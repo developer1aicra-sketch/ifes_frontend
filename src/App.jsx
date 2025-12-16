@@ -25,6 +25,7 @@ import NewsArticleView from './views/NewsArticleView';
 import NewsListView from './views/NewsListView';
 import PrivacyPolicyView from './views/PrivacyPolicyView';
 import TermsOfUseView from './views/TermsOfUseView';
+import CompareMembershipView from './views/CompareMembershipView'; // ✅ NEW
 
 import { DEFAULT_SITES, NEWS_ITEMS } from './constants/data';
 import { styles } from './styles/inlineStyles';
@@ -32,16 +33,19 @@ import { fetchTechnoxianFeed } from './utils/rss';
 
 const viewToPath = (view) => {
   if (!view) return '/';
+
   if (view.startsWith('news-list-')) {
     const type = view.replace('news-list-', '');
     if (type === 'headline') return '/news/headline';
     if (type === 'latest') return '/news/latest';
     if (type === 'most') return '/news/most';
   }
+
   if (view.startsWith('news-')) {
     const id = view.replace('news-', '');
     return `/news/${id}`;
   }
+
   switch (view) {
     case 'home':
       return '/';
@@ -78,6 +82,8 @@ const viewToPath = (view) => {
       return '/privacy-policy';
     case 'terms-of-use':
       return '/terms-of-use';
+    case 'compare-membership': // ✅ NEW
+      return '/compare-membership';
     default:
       return '/';
   }
@@ -93,7 +99,9 @@ const App = () => {
   const [sites, setSites] = useState(DEFAULT_SITES);
   const [currentSite, setCurrentSite] = useState(DEFAULT_SITES.global);
   const [user, setUser] = useState(null);
-  const [tickerText] = useState('BREAKING: Zonal Round registrations for Asia Pacific are now OPEN!');
+  const [tickerText] = useState(
+    'BREAKING: Zonal Round registrations for Asia Pacific are now OPEN!'
+  );
   const [newsItems, setNewsItems] = useState(NEWS_ITEMS);
   const [newsLoading, setNewsLoading] = useState(false);
   const [newsError, setNewsError] = useState('');
@@ -122,6 +130,7 @@ const App = () => {
 
   useEffect(() => {
     let mounted = true;
+
     const loadFeed = async () => {
       setNewsLoading(true);
       try {
@@ -130,7 +139,7 @@ const App = () => {
           setNewsItems(latest);
           setNewsError('');
         }
-      } catch (err) {
+      } catch {
         if (mounted) {
           setNewsError('Unable to load latest Technoxian news right now.');
         }
@@ -143,6 +152,7 @@ const App = () => {
 
     loadFeed();
     const interval = setInterval(loadFeed, 60_000);
+
     return () => {
       mounted = false;
       clearInterval(interval);
@@ -163,7 +173,9 @@ const App = () => {
     (void motion),
     <div
       className={`font-sans antialiased text-slate-900 bg-white min-h-screen flex flex-col ${
-        currentSite.is_partner ? 'selection:bg-emerald-100 selection:text-emerald-900' : 'selection:bg-blue-100 selection:text-blue-900'
+        currentSite.is_partner
+          ? 'selection:bg-emerald-100 selection:text-emerald-900'
+          : 'selection:bg-blue-100 selection:text-blue-900'
       }`}
     >
       <LiveTicker tickerText={tickerText} siteConfig={currentSite} />
@@ -175,6 +187,7 @@ const App = () => {
         user={user}
         setUser={setUser}
       />
+
       <main className="flex-grow">
         <AnimatePresence mode="wait">
           <motion.div
@@ -194,20 +207,19 @@ const App = () => {
               <Route path="/associates/list" element={<AssociationsListView />} />
               <Route path="/careers" element={<CareersView />} />
               <Route path="/partners" element={<HomeView setView={setView} siteConfig={currentSite} {...newsProps} />} />
+
+              <Route path="/compare-membership" element={<CompareMembershipView setView={setView} />} /> {/* ✅ NEW */}
+
               <Route path="/login" element={<MemberLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
               <Route path="/staff-login" element={<AdminLoginView setView={setView} setUser={setUser} />} />
               <Route path="/login-super-admin" element={<SuperAdminLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
               <Route path="/login-partner-admin" element={<PartnerAdminLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
-              <Route path="/member-dashboard" element={
-                <MemberDashboard currentSite={currentSite} setView={setView} />
-              } />
-              <Route path="/privacy-policy" element={
-                <PrivacyPolicyView />
-              } />
-              <Route path="/terms-of-use" element={
-                <TermsOfUseView />
-              } />
+
+              <Route path="/member-dashboard" element={<MemberDashboard currentSite={currentSite} setView={setView} />} />
               <Route path="/admin-dashboard" element={<AdminView setSites={setSites} sites={sites} setView={setView} defaultMode={user?.role} />} />
+
+              <Route path="/privacy-policy" element={<PrivacyPolicyView />} />
+              <Route path="/terms-of-use" element={<TermsOfUseView />} />
 
               <Route path="/news" element={<NewsListView type="latest" {...newsProps} />} />
               <Route path="/news/headline" element={<NewsListView type="headline" {...newsProps} />} />
@@ -220,6 +232,7 @@ const App = () => {
           </motion.div>
         </AnimatePresence>
       </main>
+
       <AIReferee siteConfig={currentSite} />
       <Footer setView={setView} switchSite={switchSite} currentSite={currentSite} />
     </div>
