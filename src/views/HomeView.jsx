@@ -26,9 +26,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
 
   /** ✅ FIX: parent-controlled open state (Zoom-style) */
   const [openRows, setOpenRows] = useState({});
-  
-  /** ✅ NEW: Hover state for comparison rows */
-  const [hoveredRow, setHoveredRow] = useState(null);
+
 
   const preparedNews = useMemo(() => newsItems.filter(Boolean), [newsItems]);
   const headline = preparedNews[0];
@@ -50,77 +48,6 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
     }, 4500);
     return () => clearInterval(i);
   }, [mostReadPool.length]);
-
-  /* =============================
-     Comparison Row (UPDATED with hover effects)
-  ============================== */
-  function ComparisonRow({ row, index }) {
-    const isOpen = !!openRows[index];
-    const isHovered = hoveredRow === index;
-
-    return (
-      <tr 
-        className="hover:bg-slate-50 transition-colors duration-200"
-        onMouseEnter={() => setHoveredRow(index)}
-        onMouseLeave={() => setHoveredRow(null)}
-      >
-        <td className="p-5 align-top relative">
-          <div className="flex flex-col">
-            <button
-              onClick={() =>
-                setOpenRows(prev => ({
-                  ...prev,
-                  [index]: !prev[index],
-                }))
-              }
-              className="flex items-start gap-2 text-left w-full group"
-            >
-              <ChevronDown
-                size={16}
-                className={`mt-1 transition-transform ${isOpen ? 'rotate-180' : ''
-                  }`}
-              />
-              <span className="font-medium text-slate-800 group-hover:text-blue-600 transition-colors">
-                {row.title}
-              </span>
-            </button>
-
-            {/* Hover Tooltip */}
-            {(isHovered || isOpen) && (
-              <div className="mt-3">
-                <p className="text-sm text-slate-600 max-w-xl bg-slate-50 p-4 rounded-lg border border-slate-200 shadow-sm">
-                  {row.desc}
-                </p>
-                {isHovered && !isOpen && (
-                  <div className="text-xs text-slate-500 mt-2 italic">
-                    Click to keep open
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </td>
-
-        {row.values.map((v, i) => (
-          <td key={i} className="p-5 text-center text-lg">
-            {v === true && (
-              <span className="inline-flex items-center justify-center w-8 h-8 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                ✓
-              </span>
-            )}
-            {v === false && (
-              <span className="inline-flex items-center justify-center w-8 h-8 bg-red-100 text-red-700 rounded-full text-sm font-medium">
-                ✗
-              </span>
-            )}
-            {v === null && (
-              <span className="text-slate-400">—</span>
-            )}
-          </td>
-        ))}
-      </tr>
-    );
-  }
 
   return (
     <div className="animate-fadeIn bg-slate-50">
@@ -515,104 +442,28 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
                 </div>
               );
             })}
+
           </div>
-        </div>
-      </section>
+          <div className="mt-16 text-center">
+            <button
+              onClick={() => setView('compare-membership')}
+              className="inline-flex items-center gap-2 px-10 py-4 rounded-xl
+      bg-blue-600 text-white font-bold text-lg
+      shadow-lg hover:shadow-xl hover:-translate-y-1
+      transition-all"
+            >
+              Explore & Compare All Plans
+              <ArrowRight size={20} />
+            </button>
 
-      <section className="bg-white border-t border-slate-200">
-        <div className="container mx-auto px-6 max-w-7xl py-24">
-
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-extrabold text-slate-900">
-              Compare all membership features
-            </h2>
-            <p className="text-slate-600 mt-4 max-w-3xl mx-auto">
-              Explore detailed benefits across Institute, Professional, and Corporate
-              memberships. Hover over each feature to see details, or click to keep them open.
+            <p className="text-sm text-slate-500 mt-4">
+              See a detailed feature-by-feature comparison of all memberships
             </p>
           </div>
-
-          <div className="overflow-x-auto rounded-3xl border bg-white">
-            <table className="w-full border-collapse">
-              <thead className="bg-slate-100">
-                <tr>
-                  <th className="p-5 text-left text-sm font-bold text-slate-700">
-                    Feature
-                  </th>
-                  <th className="p-5 text-center text-sm font-bold">Institute</th>
-                  <th className="p-5 text-center text-sm font-bold">Professional</th>
-                  <th className="p-5 text-center text-sm font-bold">Corporate</th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y">
-                {[
-                  {
-                    title: 'Official Membership Recognition',
-                    desc:
-                      'Formal recognition by WORSO with official badges, listings, and credibility across global platforms.',
-                    values: [true, true, true],
-                  },
-                  {
-                    title: 'Global Directory Listing',
-                    desc:
-                      'Visibility on WORSO\'s official global directories accessed by institutions, students, partners, and governments.',
-                    values: [true, true, true],
-                  },
-                  {
-                    title: 'Robotics, STEM & AI Lab Support',
-                    desc:
-                      'Support for setting up or accessing robotics labs, STEM labs, AI innovation centers, and RoboClubs.',
-                    values: [true, false, true],
-                  },
-                  {
-                    title: 'Training, Mentorship & Coaching Roles',
-                    desc:
-                      'Opportunities to train, mentor, coach, judge competitions, and lead innovation programs.',
-                    values: [false, true, false],
-                  },
-                  {
-                    title: 'Competitions & Championships Access',
-                    desc:
-                      'Participation and hosting rights for district, state, national, and international robotics championships.',
-                    values: [true, true, true],
-                  },
-                  {
-                    title: 'CSR & Outreach Programs',
-                    desc:
-                      'Participation in CSR initiatives, STEM outreach, underprivileged student programs, and community development.',
-                    values: [true, true, true],
-                  },
-                  {
-                    title: 'Industry, Research & R&D Collaboration',
-                    desc:
-                      'Collaboration opportunities with industry partners, research labs, universities, and innovation councils.',
-                    values: [true, true, true],
-                  },
-                  {
-                    title: 'Policy, Advisory & Leadership Roles',
-                    desc:
-                      'Involvement in policy discussions, advisory boards, framework development, and leadership committees.',
-                    values: [true, true, true],
-                  },
-                  {
-                    title: 'Hosting & Partnership Rights',
-                    desc:
-                      'Rights to host leagues, competitions, innovation labs, and become regional, technology, or event partners.',
-                    values: [true, false, true],
-                  },
-                ].map((row, i) => (
-                  <ComparisonRow
-                    key={i}
-                    row={row}
-                    index={i}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
       </section>
+
+
 
       <section className="py-20 bg-white border-t border-slate-100">
         <div className="container mx-auto px-4 max-w-7xl">
