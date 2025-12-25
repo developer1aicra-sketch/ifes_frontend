@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 const JoinWorsoView = () => {
   const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     // Organization Details
     organizationName: '',
@@ -54,13 +55,68 @@ const JoinWorsoView = () => {
     }));
   };
 
+  const validateStep = (step) => {
+    if (step === 1) {
+      const requiredFields = [
+        'organizationName',
+        'organizationHead',
+        'email',
+        'mobile',
+        'country',
+        'state',
+        'city',
+        'establishmentYear',
+        'numberOfMembers',
+        'majorActivities'
+      ];
+      return requiredFields.every(field => {
+        const value = formData[field];
+        return value !== null && value !== undefined && value.toString().trim() !== '';
+      });
+    } else if (step === 2) {
+      const requiredFields = [
+        'applicantName',
+        'applicantDesignation',
+        'applicantEmail',
+        'applicantMobile',
+        'organizationBrief',
+        'financialStatement'
+      ];
+      return requiredFields.every(field => {
+        const value = formData[field];
+        return value !== null && value !== undefined && 
+              (typeof value === 'object' ? value.name : value.toString().trim() !== '');
+      });
+    }
+    return true;
+  };
+
+  const handleNext = (e) => {
+    e.preventDefault();
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => prev + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      alert('Please fill in all required fields before proceeding.');
+    }
+  };
+
+  const handlePrevious = (e) => {
+    e.preventDefault();
+    setCurrentStep(prev => prev - 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log('Form submitted:', formData);
-    // You would typically send this to your backend
-    alert('Application submitted successfully! We will get back to you soon.');
-    navigate('/associates');
+    if (validateStep(2)) {
+      console.log('Form submitted:', formData);
+      // You would typically send this to your backend
+      alert('Application submitted successfully! We will get back to you soon.');
+      navigate('/associates');
+    } else {
+      alert('Please fill in all required fields before submitting.');
+    }
   };
 
   return (
@@ -85,10 +141,32 @@ const JoinWorsoView = () => {
           </p>
         </div>
 
+        {/* Progress Steps */}
+        <div className="flex justify-between items-center mb-12 px-8">
+          <div className={`flex flex-col items-center ${currentStep >= 1 ? 'text-blue-600' : 'text-slate-400'}`}>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${currentStep >= 1 ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
+              1
+            </div>
+            <span className="text-sm font-medium">Organization</span>
+          </div>
+          <div className="flex-1 h-1 mx-4 bg-slate-200">
+            <div 
+              className={`h-full transition-all duration-500 ${currentStep >= 2 ? 'bg-blue-500' : 'bg-slate-200'}`}
+              style={{ width: currentStep >= 2 ? '100%' : '0%' }}
+            ></div>
+          </div>
+          <div className={`flex flex-col items-center ${currentStep >= 2 ? 'text-blue-600' : 'text-slate-400'}`}>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${currentStep >= 2 ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
+              2
+            </div>
+            <span className="text-sm font-medium">Applicant & Documents</span>
+          </div>
+        </div>
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-12">
-          {/* Organization Details Section */}
-          <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
+          {/* Step 1: Organization Details */}
+          <div className={`bg-white rounded-2xl p-8 border border-slate-200 shadow-sm transition-all duration-300 ${currentStep === 1 ? 'block' : 'hidden'}`}>
             <div className="flex items-center gap-3 mb-6">
               <div className="bg-blue-100 p-2 rounded-lg">
                 <Building className="text-blue-600" size={24} />
@@ -320,8 +398,8 @@ const JoinWorsoView = () => {
             </div>
           </div>
 
-          {/* Applicant Details Section */}
-          <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
+          {/* Step 2: Applicant Details & Documents */}
+          <div className={`bg-white rounded-2xl p-8 border border-slate-200 shadow-sm transition-all duration-300 ${currentStep === 2 ? 'block' : 'hidden'}`}>
             <div className="flex items-center gap-3 mb-6">
               <div className="bg-green-100 p-2 rounded-lg">
                 <User className="text-green-600" size={24} />
@@ -410,17 +488,8 @@ const JoinWorsoView = () => {
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Supporting Documents Section */}
-          <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-purple-100 p-2 rounded-lg">
-                <FileText className="text-purple-600" size={24} />
-              </div>
-              <h2 className="text-2xl font-bold text-slate-900">Supporting Documents</h2>
-            </div>
-
+            {/* Supporting Documents */}
             <div className="space-y-6">
               {/* Organization Brief */}
               <div className="space-y-2">
@@ -495,18 +564,43 @@ const JoinWorsoView = () => {
             </div>
           </div>
 
-          {/* Submit Button */}
-          <div className="text-center">
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-12 py-4 rounded-lg font-bold text-lg shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
-            >
-              Submit Application
-            </button>
-            <p className="text-slate-500 text-sm mt-4">
+          {/* Navigation Buttons */}
+          <div className="flex justify-between items-center mt-12">
+            {currentStep > 1 ? (
+              <button
+                type="button"
+                onClick={handlePrevious}
+                className="px-8 py-3 border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+              >
+                Previous
+              </button>
+            ) : (
+              <div></div> // Empty div to maintain space
+            )}
+            
+            {currentStep < 2 ? (
+              <button
+                type="button"
+                onClick={handleNext}
+                className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium shadow-md hover:bg-blue-700 hover:shadow-lg transition-all ml-auto"
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                type="submit"
+                className="bg-green-600 text-white px-8 py-3 rounded-lg font-medium shadow-md hover:bg-green-700 hover:shadow-lg transition-all ml-auto"
+              >
+                Submit Application
+              </button>
+            )}
+          </div>
+          
+          {currentStep === 2 && (
+            <p className="text-slate-500 text-sm mt-4 text-center">
               By submitting, you agree to our terms and conditions. We'll contact you within 5-7 business days.
             </p>
-          </div>
+          )}
         </form>
       </div>
     </div>
