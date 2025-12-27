@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { PRODUCTS } from '../../src/utils/data';
-import { ArrowRight, Plus, X, ShoppingCart, ShoppingBag, Minus, ArrowLeft } from 'lucide-react';
+import { ArrowRight, Plus, X, ShoppingCart, ShoppingBag, Minus, ArrowLeft, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const FeaturedShopSection = () => {
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeView, setActiveView] = useState('shop');
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const addToCart = useCallback((product) => {
     setCartItems(prev => {
@@ -40,8 +41,117 @@ const FeaturedShopSection = () => {
     return cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   }, [cartItems]);
 
+  const closeProductModal = useCallback(() => {
+    setSelectedProduct(null);
+  }, []);
+
+  const handleProductClick = useCallback((product, e) => {
+    e.stopPropagation();
+    setSelectedProduct(product);
+  }, []);
+
+  const getRelatedProducts = useCallback((currentProduct) => {
+    if (!currentProduct) return [];
+    return PRODUCTS
+      .filter(p => p.id !== currentProduct.id && p.category === currentProduct.category)
+      .slice(0, 2);
+  }, []);
+
   return (
     <>
+      {/* Product Details Modal */}
+      {selectedProduct && (
+        <div className="fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4" onClick={closeProductModal}>
+          <div 
+            className="bg-white rounded-2xl max-w-4xl w-full overflow-hidden" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative">
+              <button 
+                onClick={closeProductModal}
+                className="absolute -right-1 -top-1 bg-white rounded-full p-1 shadow-lg hover:bg-gray-100 transition-colors z-10"
+                aria-label="Close product details"
+              >
+                <XCircle className="w-8 h-8 text-gray-600" />
+              </button>
+              <div className="grid md:grid-cols-2 gap-6 p-6">
+                <div className="bg-gray-50 rounded-xl overflow-hidden max-h-[400px]">
+                  <img 
+                    src={selectedProduct.image} 
+                    alt={selectedProduct.name}
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
+                <div className="py-2">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedProduct.name}</h2>
+                  <div className="text-xl font-semibold text-blue-600 mb-4">${selectedProduct.price.toFixed(2)}</div>
+                  <p className="text-gray-600 mb-6">
+                    {selectedProduct.description || 'No description available for this product.'}
+                  </p>
+                  <div className="flex items-center space-x-4 mb-6 hidden">
+                    <div className="flex items-center border border-gray-200 rounded-lg">
+                      <button 
+                        className="px-3 py-1 text-gray-600 hover:bg-gray-100"
+                        onClick={() => updateQuantity(selectedProduct.id, -1)}
+                      >
+                        <Minus size={16} />
+                      </button>
+                      <span className="px-4 py-1 w-12 text-center">
+                        {cartItems.find(item => item.id === selectedProduct.id)?.quantity || 1}
+                      </span>
+                      <button 
+                        className="px-3 py-1 text-gray-600 hover:bg-gray-100"
+                        onClick={() => updateQuantity(selectedProduct.id, 1)}
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        addToCart(selectedProduct);
+                        closeProductModal();
+                      }}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center justify-center"
+                    >
+                      <ShoppingCart size={18} className="mr-2" />
+                      Add to Cart
+                    </button>
+                  </div>
+                  
+                  {/* Related Products */}
+                  <div className="border-t border-gray-100 pt-6 mt-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">You may also like</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      {getRelatedProducts(selectedProduct).map((product) => (
+                        <div 
+                          key={product.id} 
+                          className="group cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedProduct(product);
+                          }}
+                        >
+                          <div className="aspect-square bg-gray-50 rounded-lg overflow-hidden mb-2">
+                            <img 
+                              src={product.image} 
+                              alt={product.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <div className="px-1">
+                            <h4 className="font-medium text-sm text-gray-900 line-clamp-1">{product.name}</h4>
+                            <div className="text-blue-600 font-semibold text-sm">${product.price.toFixed(2)}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <section className="py-16 md:py-24 relative bg-white">
         {/* Cart Floating Button */}
         <div className="fixed bottom-5 right-20 z-50">
@@ -75,7 +185,10 @@ const FeaturedShopSection = () => {
              {PRODUCTS.slice(0,4).map((product) => (
                 <div key={product.id} className="group cursor-pointer transition-all duration-300 hover:-translate-y-1">
                    <div className="relative bg-white rounded-xl overflow-hidden mb-4 border border-gray-200 group-hover:border-blue-500/30 group-hover:shadow-lg group-hover:shadow-blue-100 transition-all duration-300">
-                      <div className="aspect-square overflow-hidden">
+                      <div 
+                        className="aspect-square overflow-hidden cursor-pointer"
+                        onClick={(e) => handleProductClick(product, e)}
+                      >
                         <img 
                           src={product.image} 
                           alt={product.name} 

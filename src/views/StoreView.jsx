@@ -1,4 +1,4 @@
-import { Plus, Star, ShoppingCart, ArrowRight } from "lucide-react";
+import { Plus, Star, ShoppingCart, ArrowRight, XCircle } from "lucide-react";
 import { PRODUCTS } from "../../src/utils/data";
 import { useState, useCallback, useMemo } from "react";
 import { CartDrawer } from "../components/CartDrawer";
@@ -98,6 +98,7 @@ export const StoreView = () => {
     const [activeCategory, setActiveCategory] = useState('All');
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [cartItems, setCartItems] = useState([]);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     // Memoize filtered products to prevent unnecessary recalculations
     const filteredProducts = useMemo(() => {
@@ -134,6 +135,22 @@ export const StoreView = () => {
 
     const removeItem = useCallback((id) => {
         setCartItems(prev => prev.filter(item => item.id !== id));
+    }, []);
+
+    const closeProductModal = useCallback(() => {
+        setSelectedProduct(null);
+    }, []);
+
+    const handleProductClick = useCallback((product, e) => {
+        e.stopPropagation();
+        setSelectedProduct(product);
+    }, []);
+
+    const getRelatedProducts = useCallback((currentProduct) => {
+        if (!currentProduct) return [];
+        return PRODUCTS
+            .filter(p => p.id !== currentProduct.id && p.category === currentProduct.category)
+            .slice(0, 2);
     }, []);
 
     return (
@@ -183,11 +200,16 @@ export const StoreView = () => {
                 {filteredProducts.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {filteredProducts.map((product) => (
-                            <ProductCard
+                            <div 
                                 key={product.id}
-                                product={product}
-                                onAddToCart={addToCart}
-                            />
+                                className="cursor-pointer"
+                                onClick={(e) => handleProductClick(product, e)}
+                            >
+                                <ProductCard
+                                    product={product}
+                                    onAddToCart={addToCart}
+                                />
+                            </div>
                         ))}
                     </div>
                 ) : (
@@ -230,6 +252,120 @@ export const StoreView = () => {
                 updateQuantity={updateQuantity}
                 removeItem={removeItem}
             />
+
+            {/* Product Details Modal */}
+            {selectedProduct && (
+                <div className="fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4" onClick={closeProductModal}>
+                    <div 
+                        className="bg-white rounded-2xl max-w-4xl w-full overflow-hidden" 
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="relative">
+                            <button 
+                                onClick={closeProductModal}
+                                className="absolute -right-1 -top-1 bg-white rounded-full p-1 shadow-lg hover:bg-gray-100 transition-colors z-10"
+                                aria-label="Close product details"
+                            >
+                                <XCircle className="w-8 h-8 text-gray-600" />
+                            </button>
+                            <div className="grid md:grid-cols-2 gap-6 p-6">
+                                <div className="bg-gray-50 rounded-xl overflow-hidden max-h-[400px]">
+                                    <img 
+                                        src={selectedProduct.image} 
+                                        alt={selectedProduct.name}
+                                        className="w-full h-auto object-cover"
+                                    />
+                                </div>
+                                <div className="py-2">
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedProduct.name}</h2>
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <div className="flex items-center bg-blue-50 px-2 py-1 rounded">
+                                            <Star size={16} className="text-blue-400 fill-blue-400 mr-1" />
+                                            <span className="text-sm font-bold text-blue-600">{selectedProduct.rating}</span>
+                                        </div>
+                                        <span className="text-sm text-gray-500">
+                                            {selectedProduct.category}
+                                        </span>
+                                    </div>
+                                    <p className="text-2xl font-bold text-blue-600 mb-6">
+                                        ${selectedProduct.price.toFixed(2)}
+                                    </p>
+                                    <p className="text-gray-600 mb-6">
+                                        {selectedProduct.description || 'No description available for this product.'}
+                                    </p>
+                                    <div className="flex items-center space-x-4 mb-6 hidden">
+                                        <div className="flex items-center border border-gray-200 rounded-lg">
+                                            <button 
+                                                className="px-3 py-1 text-gray-600 hover:bg-gray-100"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const newQuantity = Math.max(1, (selectedProduct.quantity || 1) - 1);
+                                                    setSelectedProduct({...selectedProduct, quantity: newQuantity});
+                                                }}
+                                            >
+                                                -
+                                            </button>
+                                            <span className="px-4 py-1 w-12 text-center">
+                                                {selectedProduct.quantity || 1}
+                                            </span>
+                                            <button 
+                                                className="px-3 py-1 text-gray-600 hover:bg-gray-100"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedProduct({...selectedProduct, quantity: (selectedProduct.quantity || 1) + 1});
+                                                }}
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                        <button 
+                                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                addToCart({
+                                                    ...selectedProduct,
+                                                    quantity: selectedProduct.quantity || 1
+                                                });
+                                                closeProductModal();
+                                            }}
+                                        >
+                                            <ShoppingCart size={18} />
+                                            Add to Cart
+                                        </button>
+                                    </div>
+                                    
+                                    {/* You May Also Like Section */}
+                                    <div className="mt-8 pt-6 border-t border-gray-100">
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">You May Also Like</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {getRelatedProducts(selectedProduct).map(product => (
+                                                <div 
+                                                    key={product.id} 
+                                                    className="border border-gray-200 rounded-lg p-3 hover:border-blue-300 cursor-pointer transition-colors"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedProduct(product);
+                                                    }}
+                                                >
+                                                    <div className="aspect-square bg-gray-100 rounded-md overflow-hidden mb-2">
+                                                        <img 
+                                                            src={product.image} 
+                                                            alt={product.name}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                    <h4 className="text-sm font-medium text-gray-900 line-clamp-1">{product.name}</h4>
+                                                    <p className="text-sm font-bold text-blue-600">${product.price.toFixed(2)}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
