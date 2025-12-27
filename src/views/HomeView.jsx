@@ -16,6 +16,7 @@ import {
   LayoutDashboard,
 } from 'lucide-react';
 import LogoTicker from '../components/LogoTicker';
+import FeaturedShopSection from '../components/FeaturedShopSection';
 
 const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError }) => {
   void motion;
@@ -173,7 +174,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
       )}
 
       {!siteConfig.is_partner && <LogoTicker />}
-
+           <FeaturedShopSection/>
       {/* Video Section */}
       <section className="py-16 bg-white border-t border-slate-100">
         <div className="container mx-auto px-4">

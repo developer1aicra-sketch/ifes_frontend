@@ -30,6 +30,7 @@ import CompareMembershipView from './views/CompareMembershipView'; // ✅ NEW
 import { DEFAULT_SITES, NEWS_ITEMS } from './constants/data';
 import { styles } from './styles/inlineStyles';
 import { fetchTechnoxianFeed } from './utils/rss';
+import { StoreView } from './views/StoreView';
 
 const viewToPath = (view) => {
   if (!view) return '/';
@@ -207,6 +208,7 @@ const App = () => {
               <Route path="/associates/list" element={<AssociationsListView />} />
               <Route path="/careers" element={<CareersView />} />
               <Route path="/partners" element={<HomeView setView={setView} siteConfig={currentSite} {...newsProps} />} />
+        <Route path="/shop" element={<StoreView />} />
 
               <Route path="/compare-membership" element={<CompareMembershipView setView={setView} />} /> {/* ✅ NEW */}
 
