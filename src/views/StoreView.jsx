@@ -208,7 +208,7 @@ export const StoreView = () => {
             </div>
 
             {/* Cart Floating Button */}
-            <div className="fixed bottom-8 right-8 z-50">
+            <div className="fixed bottom-5 right-20 z-50">
                 <button
                     onClick={() => setIsCartOpen(true)}
                     className="w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg flex items-center justify-center text-white relative transition-all duration-300 hover:shadow-xl hover:scale-105"
