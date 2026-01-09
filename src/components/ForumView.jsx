@@ -1,7 +1,46 @@
 import React, { useState } from 'react';
-import { MessageSquare, Search, Plus, X } from 'lucide-react';
+import { MessageSquare, Search, Plus, X, MessageCircle, Send } from 'lucide-react';
 
 const ForumView = () => {
+  // Tab state
+  const [activeTab, setActiveTab] = useState('forum');
+  
+  // Chat state
+  const [messages, setMessages] = useState([
+    { id: 1, text: 'Welcome to the community chat!', sender: 'system', timestamp: new Date(Date.now() - 3600000) },
+    { id: 2, text: 'Hello everyone!', sender: 'user1', username: 'Alex', timestamp: new Date(Date.now() - 1800000) },
+    { id: 3, text: 'Hi Alex! How can we help you today?', sender: 'admin', username: 'Support', timestamp: new Date() },
+  ]);
+  const [newMessage, setNewMessage] = useState('');
+  
+  // Handle sending a new message
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+    
+    const message = {
+      id: messages.length + 1,
+      text: newMessage,
+      sender: 'currentUser',
+      username: 'You',
+      timestamp: new Date()
+    };
+    
+    setMessages([...messages, message]);
+    setNewMessage('');
+    
+    // Auto-reply after 1 second (simulating another user)
+    setTimeout(() => {
+      const reply = {
+        id: messages.length + 2,
+        text: `Thanks for your message! This is an automated reply.`,
+        sender: 'system',
+        username: 'System',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, reply]);
+    }, 1000);
+  };
   const [forums, setForums] = useState([
     {
       id: 1,
@@ -271,23 +310,117 @@ const ForumView = () => {
     </div>
   );
 
+  // Render chat interface
+  const renderChat = () => (
+    <div className="flex flex-col h-[calc(100vh-200px)] bg-white rounded-xl border border-slate-200 overflow-hidden">
+      {/* Chat header */}
+      <div className="p-4 border-b border-slate-200 bg-slate-50">
+        <h2 className="font-semibold text-slate-800">Community Chat</h2>
+        <p className="text-sm text-slate-500">Chat with other community members in real-time</p>
+      </div>
+      
+      {/* Messages */}
+      <div className="flex-1 p-4 overflow-y-auto space-y-4">
+        {messages.map((message) => (
+          <div 
+            key={message.id} 
+            className={`flex ${message.sender === 'currentUser' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div 
+              className={`max-w-[80%] p-3 rounded-lg ${
+                message.sender === 'currentUser' 
+                  ? 'bg-blue-600 text-white' 
+                  : message.sender === 'system'
+                    ? 'bg-slate-100 text-slate-700'
+                    : 'bg-slate-200 text-slate-800'
+              }`}
+            >
+              {message.sender !== 'system' && message.sender !== 'currentUser' && (
+                <div className="font-medium text-xs text-blue-700 mb-1">{message.username}</div>
+              )}
+              <p className="text-sm">{message.text}</p>
+              <div className="text-xs mt-1 opacity-70">
+                {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Message input */}
+      <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-200">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type your message..."
+            className="flex-1 border border-slate-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          <button 
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors"
+          >
+            <Send size={20} />
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">
-          {selectedForum ? selectedForum.title : 'Community Forums'}
-        </h1>
-        <button 
-          onClick={selectedForum ? null : handleNewForumClick}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+      {/* Tabs */}
+      <div className="flex border-b border-slate-200 mb-6">
+        <button
+          onClick={() => setActiveTab('forum')}
+          className={`px-4 py-2 font-medium text-sm flex items-center gap-2 ${
+            activeTab === 'forum' 
+              ? 'text-blue-600 border-b-2 border-blue-600' 
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
         >
-          <Plus size={16} />
-          {selectedForum ? 'New Thread' : 'New Forum'}
+          <MessageSquare size={16} />
+          Forums
+        </button>
+        <button
+          onClick={() => setActiveTab('chat')}
+          className={`px-4 py-2 font-medium text-sm flex items-center gap-2 ${
+            activeTab === 'chat' 
+              ? 'text-blue-600 border-b-2 border-blue-600' 
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <MessageCircle size={16} />
+          Community Chat
         </button>
       </div>
 
-      {!selectedForum ? renderForumsList() : renderThreadsList()}
-      {showNewForumModal && renderNewForumModal()}
+      {/* Tab content */}
+      <div className="mt-4">
+        {activeTab === 'forum' ? (
+          <>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-slate-800">
+                {selectedForum ? selectedForum.title : 'Community Forums'}
+              </h1>
+              {!selectedForum && (
+                <button 
+                  onClick={handleNewForumClick}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                >
+                  <Plus size={16} />
+                  New Forum
+                </button>
+              )}
+            </div>
+            {!selectedForum ? renderForumsList() : renderThreadsList()}
+            {showNewForumModal && renderNewForumModal()}
+          </>
+        ) : (
+          renderChat()
+        )}
+      </div>
     </div>
   );
 };
