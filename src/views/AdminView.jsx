@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play } from 'lucide-react';
+import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X } from 'lucide-react';
+import ForumView from '../components/ForumView';
 import { DEFAULT_SITES } from '../constants/data';
 import { callGemini } from '../utils/gemini';
 
@@ -12,6 +13,66 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
   const [genResult, setGenResult] = useState('');
   
   // Course related states
+  // Forum related states
+  const [forums, setForums] = useState([
+    {
+      id: 1,
+      title: 'General Discussion',
+      description: 'Discuss anything related to our community',
+      threads: 24,
+      lastPost: '2 hours ago',
+      icon: '💬',
+    },
+    {
+      id: 2,
+      title: 'Project Showcase',
+      description: 'Share and discuss your projects',
+      threads: 15,
+      lastPost: '5 hours ago',
+      icon: '🚀',
+    },
+    {
+      id: 3,
+      title: 'Q&A',
+      description: 'Ask questions and get answers from the community',
+      threads: 42,
+      lastPost: '1 day ago',
+      icon: '❓',
+    },
+  ]);
+
+  const [threads, setThreads] = useState([
+    {
+      id: 1,
+      title: 'Welcome to our new forum!',
+      author: 'Admin',
+      date: '2 hours ago',
+      replies: 5,
+      views: 42,
+      lastReply: '30 minutes ago',
+      isPinned: true,
+    },
+    {
+      id: 2,
+      title: 'How to get started with our platform?',
+      author: 'NewUser',
+      date: '5 hours ago',
+      replies: 3,
+      views: 28,
+      lastReply: '1 hour ago',
+      isPinned: false,
+    },
+  ]);
+
+  const [selectedForum, setSelectedForum] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showNewForumModal, setShowNewForumModal] = useState(false);
+  const [newForum, setNewForum] = useState({
+    title: '',
+    description: '',
+    icon: '💬'
+  });
+
   const [courses, setCourses] = useState([
     {
       id: 'intro-robotics',
@@ -260,6 +321,27 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
                   <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                 )}
               </button>
+
+              <button
+                onClick={() => setActiveTab('forum')}
+                className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${
+                  activeTab === 'forum'
+                    ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
+                    : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-300/50 text-blue-100 hover:text-white'
+                }`}
+              >
+                <div className={`p-1.5 rounded-lg ${
+                  activeTab === 'forum' 
+                    ? 'bg-blue-500/20' 
+                    : 'bg-white/5 group-hover:bg-blue-500/20'
+                }`}>
+                  <MessageSquare size={16} className="text-blue-300" />
+                </div>
+                <span className="font-medium">Community Forum</span>
+                {activeTab === 'forum' && (
+                  <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                )}
+              </button>
             </div>
             )}
           </div>
@@ -276,6 +358,7 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
                 {activeTab === 'events' && 'Local Event Manager'}
                 {activeTab === 'courses' && 'Course Management'}
                 {activeTab === 'academia' && 'Academia Portal'}
+                {activeTab === 'forum' && 'Community Forum'}
               </h1>
             </div>
             <div className="px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-semibold border border-slate-200">
@@ -689,6 +772,9 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
               )}
             </div>
           </div>
+        )}
+        {activeTab === 'forum' && (
+          <ForumView />
         )}
         </div>
       </div>
