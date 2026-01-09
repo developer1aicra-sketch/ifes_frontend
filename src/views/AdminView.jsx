@@ -239,6 +239,27 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
                   <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                 )}
               </button>
+
+              <button
+                onClick={() => setActiveTab('academia')}
+                className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${
+                  activeTab === 'academia'
+                    ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
+                    : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-300/50 text-blue-100 hover:text-white'
+                }`}
+              >
+                <div className={`p-1.5 rounded-lg ${
+                  activeTab === 'academia' 
+                    ? 'bg-blue-500/20' 
+                    : 'bg-white/5 group-hover:bg-blue-500/20'
+                }`}>
+                  <BookOpen size={16} className="text-blue-300" />
+                </div>
+                <span className="font-medium">Academia</span>
+                {activeTab === 'academia' && (
+                  <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                )}
+              </button>
             </div>
             )}
           </div>
@@ -254,6 +275,7 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
                 {activeTab === 'partners' && 'Partner Management'}
                 {activeTab === 'events' && 'Local Event Manager'}
                 {activeTab === 'courses' && 'Course Management'}
+                {activeTab === 'academia' && 'Academia Portal'}
               </h1>
             </div>
             <div className="px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-semibold border border-slate-200">
@@ -382,6 +404,75 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
             </div>
           </div>
         )}
+        {activeTab === 'academia' && (
+          <div className="space-y-6">
+            <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
+              <h2 className="text-2xl font-bold text-slate-800 mb-6">Academia Portal</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-blue-50 p-6 rounded-lg border border-blue-100">
+                  <h3 className="font-bold text-blue-700 mb-3">Academic Programs</h3>
+                  <p className="text-sm text-slate-600 mb-4">Manage degree programs, courses, and academic requirements for your institution.</p>
+                  <button className="text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-md font-medium">
+                    View Programs
+                  </button>
+                </div>
+                <div className="bg-green-50 p-6 rounded-lg border border-green-100">
+                  <h3 className="font-bold text-green-700 mb-3">Faculty Management</h3>
+                  <p className="text-sm text-slate-600 mb-4">Add, remove, or update faculty members and their academic profiles.</p>
+                  <button className="text-sm bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-md font-medium">
+                    Manage Faculty
+                  </button>
+                </div>
+                <div className="bg-purple-50 p-6 rounded-lg border border-purple-100">
+                  <h3 className="font-bold text-purple-700 mb-3">Student Portal</h3>
+                  <p className="text-sm text-slate-600 mb-4">Access student records, grades, and academic progress tracking.</p>
+                  <button className="text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-md font-medium">
+                    View Students
+                  </button>
+                </div>
+              </div>
+              <div className="mt-8 bg-white border border-slate-200 rounded-lg p-6">
+                <h3 className="font-bold text-lg text-slate-800 mb-4">Academic Calendar</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold text-slate-700 mb-3">Upcoming Events</h4>
+                    <ul className="space-y-3">
+                      <li className="flex items-start">
+                        <div className="bg-blue-100 text-blue-700 text-xs font-medium px-2 py-1 rounded mr-3">MAY 15</div>
+                        <div>
+                          <div className="font-medium text-slate-800">Fall Semester Registration Opens</div>
+                          <div className="text-xs text-slate-500">All day</div>
+                        </div>
+                      </li>
+                      <li className="flex items-start">
+                        <div className="bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded mr-3">JUN 1</div>
+                        <div>
+                          <div className="font-medium text-slate-800">Summer Research Symposium</div>
+                          <div className="text-xs text-slate-500">10:00 AM - 4:00 PM</div>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-700 mb-3">Quick Actions</h4>
+                    <div className="space-y-2">
+                      <button className="w-full text-left px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-md text-sm font-medium">
+                        Add New Course
+                      </button>
+                      <button className="w-full text-left px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-md text-sm font-medium">
+                        Generate Academic Report
+                      </button>
+                      <button className="w-full text-left px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium">
+                        Publish Academic Calendar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'courses' && (
           <div className="space-y-8">
             {/* Course List Sidebar */}
