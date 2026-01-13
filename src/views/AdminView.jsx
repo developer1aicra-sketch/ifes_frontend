@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X } from 'lucide-react';
+import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone } from 'lucide-react';
 import ForumView from '../components/ForumView';
 import { DEFAULT_SITES } from '../constants/data';
 import { callGemini } from '../utils/gemini';
@@ -7,6 +7,150 @@ import { callGemini } from '../utils/gemini';
 const AdminView = ({ setSites, sites, defaultMode }) => {
   const [isAdminMode] = useState(defaultMode || 'super');
   const [activeTab, setActiveTab] = useState('overview');
+  const [teamMembers, setTeamMembers] = useState([
+    {
+      id: 1,
+      name: 'Alex Johnson',
+      role: 'Frontend Architect',
+      email: 'alex.j@example.com',
+      phone: '+1 (555) 123-4567',
+      avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+      joinDate: '2023-01-15',
+      skills: ['React', 'TypeScript', 'UI/UX', 'Performance'],
+      bio: 'Passionate about building beautiful and performant user interfaces with React and modern web technologies.'
+    },
+    {
+      id: 2,
+      name: 'Sarah Chen',
+      role: 'Senior Frontend Developer',
+      email: 'sarah.c@example.com',
+      phone: '+1 (555) 987-6543',
+      avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+      joinDate: '2022-08-22',
+      skills: ['JavaScript', 'React', 'State Management', 'Testing'],
+      bio: 'Experienced in building scalable frontend applications with a focus on clean code and testing.'
+    },
+    {
+      id: 3,
+      name: 'Michael Rodriguez',
+      role: 'UI/UX Designer',
+      email: 'michael.r@example.com',
+      phone: '+1 (555) 234-5678',
+      avatar: 'https://randomuser.me/api/portraits/men/67.jpg',
+      joinDate: '2023-03-10',
+      skills: ['Figma', 'UI Design', 'User Research', 'Prototyping'],
+      bio: 'Creating intuitive and delightful user experiences through thoughtful design and user-centered approaches.'
+    },
+    {
+      id: 4,
+      name: 'Priya Patel',
+      role: 'Senior React Developer',
+      email: 'priya.p@example.com',
+      phone: '+1 (555) 876-5432',
+      avatar: 'https://randomuser.me/api/portraits/women/28.jpg',
+      joinDate: '2022-11-05',
+      skills: ['React', 'Redux', 'GraphQL', 'Jest'],
+      bio: 'Specializing in building complex React applications with a focus on performance and maintainability.'
+    },
+    {
+      id: 5,
+      name: 'David Kim',
+      role: 'Frontend Tech Lead',
+      email: 'david.k@example.com',
+      phone: '+1 (555) 345-6789',
+      avatar: 'https://randomuser.me/api/portraits/men/54.jpg',
+      joinDate: '2021-09-15',
+      skills: ['React', 'TypeScript', 'Architecture', 'Mentoring'],
+      bio: 'Leading the frontend team with a focus on best practices, code quality, and team growth.'
+    },
+    {
+      id: 6,
+      name: 'Emma Wilson',
+      role: 'UI/UX Designer',
+      email: 'emma.w@example.com',
+      phone: '+1 (555) 765-4321',
+      avatar: 'https://randomuser.me/api/portraits/women/36.jpg',
+      joinDate: '2023-01-20',
+      skills: ['Figma', 'User Research', 'Prototyping', 'Design Systems'],
+      bio: 'Passionate about creating intuitive interfaces and seamless user experiences.'
+    },
+    {
+      id: 7,
+      name: 'James Wilson',
+      role: 'Frontend Developer',
+      email: 'james.w@example.com',
+      phone: '+1 (555) 456-7890',
+      avatar: 'https://randomuser.me/api/portraits/men/48.jpg',
+      joinDate: '2023-04-15',
+      skills: ['Vue.js', 'JavaScript', 'CSS', 'Jest'],
+      bio: 'Focused on building responsive and accessible web applications with Vue.js.'
+    },
+    {
+      id: 8,
+      name: 'Olivia Martinez',
+      role: 'Senior UI Developer',
+      email: 'olivia.m@example.com',
+      phone: '+1 (555) 567-8901',
+      avatar: 'https://randomuser.me/api/portraits/women/52.jpg',
+      joinDate: '2022-06-10',
+      skills: ['HTML/CSS', 'Sass', 'JavaScript', 'Accessibility'],
+      bio: 'Creating pixel-perfect, accessible interfaces with a focus on CSS architecture and performance.'
+    },
+    {
+      id: 9,
+      name: 'Rajesh Kumar',
+      role: 'Backend Developer',
+      email: 'rajesh.k@example.com',
+      phone: '+91 98765 43210',
+      avatar: 'https://randomuser.me/api/portraits/men/42.jpg',
+      joinDate: '2023-02-18',
+      skills: ['Node.js', 'Express', 'MongoDB', 'REST APIs'],
+      bio: 'Building robust and scalable backend systems with Node.js and modern JavaScript frameworks.'
+    },
+    {
+      id: 10,
+      name: 'Aisha Khan',
+      role: 'DevOps Engineer',
+      email: 'aisha.k@example.com',
+      phone: '+44 7911 123456',
+      avatar: 'https://randomuser.me/api/portraits/women/63.jpg',
+      joinDate: '2022-09-30',
+      skills: ['Docker', 'Kubernetes', 'AWS', 'CI/CD'],
+      bio: 'Passionate about infrastructure as code and automating deployment pipelines for seamless software delivery.'
+    },
+    {
+      id: 11,
+      name: 'Carlos Mendez',
+      role: 'Full Stack Developer',
+      email: 'carlos.m@example.com',
+      phone: '+1 (555) 678-9012',
+      avatar: 'https://randomuser.me/api/portraits/men/29.jpg',
+      joinDate: '2023-05-22',
+      skills: ['React', 'Node.js', 'PostgreSQL', 'GraphQL'],
+      bio: 'Versatile developer with expertise in both frontend and backend technologies, delivering end-to-end solutions.'
+    },
+    {
+      id: 12,
+      name: 'Yuki Tanaka',
+      role: 'QA Automation Engineer',
+      email: 'yuki.t@example.com',
+      phone: '+81 90-1234-5678',
+      avatar: 'https://randomuser.me/api/portraits/women/58.jpg',
+      joinDate: '2023-01-10',
+      skills: ['Selenium', 'Cypress', 'Jest', 'TestCafe'],
+      bio: 'Ensuring software quality through comprehensive test automation and continuous integration practices.'
+    }
+  ]);
+  const [newMember, setNewMember] = useState({
+    name: '',
+    role: 'Frontend Developer',
+    email: '',
+    phone: '',
+    joinDate: new Date().toISOString().split('T')[0],
+    skills: '',
+    bio: ''
+  });
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [newPartner, setNewPartner] = useState({ country: '', theme: 'blue', subdomain: '' });
   const [newEvent, setNewEvent] = useState({ title: '', date: '', location: '' });
   const [genLoading, setGenLoading] = useState(false);
@@ -300,6 +444,27 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
                   <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                 )}
               </button>
+              
+              <button
+                onClick={() => setActiveTab('team')}
+                className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${
+                  activeTab === 'team'
+                    ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
+                    : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-300/50 text-blue-100 hover:text-white'
+                }`}
+              >
+                <div className={`p-1.5 rounded-lg ${
+                  activeTab === 'team' 
+                    ? 'bg-blue-500/20' 
+                    : 'bg-white/5 group-hover:bg-blue-500/20'
+                }`}>
+                  <Users size={16} className="text-blue-300" />
+                </div>
+                <span className="font-medium">Team Members</span>
+                {activeTab === 'team' && (
+                  <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                )}
+              </button>
 
               <button
                 onClick={() => setActiveTab('academia')}
@@ -356,6 +521,7 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
                 {activeTab === 'overview' && 'Dashboard Overview'}
                 {activeTab === 'partners' && 'Partner Management'}
                 {activeTab === 'events' && 'Local Event Manager'}
+
                 {activeTab === 'courses' && 'Course Management'}
                 {activeTab === 'academia' && 'Academia Portal'}
                 {activeTab === 'forum' && 'Community Forum'}
@@ -555,7 +721,73 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
             </div>
           </div>
         )}
+{
+  activeTab === "team" && (
+    <div className="space-y-6">
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-slate-800">Team Members</h2>
+          <button 
+            onClick={() => setShowAddMemberModal(true)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            <UserPlus size={18} />
+            Add Team Member
+          </button>
+        </div>
+        
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
+            <input
+              type="text"
+              placeholder="Search team members..."
+              className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            />
+          </div>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {teamMembers.map((member) => (
+            <div key={member.id} className="bg-white border border-slate-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+              <div className="p-5">
+                <div className="flex items-start space-x-4">
+                  <img 
+                    src={member.avatar} 
+                    alt={member.name}
+                    className="w-16 h-16 rounded-lg object-cover border border-slate-200"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-slate-800 text-lg truncate">{member.name}</h3>
+                    <p className="text-blue-600 font-medium text-sm">{member.role}</p>
+                    <p className="text-slate-500 text-sm mt-1 flex items-center">
+                      <Mail size={14} className="mr-1.5 flex-shrink-0" />
+                      <span className="truncate">{member.email}</span>
+                    </p>
+                    <p className="text-slate-500 text-sm flex items-center">
+                      <Phone size={14} className="mr-1.5 flex-shrink-0" />
+                      {member.phone}
+                    </p>
+                  </div>
+                </div>
+                
+              
+              </div>
+              <div className="bg-slate-50 px-5 py-3 border-t border-slate-100 flex justify-end space-x-2">
+                <button className="text-sm text-slate-600 hover:text-blue-600 p-1.5 hover:bg-blue-50 rounded-md">
+                  Edit
+                </button>
+                <button className="text-sm text-slate-600 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-md">
+                  Remove
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
         {activeTab === 'courses' && (
           <div className="space-y-8">
             {/* Course List Sidebar */}
