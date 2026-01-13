@@ -612,7 +612,7 @@ const TechnoxianView = () => {
     <div className="animate-fadeIn bg-slate-50 min-h-screen">
       <div className="bg-white border-b border-slate-200 sticky top-[56px] z-30 shadow-sm">
         <div className="container mx-auto px-4 flex gap-8 overflow-x-auto">
-          {["overview", "disciplines", "schedule", "gallery", "register"].map(
+          {["overview", "competitions", "schedule", "gallery", "register"].map(
             (tab) => (
               <button
                 key={tab}
@@ -919,7 +919,7 @@ const TechnoxianView = () => {
           </motion.div>
         )}
 
-        {activeTab === "disciplines" && (
+        {activeTab === "competitions" && (
           <motion.div
             key="disciplines"
             initial={{ opacity: 0, y: 12 }}
