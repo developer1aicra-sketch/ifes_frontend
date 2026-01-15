@@ -25,7 +25,7 @@ import NewsArticleView from './views/NewsArticleView';
 import NewsListView from './views/NewsListView';
 import PrivacyPolicyView from './views/PrivacyPolicyView';
 import TermsOfUseView from './views/TermsOfUseView';
-import CompareMembershipView from './views/CompareMembershipView'; // ✅ NEW
+import MembershipView from './views/MembershipView'; // ✅ NEW
 
 import { DEFAULT_SITES, NEWS_ITEMS } from './constants/data';
 import { styles } from './styles/inlineStyles';
@@ -209,8 +209,9 @@ const App = () => {
               <Route path="/careers" element={<CareersView />} />
               <Route path="/partners" element={<HomeView setView={setView} siteConfig={currentSite} {...newsProps} />} />
         <Route path="/shop" element={<StoreView />} />
+        
 
-              <Route path="/compare-membership" element={<CompareMembershipView setView={setView} />} /> {/* ✅ NEW */}
+              <Route path="/membership" element={<MembershipView setView={setView} />} /> {/* ✅ NEW */}
 
               <Route path="/login" element={<MemberLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
               <Route path="/staff-login" element={<AdminLoginView setView={setView} setUser={setUser} />} />

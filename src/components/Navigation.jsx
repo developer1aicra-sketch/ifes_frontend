@@ -51,6 +51,8 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
             </div>
           )}
           <Link to="/shop">Shop</Link>
+          <Link to="/membership">Membership</Link>
+
           <button onClick={() => setView('teams')} className="hover:text-white transition-colors">
             Teams / Players
           </button>

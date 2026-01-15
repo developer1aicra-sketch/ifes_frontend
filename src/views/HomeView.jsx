@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import LogoTicker from '../components/LogoTicker';
 import FeaturedShopSection from '../components/FeaturedShopSection';
+import { NavLink } from 'react-router-dom';
 
 const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError }) => {
   void motion;
@@ -446,8 +447,9 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
 
           </div>
           <div className="mt-16 text-center">
-            <button
-              onClick={() => setView('compare-membership')}
+            <NavLink
+              // onClick={() => setView('compare-membership')}
+              to="/membership"
               className="inline-flex items-center gap-2 px-10 py-4 rounded-xl
       bg-blue-600 text-white font-bold text-lg
       shadow-lg hover:shadow-xl hover:-translate-y-1
@@ -455,7 +457,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
             >
               Explore & Compare All Plans
               <ArrowRight size={20} />
-            </button>
+            </NavLink>
 
             <p className="text-sm text-slate-500 mt-4">
               See a detailed feature-by-feature comparison of all memberships
