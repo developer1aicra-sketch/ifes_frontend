@@ -154,7 +154,7 @@ const FeaturedShopSection = () => {
       )}
       <section className="py-16 md:py-24 relative bg-white">
         {/* Cart Floating Button */}
-        <div className="fixed bottom-5 right-20 z-50">
+        <div className="fixed bottom-5 right-20 z-50 hidden">
           <button 
             onClick={() => setIsCartOpen(true)}
             className="w-14 h-14 bg-blue-600  rounded-full shadow-lg flex items-center justify-center text-white relative transition-all duration-300 hover:scale-105"

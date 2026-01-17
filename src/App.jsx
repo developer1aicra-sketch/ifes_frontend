@@ -208,7 +208,7 @@ const App = () => {
               <Route path="/associates/list" element={<AssociationsListView />} />
               <Route path="/careers" element={<CareersView />} />
               <Route path="/partners" element={<HomeView setView={setView} siteConfig={currentSite} {...newsProps} />} />
-        <Route path="/shop" element={<StoreView />} />
+        {/* <Route path="/shop" element={<StoreView />} /> */}
         
 
               <Route path="/membership" element={<MembershipView setView={setView} />} /> {/* ✅ NEW */}

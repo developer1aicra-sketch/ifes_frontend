@@ -455,7 +455,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
       shadow-lg hover:shadow-xl hover:-translate-y-1
       transition-all"
             >
-              Explore & Compare All Plans
+               All Plans
               <ArrowRight size={20} />
             </NavLink>
 

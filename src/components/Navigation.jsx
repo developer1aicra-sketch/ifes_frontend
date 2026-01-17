@@ -50,7 +50,7 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
               </button>
             </div>
           )}
-          <Link to="/shop">Shop</Link>
+          {/* <Link to="/shop">Shop</Link> */}
           <Link to="/membership">Membership</Link>
 
           <button onClick={() => setView('teams')} className="hover:text-white transition-colors">
