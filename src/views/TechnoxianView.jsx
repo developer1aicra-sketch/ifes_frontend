@@ -645,7 +645,7 @@ const TechnoxianView = () => {
                   Official Championship
                 </div>
                 <h1 className="text-5xl font-extrabold mb-6">
-                  Technoxian World Cup '26
+                  Technoxian 
                 </h1>
                 <button
                   onClick={() => setActiveTab("register")}
