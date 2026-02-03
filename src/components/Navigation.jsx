@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Trophy, Menu, X, User, Home, LogOut } from 'lucide-react';
+import { Trophy, Menu, X, User, Home, LogOut, Star } from 'lucide-react';
 import logo from '../assets/logo.png';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 
 const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user, setUser }) => {
+  
   const [isDashMenuOpen, setIsDashMenuOpen] = useState(false);
-
+const locationroboClub = useLocation();
   const handleDashboardClick = () => {
     if (!user) {
       setView('login');
@@ -25,7 +26,12 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
     setUser?.(null);
     setView('home');
   };
-
+  if (
+    locationroboClub.pathname === "/roboclub" ||
+    locationroboClub.pathname === "/login"
+  ) {
+    return null;
+  }
   return (
     <nav className="sticky top-0 z-40 transition-all duration-300 bg-[#0f172a] border-b border-white/10">
       <div className="container mx-auto px-4 md:px-6 py-2 flex justify-between items-center">
@@ -52,10 +58,12 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
           )}
           {/* <Link to="/shop">Shop</Link> */}
           <Link to="/membership">Membership</Link>
+          <Link to="/roboclub"  className='flex gap-2 items-center'>  <Star size={14} className={location.pathname === '/roboclub' ? 'text-yellow-400' : 'text-yellow-500'} /> roboclub</Link>
 
           <button onClick={() => setView('teams')} className="hover:text-white transition-colors">
             Teams / Players
           </button>
+          
           <button onClick={() => setView('technoxian')} className="hover:text-white transition-colors flex items-center gap-1">
             <Trophy className="w-3 h-3 text-yellow-500" />
             {siteConfig.is_partner ? 'Local Events' : 'Technoxian Games'}

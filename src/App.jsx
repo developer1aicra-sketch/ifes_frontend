@@ -31,6 +31,7 @@ import { DEFAULT_SITES, NEWS_ITEMS } from './constants/data';
 import { styles } from './styles/inlineStyles';
 import { fetchTechnoxianFeed } from './utils/rss';
 import { StoreView } from './views/StoreView';
+import RoboClubView from './views/RoboClubView';
 
 const viewToPath = (view) => {
   if (!view) return '/';
@@ -203,6 +204,8 @@ const App = () => {
               <Route path="/" element={<HomeView setView={setView} siteConfig={currentSite} {...newsProps} />} />
               <Route path="/teams" element={<TeamsView />} />
               <Route path="/technoxian" element={<TechnoxianView />} />
+              <Route path="/roboclub" element={<RoboClubView />} />
+
               <Route path="/governance" element={<AboutLayout setView={setView} />} />
               <Route path="/associates/join-worso" element={<JoinWorsoView />} />
               <Route path="/associates/list" element={<AssociationsListView />} />
