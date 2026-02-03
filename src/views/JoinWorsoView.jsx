@@ -20,14 +20,14 @@ const JoinWorsoView = () => {
     majorActivities: '',
     numberOfMembers: '',
     governmentAffiliation: '',
-    
+
     // Applicant Details
     applicantName: '',
     applicantDesignation: '',
     applicantEmail: '',
     applicantCountryCode: '91',
     applicantMobile: '',
-    
+
     // Supporting Documents
     organizationBrief: null,
     financialStatement: null,
@@ -35,7 +35,7 @@ const JoinWorsoView = () => {
   });
 
   const countries = [
-    'United States', 'India', 'United Kingdom', 'Canada', 'Australia', 
+    'United States', 'India', 'United Kingdom', 'Canada', 'Australia',
     'Germany', 'France', 'Japan', 'China', 'South Korea', 'Brazil', 'Mexico'
   ];
 
@@ -84,8 +84,8 @@ const JoinWorsoView = () => {
       ];
       return requiredFields.every(field => {
         const value = formData[field];
-        return value !== null && value !== undefined && 
-              (typeof value === 'object' ? value.name : value.toString().trim() !== '');
+        return value !== null && value !== undefined &&
+          (typeof value === 'object' ? value.name : value.toString().trim() !== '');
       });
     }
     return true;
@@ -150,7 +150,7 @@ const JoinWorsoView = () => {
             <span className="text-sm font-medium">Organization</span>
           </div>
           <div className="flex-1 h-1 mx-4 bg-slate-200">
-            <div 
+            <div
               className={`h-full transition-all duration-500 ${currentStep >= 2 ? 'bg-blue-500' : 'bg-slate-200'}`}
               style={{ width: currentStep >= 2 ? '100%' : '0%' }}
             ></div>
@@ -366,6 +366,38 @@ const JoinWorsoView = () => {
               </div>
 
               {/* Major Activities */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Email <span className="text-red-500">*</span>
+                </label>
+
+                <div className="flex gap-3">
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    // onChange={handleChange}
+                    required
+                    placeholder="Enter your email"
+                    className="flex-1 px-4 py-3 border border-slate-300 rounded-lg
+                 focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                 transition-all"
+                  />
+
+                  <button
+                    type="button"
+                    // onClick={handleSendOtp}
+                    className="px-5 py-3 rounded-lg bg-blue-600 text-white font-medium
+                 hover:bg-blue-700 active:scale-95 transition-all
+                 disabled:bg-slate-400 disabled:cursor-not-allowed"
+                    disabled={!formData.email}
+                  >
+                    Send OTP
+                  </button>
+                </div>
+              </div>
+
+              {/*  */}
               <div className="md:col-span-2 space-y-2">
                 <label className="block text-sm font-medium text-slate-700">
                   Major Activities in Past *
@@ -501,8 +533,8 @@ const JoinWorsoView = () => {
                     <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors group">
                       <Upload className="mx-auto text-slate-400 group-hover:text-blue-500 mb-2" size={24} />
                       <p className="text-slate-600">
-                        {formData.organizationBrief 
-                          ? formData.organizationBrief.name 
+                        {formData.organizationBrief
+                          ? formData.organizationBrief.name
                           : 'Click to upload PDF/DOC file (max 5MB)'}
                       </p>
                       <p className="text-sm text-slate-400 mt-1">PDF, DOC, DOCX files only</p>
@@ -529,8 +561,8 @@ const JoinWorsoView = () => {
                     <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors group">
                       <Upload className="mx-auto text-slate-400 group-hover:text-blue-500 mb-2" size={24} />
                       <p className="text-slate-600">
-                        {formData.financialStatement 
-                          ? formData.financialStatement.name 
+                        {formData.financialStatement
+                          ? formData.financialStatement.name
                           : 'Click to upload financial statement (max 10MB)'}
                       </p>
                       <p className="text-sm text-slate-400 mt-1">PDF, XLS, XLSX files only</p>
@@ -577,7 +609,7 @@ const JoinWorsoView = () => {
             ) : (
               <div></div> // Empty div to maintain space
             )}
-            
+
             {currentStep < 2 ? (
               <button
                 type="button"
@@ -595,7 +627,7 @@ const JoinWorsoView = () => {
               </button>
             )}
           </div>
-          
+
           {currentStep === 2 && (
             <p className="text-slate-500 text-sm mt-4 text-center">
               By submitting, you agree to our terms and conditions. We'll contact you within 5-7 business days.
