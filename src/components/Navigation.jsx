@@ -56,7 +56,7 @@ const locationroboClub = useLocation();
               </button>
             </div>
           )}
-          {/* <Link to="/shop">Shop</Link> */}
+         
           <Link to="/membership">Membership</Link>
           <Link to="/roboclub"  className='flex gap-2 items-center'>  <Star size={14} className={location.pathname === '/roboclub' ? 'text-yellow-400' : 'text-yellow-500'} /> roboclub</Link>
 
