@@ -124,7 +124,7 @@ const JoinWorsoView = () => {
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Back button */}
         <button
-          onClick={() => navigate('/governance')}
+          onClick={() => navigate('/governance#associates')}
           className="flex items-center gap-2 text-slate-600 hover:text-blue-600 mb-8 transition-colors"
         >
           <ArrowLeft size={20} />

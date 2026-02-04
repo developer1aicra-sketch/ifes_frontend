@@ -1,11 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers, ArrowRight, Building, Trophy, FileText, Mail, Phone, Calendar, BookOpen, Code, GraduationCap, Megaphone, Target, Rocket, BarChart } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const AboutLayout = ({ setView }) => {
-  const [activeSection, setActiveSection] = useState('governance');
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Initialize activeSection from URL hash or default to 'governance'
+  const getInitialSection = () => {
+    const hash = location.hash.replace('#', '');
+    const validSections = ['governance', 'president', 'advisory', 'board', 'federation-services', 'associates', 'referees'];
+    return validSections.includes(hash) ? hash : 'governance';
+  };
+  
+  const [activeSection, setActiveSection] = useState(getInitialSection);
+  
+  // Update activeSection when URL hash changes
+  useEffect(() => {
+    const hash = location.hash.replace('#', '');
+    const validSections = ['governance', 'president', 'advisory', 'board', 'federation-services', 'associates', 'referees'];
+    if (validSections.includes(hash)) {
+      setActiveSection(hash);
+      // Scroll to top when section changes via hash
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location.hash]);
+  
+  // Update URL hash when activeSection changes
+  const handleSectionChange = (sectionId) => {
+    setActiveSection(sectionId);
+    navigate(`/governance#${sectionId}`, { replace: true });
+    // Scroll to top when tab is clicked
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
   void motion;
 
   /* ------------------ REFEREE DATA ------------------ */
@@ -846,7 +875,7 @@ const AboutLayout = ({ setView }) => {
           ].map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveSection(item.id)}
+              onClick={() => handleSectionChange(item.id)}
               className={`py-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeSection === item.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-900'
                 }`}
             >
