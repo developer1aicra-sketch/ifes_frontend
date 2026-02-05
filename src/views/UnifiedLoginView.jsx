@@ -38,11 +38,6 @@ const UnifiedLoginView = ({ setView, setUser, siteConfig }) => {
       setView('member-dashboard');
       return;
     }
-    if (role === 'super-admin') {
-      setUser({ type: 'admin', role: 'super', email });
-      setView('admin-dashboard');
-      return;
-    }
     setUser({ type: 'admin', role: 'partner', email });
     setView('admin-dashboard');
   };
@@ -57,18 +52,12 @@ const UnifiedLoginView = ({ setView, setUser, siteConfig }) => {
           <h2 className="text-2xl font-bold text-slate-900">Unified Login</h2>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 mb-6 text-xs font-bold">
+        <div className="grid grid-cols-2 gap-2 mb-6 text-xs font-bold">
           <button
             onClick={() => setRole('member')}
             className={`px-3 py-2 rounded ${role === 'member' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'}`}
           >
             Member
-          </button>
-          <button
-            onClick={() => setRole('super-admin')}
-            className={`px-3 py-2 rounded ${role === 'super-admin' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'}`}
-          >
-            Super Admin
           </button>
           <button
             onClick={() => setRole('partner-admin')}

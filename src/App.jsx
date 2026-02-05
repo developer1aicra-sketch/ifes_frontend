@@ -15,7 +15,6 @@ import AboutLayout from './views/AboutLayout';
 import TeamsView from './views/TeamsView';
 import CareersView from './views/CareersView';
 import MemberLoginView from './views/MemberLoginView';
-import SuperAdminLoginView from './views/SuperAdminLoginView';
 import PartnerAdminLoginView from './views/PartnerAdminLoginView';
 import MemberDashboard from './views/MemberDashboard';
 import AdminLoginView from './views/AdminLoginView';
@@ -72,8 +71,6 @@ const viewToPath = (view) => {
       return '/login';
     case 'staff-login':
       return '/staff-login';
-    case 'login-super-admin':
-      return '/login-super-admin';
     case 'login-partner-admin':
       return '/login-partner-admin';
     case 'member-dashboard':
@@ -218,7 +215,6 @@ const App = () => {
 
               <Route path="/login" element={<MemberLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
               <Route path="/staff-login" element={<AdminLoginView setView={setView} setUser={setUser} />} />
-              <Route path="/login-super-admin" element={<SuperAdminLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
               <Route path="/login-partner-admin" element={<PartnerAdminLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
 
               <Route path="/member-dashboard" element={<MemberDashboard currentSite={currentSite} setView={setView} />} />
