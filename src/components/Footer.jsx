@@ -43,11 +43,10 @@ const Footer = ({ setView, switchSite, currentSite }) => (
               <div className="flex items-center gap-3">
                 <Phone size={16} className="text-slate-500" />
                 <a
-                  href="tel:+15551234567"
+                  href="tel:+917835053333"
                   className="text-sm hover:text-white transition-colors"
                 >
-                  +1 (555) 123-4567
-                </a>
+                  +91 7835053333                </a>
               </div>
             </div>
 

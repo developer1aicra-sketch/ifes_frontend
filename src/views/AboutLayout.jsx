@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers, ArrowRight, Building, Trophy, FileText, Mail, Phone, Calendar, BookOpen, Code, GraduationCap, Megaphone, Target, Rocket, BarChart, Briefcase } from 'lucide-react';
+import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers, ArrowRight, Building, Trophy, FileText, Mail, Phone, Calendar, BookOpen, Code, GraduationCap, Megaphone, Target, Rocket, BarChart, Briefcase, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const AboutLayout = ({ setView }) => {
@@ -15,6 +15,8 @@ const AboutLayout = ({ setView }) => {
   };
   
   const [activeSection, setActiveSection] = useState(getInitialSection);
+  const tabsContainerRef = useRef(null);
+  const tabRefs = useRef({});
   
   // Update activeSection when URL hash changes
   useEffect(() => {
@@ -26,6 +28,25 @@ const AboutLayout = ({ setView }) => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [location.hash]);
+
+  // Scroll active tab into view when it changes
+  useEffect(() => {
+    const activeTabElement = tabRefs.current[activeSection];
+    if (activeTabElement && tabsContainerRef.current) {
+      const container = tabsContainerRef.current;
+      const tabRect = activeTabElement.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      
+      // Check if tab is outside the visible area
+      if (tabRect.left < containerRect.left) {
+        // Tab is to the left, scroll it into view
+        activeTabElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+      } else if (tabRect.right > containerRect.right) {
+        // Tab is to the right, scroll it into view
+        activeTabElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'end' });
+      }
+    }
+  }, [activeSection]);
   
   // Update URL hash when activeSection changes
   const handleSectionChange = (sectionId) => {
@@ -34,6 +55,41 @@ const AboutLayout = ({ setView }) => {
     // Scroll to top when tab is clicked
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Tab navigation items
+  const tabs = [
+    { id: 'about-worso', label: 'About WORSO' },
+    { id: 'governance', label: 'Mission & Vision' },
+    { id: 'strategy', label: 'Strategy' },
+    { id: 'president', label: "President's Message" },
+    { id: 'advisory', label: 'Advisory Board' },
+    { id: 'board', label: 'Board of Directors' },
+    { id: 'federation-services', label: 'Federation Services' },
+    { id: 'associates', label: 'Associates & Partners' },
+    { id: 'tech-for-good', label: 'Tech for Good' },
+    { id: 'working-at-worso', label: 'Working at WORSO' },
+    { id: 'referees', label: 'Referees' },
+  ];
+
+  // Get current tab index
+  const currentTabIndex = tabs.findIndex(tab => tab.id === activeSection);
+  
+  // Navigate to next tab
+  const handleNextTab = () => {
+    if (currentTabIndex < tabs.length - 1) {
+      handleSectionChange(tabs[currentTabIndex + 1].id);
+    }
+  };
+
+  // Navigate to previous tab
+  const handlePreviousTab = () => {
+    if (currentTabIndex > 0) {
+      handleSectionChange(tabs[currentTabIndex - 1].id);
+    }
+  };
+
+  const canGoPrevious = currentTabIndex > 0;
+  const canGoNext = currentTabIndex < tabs.length - 1;
   
   void motion;
 
@@ -1200,29 +1256,52 @@ const AboutLayout = ({ setView }) => {
   return (
     <div className="animate-fadeIn bg-gradient-to-b from-slate-50 via-white to-slate-50 min-h-screen">
       <div className="bg-white border-b border-slate-200 shadow-sm sticky top-[56px] z-30">
-        <div className="container mx-auto px-4 flex gap-8 overflow-x-auto scrollbar-hide">
-          {[
-            { id: 'about-worso', label: 'About WORSO' },
-            { id: 'governance', label: 'Mission & Vision' },
-            { id: 'strategy', label: 'Strategy' },
-            { id: 'president', label: "President's Message" },
-            { id: 'advisory', label: 'Advisory Board' },
-            { id: 'board', label: 'Board of Directors' },
-            { id: 'federation-services', label: 'Federation Services' },
-            { id: 'associates', label: 'Associates & Partners' },
-            { id: 'tech-for-good', label: 'Tech for Good' },
-            { id: 'working-at-worso', label: 'Working at WORSO' },
-            { id: 'referees', label: 'Referees' },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => handleSectionChange(item.id)}
-              className={`py-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeSection === item.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-900'
+        <div className="container mx-auto px-4 flex items-center gap-2">
+          {/* Left Arrow */}
+          <button
+            onClick={handlePreviousTab}
+            disabled={!canGoPrevious}
+            className={`p-2 rounded-lg transition-all ${
+              canGoPrevious
+                ? 'text-slate-600 hover:text-blue-600 hover:bg-slate-100 cursor-pointer'
+                : 'text-slate-300 cursor-not-allowed'
+            }`}
+            aria-label="Previous tab"
+          >
+            <ChevronLeft size={20} />
+          </button>
+
+          {/* Tabs Container */}
+          <div ref={tabsContainerRef} className="flex gap-8 overflow-x-auto scrollbar-hide flex-1">
+            {tabs.map((item) => (
+              <button
+                key={item.id}
+                ref={(el) => (tabRefs.current[item.id] = el)}
+                onClick={() => handleSectionChange(item.id)}
+                className={`py-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${
+                  activeSection === item.id
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-900'
                 }`}
-            >
-              {item.label}
-            </button>
-          ))}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Right Arrow */}
+          <button
+            onClick={handleNextTab}
+            disabled={!canGoNext}
+            className={`p-2 rounded-lg transition-all ${
+              canGoNext
+                ? 'text-slate-600 hover:text-blue-600 hover:bg-slate-100 cursor-pointer'
+                : 'text-slate-300 cursor-not-allowed'
+            }`}
+            aria-label="Next tab"
+          >
+            <ChevronRight size={20} />
+          </button>
         </div>
       </div>
       <div className="container mx-auto px-4 py-8">
