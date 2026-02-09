@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers, ArrowRight, Building, Trophy, FileText, Mail, Phone, Calendar, BookOpen, Code, GraduationCap, Megaphone, Target, Rocket, BarChart } from 'lucide-react';
+import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers, ArrowRight, Building, Trophy, FileText, Mail, Phone, Calendar, BookOpen, Code, GraduationCap, Megaphone, Target, Rocket, BarChart, Briefcase } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const AboutLayout = ({ setView }) => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Initialize activeSection from URL hash or default to 'governance'
+  // Initialize activeSection from URL hash or default to 'about-worso'
   const getInitialSection = () => {
     const hash = location.hash.replace('#', '');
-    const validSections = ['governance', 'president', 'advisory', 'board', 'federation-services', 'associates', 'referees'];
-    return validSections.includes(hash) ? hash : 'governance';
+    const validSections = ['about-worso', 'governance', 'strategy', 'president', 'advisory', 'board', 'federation-services', 'associates', 'tech-for-good', 'referees', 'working-at-worso'];
+    return validSections.includes(hash) ? hash : 'about-worso';
   };
   
   const [activeSection, setActiveSection] = useState(getInitialSection);
@@ -19,7 +19,7 @@ const AboutLayout = ({ setView }) => {
   // Update activeSection when URL hash changes
   useEffect(() => {
     const hash = location.hash.replace('#', '');
-    const validSections = ['governance', 'president', 'advisory', 'board', 'federation-services', 'associates', 'referees'];
+    const validSections = ['about-worso', 'governance', 'strategy', 'president', 'advisory', 'board', 'federation-services', 'associates', 'tech-for-good', 'referees', 'working-at-worso'];
     if (validSections.includes(hash)) {
       setActiveSection(hash);
       // Scroll to top when section changes via hash
@@ -30,7 +30,7 @@ const AboutLayout = ({ setView }) => {
   // Update URL hash when activeSection changes
   const handleSectionChange = (sectionId) => {
     setActiveSection(sectionId);
-    navigate(`/governance#${sectionId}`, { replace: true });
+    navigate(`${location.pathname}#${sectionId}`, { replace: true });
     // Scroll to top when tab is clicked
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -57,6 +57,119 @@ const AboutLayout = ({ setView }) => {
 
   const renderContent = () => {
     switch (activeSection) {
+      case 'about-worso':
+        return (
+          <div className="space-y-10">
+            <div className="container mx-auto px-4 py-4">
+              <div className="bg-[#0f172a] rounded-3xl text-white p-12 md:p-14 shadow-2xl relative overflow-hidden">
+                <div className="text-yellow-400 font-bold tracking-widest text-xs uppercase mb-4">About WORSO</div>
+                <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">The World Robotics Sports Organization</h1>
+                <p className="text-slate-200 text-lg max-w-3xl">
+                  Championing the Future of Competitive Gaming
+                </p>
+              </div>
+            </div>
+
+            <p className="text-lg text-slate-600 leading-relaxed">
+              The world of eSports has exploded in popularity in recent years, evolving from a niche hobby to a global phenomenon. At the forefront of this exciting evolution stands the World Robotics Sports Organization (WORSO), the governing body for competitive tech-sports, dedicated to promoting and developing eSports on a global scale.
+            </p>
+
+            {/* WORSO's Mission */}
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-3">
+                <Target className="text-blue-600" />
+                <h2 className="text-2xl font-bold text-slate-900">WORSO&apos;s Mission: Unifying the eSports Community</h2>
+              </div>
+              <p className="text-slate-600 leading-relaxed">
+                Founded in 2023, WORSO serves as the unifying force for eSports organizations and stakeholders worldwide. Its mission is to:
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-slate-600 pl-2">
+                <li>Promote and develop eSports globally</li>
+                <li>Ensure fair and competitive play</li>
+                <li>Organize and sanction international eSports tournaments</li>
+                <li>Support the growth and development of national eSports federations</li>
+                <li>Advocate for the recognition of eSports as a legitimate sport</li>
+              </ul>
+            </div>
+
+            {/* WORSO's Impact */}
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-3">
+                <Globe2 className="text-blue-600" />
+                <h2 className="text-2xl font-bold text-slate-900">WORSO&apos;s Impact: Connecting the World Through eSports</h2>
+              </div>
+              <p className="text-slate-600 leading-relaxed">
+                WORSO&apos;s impact on the eSports landscape is undeniable. The organization boasts over 43 member countries, each with its own national eSports association or federation. This global network fosters collaboration and knowledge sharing, promoting the development of eSports at the grassroots level.
+              </p>
+              <p className="text-slate-600 leading-relaxed">
+                One of WORSO&apos;s crown jewels is the World Championship, a prestigious annual event that brings together the best eSports players from around the world to compete in various game titles. The World Championship is a testament to the skill, dedication, and athleticism of professional gamers, showcasing eSports to a wider audience and further solidifying its position as a legitimate sport.
+              </p>
+            </div>
+
+            {/* Beyond Tournaments */}
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-3">
+                <Layers className="text-blue-600" />
+                <h2 className="text-2xl font-bold text-slate-900">Beyond Tournaments: WORSO&apos;s Holistic Approach</h2>
+              </div>
+              <p className="text-slate-600 leading-relaxed">
+                WORSO&apos;s commitment extends beyond organizing tournaments. The organization actively works on several fronts:
+              </p>
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                <div className="p-5 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="flex items-center gap-2 text-blue-600 font-bold mb-2">
+                    <GraduationCap size={18} /> Education and Training
+                  </div>
+                  <p className="text-sm text-slate-600">WORSO provides educational resources and training programs for aspiring eSports athletes, coaches, and administrators.</p>
+                </div>
+                <div className="p-5 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="flex items-center gap-2 text-blue-600 font-bold mb-2">
+                    <Shield size={18} /> Anti-Doping
+                  </div>
+                  <p className="text-sm text-slate-600">WORSO implements a strict anti-doping policy to ensure fair play and protect the integrity of eSports.</p>
+                </div>
+                <div className="p-5 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="flex items-center gap-2 text-blue-600 font-bold mb-2">
+                    <Users size={18} /> Gender Equality
+                  </div>
+                  <p className="text-sm text-slate-600">WORSO champions gender equality in eSports and encourages the participation of women in all aspects of the industry.</p>
+                </div>
+                <div className="p-5 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="flex items-center gap-2 text-blue-600 font-bold mb-2">
+                    <Globe2 size={18} /> Sustainability
+                  </div>
+                  <p className="text-sm text-slate-600">WORSO promotes sustainable practices within the eSports industry, focusing on environmental and social responsibility.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* The Future of eSports */}
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-3">
+                <Rocket className="text-blue-600" />
+                <h2 className="text-2xl font-bold text-slate-900">The Future of eSports: WORSO Leading the Way</h2>
+              </div>
+              <p className="text-slate-600 leading-relaxed">
+                With the eSports industry projected to cross a global market size of over $1.5 billion in 2023, the future of competitive gaming looks bright. WORSO is well-positioned to lead the way, continuing to promote the growth and development of eSports on a global scale. By fostering collaboration, advocating for recognition, and addressing key challenges, WORSO is ensuring that eSports reaches its full potential as a sport, entertainment medium, and cultural phenomenon.
+              </p>
+            </div>
+
+            {/* Join the Movement */}
+            <div className="pt-6 border-t border-slate-100">
+              <div className="bg-gradient-to-r from-blue-50 to-slate-50 rounded-2xl p-8 border border-blue-100">
+                <h2 className="text-2xl font-bold text-slate-900 mb-4">Join the Movement!</h2>
+                <p className="text-slate-600 leading-relaxed mb-4">
+                  Whether you&apos;re a passionate gamer, a dedicated eSports fan, or simply curious about the future of competitive gaming, WORSO invites you to join the movement. Visit the WORSO website to learn more about its initiatives, upcoming events, and how you can get involved in shaping the future of eSports.
+                </p>
+                <p className="text-slate-600 leading-relaxed mb-6">
+                  Together, we can make eSports a force for good in the world, connecting communities, promoting fair play, and inspiring the next generation of champions.
+                </p>
+                <p className="text-lg font-bold text-blue-600">Let the games begin!</p>
+              </div>
+            </div>
+          </div>
+        );
+
       case 'governance':
         return (
           <div className="space-y-8">
@@ -151,6 +264,116 @@ const AboutLayout = ({ setView }) => {
               </div>
               <p className="text-sm text-slate-500 italic mt-4">
                 Through these core values, WORSO aims to establish eSport as a mainstream sport, recognized for its athleticism, competitive spirit, and positive impact on society.
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'strategy':
+        return (
+          <div className="space-y-8">
+            <div className="container mx-auto px-4 pb-6">
+              <div className="flex items-center gap-3">
+                <Target className="text-blue-600" />
+                <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900">Strategy</h1>
+              </div>
+            </div>
+            <p className="text-lg text-slate-600 leading-relaxed">
+              The World Robotics Sports Organization (WORSO) stands at the forefront of competitive tech-sports, aiming to foster its development and recognition as a legitimate sport on a global stage. To achieve this ambitious goal, the WORSO has outlined a comprehensive strategy for global growth, focusing on several key pillars:
+            </p>
+
+            {/* 1. Expanding Membership and Reach */}
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold">1</span>
+                Expanding Membership and Reach
+              </h2>
+              <ul className="space-y-2 text-slate-600 pl-2">
+                <li className="flex items-start gap-2">
+                  <span className="font-semibold text-slate-700">Strengthening National eSports Federations:</span> WORSO actively supports existing National eSports Federations or Associations and encourages the formation of new ones in countries where eSports is gaining traction. This network of local organizations provides crucial infrastructure for grassroots development and talent identification.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-semibold text-slate-700">Strategic Partnerships:</span> Collaborating with major stakeholders like game publishers, event organizers, and educational institutions can amplify WORSO's reach and influence. Partnerships can involve hosting joint tournaments, developing educational programs, and promoting ethical practices within the industry.
+                </li>
+              </ul>
+            </div>
+
+            {/* 2. Building a Sustainable Competitive Ecosystem */}
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold">2</span>
+                Building a Sustainable Competitive Ecosystem
+              </h2>
+              <ul className="space-y-2 text-slate-600 pl-2">
+                <li className="flex items-start gap-2">
+                  <span className="font-semibold text-slate-700">Standardized Regulations and Tournaments:</span> Establishing clear and consistent rules for competitive play ensures fair competition and fosters trust among players and organizers. WORSO's World Championship serves as a prime example of a high-caliber event adhering to rigorous standards.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-semibold text-slate-700">Anti-Doping and Integrity:</span> Protecting the integrity of eSports is paramount. WORSO implements a strict anti-doping policy and advocates for ethical conduct within the community.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-semibold text-slate-700">Talent Development and Training:</span> Investing in training programs and initiatives for players, coaches, and administrators is crucial for long-term success. WORSO provides resources and expertise to empower the next generation of eSports professionals.
+                </li>
+              </ul>
+            </div>
+
+            {/* 3. Promoting eSports as a Sport */}
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold">3</span>
+                Promoting eSports as a Sport
+              </h2>
+              <ul className="space-y-2 text-slate-600 pl-2">
+                <li className="flex items-start gap-2">
+                  <span className="font-semibold text-slate-700">Gaining Recognition from Traditional Sports Bodies:</span> WORSO actively engages with the International Robotics Committees and other major eSports organizations to advocate for the inclusion of eSports in prestigious events like other sports.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-semibold text-slate-700">Highlighting the Physical and Mental Demands of eSports:</span> Educating the public about the athleticism, strategic thinking, and mental fortitude required for competitive gaming is essential for gaining wider recognition as a legitimate sport.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-semibold text-slate-700">Showcasing the Positive Impact of eSports:</span> eSports can be a powerful tool for promoting social good, fostering community engagement, and encouraging inclusivity. WORSO champions initiatives that leverage the power of gaming for positive social impact.
+                </li>
+              </ul>
+            </div>
+
+            {/* 4. Embracing Innovation and Technology */}
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold">4</span>
+                Embracing Innovation and Technology
+              </h2>
+              <ul className="space-y-2 text-slate-600 pl-2">
+                <li className="flex items-start gap-2">
+                  <span className="font-semibold text-slate-700">Exploring New Formats and Platforms:</span> WORSO is constantly seeking ways to innovate and adapt to the evolving landscape of eSports. This includes exploring new game titles, formats, and platforms to cater to diverse audiences and preferences.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-semibold text-slate-700">Leveraging Technology for Enhanced Experiences:</span> Utilizing cutting-edge technologies like virtual reality, augmented reality, and artificial intelligence can enhance the viewing experience for fans and further elevate the overall spectacle of eSports events.
+                </li>
+              </ul>
+            </div>
+
+            {/* 5. Fostering a Strong Community */}
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold">5</span>
+                Fostering a Strong Community
+              </h2>
+              <ul className="space-y-2 text-slate-600 pl-2">
+                <li className="flex items-start gap-2">
+                  <span className="font-semibold text-slate-700">Engaging with Players and Fans:</span> WORSO prioritizes open communication and engagement with the eSports community. This includes hosting online forums, organizing fan events, and actively listening to the needs and concerns of players and fans.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-semibold text-slate-700">Promoting Diversity and Inclusion:</span> WORSO champions inclusivity and diversity within the eSports community, ensuring that everyone has the opportunity to participate and thrive in the competitive gaming scene.
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-6 bg-slate-50 rounded-xl border border-slate-200 mt-8">
+              <p className="text-slate-600 leading-relaxed">
+                By implementing these strategic initiatives, the WORSO can solidify its position as the leading organization driving the global growth of eSports. By fostering a sustainable ecosystem, promoting its sporting legitimacy, and embracing innovation, WORSO can pave the way for a future where competitive gaming flourishes on a global stage.
+              </p>
+              <p className="text-slate-600 leading-relaxed mt-4">
+                Remember, this is just a starting point, and the specific strategies WORSO implements will need to adapt and evolve based on the ever-changing landscape of eSports. However, by focusing on these core principles, the WORSO can ensure that eSports continues to grow and thrive in the years to come.
               </p>
             </div>
           </div>
@@ -855,6 +1078,120 @@ const AboutLayout = ({ setView }) => {
           </div>
         );
 
+      case 'tech-for-good':
+        return (
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Target className="text-blue-600" />
+                <h2 className="text-3xl font-bold text-slate-900">Tech for Good</h2>
+              </div>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                The world of eSports has exploded onto the global stage, captivating audiences and fostering communities like never before. But beyond the thrill of competition and the roar of packed arenas, a powerful potential lies dormant: the ability to harness the power of gaming for positive change. This is the realm of Technology Sports for Good, where eSports becomes a platform for social impact and a force for good in the world.
+              </p>
+            </div>
+
+            <div className="space-y-6 pt-6 border-t border-slate-100">
+              <h3 className="text-2xl font-bold text-slate-900">Bridging the Divide: Connecting Through Play</h3>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                eSports transcends geographical and cultural barriers. A shared love for gaming unites players from diverse backgrounds, fostering communication and understanding. Imagine online tournaments where teams from war-torn regions compete alongside players from conflict-free zones, forging bonds of friendship and empathy. This is the power of Technology Sports for Good, bridging divides and promoting peacebuilding through shared experiences.
+              </p>
+            </div>
+
+            <div className="space-y-6 pt-6 border-t border-slate-100">
+              <h3 className="text-2xl font-bold text-slate-900">Empowering the Next Generation: Education and Skill Development</h3>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                eSports aren't just about quick reflexes and twitch skills. Strategic thinking, critical problem-solving, and teamwork are essential ingredients for success. Technology Sports for Good initiatives can leverage the engaging nature of games to develop these crucial skills in youth, particularly in underserved communities. Educational programs focused on game design, coding, and esports management can equip the next generation with valuable skills for the digital economy.
+              </p>
+            </div>
+
+            <div className="space-y-6 pt-6 border-t border-slate-100">
+              <h3 className="text-2xl font-bold text-slate-900">Promoting Health and Well-being: eSports for a Healthy Mind and Body</h3>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                The stereotype of the sedentary gamer is outdated. Competitive gaming demands high levels of physical and mental fitness. Technology Sports for Good initiatives can promote healthy lifestyles by encouraging physical activity through gaming-inspired exercise programs and raising awareness about nutrition and mental health within the esports community.
+              </p>
+            </div>
+
+            <div className="space-y-6 pt-6 border-t border-slate-100">
+              <h3 className="text-2xl font-bold text-slate-900">Championing Sustainability: Gaming for a Greener Future</h3>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                The esports industry has a significant environmental footprint. Technology Sports for Good initiatives can address this by promoting sustainable practices within the industry. This includes initiatives like carbon offsetting for tournaments, eco-friendly merchandise, and awareness campaigns about the impact of technology on the environment.
+              </p>
+            </div>
+
+            <div className="space-y-6 pt-6 border-t border-slate-100">
+              <h3 className="text-2xl font-bold text-slate-900">Beyond the Game: Driving Social Change through Advocacy</h3>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                eSports can be a powerful platform for advocacy. Technology Sports for Good initiatives can utilize the reach and influence of the esports community to raise awareness about important social issues like gender equality, disability rights, and access to education. Imagine professional players using their platforms to champion causes close to their hearts, inspiring millions to take action.
+              </p>
+            </div>
+
+            <div className="space-y-6 pt-6 border-t border-slate-100">
+              <h3 className="text-2xl font-bold text-slate-900">The World Robotics Sports Organization (WORSO) at the Forefront</h3>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                The WORSO recognizes the immense potential of Technology Sports for Good and is actively leading the charge. Through initiatives like the TechnoXian World Championship for Development, the organization promotes sustainable development and social impact through esports. WORSO also collaborates with NGOs and educational institutions to leverage the power of gaming for positive change.
+              </p>
+            </div>
+
+            <div className="space-y-6 pt-6 border-t border-slate-100">
+              <h3 className="text-2xl font-bold text-slate-900">A Call to Action: Join the Movement</h3>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                Technology Sports for Good is not just a slogan, it's a call to action. Players, organizers, fans, and everyone in the esports ecosystem can contribute to this movement. Share your stories of how gaming has impacted you positively, support initiatives that promote good, and advocate for the responsible and ethical development of esports.
+              </p>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                Together, we can harness the power of Technology Sports for Good to create a more inclusive, sustainable, and just world. Let's make esports a force for good, one game, one player, one challenge at a time.
+              </p>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                Remember, this is just a starting point. The possibilities for Technology Sports for Good are endless. Let's work together to unlock them and create a world where esports truly makes a difference.
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'working-at-worso':
+        return (
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Briefcase className="text-blue-600" />
+                <h2 className="text-3xl font-bold text-slate-900">Working at WORSO</h2>
+              </div>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                Do you dream of shaping the future of competitive gaming? Do you crave a career that combines passion, purpose, and cutting-edge technology? Look no further than the World Robotics Sports Organization (WORSO), the leading force driving the global growth and recognition of eSports.
+              </p>
+            </div>
+
+            <div className="space-y-4 pt-6 border-t border-slate-100">
+              <h3 className="text-2xl font-bold text-slate-900">Here&apos;s why working for WORSO is more than just a job:</h3>
+              <ul className="space-y-6">
+                {[
+                  { title: 'Be a Changemaker', desc: "You'll be part of a dynamic team dedicated to promoting eSports as a legitimate sport, fostering a sustainable ecosystem, and advocating for ethical practices within the industry.", icon: Target },
+                  { title: 'Global Impact', desc: 'Your work will transcend borders, impacting millions of players and fans across the globe. Witness firsthand the power of eSports to connect communities, bridge divides, and champion social good.', icon: Globe2 },
+                  { title: 'Innovation Playground', desc: 'Immerse yourself in the ever-evolving world of eSports, where cutting-edge technology meets athleticism and strategic brilliance. Be at the forefront of shaping the future of competitive gaming.', icon: Rocket },
+                  { title: 'Diverse Opportunities', desc: 'From event management and athlete relations to anti-doping and game development initiatives, WORSO offers a diverse range of career paths to suit your skills and passion.', icon: Layers },
+                  { title: 'Work with the Best', desc: 'Collaborate with industry leaders, renowned players, and passionate esports enthusiasts. Learn from the best and contribute to a supportive and collaborative work environment.', icon: Users },
+                ].map((item, index) => (
+                  <li key={index} className="flex gap-4">
+                    <div className="flex-shrink-0 mt-1 p-2 rounded-lg bg-blue-50">
+                      <item.icon className="text-blue-600" size={20} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900 mb-1">{item.title}</h4>
+                      <p className="text-slate-600">{item.desc}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="space-y-4 pt-6 border-t border-slate-100 bg-gradient-to-r from-blue-50 to-slate-50 rounded-2xl p-8 border border-blue-100">
+              <p className="text-lg text-slate-600 leading-relaxed">
+                WORSO is more than just an organization; it&apos;s a movement. A movement that celebrates the power of gaming, champions fair play, and empowers the next generation of athletes and leaders. By joining WORSO, you become an integral part of this movement, shaping the future of eSports and contributing to a more inclusive and impactful world.
+              </p>
+            </div>
+          </div>
+        );
+
       default:
         return <div>Select a section</div>;
     }
@@ -863,14 +1200,18 @@ const AboutLayout = ({ setView }) => {
   return (
     <div className="animate-fadeIn bg-gradient-to-b from-slate-50 via-white to-slate-50 min-h-screen">
       <div className="bg-white border-b border-slate-200 shadow-sm sticky top-[56px] z-30">
-        <div className="container mx-auto px-4 flex gap-8 overflow-x-auto">
+        <div className="container mx-auto px-4 flex gap-8 overflow-x-auto scrollbar-hide">
           {[
+            { id: 'about-worso', label: 'About WORSO' },
             { id: 'governance', label: 'Mission & Vision' },
+            { id: 'strategy', label: 'Strategy' },
             { id: 'president', label: "President's Message" },
             { id: 'advisory', label: 'Advisory Board' },
             { id: 'board', label: 'Board of Directors' },
             { id: 'federation-services', label: 'Federation Services' },
             { id: 'associates', label: 'Associates & Partners' },
+            { id: 'tech-for-good', label: 'Tech for Good' },
+            { id: 'working-at-worso', label: 'Working at WORSO' },
             { id: 'referees', label: 'Referees' },
           ].map((item) => (
             <button

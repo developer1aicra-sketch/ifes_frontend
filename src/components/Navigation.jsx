@@ -51,7 +51,7 @@ const locationroboClub = useLocation();
         <div className="hidden md:flex items-center gap-8 font-bold text-[11px] uppercase tracking-widest text-slate-300">
           {!siteConfig.is_partner && (
             <div className="relative group">
-              <button onClick={() => setView('governance')} className="hover:text-white transition-colors py-2 flex items-center gap-1">
+              <button onClick={() => setView('about')} className="hover:text-white transition-colors py-2 flex items-center gap-1">
                 About Worso
               </button>
             </div>

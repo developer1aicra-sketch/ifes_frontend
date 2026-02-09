@@ -55,6 +55,7 @@ const viewToPath = (view) => {
     case 'technoxian':
       return '/technoxian';
     case 'about':
+      return '/about';
     case 'governance':
       return '/governance';
     case 'associates':
@@ -65,6 +66,8 @@ const viewToPath = (view) => {
       return '/associates/list';
     case 'careers':
       return '/careers';
+    case 'news':
+      return '/news';
     case 'partners':
       return '/partners';
     case 'login':
@@ -203,6 +206,7 @@ const App = () => {
               <Route path="/technoxian" element={<TechnoxianView />} />
               <Route path="/roboclub" element={<RoboClubView />} />
 
+              <Route path="/about" element={<AboutLayout setView={setView} />} />
               <Route path="/governance" element={<AboutLayout setView={setView} />} />
               <Route path="/associates/join-worso" element={<JoinWorsoView />} />
               <Route path="/associates/list" element={<AssociationsListView />} />

@@ -1,63 +1,47 @@
-import { useState } from 'react'; // Import useState
-import { Clock, MapPin } from 'lucide-react';
-import { CAREERS } from '../constants/data';
-import ApplicationForm from '../components/ApplicationForm'; // Import the new component
+import { motion } from 'framer-motion';
+import { Briefcase } from 'lucide-react';
 
 const CareersView = () => {
-  // State to manage which job the user is applying for
-  const [applyingFor, setApplyingFor] = useState(null); // Will hold the job title (string) or null
-
-  // Function to open the form
-  const handleApplyNow = (jobTitle) => {
-    setApplyingFor(jobTitle);
-  };
-
-  // Function to close the form
-  const handleCloseForm = () => {
-    setApplyingFor(null);
-  };
-
   return (
-    <div className="animate-fadeIn pt-24 pb-20 bg-white min-h-screen">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-4xl font-extrabold text-slate-900 mb-2">Careers at WORSO</h1>
-        <p className="text-slate-500 mb-12">Join us in shaping the future of competitive robotics.</p>
-        <div className="space-y-4">
-          {CAREERS.map((job) => (
-            <div
-              key={job.id}
-              className="border border-slate-200 p-6 rounded-xl flex justify-between items-center hover:border-blue-500 transition-colors group"
-            >
-              <div>
-                <h3 className="font-bold text-lg text-slate-900 group-hover:text-blue-600">{job.title}</h3>
-                <div className="flex gap-4 text-sm text-slate-500 mt-1">
-                  <span className="flex items-center gap-1">
-                    <MapPin size={14} /> {job.location}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={14} /> {job.type}
-                  </span>
-                </div>
-              </div>
-              {/* Updated button to call the handler */}
-              <button 
-                onClick={() => handleApplyNow(job.title)}
-                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-700 transition-colors"
-              >
-                Apply Now
-              </button>
-            </div>
-          ))}
+    <div className="animate-fadeIn min-h-screen bg-white">
+      {/* Hero — aligned with AboutLayout / app design system */}
+      <section className="relative overflow-hidden bg-[#0f172a] text-white">
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="container mx-auto px-4 py-20 md:py-24 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="max-w-3xl"
+          >
+            <p className="text-blue-400 font-bold tracking-widest text-xs uppercase mb-4">Careers</p>
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
+              Build the future of robotics sports with WORSO
+            </h1>
+            <p className="text-slate-300 text-lg max-w-2xl">
+              Join the global regulatory body for competitive robotics. We’re looking for people who want to set standards, run world-class events, and grow the sport.
+            </p>
+          </motion.div>
         </div>
-      </div>
-      
-      {/* Conditional Rendering of the ApplicationForm */}
-      {applyingFor && (
-        <ApplicationForm 
-          jobTitle={applyingFor} 
-          onClose={handleCloseForm} 
-        />
-      )}
+      </section>
+
+      {/* Coming soon */}
+      <section className="container mx-auto px-4 py-20 md:py-28">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+          className="max-w-xl mx-auto text-center"
+        >
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 mb-6">
+            <Briefcase size={32} />
+          </div>
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3">Coming soon</h2>
+          <p className="text-slate-500 leading-relaxed">
+            We’re preparing our careers page and open roles. 
+          </p>
+        </motion.div>
+      </section>
     </div>
   );
 };
