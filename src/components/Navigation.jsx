@@ -68,11 +68,11 @@ const locationroboClub = useLocation();
             <Trophy className="w-3 h-3 text-yellow-500" />
             {siteConfig.is_partner ? 'Local Events' : 'Technoxian Games'}
           </button>
-          {!siteConfig.is_partner && (
+          {/* {!siteConfig.is_partner && (
             <button onClick={() => setView('partners')} className="hover:text-white transition-colors">
               Partners
             </button>
-          )}
+          )} */}
 
           <div className="relative">
             <button

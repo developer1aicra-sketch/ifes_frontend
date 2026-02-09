@@ -3,6 +3,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers, ArrowRight, Building, Trophy, FileText, Mail, Phone, Calendar, BookOpen, Code, GraduationCap, Megaphone, Target, Rocket, BarChart, Briefcase, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
+// Import Advisory Board images
+import ajBeleza from '../assets/advisoryBoard/AJ-Beleza.png';
+import davoudJafari from '../assets/advisoryBoard/Davoud-jafari.jpg';
+import maximTurushev from '../assets/advisoryBoard/Maxim-Turushev-russia.jpg';
+import mdHelalAnNahiyan from '../assets/advisoryBoard/Md-Helal-An-Nahiyan.jpg';
+import mrDambudzoRoyNyathi from '../assets/advisoryBoard/Mr.Dambudzo-Roy-Nyathi.jpg';
+import ninaDrakulic from '../assets/advisoryBoard/Nina-Drakulic-Montenegro.jpg';
+import orlandoAnach from '../assets/advisoryBoard/Orlando-anach.png';
+import rahmanRasulzada from '../assets/advisoryBoard/Rahman-Rasulzada-Azer.jpg';
+import salahEissa from '../assets/advisoryBoard/salah-eissa.jpg';
+import waelAbbasKadhim from '../assets/advisoryBoard/WaelAbbasKadhim.jpg';
+
 const AboutLayout = ({ setView }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -507,36 +519,33 @@ const AboutLayout = ({ setView }) => {
                   name: 'Raj Kumar Sharma',
                   role: 'President, World Robotics Sports Organization (WORSO)',
                   img: 'https://worso.org/images/executive-committee/rajkumar.png',
-                  email: 'raj.sharma@worso.org',
-                  phone: '+1 (555) 123-4567'
+                
+                
                 },
                 {
                   name: 'Ajay Pratap Singh',
                   role: 'Director Marketing',
                   img: 'https://worso.org/images/executive-committee/AjayPratapSingh.png',
-                  email: 'ajay.singh@worso.org',
-                  phone: '+1 (555) 123-4568'
+                 
                 },
                 {
                   name: 'Navin Chhabra',
                   role: 'Director Operations',
                   img: 'https://worso.org/images/executive-committee/navin.png',
-                  email: 'navin.chhabra@worso.org',
-                  phone: '+1 (555) 123-4569'
+
+                
                 },
                 {
                   name: 'Rahul Chakraborty',
                   role: 'Director - Esports Startups',
                   img: 'https://worso.org/images/executive-committee/rahul.png',
-                  email: 'rahul.chakraborty@worso.org',
-                  phone: '+1 (555) 123-4570'
+               
                 },
                 {
                   name: 'Homa Siddiqui',
                   role: 'Strategy Manager- Tech Sports',
                   img: 'https://worso.org/images/executive-committee/homa.png',
-                  email: 'homa.siddiqui@worso.org',
-                  phone: '+1 (555) 123-4571'
+                
                 },
               ].map((member, index) => (
                 <div
@@ -574,7 +583,7 @@ const AboutLayout = ({ setView }) => {
                     </p>
 
                     {/* Contact Info */}
-                    <div className="mt-4 pt-4 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {/* <div className="mt-4 pt-4 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <div className="space-y-2">
                         <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
                           <Mail size={14} />
@@ -585,16 +594,16 @@ const AboutLayout = ({ setView }) => {
                           <span>{member.phone}</span>
                         </div>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
 
                   {/* View Profile Button */}
-                  <button
+                  {/* <button
                     className="mt-6 px-6 py-2 bg-blue-50 text-blue-600 rounded-lg font-medium hover:bg-blue-100 transition-colors duration-200 text-sm opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300"
                     onClick={() => console.log(`View ${member.name}'s profile`)}
                   >
                     View Profile
-                  </button>
+                  </button> */}
                 </div>
               ))}
             </div>
@@ -744,60 +753,74 @@ const AboutLayout = ({ setView }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 {
-                  name: 'Dr. Sarah Chen',
-                  role: 'Technology & AI Expert',
-                  country: 'Singapore',
-                  flag: '🇸🇬',
-                  image: 'https://randomuser.me/api/portraits/women/44.jpg'
+                  name: 'Rahman Rasulzada',
+                  role: 'Member',
+                  country: 'Azerbaijan',
+                  flag: '🇦🇿',
+                  image: rahmanRasulzada
                 },
                 {
-                  name: 'James Wilson',
-                  role: 'Sports Governance',
-                  country: 'United Kingdom',
-                  flag: '🇬🇧',
-                  image: 'https://randomuser.me/api/portraits/men/32.jpg'
+                  name: 'Prof. Dr. Md. Helal-An-Nahiyan',
+                  role: 'Member',
+                  country: 'Bangladesh',
+                  flag: '🇧🇩',
+                  image: mdHelalAnNahiyan
                 },
                 {
-                  name: 'Aisha Al-Mansoori',
-                  role: 'Fan Engagement',
-                  country: 'UAE',
-                  flag: '🇦🇪',
-                  image: 'https://randomuser.me/api/portraits/women/68.jpg'
+                  name: 'Salah Eissa',
+                  role: 'Member',
+                  country: 'Egypt',
+                  flag: '🇪🇬',
+                  image: salahEissa
                 },
                 {
-                  name: 'Carlos Mendez',
-                  role: 'Esports Integrity',
-                  country: 'Brazil',
-                  flag: '🇧🇷',
-                  image: 'https://randomuser.me/api/portraits/men/75.jpg'
+                  name: 'Davoud jafari',
+                  role: 'Member',
+                  country: 'Iran',
+                  flag: '🇮🇷',
+                  image: davoudJafari
                 },
                 {
-                  name: 'Yuki Tanaka',
-                  role: 'Event Operations',
-                  country: 'Japan',
-                  flag: '🇯🇵',
-                  image: 'https://randomuser.me/api/portraits/women/33.jpg'
+                  name: 'Wael Abbas Kadhim',
+                  role: 'Member',
+                  country: 'Iraq',
+                  flag: '🇮🇶',
+                  image: waelAbbasKadhim
                 },
                 {
-                  name: 'Marcus Johnson',
-                  role: 'Broadcast & Media',
-                  country: 'USA',
-                  flag: '🇺🇸',
-                  image: 'https://randomuser.me/api/portraits/men/45.jpg'
+                  name: 'Nina Drakulic',
+                  role: 'Member',
+                  country: 'Montenegro',
+                  flag: '🇲🇪',
+                  image: ninaDrakulic
                 },
                 {
-                  name: 'Fatima Zahra',
-                  role: 'Youth Development',
-                  country: 'Morocco',
-                  flag: '🇲🇦',
-                  image: 'https://randomuser.me/api/portraits/women/52.jpg'
-                },
-                {
-                  name: 'Andrei Petrov',
-                  role: 'Technical Director',
+                  name: 'Maxim Turushev',
+                  role: 'Member',
                   country: 'Russia',
                   flag: '🇷🇺',
-                  image: 'https://randomuser.me/api/portraits/men/67.jpg'
+                  image: maximTurushev
+                },
+                {
+                  name: 'AJ Beleza',
+                  role: 'Member',
+                  country: 'Mozambique',
+                  flag: '🇲🇿',
+                  image: ajBeleza
+                },
+                {
+                  name: 'Orlando anach Quintero Aponte',
+                  role: 'Member',
+                  country: 'Venezuela',
+                  flag: '🇻🇪',
+                  image: orlandoAnach
+                },
+                {
+                  name: 'Mr.Dambudzo Roy Nyathi',
+                  role: 'Member',
+                  country: 'Zimbabwe',
+                  flag: '🇿🇼',
+                  image: mrDambudzoRoyNyathi
                 }
               ].map((member, index) => (
                 <div key={index} className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">

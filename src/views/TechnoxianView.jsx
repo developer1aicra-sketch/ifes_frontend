@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Users,
   Ticket,
@@ -8,7 +8,6 @@ import {
   Clock3,
   FileText,
   BadgeCheck,
-  X,
   Camera,
   Calendar,
   ChevronLeft,
@@ -33,13 +32,12 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GAME_CATEGORIES } from "../constants/data";
+import { galleryImages } from "../assets/gallery";
 
 const TechnoxianView = () => {
   void motion;
   const [activeTab, setActiveTab] = useState("overview");
   const [regType, setRegType] = useState("team");
-  const [activeGallery, setActiveGallery] = useState(null);
-  const [showAllGallery, setShowAllGallery] = useState(false);
   const [trophyIndex, setTrophyIndex] = useState(0);
   const [imageErrors, setImageErrors] = useState({});
   const [selectedTechnoxianMembership, setSelectedTechnoxianMembership] =
@@ -54,15 +52,6 @@ const TechnoxianView = () => {
   const [selectedDisciplineGame, setSelectedDisciplineGame] =
     useState("Innovation Jr.");
 
-  useEffect(() => {
-    if (activeGallery) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = prev;
-      };
-    }
-  }, [activeGallery]);
 
   // Define the 11 games for registration
   const GAMES_LIST = [
@@ -462,103 +451,8 @@ const TechnoxianView = () => {
     });
   };
 
-  const gallery = [
-    {
-      id: "fpv",
-      title: "Drone Racing",
-      tag: "FPV • Neon Gates",
-      cover:
-        "https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop",
-      images: [
-        "https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1471710371017-654b1b43eaa2?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop",
-      ],
-    },
-    {
-      id: "race",
-      title: "Robo Race",
-      tag: "Canyon Sprint",
-      cover:
-        "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop",
-      images: [
-        "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1508614999368-9260051291ea?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=900&auto=format&fit=crop",
-      ],
-    },
-    {
-      id: "soccer",
-      title: "Robo Soccer",
-      tag: "Hex Turf Finals",
-      cover:
-        "https://images.unsplash.com/photo-1521417531039-75e91486ccae?w=900&auto=format&fit=crop",
-      images: [
-        "https://images.unsplash.com/photo-1521417531039-75e91486ccae?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1497215842964-222b430dc094?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1511918984145-48de785d4c4d?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop",
-      ],
-    },
-    {
-      id: "sumo",
-      title: "Sumo Bot",
-      tag: "Steel Ring",
-      cover:
-        "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=900&auto=format&fit=crop",
-      images: [
-        "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1508614999368-9260051291ea?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1500534314211-ccc3d1d23e7a?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop",
-      ],
-    },
-    {
-      id: "expo",
-      title: "Innovation Expo",
-      tag: "Prototype Lab",
-      cover:
-        "https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?w=900&auto=format&fit=crop",
-      images: [
-        "https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1451188502541-13943edb6acb?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1508612761958-e931d843bddb?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&auto=format&fit=crop",
-      ],
-    },
-  ];
+  // Get all gallery images
+  const galleryImageUrls = galleryImages.map(img => img.src);
 
   // Get currently selected game
   const currentGame =
@@ -713,127 +607,7 @@ const TechnoxianView = () => {
 
             {/* membership plan */}
             {/* Membership Section */}
-            <section className="min-h-screen flex items-center bg-slate-50 border-t border-slate-200 py-20">
-              <div className="container mx-auto px-4 max-w-7xl">
-                <div className="text-center mb-14">
-                  <span className="text-xs font-bold uppercase tracking-widest text-blue-600">
-                    Technoxian Membership
-                  </span>
-                  <h2 className="text-4xl font-extrabold text-slate-900 mt-3">
-                    Choose Your Student Membership
-                  </h2>
-                  <p className="text-slate-600 max-w-3xl mx-auto mt-4">
-                    Designed for learners, innovators, and future tech leaders.
-                    Compare plans in detail below before making your choice.
-                  </p>
-                  <p className="text-sm text-slate-500 mt-2">
-                    * Membership charges are billed <strong>per year</strong>
-                  </p>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-                  {[
-                    {
-                      id: "basic",
-                      title: "Basic Student Membership",
-                      price: "USD 10 / year",
-                      audience: "Learners",
-                      icon: Users,
-                      highlights: [
-                        "Digital student membership ID & certificate",
-                        "Access to competitions (via RoboClub)",
-                        "Internship & project listings",
-                        "DIY robotics kits at discounted rates",
-                        "Hackathons & innovation challenges",
-                        "Monthly webinars & workshops",
-                      ],
-                    },
-                    {
-                      id: "premium",
-                      title: "Premium Student Membership",
-                      price: "USD 50 / year",
-                      audience: "High-Potential Student Innovators",
-                      icon: Star,
-                      highlights: [
-                        "Premium digital badge for CV & LinkedIn",
-                        "Priority internship interviews",
-                        "Advanced AI labs & simulation tools",
-                        "Mentorship & career planning",
-                        "International leagues & exchange camps",
-                        "Leadership & startup opportunities",
-                      ],
-                    },
-                  ].map((plan) => {
-                    const Icon = plan.icon;
-                    const isSelected = selectedTechnoxianMembership === plan.id;
-                    return (
-                      <div
-                        key={plan.id}
-                        onClick={() => setSelectedTechnoxianMembership(plan.id)}
-                        className={`cursor-pointer rounded-3xl border p-8 bg-white transition-all
-              ${isSelected
-                            ? "border-blue-600 shadow-xl scale-[1.03]"
-                            : "border-slate-200 hover:shadow-lg hover:-translate-y-1"
-                          }`}
-                      >
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-                            <Icon size={24} />
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-slate-900">
-                              {plan.title}
-                            </h3>
-                            <p className="text-xs text-slate-500">
-                              {plan.audience}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-3xl font-extrabold text-slate-900 mb-6">
-                          {plan.price}
-                        </div>
-                        <ul className="space-y-3 mb-8">
-                          {plan.highlights.map((item, i) => (
-                            <li
-                              key={i}
-                              className="text-sm text-slate-600 flex gap-2"
-                            >
-                              <span className="mt-1 w-1.5 h-1.5 bg-blue-600 rounded-full" />
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
-                        <button
-                          className={`w-full py-3 rounded-xl font-bold transition-all
-                ${isSelected
-                              ? "bg-blue-600 text-white"
-                              : "bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white"
-                            }`}
-                        >
-                          {isSelected ? "Selected" : "Select Plan"}
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* === NEW: Compare Plans Button === */}
-                <div className="text-center mt-12">
-                  <a
-                    href="https://technoxian-webapp-developer.vercel.app/membership"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-3 bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl"
-                  >
-                    <span>Compare Membership Plans in Detail</span>
-                    <ChevronRight size={20} />
-                  </a>
-                  <p className="text-sm text-slate-500 mt-4">
-                    See a full side-by-side comparison of all benefits and features
-                  </p>
-                </div>
-              </div>
-            </section>
+          
 
             {/* Trophies Section */}
             <div className="mt-10">
@@ -1696,36 +1470,24 @@ const TechnoxianView = () => {
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="container mx-auto px-4 py-12"
           >
-            <div className="grid md:grid-cols-3 gap-6">
-              {gallery.map((cat, idx) => (
-                <motion.button
-                  type="button"
-                  key={cat.id}
-                  onClick={() => setActiveGallery(cat)}
-                  className="relative overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-900 text-left"
+            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {galleryImageUrls.map((img, idx) => (
+                <motion.div
+                  key={idx}
+                  className="relative overflow-hidden rounded-2xl border border-slate-200 shadow-sm"
+                  style={{ width: '295px', height: '222px' }}
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.04, duration: 0.25 }}
-                  whileHover={{ scale: 1.02 }}
+                  transition={{ delay: idx * 0.03, duration: 0.25 }}
+                  whileHover={{ scale: 1.05 }}
                 >
-                  <div
-                    className="h-48 bg-cover bg-center"
-                    style={{
-                      backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.55)), url(${cat.cover})`,
-                    }}
+                  <img
+                    src={img}
+                    alt={`Gallery image ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
                   />
-                  <div className="p-4 flex items-center justify-between text-white">
-                    <div>
-                      <div className="text-xs uppercase font-bold text-emerald-200 flex items-center gap-1">
-                        <Camera size={14} /> {cat.tag}
-                      </div>
-                      <div className="text-lg font-extrabold">{cat.title}</div>
-                    </div>
-                    <div className="text-[10px] px-2 py-1 rounded-full bg-white/10 border border-white/10">
-                      View
-                    </div>
-                  </div>
-                </motion.button>
+                </motion.div>
               ))}
             </div>
           </motion.div>
@@ -1935,73 +1697,6 @@ const TechnoxianView = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {activeGallery && (
-          <motion.div
-            className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onWheel={(e) => e.stopPropagation()}
-          >
-            <motion.div
-              className="bg-white rounded-3xl max-w-5xl w-full shadow-2xl overflow-hidden"
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onWheel={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-                <div>
-                  <div className="text-xs uppercase font-bold text-blue-600">
-                    {activeGallery.tag}
-                  </div>
-                  <div className="text-2xl font-extrabold text-slate-900">
-                    {activeGallery.title} Gallery
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setShowAllGallery((p) => !p)}
-                    className="text-sm font-semibold text-blue-600 hover:text-blue-800"
-                  >
-                    {showAllGallery ? "Show Less" : "Show More"}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveGallery(null);
-                      setShowAllGallery(false);
-                    }}
-                    className="bg-slate-100 p-2 rounded-full hover:bg-slate-200"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-              </div>
-              <div className="p-6 max-h-[70vh] overflow-y-auto overscroll-contain">
-                <div className="grid md:grid-cols-3 gap-4">
-                  {(showAllGallery
-                    ? activeGallery.images
-                    : activeGallery.images.slice(0, 6)
-                  ).map((img) => (
-                    <div
-                      key={img}
-                      className="relative overflow-hidden rounded-2xl border border-slate-100 h-48"
-                    >
-                      <div
-                        className="absolute inset-0 bg-cover bg-center"
-                        style={{ backgroundImage: `url(${img})` }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent"></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

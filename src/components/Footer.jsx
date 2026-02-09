@@ -34,10 +34,10 @@ const Footer = ({ setView, switchSite, currentSite }) => (
               <div className="flex items-center gap-3">
                 <Mail size={16} className="text-slate-500" />
                 <a
-                  href="mailto:info@worso.org"
+                  href="mailto:info@worso.in"
                   className="text-sm hover:text-white transition-colors"
                 >
-                  info@worso.org
+                  info@worso.in
                 </a>
               </div>
               <div className="flex items-center gap-3">
@@ -46,7 +46,7 @@ const Footer = ({ setView, switchSite, currentSite }) => (
                   href="tel:+917835053333"
                   className="text-sm hover:text-white transition-colors"
                 >
-                  +91 7835053333                </a>
+                  +91 7835053333</a>
               </div>
             </div>
 
