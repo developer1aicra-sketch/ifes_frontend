@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Bot, Send, X } from 'lucide-react';
 import { callGemini } from '../utils/gemini';
+import { useThemeClasses } from '../hooks/useThemeClasses';
 
 const AIReferee = ({ siteConfig }) => {
+  const theme = useThemeClasses();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { role: 'ai', text: 'Hello! I am your AI Referee. Ask me anything about Technoxian rules, arena dimensions, or scoring criteria.' },
@@ -40,7 +42,7 @@ const AIReferee = ({ siteConfig }) => {
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 ${siteConfig.colors.primary}
+        className={`fixed bottom-6 right-6 z-50 ${theme.bgPrimary || siteConfig.colors.primary}
     w-12 h-12 rounded-full
     flex items-center justify-center
     text-white shadow-xl
@@ -53,7 +55,7 @@ const AIReferee = ({ siteConfig }) => {
 
       {isOpen && (
         <div className="fixed bottom-24 right-6 z-50 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-fadeIn">
-          <div className={`${siteConfig.colors.primary} p-4 flex justify-between items-center text-white`}>
+          <div className={`${theme.bgPrimary || siteConfig.colors.primary} p-4 flex justify-between items-center text-white`}>
             <div className="flex items-center gap-2">
               <Bot size={20} />
               <span className="font-bold">AI Referee Assistant</span>
@@ -68,7 +70,7 @@ const AIReferee = ({ siteConfig }) => {
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
                   className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.role === 'user'
-                      ? 'bg-blue-600 text-white rounded-br-none'
+                      ? `${theme.bgPrimary || 'bg-blue-600'} text-white rounded-br-none`
                       : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-sm'
                     }`}
                 >
@@ -95,9 +97,9 @@ const AIReferee = ({ siteConfig }) => {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Ask about rules..."
-              className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+              className={`flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:${theme.borderPrimary || 'focus:border-blue-500'} text-sm`}
             />
-            <button onClick={handleSend} disabled={isLoading} className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+            <button onClick={handleSend} disabled={isLoading} className={`${theme.bgPrimary || 'bg-blue-600'} text-white p-2 rounded-lg ${theme.bgHover || 'hover:bg-blue-700'} disabled:opacity-50`}>
               <Send size={18} />
             </button>
           </div>

@@ -18,8 +18,10 @@ import {
 import LogoTicker from '../components/LogoTicker';
 import FeaturedShopSection from '../components/FeaturedShopSection';
 import { NavLink } from 'react-router-dom';
+import { useThemeClasses } from '../hooks/useThemeClasses';
 
 const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError }) => {
+  const theme = useThemeClasses();
   void motion;
 
   const [latestNewsIndex, setLatestNewsIndex] = useState(0);
@@ -53,8 +55,8 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
 
   return (
     <div className="animate-fadeIn bg-slate-50">
-      <div className={`relative min-h-[600px] flex items-center ${siteConfig.colors.gradient} text-white overflow-hidden`}>
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-3xl"></div>
+      <div className={`relative min-h-[600px] flex items-center ${theme.bgGradient || siteConfig.colors.gradient} text-white overflow-hidden`}>
+        <div className={`absolute top-0 right-0 w-[500px] h-[500px] ${theme.bgPrimary || 'bg-blue-500'}/10 rounded-full blur-3xl`}></div>
         <div className="container mx-auto px-4 relative z-10 py-20">
           <div className="grid md:grid-cols-12 gap-12 items-center">
             <div className="md:col-span-7 space-y-6">
@@ -65,7 +67,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
               )}
               <h1 className="text-6xl md:text-7xl font-bold leading-tight tracking-tight">
                 {siteConfig.is_partner ? 'The governing body ' : 'The governing body'} <br />
-                <span className={siteConfig.is_partner ? 'text-emerald-400' : 'text-blue-400'}>for sport of robotics.</span>
+                <span className={theme.textLight || (siteConfig.is_partner ? 'text-emerald-400' : 'text-blue-400')}>for sport of robotics.</span>
               </h1>
               <p className="text-lg text-slate-300 max-w-xl leading-relaxed">
                 {siteConfig.is_partner
@@ -76,7 +78,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
               <div className="flex flex-wrap gap-4 pt-6">
                 <button
                   onClick={() => setView('technoxian')}
-                  className={`${siteConfig.colors.primary} px-8 py-4 rounded-lg font-bold text-base transition-all shadow-lg flex items-center gap-2 hover:-translate-y-1`}
+                  className={`${theme.bgPrimary || siteConfig.colors.primary} px-8 py-4 rounded-lg font-bold text-base transition-all shadow-lg flex items-center gap-2 hover:-translate-y-1`}
                 >
                   {siteConfig.is_partner ? 'View Local Events' : 'Explore Technoxian'} <ArrowRight size={18} />
                 </button>
@@ -92,8 +94,10 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
                 onClick={() => setView('technoxian')}
               >
                 <div
-                  className={`rounded-xl p-6 mb-4 bg-gradient-to-r ${siteConfig.is_partner ? 'from-emerald-600 to-teal-600' : 'from-blue-600 to-indigo-600'
-                    } relative overflow-hidden`}
+                  className={`rounded-xl p-6 mb-4 bg-gradient-to-r ${theme.hasTheme 
+                    ? `${theme.bgPrimary} to-${theme.themeName}-700` 
+                    : (siteConfig.is_partner ? 'from-emerald-600 to-teal-600' : 'from-blue-600 to-indigo-600')
+                  } relative overflow-hidden`}
                 >
                   <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></div>
                   <div className="flex justify-between items-start mb-4 relative z-10">
@@ -118,13 +122,13 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
 
                 <div className="bg-slate-800/50 rounded-lg p-4 flex items-center justify-between border border-white/5 hover:bg-slate-800 transition-colors cursor-pointer group/item">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-sm">R</div>
+                    <div className={`w-8 h-8 rounded-full ${theme.bgPrimary || 'bg-blue-500'}/20 ${theme.textLight || 'text-blue-400'} flex items-center justify-center font-bold text-sm`}>R</div>
                     <div>
                       <div className="font-bold text-white text-sm">Register Team</div>
                       <div className="text-[10px] text-slate-400 uppercase tracking-wide">Visitor & Exhibitor Passes</div>
                     </div>
                   </div>
-                  <ChevronRight size={16} className="text-slate-500 group-hover/item:text-blue-400 group-hover/item:translate-x-1 transition-all" />
+                  <ChevronRight size={16} className={`text-slate-500 group-hover/item:${theme.textLight || 'text-blue-400'} group-hover/item:translate-x-1 transition-all`} />
                 </div>
               </div>
             </div>
@@ -137,7 +141,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-slate-100">
             {[{ label: 'Member Nations', val: '95+' }, { label: 'Registered Teams', val: '120k+' }, { label: 'Global Spectators', val: '2.5M' }, { label: 'Prize Pool', val: '$250k' }].map((stat, i) => (
               <div key={i}>
-                <div className={`text-4xl font-extrabold ${siteConfig.is_partner ? 'text-emerald-600' : 'text-blue-600'}`}>{stat.val}</div>
+                <div className={`text-4xl font-extrabold ${theme.textPrimary || (siteConfig.is_partner ? 'text-emerald-600' : 'text-blue-600')}`}>{stat.val}</div>
                 <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">{stat.label}</div>
               </div>
             ))}

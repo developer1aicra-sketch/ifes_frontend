@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import './App.css';
@@ -7,6 +7,9 @@ import LiveTicker from './components/LiveTicker';
 import Navigation from './components/Navigation';
 import AIReferee from './components/AIReferee';
 import Footer from './components/Footer';
+import LocationRouteHandler from './components/LocationRouteHandler';
+import PartnerWebsiteRedirect from './components/PartnerWebsiteRedirect';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 import HomeView from './views/HomeView';
 import JoinWorsoView from './views/JoinWorsoView';
@@ -25,10 +28,13 @@ import NewsListView from './views/NewsListView';
 import PrivacyPolicyView from './views/PrivacyPolicyView';
 import TermsOfUseView from './views/TermsOfUseView';
 import MembershipView from './views/MembershipView'; // ✅ NEW
+import LocationView from './views/LocationView';
 
 import { DEFAULT_SITES, NEWS_ITEMS } from './constants/data';
 import { styles } from './styles/inlineStyles';
 import { fetchTechnoxianFeed } from './utils/rss';
+import { pathWithLocationPrefix } from './utils/locationRoutes';
+import { useLocationPrefix } from './hooks/useLocationPrefix';
 import { StoreView } from './views/StoreView';
 import RoboClubView from './views/RoboClubView';
 
@@ -129,6 +135,13 @@ const App = () => {
     navigate(path);
     window.scrollTo(0, 0);
   };
+  // Used by AppContent when on a location route to prefix paths
+  const setViewWithPrefix = (view, locationPrefix) => {
+    const path = viewToPath(view);
+    const targetPath = pathWithLocationPrefix(locationPrefix || '', path);
+    navigate(targetPath);
+    window.scrollTo(0, 0);
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -173,16 +186,82 @@ const App = () => {
 
   return (
     (void motion),
+    <ThemeProvider>
+      <AppContent
+        currentSite={currentSite}
+        setView={setView}
+        setViewWithPrefix={setViewWithPrefix}
+        switchSite={switchSite}
+        user={user}
+        setUser={setUser}
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+        tickerText={tickerText}
+        newsProps={newsProps}
+        location={location}
+        sites={sites}
+        setSites={setSites}
+      />
+    </ThemeProvider>
+  );
+};
+
+const AppContent = ({
+  currentSite,
+  setView,
+  setViewWithPrefix,
+  switchSite,
+  user,
+  setUser,
+  isMobileMenuOpen,
+  setIsMobileMenuOpen,
+  tickerText,
+  newsProps,
+  location,
+  sites,
+  setSites,
+}) => {
+  const { themeConfig } = useTheme();
+  const { locationPrefix } = useLocationPrefix();
+  const setViewRespectingLocation = useCallback(
+    (view) => (locationPrefix ? setViewWithPrefix(view, locationPrefix) : setView(view)),
+    [locationPrefix, setViewWithPrefix, setView]
+  );
+  const newsPropsWithPrefix = useMemo(
+    () => ({ ...newsProps, setView: setViewRespectingLocation }),
+    [newsProps, setViewRespectingLocation]
+  );
+
+  // Dynamic selection colors based on theme
+  const getSelectionClasses = () => {
+    if (!themeConfig) {
+      return currentSite.is_partner
+        ? 'selection:bg-emerald-100 selection:text-emerald-900'
+        : 'selection:bg-blue-100 selection:text-blue-900';
+    }
+    
+    const themeSelectionMap = {
+      emerald: 'selection:bg-emerald-100 selection:text-emerald-900',
+      blue: 'selection:bg-blue-100 selection:text-blue-900',
+      red: 'selection:bg-red-100 selection:text-red-900',
+      purple: 'selection:bg-purple-100 selection:text-purple-900',
+      orange: 'selection:bg-orange-100 selection:text-orange-900',
+      yellow: 'selection:bg-yellow-100 selection:text-yellow-900',
+    };
+    
+    return themeSelectionMap[themeConfig.theme] || themeSelectionMap.blue;
+  };
+
+  return (
     <div
-      className={`font-sans antialiased text-slate-900 bg-white min-h-screen flex flex-col ${
-        currentSite.is_partner
-          ? 'selection:bg-emerald-100 selection:text-emerald-900'
-          : 'selection:bg-blue-100 selection:text-blue-900'
-      }`}
+      className={`font-sans antialiased text-slate-900 bg-white min-h-screen flex flex-col ${getSelectionClasses()}`}
     >
+      <PartnerWebsiteRedirect />
+      <LocationRouteHandler />
       <LiveTicker tickerText={tickerText} siteConfig={currentSite} />
       <Navigation
-        setView={setView}
+        setView={setViewRespectingLocation}
+        locationPrefix={locationPrefix}
         toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         isMobileMenuOpen={isMobileMenuOpen}
         siteConfig={currentSite}
@@ -201,37 +280,64 @@ const App = () => {
             className="h-full"
           >
             <Routes location={location}>
-              <Route path="/" element={<HomeView setView={setView} siteConfig={currentSite} {...newsProps} />} />
+              <Route path="/" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
               <Route path="/teams" element={<TeamsView />} />
               <Route path="/technoxian" element={<TechnoxianView />} />
               <Route path="/roboclub" element={<RoboClubView />} />
 
-              <Route path="/about" element={<AboutLayout setView={setView} />} />
-              <Route path="/governance" element={<AboutLayout setView={setView} />} />
+              <Route path="/about" element={<AboutLayout setView={setViewRespectingLocation} />} />
+              <Route path="/governance" element={<AboutLayout setView={setViewRespectingLocation} />} />
               <Route path="/associates/join-worso" element={<JoinWorsoView />} />
               <Route path="/associates/list" element={<AssociationsListView />} />
               <Route path="/careers" element={<CareersView />} />
-              <Route path="/partners" element={<HomeView setView={setView} siteConfig={currentSite} {...newsProps} />} />
+              <Route path="/partners" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
         {/* <Route path="/shop" element={<StoreView />} /> */}
         
 
-              <Route path="/membership" element={<MembershipView setView={setView} />} /> {/* ✅ NEW */}
+              <Route path="/membership" element={<MembershipView setView={setViewRespectingLocation} />} /> {/* ✅ NEW */}
 
-              <Route path="/login" element={<MemberLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
-              <Route path="/staff-login" element={<AdminLoginView setView={setView} setUser={setUser} />} />
-              <Route path="/login-partner-admin" element={<PartnerAdminLoginView setView={setView} setUser={setUser} siteConfig={currentSite} />} />
+              <Route path="/login" element={<MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} />} />
+              <Route path="/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} />} />
+              <Route path="/login-partner-admin" element={<PartnerAdminLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} />} />
 
-              <Route path="/member-dashboard" element={<MemberDashboard currentSite={currentSite} setView={setView} />} />
-              <Route path="/admin-dashboard" element={<AdminView setSites={setSites} sites={sites} setView={setView} defaultMode={user?.role} />} />
+              <Route path="/member-dashboard" element={<MemberDashboard currentSite={currentSite} setView={setViewRespectingLocation} />} />
+              <Route path="/admin-dashboard" element={<AdminView setSites={setSites} sites={sites} setView={setViewRespectingLocation} defaultMode={user?.role} />} />
 
               <Route path="/privacy-policy" element={<PrivacyPolicyView />} />
               <Route path="/terms-of-use" element={<TermsOfUseView />} />
 
-              <Route path="/news" element={<NewsListView type="latest" {...newsProps} />} />
-              <Route path="/news/headline" element={<NewsListView type="headline" {...newsProps} />} />
-              <Route path="/news/latest" element={<NewsListView type="latest" {...newsProps} />} />
-              <Route path="/news/most" element={<NewsListView type="most" {...newsProps} />} />
-              <Route path="/news/:id" element={<NewsArticleRoute {...newsProps} />} />
+              <Route path="/news" element={<NewsListView type="latest" {...newsPropsWithPrefix} />} />
+              <Route path="/news/headline" element={<NewsListView type="headline" {...newsPropsWithPrefix} />} />
+              <Route path="/news/latest" element={<NewsListView type="latest" {...newsPropsWithPrefix} />} />
+              <Route path="/news/most" element={<NewsListView type="most" {...newsPropsWithPrefix} />} />
+              <Route path="/news/:id" element={<NewsArticleRoute {...newsPropsWithPrefix} />} />
+
+              {/* Location-prefixed routes: /AE/membership, /AE/teams, etc. - more specific first */}
+              <Route path="/:locationCode/membership" element={<MembershipView setView={setViewRespectingLocation} />} />
+              <Route path="/:locationCode/teams" element={<TeamsView />} />
+              <Route path="/:locationCode/technoxian" element={<TechnoxianView />} />
+              <Route path="/:locationCode/roboclub" element={<RoboClubView />} />
+              <Route path="/:locationCode/about" element={<AboutLayout setView={setViewRespectingLocation} />} />
+              <Route path="/:locationCode/governance" element={<AboutLayout setView={setViewRespectingLocation} />} />
+              <Route path="/:locationCode/associates/join-worso" element={<JoinWorsoView />} />
+              <Route path="/:locationCode/associates/list" element={<AssociationsListView />} />
+              <Route path="/:locationCode/careers" element={<CareersView />} />
+              <Route path="/:locationCode/partners" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
+              <Route path="/:locationCode/login" element={<MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} />} />
+              <Route path="/:locationCode/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} />} />
+              <Route path="/:locationCode/login-partner-admin" element={<PartnerAdminLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} />} />
+              <Route path="/:locationCode/member-dashboard" element={<MemberDashboard currentSite={currentSite} setView={setViewRespectingLocation} />} />
+              <Route path="/:locationCode/admin-dashboard" element={<AdminView setSites={setSites} sites={sites} setView={setViewRespectingLocation} defaultMode={user?.role} />} />
+              <Route path="/:locationCode/privacy-policy" element={<PrivacyPolicyView />} />
+              <Route path="/:locationCode/terms-of-use" element={<TermsOfUseView />} />
+              <Route path="/:locationCode/news" element={<NewsListView type="latest" {...newsPropsWithPrefix} />} />
+              <Route path="/:locationCode/news/headline" element={<NewsListView type="headline" {...newsPropsWithPrefix} />} />
+              <Route path="/:locationCode/news/latest" element={<NewsListView type="latest" {...newsPropsWithPrefix} />} />
+              <Route path="/:locationCode/news/most" element={<NewsListView type="most" {...newsPropsWithPrefix} />} />
+              <Route path="/:locationCode/news/:id" element={<NewsArticleRoute {...newsPropsWithPrefix} />} />
+
+              {/* Location home - must be last among location routes */}
+              <Route path="/:locationCode" element={<LocationView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
@@ -240,7 +346,7 @@ const App = () => {
       </main>
 
       <AIReferee siteConfig={currentSite} />
-      <Footer setView={setView} switchSite={switchSite} currentSite={currentSite} />
+      <Footer setView={setViewRespectingLocation} locationPrefix={locationPrefix} switchSite={switchSite} currentSite={currentSite} />
     </div>
   );
 };

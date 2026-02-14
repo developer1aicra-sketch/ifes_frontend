@@ -7,6 +7,12 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
+  /* Theme CSS Variables - dynamically updated by ThemeContext */
+  --theme-primary: #2563eb;
+  --theme-primary-hover: #1d4ed8;
+  --theme-text: #2563eb;
+  --theme-gradient: #0f172a;
 }
 
 * {
@@ -16,4 +22,42 @@
 body {
   margin: 0;
   background: #f8fafc;
+  /* Smooth theme transitions */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Smooth transitions for theme-aware elements */
+.theme-transitioning * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Theme-specific body styles */
+body[data-theme="emerald"] {
+  --selection-bg: rgba(16, 185, 129, 0.1);
+  --selection-text: rgb(6, 95, 70);
+}
+
+body[data-theme="blue"] {
+  --selection-bg: rgba(37, 99, 235, 0.1);
+  --selection-text: rgb(30, 64, 175);
+}
+
+body[data-theme="red"] {
+  --selection-bg: rgba(220, 38, 38, 0.1);
+  --selection-text: rgb(153, 27, 27);
+}
+
+body[data-theme="purple"] {
+  --selection-bg: rgba(147, 51, 234, 0.1);
+  --selection-text: rgb(88, 28, 135);
+}
+
+body[data-theme="orange"] {
+  --selection-bg: rgba(234, 88, 12, 0.1);
+  --selection-text: rgb(154, 52, 18);
+}
+
+body[data-theme="yellow"] {
+  --selection-bg: rgba(202, 138, 4, 0.1);
+  --selection-text: rgb(113, 63, 18);
 }

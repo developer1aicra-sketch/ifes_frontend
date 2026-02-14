@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Trophy, Menu, X, User, Home, LogOut, Star } from 'lucide-react';
 import logo from '../assets/logo.png';
 import { Link, useLocation } from 'react-router-dom';
+import { useThemeClasses } from '../hooks/useThemeClasses';
+import { pathWithLocationPrefix } from '../utils/locationRoutes';
 
-
-const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user, setUser }) => {
-  
+const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user, setUser, locationPrefix = '' }) => {
+  const theme = useThemeClasses();
+  const location = useLocation();
   const [isDashMenuOpen, setIsDashMenuOpen] = useState(false);
-const locationroboClub = useLocation();
+  const path = (p) => pathWithLocationPrefix(locationPrefix, p);
   const handleDashboardClick = () => {
     if (!user) {
       setView('login');
@@ -27,13 +29,15 @@ const locationroboClub = useLocation();
     setView('home');
   };
   if (
-    locationroboClub.pathname === "/roboclub" ||
-    locationroboClub.pathname === "/login"
+    location.pathname === '/roboclub' ||
+    location.pathname === '/login' ||
+    location.pathname.endsWith('/roboclub') ||
+    location.pathname.endsWith('/login')
   ) {
     return null;
   }
   return (
-    <nav className="sticky top-0 z-40 transition-all duration-300 bg-[#0f172a] border-b border-white/10">
+    <nav className={`sticky top-0 z-40 transition-all duration-300 ${theme.bgGradient || 'bg-[#0f172a]'} border-b border-white/10`}>
       <div className="container mx-auto px-4 md:px-6 py-2 flex justify-between items-center">
         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('home')}>
           <img
@@ -57,8 +61,10 @@ const locationroboClub = useLocation();
             </div>
           )}
          
-          <Link to="/membership">Membership</Link>
-          <Link to="/roboclub"  className='flex gap-2 items-center'>  <Star size={14} className={location.pathname === '/roboclub' ? 'text-yellow-400' : 'text-yellow-500'} /> roboclub</Link>
+          <Link to={path('/membership')}>Membership</Link>
+          <Link to={path('/roboclub')} className="flex gap-2 items-center">
+            <Star size={14} className={location.pathname.endsWith('/roboclub') ? 'text-yellow-400' : 'text-yellow-500'} /> roboclub
+          </Link>
 
           <button onClick={() => setView('teams')} className="hover:text-white transition-colors">
             Teams / Players
@@ -77,14 +83,14 @@ const locationroboClub = useLocation();
           <div className="relative">
             <button
               onClick={handleDashboardClick}
-              className={`${siteConfig.colors.primary} text-white px-5 py-2.5 rounded-full font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 normal-case tracking-normal text-sm hover:-translate-y-0.5`}
+              className={`${theme.bgPrimary || siteConfig.colors.primary} text-white px-5 py-2.5 rounded-full font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 normal-case tracking-normal text-sm hover:-translate-y-0.5`}
             >
               <User size={14} />
               {user ? 'My Dashboard' : 'Member Login'}
             </button>
             {user && isDashMenuOpen && (
               <div className="absolute right-0 mt-3 w-48 bg-slate-900/95 backdrop-blur border border-slate-700 rounded-2xl shadow-2xl p-3 text-slate-200 overflow-hidden">
-                <div className="text-[11px] uppercase font-bold text-blue-200 mb-2 px-1">Quick Actions</div>
+                <div className={`text-[11px] uppercase font-bold ${theme.textLight || 'text-blue-200'} mb-2 px-1`}>Quick Actions</div>
                 <button
                   onClick={goHome}
                   className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-white/5 flex items-center gap-2 transition-colors"

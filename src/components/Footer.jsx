@@ -1,9 +1,120 @@
+import { useState, useEffect, useMemo } from 'react';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaYoutube } from "react-icons/fa";
-import { Mail, Phone } from "lucide-react"; import logo from '../assets/logo.png';
+import { Mail, Phone, MapPin } from "lucide-react";
+import logo from '../assets/logo.png';
+import { fetchPartners, getCurrentSubdomain, findPartnerBySubdomain, getPrimaryPartnerByLocation } from '../utils/api';
+import { useTheme } from '../contexts/ThemeContext';
+import { getThemeConfig } from '../utils/theme';
+import LocationSwitcher, { DEFAULT_LOCATION_CODES } from './LocationSwitcher';
 
+const Footer = ({ setView, switchSite, currentSite }) => {
+  const [partners, setPartners] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { updateTheme, themeConfig, selectedLocation } = useTheme();
 
-const Footer = ({ setView, switchSite, currentSite }) => (
-  <footer className="bg-[#0f172a] text-slate-400 py-16">
+  useEffect(() => {
+    const loadPartners = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchPartners();
+        
+        if (data.success && data.partners && data.partners.length > 0) {
+          setPartners(data.partners);
+          
+          // Check if there's a persisted location selection (from route or localStorage)
+          if (selectedLocation) {
+            const locationPartner = getPrimaryPartnerByLocation(data.partners, selectedLocation);
+            if (locationPartner?.themeColor) {
+              console.log(`[Footer] Applying persisted theme: ${locationPartner.themeColor} for ${selectedLocation}`);
+              updateTheme(locationPartner.themeColor, selectedLocation);
+              return;
+            }
+          }
+          
+          // Only apply default theme if no location is selected (don't override route-based theme)
+          // Check if we're on a location route
+          const currentPath = window.location.pathname;
+          const pathSegments = currentPath.split('/').filter(Boolean);
+          const routeLocationCode = pathSegments[0]?.toUpperCase();
+          const isLocationRoute = routeLocationCode && routeLocationCode.length === 2 && /^[A-Z]{2}$/.test(routeLocationCode);
+          
+          if (isLocationRoute) {
+            console.log(`[Footer] Location route detected (${routeLocationCode}), skipping default theme`);
+            return; // Let LocationRouteHandler handle it
+          }
+          
+          // Try to find partner by current subdomain first
+          const currentSubdomain = getCurrentSubdomain();
+          let partnerToUse = null;
+          
+          if (currentSubdomain) {
+            partnerToUse = findPartnerBySubdomain(data.partners, currentSubdomain);
+          }
+          
+          // Fallback to first active partner or first partner (only if not on location route)
+          if (!partnerToUse && !isLocationRoute) {
+            partnerToUse = data.partners.find(p => p.isActive) || data.partners[0];
+          }
+          
+          // Apply theme from the selected partner (only if not on location route)
+          if (partnerToUse?.themeColor && !isLocationRoute) {
+            console.log(`[Footer] Initial theme applied: ${partnerToUse.themeColor} from partner ${partnerToUse.academyName} (${partnerToUse.location})`);
+            updateTheme(partnerToUse.themeColor, partnerToUse.location);
+          } else if (!isLocationRoute) {
+            console.warn('[Footer] No themeColor found in partner data');
+          }
+        }
+        setError(null);
+      } catch (err) {
+        console.error('Failed to load partners:', err);
+        setError('Failed to load partners data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPartners();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Map location code -> themeColor for LocationSwitcher (RW, RO, AE, CL). API data + Blue fallback.
+  const locationThemeMap = useMemo(() => {
+    const map = {};
+    DEFAULT_LOCATION_CODES.forEach(code => {
+      map[code] = 'Blue';
+    });
+    partners.forEach(partner => {
+      if (partner.location && partner.isActive && partner.themeColor) {
+        const code = String(partner.location).toUpperCase();
+        if (DEFAULT_LOCATION_CODES.includes(code)) {
+          map[code] = partner.themeColor;
+        }
+      }
+    });
+    return map;
+  }, [partners]);
+
+  // Legacy: unique locations from partners (for backward compatibility if needed elsewhere)
+  const locationsWithPartners = useMemo(() => {
+    const locationMap = new Map();
+    partners.forEach(partner => {
+      if (partner.location && partner.isActive && partner.themeColor) {
+        if (!locationMap.has(partner.location)) {
+          locationMap.set(partner.location, {
+            code: partner.location,
+            themeColor: partner.themeColor,
+            partner: partner,
+            academyName: partner.academyName,
+          });
+        }
+      }
+    });
+    return Array.from(locationMap.values());
+  }, [partners]);
+
+  return (
+    <footer className={`${themeConfig?.colors?.gradient || 'bg-[#0f172a]'} text-slate-400 py-16`}>
     <div className="container mx-auto px-4">
       <div className="grid md:grid-cols-4 gap-12 mb-12">
 
@@ -47,6 +158,16 @@ const Footer = ({ setView, switchSite, currentSite }) => (
                   className="text-sm hover:text-white transition-colors"
                 >
                   +91 7835053333</a>
+              </div>
+              
+              {/* Delhi location routes: RW, RO, AE, CL – opens /RW, /RO, /AE, /CL with theme */}
+              <div className="flex items-center gap-3 mt-4">
+                <MapPin size={16} className="text-slate-500 flex-shrink-0" />
+                <LocationSwitcher
+                  regionLabel="Delhi"
+                  locationCodes={DEFAULT_LOCATION_CODES}
+                  locationThemeMap={locationThemeMap}
+                />
               </div>
             </div>
 
@@ -165,7 +286,7 @@ const Footer = ({ setView, switchSite, currentSite }) => (
 
             <button
               onClick={() => switchSite("global")}
-              className={`text-[10px] font-bold transition-colors ${currentSite.id === "global" ? "text-blue-500" : "text-slate-400 hover:text-white"
+              className={`text-[10px] font-bold transition-colors ${currentSite.id === "global" ? `${themeConfig?.colors?.textLight || 'text-blue-500'}` : "text-slate-400 hover:text-white"
                 }`}
             >
               Global
@@ -173,7 +294,7 @@ const Footer = ({ setView, switchSite, currentSite }) => (
 
             <button
               onClick={() => switchSite("uae")}
-              className={`text-[10px] font-bold transition-colors ${currentSite.id === "uae" ? "text-emerald-500" : "text-slate-400 hover:text-white"
+              className={`text-[10px] font-bold transition-colors ${currentSite.id === "uae" ? `${themeConfig?.colors?.textLight || 'text-emerald-500'}` : "text-slate-400 hover:text-white"
                 }`}
             >
               UAE
@@ -187,7 +308,8 @@ const Footer = ({ setView, switchSite, currentSite }) => (
       </div>
 
     </div>
-  </footer>
-);
+    </footer>
+  );
+};
 
 export default Footer;
