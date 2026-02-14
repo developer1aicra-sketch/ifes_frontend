@@ -162,3 +162,137 @@ export const detectPartnerFromUrl = async () => {
 
   return { locationCode: null, partner: null };
 };
+
+/**
+ * Partner admin login: send OTP to email
+ * @param {string} email - Partner admin email
+ * @returns {Promise<{ success: boolean, message?: string }>}
+ */
+export const partnerLoginSendOtp = async (email) => {
+  const response = await fetch(`${API_BASE_URL}/partners/login/send-otp`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message = data?.message || data?.error || `Request failed (${response.status})`;
+    throw new Error(message);
+  }
+
+  return data;
+};
+
+/** Partner auth storage key (token-based session) */
+export const PARTNER_AUTH_KEY = 'worso_partner_auth';
+
+/**
+ * Get persisted partner auth from storage (token + partner)
+ * @returns {{ token: string, partner: object, email: string } | null}
+ */
+export const getPartnerAuth = () => {
+  try {
+    const raw = localStorage.getItem(PARTNER_AUTH_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (data?.token) return data;
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Persist partner auth after successful verify-otp
+ * @param {{ token: string, partner: object, email: string }} data
+ */
+export const setPartnerAuth = (data) => {
+  try {
+    localStorage.setItem(PARTNER_AUTH_KEY, JSON.stringify(data));
+  } catch (_) {}
+};
+
+/**
+ * Clear partner auth (logout)
+ */
+export const clearPartnerAuth = () => {
+  try {
+    localStorage.removeItem(PARTNER_AUTH_KEY);
+  } catch (_) {}
+};
+
+/**
+ * Partner admin logout (invalidates token on server)
+ * @param {string} token - JWT from login
+ * @returns {Promise<void>}
+ */
+export const partnerLogout = async (token) => {
+  const response = await fetch(`${API_BASE_URL}/partners/logout`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token ? `Bearer ${token}` : '',
+    },
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    const msg = data?.message || data?.error || `Logout failed (${response.status})`;
+    throw new Error(msg);
+  }
+};
+
+/**
+ * Partner admin login: verify OTP and complete login
+ * @param {string} email - Partner admin email (same as send-otp)
+ * @param {string} otp - OTP code received by email
+ * @returns {Promise<{ success: boolean, message?: string, token?: string, user?: object }>}
+ */
+export const partnerLoginVerifyOtp = async (email, otp) => {
+  const response = await fetch(`${API_BASE_URL}/partners/login/verify-otp`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, otp }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message = data?.message || data?.error || `Verification failed (${response.status})`;
+    throw new Error(message);
+  }
+
+  return data;
+};
+
+/**
+ * Update partner profile (authenticated). Editable: academyName, themeColor, contactEmail, phoneNumber.
+ * @param {string} partnerId - Partner _id
+ * @param {string} token - JWT from partner login
+ * @param {object} payload - Full or partial partner details to send as request body
+ * @returns {Promise<{ success: boolean, partner?: object }>}
+ */
+export const updatePartner = async (partnerId, token, payload) => {
+  const response = await fetch(`${API_BASE_URL}/partners/${partnerId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token ? `Bearer ${token}` : '',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message = data?.message || data?.error || `Update failed (${response.status})`;
+    throw new Error(message);
+  }
+
+  return data;
+};

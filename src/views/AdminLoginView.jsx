@@ -1,6 +1,15 @@
+import { useEffect } from 'react';
 import { Shield } from 'lucide-react';
 
-const AdminLoginView = ({ setView }) => (
+const AdminLoginView = ({ setView, user }) => {
+  // If already logged in (partner or staff), redirect to admin dashboard
+  useEffect(() => {
+    if (user) {
+      setView('admin-dashboard');
+    }
+  }, [user, setView]);
+
+  return (
   <div className="animate-fadeIn pt-32 pb-20 bg-slate-900 min-h-screen flex justify-center items-center">
     <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl">
       <div className="flex justify-center mb-6">
@@ -19,6 +28,7 @@ const AdminLoginView = ({ setView }) => (
       </button>
     </div>
   </div>
-);
+  );
+};
 
 export default AdminLoginView;

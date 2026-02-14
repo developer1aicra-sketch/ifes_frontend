@@ -1,12 +1,34 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone } from 'lucide-react';
+import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone, UserCircle } from 'lucide-react';
 import ForumView from '../components/ForumView';
 import { DEFAULT_SITES } from '../constants/data';
 import { callGemini } from '../utils/gemini';
+import { updatePartner, setPartnerAuth, getPartnerAuth } from '../utils/api';
 
-const AdminView = ({ setSites, sites, defaultMode }) => {
-  const [isAdminMode] = useState(defaultMode || 'super');
+const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => {
+  const [isAdminMode] = useState(defaultMode || user?.role || 'super');
+  const partner = user?.partner ?? null;
   const [activeTab, setActiveTab] = useState('overview');
+  // Partner profile edit (for partner role): form state and save status
+  const [partnerEdit, setPartnerEdit] = useState({
+    academyName: '',
+    themeColor: 'Blue',
+    contactEmail: '',
+    phoneNumber: '',
+  });
+  const [partnerProfileSaving, setPartnerProfileSaving] = useState(false);
+  const [partnerProfileError, setPartnerProfileError] = useState('');
+  const [partnerProfileSuccess, setPartnerProfileSuccess] = useState(false);
+  useEffect(() => {
+    if (partner) {
+      setPartnerEdit({
+        academyName: partner.academyName ?? '',
+        themeColor: partner.themeColor ?? 'Blue',
+        contactEmail: partner.contactEmail ?? '',
+        phoneNumber: partner.phoneNumber ?? '',
+      });
+    }
+  }, [partner?._id]);
   const [teamMembers, setTeamMembers] = useState([
     {
       id: 1,
@@ -357,6 +379,34 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
     setGenLoading(false);
   };
 
+  const savePartnerProfile = async () => {
+    if (!partner?._id || !user?.token || typeof setUser !== 'function') return;
+    setPartnerProfileError('');
+    setPartnerProfileSuccess(false);
+    setPartnerProfileSaving(true);
+    try {
+      const payload = {
+        academyName: partnerEdit.academyName.trim() || undefined,
+        themeColor: partnerEdit.themeColor || undefined,
+        contactEmail: partnerEdit.contactEmail.trim() || undefined,
+        phoneNumber: partnerEdit.phoneNumber.trim() || undefined,
+      };
+      const data = await updatePartner(partner._id, user.token, payload);
+      const updated = data?.partner ?? data;
+      if (updated) {
+        const auth = getPartnerAuth();
+        if (auth) setPartnerAuth({ ...auth, partner: updated });
+        setUser({ ...user, partner: updated });
+      }
+      setPartnerProfileSuccess(true);
+      setTimeout(() => setPartnerProfileSuccess(false), 3000);
+    } catch (err) {
+      setPartnerProfileError(err?.message || 'Failed to save profile.');
+    } finally {
+      setPartnerProfileSaving(false);
+    }
+  };
+
   return (
     <div className="bg-slate-50 animate-fadeIn h-screen flex flex-col overflow-hidden">
       <div className="container mx-auto px-4 py-4 h-full">
@@ -383,6 +433,18 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
                 >
                   <Layout size={18} /> Overview
                 </button>
+
+                {partner && (
+                  <button
+                    onClick={() => setActiveTab('partner-profile')}
+                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${activeTab === 'partner-profile'
+                        ? 'bg-white/15 border-blue-400 text-white'
+                        : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
+                      }`}
+                  >
+                    <UserCircle size={18} /> Partner Profile
+                  </button>
+                )}
 
                 {isAdminMode === 'super' ? (
                   <button
@@ -507,6 +569,7 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
                   <div className="text-xs font-bold uppercase text-blue-600 mb-1">Admin Console</div>
                   <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
                     {activeTab === 'overview' && 'Dashboard Overview'}
+                    {activeTab === 'partner-profile' && 'Edit Partner Profile'}
                     {activeTab === 'partners' && 'Partner Management'}
                     {activeTab === 'events' && 'Local Event Manager'}
 
@@ -516,7 +579,7 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
                   </h1>
                 </div>
                 <div className="px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-semibold border border-slate-200">
-                  {isAdminMode === 'super' ? 'Global Control Panel' : `Managing: ${sites.uae.name}`}
+                  {isAdminMode === 'super' ? 'Global Control Panel' : (partner?.academyName ?? sites?.uae?.name ?? 'Partner Portal')}
                 </div>
               </div>
             </div>
@@ -526,20 +589,155 @@ const AdminView = ({ setSites, sites, defaultMode }) => {
             >
 
               {activeTab === 'overview' && (
-                <div className="grid grid-cols-3 gap-6">
-                  <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <div className="text-xs font-bold text-slate-500 uppercase mb-1">Revenue</div>
-                    <div className="text-3xl font-bold text-slate-900">{isAdminMode === 'super' ? '$2.4M' : '$45,000'}</div>
-                  </div>
-                  <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <div className="text-xs font-bold text-slate-500 uppercase mb-1">{isAdminMode === 'super' ? 'Partners' : 'Registrations'}</div>
-                    <div className="text-3xl font-bold text-slate-900">{isAdminMode === 'super' ? Object.keys(sites).length - 1 : '128'}</div>
-                  </div>
-                  <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <div className="text-xs font-bold text-slate-500 uppercase mb-1">Field-Level Controls</div>
-                    <div className="text-sm text-slate-600">
-                      {isAdminMode === 'super' ? 'Rules + logos locked globally' : 'Local content editable; brand locked'}
+                <div className="space-y-6">
+                  {partner && (
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                      <div className="text-xs font-bold text-slate-500 uppercase mb-3">Partner profile (from login)</div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <span className="text-slate-500 block">Academy</span>
+                          <span className="font-semibold text-slate-900">{partner.academyName ?? '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Partner code</span>
+                          <span className="font-semibold text-slate-900">{partner.partnerCode ?? '—'}</span>
+                        </div>
+                        {/* <div>
+                          <span className="text-slate-500 block">Status</span>
+                          <span className="font-semibold text-slate-900">{partner.status ?? '—'}</span>
+                        </div> */}
+                        <div>
+                          <span className="text-slate-500 block">Theme</span>
+                          <span className="font-semibold text-slate-900">{partner.themeColor ?? '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Location</span>
+                          <span className="font-semibold text-slate-900">{partner.location ?? '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Contact email</span>
+                          <span className="font-semibold text-slate-900">{partner.contactEmail ?? '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Phone</span>
+                          <span className="font-semibold text-slate-900">{partner.phoneNumber ?? '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Commission</span>
+                          <span className="font-semibold text-slate-900">{partner.commissionRate != null ? `${partner.commissionRate}%` : '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Revenue</span>
+                          <span className="font-semibold text-slate-900">{partner.totalRevenue != null ? `₹${Number(partner.totalRevenue).toLocaleString()}` : (partner.revenue != null ? `₹${Number(partner.revenue).toLocaleString()}` : '—')}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Students</span>
+                          <span className="font-semibold text-slate-900">{partner.studentsCount ?? 0}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Subdomain</span>
+                          <span className="font-semibold text-slate-900 break-all">{partner.subdomain ?? '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Website</span>
+                          <a href={partner.partnerWebsite} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 hover:underline break-all">{partner.partnerWebsite ?? '—'}</a>
+                        </div>
+                      </div>
                     </div>
+                  )}
+                  <div className="grid grid-cols-3 gap-6">
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                      <div className="text-xs font-bold text-slate-500 uppercase mb-1">Revenue</div>
+                      <div className="text-3xl font-bold text-slate-900">{isAdminMode === 'super' ? '$2.4M' : (partner ? `₹${Number(partner.totalRevenue ?? partner.revenue ?? 0).toLocaleString()}` : '$45,000')}</div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                      <div className="text-xs font-bold text-slate-500 uppercase mb-1">{isAdminMode === 'super' ? 'Partners' : 'Registrations'}</div>
+                      <div className="text-3xl font-bold text-slate-900">{isAdminMode === 'super' ? Object.keys(sites).length - 1 : (partner?.studentsCount ?? '128')}</div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                      <div className="text-xs font-bold text-slate-500 uppercase mb-1">Field-Level Controls</div>
+                      <div className="text-sm text-slate-600">
+                        {isAdminMode === 'super' ? 'Rules + logos locked globally' : 'Local content editable; brand locked'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'partner-profile' && partner && (
+                <div className="bg-white p-6 md:p-8 rounded-xl border border-slate-200 shadow-sm max-w-xl">
+                  <p className="text-xs font-bold text-slate-500 uppercase mb-4">Partner profile (from login) — editable</p>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-1">Academy</label>
+                      <input
+                        type="text"
+                        value={partnerEdit.academyName}
+                        onChange={(e) => setPartnerEdit((p) => ({ ...p, academyName: e.target.value }))}
+                        placeholder="Academy name"
+                        className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-1">Theme</label>
+                      <select
+                        value={partnerEdit.themeColor}
+                        onChange={(e) => setPartnerEdit((p) => ({ ...p, themeColor: e.target.value }))}
+                        className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      >
+                        <option value="Green">Green</option>
+                        <option value="Blue">Blue</option>
+                        <option value="Purple">Purple</option>
+                        <option value="Orange">Orange</option>
+                        <option value="Red">Red</option>
+                        <option value="Dark">Dark</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-1">Contact email</label>
+                      <div className="flex items-center gap-2">
+                        <div className="p-3 bg-slate-100 rounded-lg">
+                          <Mail size={18} className="text-slate-500" />
+                        </div>
+                        <input
+                          type="email"
+                          value={partnerEdit.contactEmail}
+                          onChange={(e) => setPartnerEdit((p) => ({ ...p, contactEmail: e.target.value }))}
+                          placeholder="contact@academy.com"
+                          className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-1">Phone</label>
+                      <div className="flex items-center gap-2">
+                        <div className="p-3 bg-slate-100 rounded-lg">
+                          <Phone size={18} className="text-slate-500" />
+                        </div>
+                        <input
+                          type="tel"
+                          value={partnerEdit.phoneNumber}
+                          onChange={(e) => setPartnerEdit((p) => ({ ...p, phoneNumber: e.target.value }))}
+                          placeholder="+1 234 567 8900"
+                          className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
+                    </div>
+                    {partnerProfileError && (
+                      <div className="text-sm text-red-600 font-medium">{partnerProfileError}</div>
+                    )}
+                    {partnerProfileSuccess && (
+                      <div className="text-sm text-emerald-600 font-medium flex items-center gap-2">
+                        <CheckCircle size={18} /> Profile saved successfully.
+                      </div>
+                    )}
+                    <button
+                      onClick={savePartnerProfile}
+                      disabled={partnerProfileSaving}
+                      className="w-full py-3 px-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {partnerProfileSaving ? 'Saving…' : 'Save profile'}
+                    </button>
                   </div>
                 </div>
               )}

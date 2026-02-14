@@ -4,6 +4,7 @@ import logo from '../assets/logo.png';
 import { Link, useLocation } from 'react-router-dom';
 import { useThemeClasses } from '../hooks/useThemeClasses';
 import { pathWithLocationPrefix } from '../utils/locationRoutes';
+import { partnerLogout, clearPartnerAuth } from '../utils/api';
 
 const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user, setUser, locationPrefix = '' }) => {
   const theme = useThemeClasses();
@@ -23,10 +24,20 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
     setView(user?.type === 'admin' ? 'admin-dashboard' : 'member-dashboard');
   };
 
-  const logout = () => {
+  const logout = async () => {
     setIsDashMenuOpen(false);
-    setUser?.(null);
-    setView('home');
+    const token = user?.token;
+    try {
+      if (token) {
+        await partnerLogout(token);
+      }
+    } catch (_) {
+      // still clear local session on logout API failure
+    } finally {
+      if (token) clearPartnerAuth();
+      setUser?.(null);
+      setView('home');
+    }
   };
   if (
     location.pathname === '/roboclub' ||

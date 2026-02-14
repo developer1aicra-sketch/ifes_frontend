@@ -34,6 +34,7 @@ import { DEFAULT_SITES, NEWS_ITEMS } from './constants/data';
 import { styles } from './styles/inlineStyles';
 import { fetchTechnoxianFeed } from './utils/rss';
 import { pathWithLocationPrefix } from './utils/locationRoutes';
+import { getPartnerAuth } from './utils/api';
 import { useLocationPrefix } from './hooks/useLocationPrefix';
 import { StoreView } from './views/StoreView';
 import RoboClubView from './views/RoboClubView';
@@ -106,7 +107,19 @@ const App = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [sites, setSites] = useState(DEFAULT_SITES);
   const [currentSite, setCurrentSite] = useState(DEFAULT_SITES.global);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const stored = getPartnerAuth();
+    if (stored?.token && stored?.partner) {
+      return {
+        type: 'admin',
+        role: 'partner',
+        email: stored.partner.contactEmail ?? stored.email,
+        token: stored.token,
+        partner: stored.partner,
+      };
+    }
+    return null;
+  });
   const [tickerText] = useState(
     'BREAKING: Zonal Round registrations for Asia Pacific are now OPEN!'
   );
@@ -297,11 +310,11 @@ const AppContent = ({
               <Route path="/membership" element={<MembershipView setView={setViewRespectingLocation} />} /> {/* ✅ NEW */}
 
               <Route path="/login" element={<MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} />} />
-              <Route path="/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} />} />
-              <Route path="/login-partner-admin" element={<PartnerAdminLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} />} />
+              <Route path="/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} user={user} />} />
+              <Route path="/login-partner-admin" element={<PartnerAdminLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
 
               <Route path="/member-dashboard" element={<MemberDashboard currentSite={currentSite} setView={setViewRespectingLocation} />} />
-              <Route path="/admin-dashboard" element={<AdminView setSites={setSites} sites={sites} setView={setViewRespectingLocation} defaultMode={user?.role} />} />
+              <Route path="/admin-dashboard" element={<AdminView setSites={setSites} sites={sites} setView={setViewRespectingLocation} defaultMode={user?.role} user={user} setUser={setUser} />} />
 
               <Route path="/privacy-policy" element={<PrivacyPolicyView />} />
               <Route path="/terms-of-use" element={<TermsOfUseView />} />
@@ -324,10 +337,10 @@ const AppContent = ({
               <Route path="/:locationCode/careers" element={<CareersView />} />
               <Route path="/:locationCode/partners" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
               <Route path="/:locationCode/login" element={<MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} />} />
-              <Route path="/:locationCode/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} />} />
-              <Route path="/:locationCode/login-partner-admin" element={<PartnerAdminLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} />} />
+              <Route path="/:locationCode/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} user={user} />} />
+              <Route path="/:locationCode/login-partner-admin" element={<PartnerAdminLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
               <Route path="/:locationCode/member-dashboard" element={<MemberDashboard currentSite={currentSite} setView={setViewRespectingLocation} />} />
-              <Route path="/:locationCode/admin-dashboard" element={<AdminView setSites={setSites} sites={sites} setView={setViewRespectingLocation} defaultMode={user?.role} />} />
+              <Route path="/:locationCode/admin-dashboard" element={<AdminView setSites={setSites} sites={sites} setView={setViewRespectingLocation} defaultMode={user?.role} user={user} setUser={setUser} />} />
               <Route path="/:locationCode/privacy-policy" element={<PrivacyPolicyView />} />
               <Route path="/:locationCode/terms-of-use" element={<TermsOfUseView />} />
               <Route path="/:locationCode/news" element={<NewsListView type="latest" {...newsPropsWithPrefix} />} />

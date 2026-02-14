@@ -1,39 +1,68 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, KeyRound, Shield } from 'lucide-react';
+import { partnerLoginSendOtp, partnerLoginVerifyOtp, setPartnerAuth } from '../utils/api';
 
-const PartnerAdminLoginView = ({ setView, setUser, siteConfig }) => {
+const PartnerAdminLoginView = ({ setView, setUser, siteConfig, user }) => {
   const [email, setEmail] = useState('');
   const [otpSent, setOtpSent] = useState(false);
-  const [generatedOtp, setGeneratedOtp] = useState('');
   const [otpInput, setOtpInput] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // If already logged in, redirect to admin dashboard
+  useEffect(() => {
+    if (user) {
+      setView('admin-dashboard');
+    }
+  }, [user, setView]);
+
   const validateEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
 
-  const sendOtp = () => {
+  const sendOtp = async () => {
     setError('');
     if (!validateEmail(email)) {
       setError('Enter a valid email address');
       return;
     }
     setLoading(true);
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    setGeneratedOtp(code);
-    setTimeout(() => {
+    try {
+      await partnerLoginSendOtp(email);
       setOtpSent(true);
+    } catch (err) {
+      setError(err?.message || 'Failed to send OTP. Please try again.');
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   };
 
-  const verifyOtp = () => {
+  const verifyOtp = async () => {
     setError('');
-    if (otpInput.trim() !== generatedOtp) {
-      setError('Invalid OTP');
+    if (!otpInput.trim()) {
+      setError('Enter the OTP sent to your email');
       return;
     }
-    setUser({ type: 'admin', role: 'partner', email });
-    setView('admin-dashboard');
+    setLoading(true);
+    try {
+      const res = await partnerLoginVerifyOtp(email, otpInput.trim());
+      const token = res?.token;
+      const partner = res?.partner ?? null;
+      const userPayload = {
+        type: 'admin',
+        role: 'partner',
+        email: partner?.contactEmail ?? email,
+        token,
+        partner,
+      };
+      if (token && partner) {
+        setPartnerAuth({ token, partner, email: userPayload.email });
+      }
+      setUser(userPayload);
+      setView('admin-dashboard');
+    } catch (err) {
+      setError(err?.message || 'Invalid OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -72,7 +101,6 @@ const PartnerAdminLoginView = ({ setView, setUser, siteConfig }) => {
           <div className="space-y-4">
             <div>
               <div className="text-xs font-bold text-slate-500 mb-1">OTP sent to {email}</div>
-              <div className="text-[11px] font-bold text-slate-600 mb-2">Demo OTP: {generatedOtp}</div>
               <div className="flex items-center gap-2">
                 <div className="p-3 bg-slate-100 rounded-lg">
                   <KeyRound size={18} className="text-slate-500" />
@@ -89,8 +117,10 @@ const PartnerAdminLoginView = ({ setView, setUser, siteConfig }) => {
               </div>
             </div>
             {error && <div className="text-xs text-red-600 font-bold">{error}</div>}
-            <button onClick={verifyOtp} className="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700">Verify & Continue</button>
-            <button onClick={() => { setOtpSent(false); setGeneratedOtp(''); setOtpInput(''); }} className="w-full text-slate-600 font-bold text-xs mt-2">Resend / Change Email</button>
+            <button onClick={verifyOtp} disabled={loading} className="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700 disabled:opacity-50">
+              {loading ? 'Verifying...' : 'Verify & Continue'}
+            </button>
+            <button onClick={() => { setOtpSent(false); setOtpInput(''); }} className="w-full text-slate-600 font-bold text-xs mt-2">Resend / Change Email</button>
           </div>
         )}
       </div>
