@@ -12,7 +12,8 @@ const endpoints = {
     step2: `/signup/step3` // Requires Authorization: Bearer token
   },
   membership: {
-    initiate: `/membership/initiate`
+    initiate: `/membership/initiate`,
+    myGet: `/membership/my/get` // Requires Authorization: Bearer token
   },
   payment: {
     create: `/payment/create`, // Requires Authorization token (automatically added from localStorage via axios interceptor)

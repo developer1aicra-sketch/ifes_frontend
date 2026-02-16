@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone, UserCircle, Trophy, Trash2, Pencil } from 'lucide-react';
+import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone, UserCircle, Trophy, Trash2, Pencil, CreditCard } from 'lucide-react';
 import ForumView from '../components/ForumView';
 import CompetitionFormModal from '../components/CompetitionFormModal';
 import { DEFAULT_SITES } from '../constants/data';
 import { callGemini } from '../utils/gemini';
+import { getMyMembership } from '../app/auth/authApi';
 import {
   updatePartner,
   setPartnerAuth,
@@ -293,6 +294,36 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       });
     return () => { cancelled = true; };
   }, [activeTab, eventsSubTab]);
+
+  // Membership related states
+  const [membershipData, setMembershipData] = useState(null);
+  const [membershipLoading, setMembershipLoading] = useState(false);
+  const [membershipError, setMembershipError] = useState('');
+
+  // Fetch membership data when membership tab is active
+  useEffect(() => {
+    if (activeTab !== 'membership') return;
+    let cancelled = false;
+    setMembershipLoading(true);
+    setMembershipError('');
+    getMyMembership()
+      .then((res) => {
+        if (cancelled) return;
+        // Handle response structure: { success: true, data: {...} }
+        const responseData = res?.data;
+        setMembershipData(responseData?.data ?? responseData);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setMembershipError(err?.response?.data?.message ?? err?.message ?? 'Failed to load membership data');
+          setMembershipData(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setMembershipLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [activeTab]);
 
   // Course related states
   // Forum related states
@@ -800,7 +831,24 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                       )}
                     </button>
-
+                    <button
+                      onClick={() => setActiveTab('membership')}
+                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${activeTab === 'membership'
+                          ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
+                          : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-300/50 text-blue-100 hover:text-white'
+                        }`}
+                    >
+                      <div className={`p-1.5 rounded-lg ${activeTab === 'membership'
+                          ? 'bg-blue-500/20'
+                          : 'bg-white/5 group-hover:bg-blue-500/20'
+                        }`}>
+                        <CreditCard size={16} className="text-blue-300" />
+                      </div>
+                      <span className="font-medium">My Membership</span>
+                      {activeTab === 'membership' && (
+                        <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                      )}
+                    </button>
                     <button
                       onClick={() => {
                         setActiveTab('courses');
@@ -881,6 +929,8 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                       )}
                     </button>
+
+                      
                   </div>
                 )}
               </div>
@@ -896,6 +946,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                     {activeTab === 'partner-profile' && 'Edit Partner Profile'}
                     {activeTab === 'partners' && 'Partner Management'}
                     {activeTab === 'events' && (isAdminMode === 'super' ? 'Event Manager' : 'My Events')}
+                    {activeTab === 'membership' && 'My Membership'}
 
                     {activeTab === 'courses' && 'Course Management'}
                     {activeTab === 'academia' && 'Academia Portal'}
@@ -1876,6 +1927,128 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
               )}
               {activeTab === 'forum' && (
                 <ForumView />
+              )}
+              {activeTab === 'membership' && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                    <h2 className="text-xl font-bold text-slate-900 mb-6">Membership Details</h2>
+                    
+                    {membershipLoading ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+                          <p className="text-slate-600">Loading membership data...</p>
+                        </div>
+                      </div>
+                    ) : membershipError ? (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <p className="text-red-800 font-medium">Error loading membership</p>
+                        <p className="text-red-600 text-sm mt-1">{membershipError}</p>
+                      </div>
+                    ) : membershipData ? (
+                      <div className="space-y-6">
+                        {/* Main Membership Card */}
+                        <div className="bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-50 rounded-xl p-8 border border-blue-200 shadow-lg">
+                          <div className="flex items-start justify-between mb-6">
+                            <div>
+                              <h3 className="text-2xl font-bold text-slate-900 mb-2">{membershipData.planTitle || membershipData.planName || 'Membership'}</h3>
+                              <p className="text-slate-600 text-sm">{membershipData.planName && membershipData.planName !== membershipData.planTitle ? membershipData.planName : ''}</p>
+                            </div>
+                            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-blue-200">
+                              <CreditCard className="text-blue-600" size={32} />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-blue-100">
+                              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide block mb-2">Membership ID</span>
+                              <span className="text-lg font-mono font-bold text-slate-900">{membershipData.publicMembershipId || 'N/A'}</span>
+                            </div>
+                            <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-blue-100">
+                              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide block mb-2">Category</span>
+                              <span className="text-lg font-semibold text-slate-900 capitalize">{membershipData.category || 'N/A'}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-3">
+                            <div className="bg-white/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-200">
+                              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide block mb-1">Status</span>
+                              <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
+                                membershipData.status === 'ACTIVE' || membershipData.status === 'active'
+                                  ? 'bg-green-100 text-green-800' 
+                                  : membershipData.status === 'EXPIRED' || membershipData.status === 'expired'
+                                  ? 'bg-red-100 text-red-800'
+                                  : membershipData.status === 'PENDING' || membershipData.status === 'pending'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-slate-100 text-slate-800'
+                              }`}>
+                                {membershipData.status || 'N/A'}
+                              </span>
+                            </div>
+                            <div className="bg-white/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-200">
+                              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide block mb-1">Payment Status</span>
+                              <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
+                                membershipData.paymentStatus === 'COMPLETED' || membershipData.paymentStatus === 'completed' || membershipData.paymentStatus === 'PAID' || membershipData.paymentStatus === 'paid'
+                                  ? 'bg-green-100 text-green-800' 
+                                  : membershipData.paymentStatus === 'FAILED' || membershipData.paymentStatus === 'failed'
+                                  ? 'bg-red-100 text-red-800'
+                                  : membershipData.paymentStatus === 'PENDING' || membershipData.paymentStatus === 'pending'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-slate-100 text-slate-800'
+                              }`}>
+                                {membershipData.paymentStatus || 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Additional Information Card */}
+                        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                          <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                            <Calendar className="text-blue-600" size={20} />
+                            Membership Information
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {membershipData.createdAt && (
+                              <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                                <span className="text-sm font-semibold text-slate-600 block mb-1">Created At</span>
+                                <span className="text-base font-semibold text-slate-900">
+                                  {new Date(membershipData.createdAt).toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </span>
+                              </div>
+                            )}
+                            {membershipData.category && (
+                              <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                                <span className="text-sm font-semibold text-slate-600 block mb-1">Category Type</span>
+                                <span className="text-base font-semibold text-slate-900 capitalize">{membershipData.category}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Raw Data Card (for debugging) */}
+                        <div className="bg-slate-50 rounded-xl border border-slate-200 p-6">
+                          <h3 className="text-lg font-semibold text-slate-800 mb-4">Raw Response Data</h3>
+                          <pre className="bg-white p-4 rounded-lg border border-slate-200 overflow-x-auto text-xs text-slate-700 max-h-96 overflow-y-auto">
+                            {JSON.stringify(membershipData, null, 2)}
+                          </pre>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-12">
+                        <CreditCard className="mx-auto mb-4 text-slate-300" size={48} />
+                        <h3 className="text-xl font-bold text-slate-700 mb-2">No Membership Found</h3>
+                        <p className="text-slate-500">You don't have an active membership yet.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
           </div>

@@ -52,3 +52,14 @@ export const loginVerifyOtp = (data) =>
 
 export const initiateMembership = (data) =>
   axiosInstance.post(endpoints.membership.initiate, data);
+
+/**
+ * Get user's membership details
+ * 
+ * Note: This API requires Authorization token in the header.
+ * The token is automatically added from localStorage via axiosInstance interceptor.
+ * 
+ * @returns {Promise} Axios response containing membership data
+ */
+export const getMyMembership = () =>
+  axiosInstance.get(endpoints.membership.myGet);

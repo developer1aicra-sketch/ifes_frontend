@@ -20,6 +20,7 @@ const protectedEndpoints = [
   '/payments/verify',
   '/club/add',
   '/club/my/get',
+  '/membership/my/get',
 ];
 
 // Add request interceptor: attach Bearer token from authToken (set after verify OTP)
