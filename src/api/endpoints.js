@@ -7,9 +7,9 @@ const endpoints = {
   },
   signupAuth: {
     sendOtp: `/auth/signup/send/otp`,
-    verifyOtp: `/auth/signup/verify/otp`,
-    signup: `/signup`, // Returns token in response - automatically saved to localStorage and used in subsequent requests
-    step2: `/signup/step2` // Requires Authorization token (automatically added from localStorage via axios interceptor)
+    verifyOtp: `/auth/signup/verify/otp`, // Response must include token; stored and sent as Bearer for /signup
+    signup: `/signup/step2`, // Requires Authorization: Bearer <token> (token from verify OTP)
+    step2: `/signup/step3` // Requires Authorization: Bearer token
   },
   membership: {
     initiate: `/membership/initiate`

@@ -375,8 +375,8 @@ export const PersonalInfoForm = ({
   }, [signupResponse, error, isLoading, isSubmitting, currentOperation, isSigningUp, hasOtpLoaded, onNext]);
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-bold text-white flex items-center">
-        <svg className="w-5 h-5 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <h3 className="text-xl font-bold text-black flex items-center">
+        <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
         Personal & Contact Information
@@ -384,27 +384,27 @@ export const PersonalInfoForm = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-black mb-1">
             Full Name <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             value={formData.fullName}
             onChange={(e) => updateFormData('fullName', e.target.value)}
-            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="e.g. Rahul Sharma"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-black mb-1">
             Designation <span className="text-red-500">*</span>
           </label>
           <select
             value={formData.designation}
             onChange={(e) => updateFormData('designation', e.target.value)}
-            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
           >
             <option value="">Select any one</option>
@@ -422,7 +422,7 @@ export const PersonalInfoForm = ({
                 type="email"
                 value={formData.email}
                 onChange={(e) => updateFormData('email', e.target.value)}
-                className="px-4 py-3 w-full bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="px-4 py-3 w-full bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="rahul@example.com"
                 required
                 disabled={isOtpSent} // Disable email input after OTP is sent
@@ -432,7 +432,7 @@ export const PersonalInfoForm = ({
               <button
                 onClick={handleSendOtp}
                 disabled={!formData.email || isSendingOtp || isOtpSent}
-                className="bg-red-600 px-4 py-4 text-sm rounded-lg hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                className="bg-blue-600 px-4 py-4 text-sm text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {isSendingOtp ? 'Sending...' : isOtpSent ? 'Sent ✓' : 'Send OTP'}
               </button>
@@ -447,7 +447,7 @@ export const PersonalInfoForm = ({
                   type="text"
                   value={formData.otp}
                   onChange={(e) => updateFormData('otp', e.target.value)}
-                  className="px-4 py-3 w-full bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="px-4 py-3 w-full bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter 6-digit OTP"
                   maxLength={6}
                   required
@@ -457,7 +457,7 @@ export const PersonalInfoForm = ({
               <button
                 onClick={handleVerifyOtp}
                 disabled={(formData.otp || '').trim().length !== 6 || isVerifyingOtp}
-                className="bg-green-600 px-4 py-3 text-sm rounded-lg hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                className="bg-green-600 px-4 py-3 text-sm text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                   {isVerifyingOtp ? 'Verifying...' : 'Verify'}
               </button>
@@ -467,8 +467,8 @@ export const PersonalInfoForm = ({
 
           {/* Show success message when OTP is verified */}
           {otpVerified && (
-            <div className="mt-4 p-3 bg-green-900/30 border border-green-500/50 rounded-lg">
-              <div className="flex items-center gap-2 text-green-400 text-sm">
+            <div className="mt-4 p-3 bg-green-50 border border-green-500 rounded-lg">
+              <div className="flex items-center gap-2 text-green-700 text-sm">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                 </svg>
@@ -483,7 +483,7 @@ export const PersonalInfoForm = ({
               <button
                 onClick={handleSendOtp}
                 disabled={isSendingOtp || currentOperation === 'sendOtp'}
-                className="text-sm text-blue-400 hover:text-blue-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+                className="text-sm text-blue-600 hover:text-blue-700 disabled:text-gray-400 disabled:cursor-not-allowed"
               >
                 {isSendingOtp ? 'Sending...' : 'Resend OTP'}
               </button>
@@ -492,13 +492,13 @@ export const PersonalInfoForm = ({
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-black mb-1">
             Mobile No <span className="text-red-500">*</span>
           </label>
           <div className="flex">
-            <div className="flex items-center px-3 bg-gray-700 border border-r-0 border-gray-600 rounded-l-lg">
+            <div className="flex items-center px-3 bg-white border border-r-0 border-gray-300 rounded-l-lg">
               <select
-                className="bg-gray-700 text-white border-none focus:outline-none focus:ring-0"
+                className="bg-white text-black border-none focus:outline-none focus:ring-0"
                 onChange={(e) => updateFormData('countryCode', e.target.value)}
                 value={formData.countryCode}
               >
@@ -523,7 +523,7 @@ export const PersonalInfoForm = ({
               type="tel"
               value={formData.phone}
               onChange={(e) => updateFormData('phone', e.target.value)}
-              className="flex-1 px-4 py-3 bg-gray-700 border border-l-0 border-gray-600 rounded-r-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="flex-1 px-4 py-3 bg-white border border-l-0 border-gray-300 rounded-r-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter phone number"
               required
             />
@@ -531,11 +531,11 @@ export const PersonalInfoForm = ({
         </div>
       </div>
 
-      <div className="pt-6 border-t border-gray-700 flex flex-wrap gap-5 justify-between">
+      <div className="pt-6 border-t border-gray-200 flex flex-wrap gap-5 justify-between">
         <button
           type="button"
           onClick={onBack}
-          className="px-6 py-3 border border-gray-600 text-gray-300 font-medium rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
+          className="px-6 py-3 border border-gray-300 text-gray-600 font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -546,7 +546,7 @@ export const PersonalInfoForm = ({
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting || isSigningUp || isVerifyingOtp || !otpVerified || isInitiatingMembership}
-          className={`px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 ${
+          className={`px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 ${
             isSubmitting || isSigningUp || isVerifyingOtp || !otpVerified || isInitiatingMembership ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >

@@ -22,16 +22,16 @@ import { selectReceivedOtp, selectHasOtpLoaded } from "../app/auth/authSlice";
 
 // Simple Loading Component
 const SimpleLoading = () => (
-  <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
+  <div className="fixed inset-0 bg-white/95 backdrop-blur-sm z-50 flex items-center justify-center">
     <div className="text-center">
       <div className="inline-block relative">
-        <div className="w-16 h-16 border-4 border-gray-700 border-t-red-600 rounded-full animate-spin"></div>
+        <div className="w-16 h-16 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-red-500 animate-pulse" />
+          <Loader2 className="w-8 h-8 text-blue-600 animate-pulse" />
         </div>
       </div>
-      <h3 className="mt-6 text-xl font-semibold text-white">Loading Membership Data</h3>
-      <p className="mt-2 text-gray-300">Please wait while we prepare your experience...</p>
+      <h3 className="mt-6 text-xl font-semibold text-black">Loading Membership Data</h3>
+      <p className="mt-2 text-gray-600">Please wait while we prepare your experience...</p>
     </div>
   </div>
 );
@@ -92,7 +92,7 @@ const MembershipPage = () => {
   // Show loading only once on initial load
   if (isLoading && !hasShownLoading) {
     return (
-      <div className="min-h-screen bg-gray-900">
+      <div className="min-h-screen bg-white">
         <SimpleLoading />
       </div>
     );
@@ -126,22 +126,22 @@ const MembershipPage = () => {
       case 0:
         return (
           <motion.div
-            className="bg-gray-900 rounded-2xl shadow-2xl p-8 max-w-5xl mx-auto border border-gray-800"
+            className="bg-white rounded-2xl shadow-xl p-8 max-w-5xl mx-auto border border-gray-200"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-red-400 mb-3">Who is joining today?</h2>
-              <p className="text-gray-300 max-w-2xl mx-auto">
+              <h2 className="text-3xl font-bold text-black mb-3">Who is joining today?</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">
                 Select the category that best describes you to get started with your robotics journey.
               </p>
             </div>
 
             {!memberShipCategory?.data?.length ? (
               <div className="flex flex-col items-center justify-center py-12">
-                <div className="w-12 h-12 border-4 border-gray-700 border-t-red-600 rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-400">Loading categories...</p>
+                <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+                <p className="text-gray-600">Loading categories...</p>
               </div>
             ) : (
               <>
@@ -163,7 +163,7 @@ const MembershipPage = () => {
                     whileTap={{ scale: 0.98 }}
                     onClick={handleContinue}
                     disabled={!selectedCategoryId}
-                    className={`bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-10 rounded-xl flex items-center transition-all duration-300 shadow-lg hover:shadow-xl ${
+                    className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-10 rounded-xl flex items-center transition-all duration-300 shadow-lg hover:shadow-xl ${
                       !selectedCategoryId ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
@@ -179,14 +179,14 @@ const MembershipPage = () => {
       case 1:
         return (
           <motion.div
-            className="bg-gray-900 rounded-2xl shadow-2xl p-8 max-w-6xl mx-auto border border-gray-800"
+            className="bg-white rounded-2xl shadow-xl p-8 max-w-6xl mx-auto border border-gray-200"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-red-400 mb-3">Select your Membership Plan</h2>
-              <p className="text-gray-300 max-w-2xl mx-auto">Unlock exclusive benefits tailored for your robotics journey.</p>
+              <h2 className="text-3xl font-bold text-black mb-3">Select your Membership Plan</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">Unlock exclusive benefits tailored for your robotics journey.</p>
             </div>
 
             {memberShipPlanData ? (
@@ -199,17 +199,17 @@ const MembershipPage = () => {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12">
-                <div className="w-12 h-12 border-4 border-gray-700 border-t-red-600 rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-400">Loading plan details...</p>
+                <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+                <p className="text-gray-600">Loading plan details...</p>
               </div>
             )}
 
-            <div className="flex justify-between flex-wrap gap-5 items-center pt-8 border-t border-gray-800">
+            <div className="flex justify-between flex-wrap gap-5 items-center pt-8 border-t border-gray-200">
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleBack}
-                className="px-8 py-3 rounded-xl border border-gray-700 text-gray-400 hover:text-white hover:border-gray-600 font-medium transition-all duration-300"
+                className="px-8 py-3 rounded-xl border border-gray-300 text-gray-600 hover:text-black hover:border-gray-400 font-medium transition-all duration-300"
               >
                 ← Back
               </motion.button>
@@ -222,8 +222,8 @@ const MembershipPage = () => {
                   disabled={!selectedPlanId}
                   className={`px-10 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all duration-300 ${
                     selectedPlanId
-                      ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl'
-                      : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl'
+                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
                 >
                   Continue to Details
@@ -237,7 +237,7 @@ const MembershipPage = () => {
       case 2:
         return (
           <motion.div
-            className="max-w-4xl mx-auto bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-700"
+            className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -245,16 +245,16 @@ const MembershipPage = () => {
             <div className="p-8">
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-300">
+                  <span className="text-sm font-medium text-gray-600">
                     Step {formData.currentFormStep} of 2
                   </span>
-                  <span className="text-sm font-medium text-red-400">
+                  <span className="text-sm font-medium text-blue-600">
                     {formData.currentFormStep === 1 ? 'Personal Information' : 'Shipping Details'}
                   </span>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-2.5">
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
                   <div
-                    className="bg-red-600 h-2.5 rounded-full transition-all duration-300"
+                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
                     style={{ width: formData.currentFormStep === 1 ? '50%' : '100%' }}
                   ></div>
                 </div>
@@ -300,10 +300,10 @@ const MembershipPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-white">
       <HeroSection isRoboClub={isRoboClub} />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <ProgressSteps steps={STEPS} currentStep={currentStep} />
         {renderStepContent()}
       </div>

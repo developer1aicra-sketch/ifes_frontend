@@ -1,14 +1,22 @@
 import axiosInstance from '../../api/axiosInstance';
 import endpoints from '../../api/endpoints';
 
-export const signUpSendOtp = (data) => 
+export const signUpSendOtp = (data) =>
   axiosInstance.post(endpoints.signupAuth.sendOtp, data);
 
+/**
+ * Verify signup OTP. Response must contain token; it is stored and sent as Bearer for /signup.
+ * @returns {Promise} Axios response - response.data or response.data.data may contain { token }
+ */
 export const signUpVerifyOtp = (data) =>
   axiosInstance.post(endpoints.signupAuth.verifyOtp, data);
 
+/**
+ * Complete signup. Requires Authorization: Bearer <token> (token from verify OTP response).
+ * Token is attached automatically by axios interceptor from authToken.
+ */
 export const signUp = (data) =>
-  axiosInstance.post(endpoints.signupAuth.signup, data);
+  axiosInstance.put(endpoints.signupAuth.signup, data);
 
 /**
  * Submit step 2 of signup (shipping information)

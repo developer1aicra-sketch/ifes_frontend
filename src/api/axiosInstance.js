@@ -1,6 +1,7 @@
 // src/api/axiosClient.js
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
+import { getAuthToken } from './authToken';
 
 // Create axios instance
 const axiosInstance = axios.create({
@@ -11,22 +12,29 @@ const axiosInstance = axios.create({
   },
 });
 
-// Add request interceptor to dynamically add token from localStorage
+// Protected endpoints require Authorization: Bearer <token> (token from /auth/signup/verify/otp)
+const protectedEndpoints = [
+  '/signup',        // POST /signup requires Bearer token from verify OTP
+  '/signup/step2',
+  '/payment/create',
+  '/payments/verify',
+  '/club/add',
+  '/club/my/get',
+];
+
+// Add request interceptor: attach Bearer token from authToken (set after verify OTP)
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = getAuthToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      // Log token usage for debugging (only log endpoint, not full token)
       if (config.url) {
-        console.log(`🔐 Adding Authorization token to request: ${config.method?.toUpperCase()} ${config.url}`);
+        console.log(`🔐 Adding Authorization Bearer to request: ${config.method?.toUpperCase()} ${config.url}`);
       }
     } else {
-      // Log warning if token is missing for protected endpoints
-      const protectedEndpoints = ['/signup/step2', '/payment/create', '/payments/verify', '/club/add', '/club/my/get'];
       const isProtectedEndpoint = protectedEndpoints.some(endpoint => config.url?.includes(endpoint));
       if (isProtectedEndpoint) {
-        console.warn(`⚠️ No token found in localStorage for protected endpoint: ${config.url}`);
+        console.warn(`⚠️ No auth token for protected endpoint: ${config.url}`);
       }
     }
     // IMPORTANT: Never manually set multipart boundary.

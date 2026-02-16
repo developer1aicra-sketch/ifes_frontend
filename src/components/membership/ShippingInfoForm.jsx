@@ -1,17 +1,36 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Upload, X } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { selectCategories } from "../../app/categories/categoriesSlice";
+import { signUpStep2 } from "../../app/auth/authApi";
+import { useToast } from "../../contexts/ToastContext";
 
 export const ShippingInfoForm = ({
   formData,
   updateFormData,
   onNext,
   onBack,
-  selectedCategory,
+  selectedCategory, // This is categoryId
   selectedPlan
 }) => {
+  const categories = useSelector(selectCategories);
+  const toast = useToast();
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Get category name from categoryId
+  const getCategoryName = () => {
+    if (!selectedCategory || !categories?.data) return '';
+    const category = categories.data.find(cat => cat._id === selectedCategory);
+    return category?.name?.toLowerCase() || '';
+  };
+
+  const categoryName = getCategoryName();
   
   const calculatePrice = () => {
-    switch (selectedCategory) {
+    switch (categoryName) {
       case 'student':
         return selectedPlan === 'basic' ? { subtotal: 10, total: 10 } : { subtotal: 50, total: 50 };
       case 'professional':
@@ -27,67 +46,294 @@ export const ShippingInfoForm = ({
 
   const prices = calculatePrice();
 
+  // Handle logo file upload
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file', {
+          position: "top-right",
+          autoClose: 2000,
+          theme: "dark",
+        });
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB', {
+          position: "top-right",
+          autoClose: 2000,
+          theme: "dark",
+        });
+        return;
+      }
+      setLogoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      updateFormData('logo', file);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoFile(null);
+    setLogoPreview(null);
+    updateFormData('logo', '');
+  };
+
+  const handleProceedToPayment = async () => {
+    // Validate required fields
+    if (!formData.address || !formData.city || !formData.state || !formData.country) {
+      toast.error('Please fill in all required shipping address fields', {
+        position: "top-right",
+        autoClose: 2000,
+        theme: "dark",
+      });
+      return;
+    }
+
+    if (!formData.dateOfBirth || !formData.gender) {
+      toast.error('Please fill in Date of Birth and Gender', {
+        position: "top-right",
+        autoClose: 2000,
+        theme: "dark",
+      });
+      return;
+    }
+
+    // Validate category-specific required fields
+    if (categoryName === 'institute' && !formData.instituteName) {
+      toast.error('Please enter Institute Name', {
+        position: "top-right",
+        autoClose: 2000,
+        theme: "dark",
+      });
+      return;
+    }
+
+    if (categoryName === 'corporate' && !formData.companyName) {
+      toast.error('Please enter Company Name', {
+        position: "top-right",
+        autoClose: 2000,
+        theme: "dark",
+      });
+      return;
+    }
+
+    if (categoryName === 'student') {
+      const schoolOrCollege = (formData.schoolOrCollege || '').trim();
+      const classOrGrade = (formData.classOrGrade || '').trim();
+
+      if (!schoolOrCollege) {
+        toast.error('Please enter School/College Name', {
+          position: "top-right",
+          autoClose: 2000,
+          theme: "dark",
+        });
+        return;
+      }
+
+      if (!classOrGrade) {
+        toast.error('Please enter Class/Grade', {
+          position: "top-right",
+          autoClose: 2000,
+          theme: "dark",
+        });
+        return;
+      }
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Build personalAndShippingAddress object
+      const personalAndShippingAddress = {
+        dob: formData.dateOfBirth || '',
+        gender: formData.gender || '',
+        tshirtSize: formData.tshirtSize || '',
+        fullShippingAddress: formData.address || '',
+        city: formData.city || '',
+        state: formData.state || '',
+        country: formData.country || ''
+      };
+
+      // Build affiliation object based on category
+      // For student, this will look like:
+      // affiliation: { schoolOrCollege: '...', classOrGrade: '...' }
+      const affiliation = {};
+      
+      if (categoryName === 'institute') {
+        affiliation.instituteName = formData.instituteName || '';
+        affiliation.RepresentativeName = formData.RepresentativeName || '';
+      } else if (categoryName === 'corporate') {
+        affiliation.companyName = formData.companyName || '';
+        affiliation.industrySector = formData.industrySector || '';
+      } else if (categoryName === 'student') {
+        affiliation.schoolOrCollege = (formData.schoolOrCollege || '').trim();
+        affiliation.classOrGrade = (formData.classOrGrade || '').trim();
+      } else if (categoryName === 'professional') {
+        affiliation.organizationName = formData.organizationName || '';
+        affiliation.jobTitle = formData.jobTitle || '';
+      }
+
+      // Prepare FormData for file upload
+      // Structure: 
+      // logo (binary) - OPTIONAL, only included if provided
+      // personalAndShippingAddress[dob], personalAndShippingAddress[gender], ...
+      // affiliation[schoolOrCollege], affiliation[classOrGrade], ...
+      const formDataToSend = new FormData();
+      
+      // Add logo only if provided (optional field)
+      if (logoFile) {
+        formDataToSend.append('logo', logoFile);
+      }
+      // If no logo file, don't append anything - API will handle it as optional
+      
+      // Add personalAndShippingAddress as nested key-value pairs
+      Object.entries(personalAndShippingAddress).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          formDataToSend.append(`personalAndShippingAddress[${key}]`, value);
+        }
+      });
+      
+      // Add affiliation as nested key-value pairs
+      Object.entries(affiliation).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          formDataToSend.append(`affiliation[${key}]`, value);
+        }
+      });
+
+      // Log the payload structure for debugging (matches API structure)
+      // Header token is sent as: Authorization: Bearer <token> (see signUpStep2 in authApi.js)
+      console.log('FormData Structure:', {
+        logo: logoFile ? `(binary file: ${logoFile.name})` : '(not included - optional)',
+        personalAndShippingAddress,
+        affiliation
+      });
+      console.log('API Endpoint:', '/signup/step2');
+      console.log('Full URL will be:', 'https://worso-backend-psi.vercel.app/api/signup/step2');
+
+      // Call API
+      const response = await signUpStep2(formDataToSend);
+      
+      if (response && response.data) {
+        toast.success('Shipping information saved successfully!', {
+          position: "top-right",
+          autoClose: 2000,
+          theme: "dark",
+        });
+        onNext();
+      }
+    } catch (error) {
+      console.error('Error submitting shipping info:', error);
+      console.error('Error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url,
+        method: error.config?.method
+      });
+      
+      const errorMessage = error.response?.status === 404 
+        ? 'API endpoint not found. Please check if /signup/step2 endpoint exists on the server.'
+        : error.response?.data?.message || 'Failed to save shipping information. Please try again.';
+      
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "dark",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row gap-8">
+      <div className="flex flex-col  gap-8">
         {/* Left Column - Shipping Form */}
-        <div className="md:w-2/3 space-y-6">
+        <div className=" space-y-6">
           <h3 className="text-xl font-bold text-black flex items-center">
-            <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
             Shipping & Additional Details
           </h3>
+          {/* Logo Upload */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-black mb-2">
+              Logo (Optional)
+            </label>
+            <div className="flex items-center gap-4">
+              {logoPreview ? (
+                <div className="relative">
+                  <img 
+                    src={logoPreview} 
+                    alt="Logo preview" 
+                    className="w-24 h-24 object-cover rounded-lg border-2 border-gray-300"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveLogo}
+                    className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors">
+                  <Upload className="w-6 h-6 text-gray-400 mb-1" />
+                  <span className="text-xs text-gray-400">Upload</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
+              <div className="flex-1">
+                <p className="text-xs text-gray-600">
+                  Upload your logo (Max 5MB, JPG/PNG)
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Date of Birth */}
             <div>
               <label className="block text-sm font-medium text-black mb-1">
-                Date of Birth
+                Date of Birth <span className="text-red-500">*</span>
               </label>
               <input
                 type="date"
-                value={formData.dateOfBirth}
+                value={formData.dateOfBirth || ''}
                 onChange={(e) => updateFormData('dateOfBirth', e.target.value)}
-                className="w-full px-4 py-3  border border-gray-600 rounded-lg text-black focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
               />
             </div>
             
             {/* Gender */}
             <div>
               <label className="block text-sm font-medium text-black mb-1">
-                Gender
+                Gender <span className="text-red-500">*</span>
               </label>
               <select
-                value={formData.gender}
+                value={formData.gender || ''}
                 onChange={(e) => updateFormData('gender', e.target.value)}
-                className="w-full px-4 py-3 text-black border border-gray-600 rounded-lg text-black focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-                <option value="prefer-not-to-say">Prefer not to say</option>
-              </select>
-            </div>
-            
-            {/* T-Shirt Size */}
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                T-Shirt Size <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={formData.tshirtSize}
-                onChange={(e) => updateFormData('tshirtSize', e.target.value)}
-                className="w-full px-4 py-3 text-black border border-gray-600 rounded-lg text-black focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
-                <option value="">Select Size</option>
-                <option value="XS">Extra Small (XS)</option>
-                <option value="S">Small (S)</option>
-                <option value="M">Medium (M)</option>
-                <option value="L">Large (L)</option>
-                <option value="XL">Extra Large (XL)</option>
-                <option value="XXL">Double Extra Large (XXL)</option>
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+                <option value="Prefer-not-to-say">Prefer not to say</option>
               </select>
             </div>
             
@@ -97,9 +343,9 @@ export const ShippingInfoForm = ({
                 Full Shipping Address <span className="text-red-500">*</span>
               </label>
               <textarea
-                value={formData.address}
+                value={formData.address || ''}
                 onChange={(e) => updateFormData('address', e.target.value)}
-                className="w-full px-4 py-3 text-black border border-gray-600 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="House No, Street Name, Area, Landmark"
                 rows="3"
                 required
@@ -113,9 +359,9 @@ export const ShippingInfoForm = ({
               </label>
               <input
                 type="text"
-                value={formData.city}
+                value={formData.city || ''}
                 onChange={(e) => updateFormData('city', e.target.value)}
-                className="w-full px-4 py-3 text-black border border-gray-600 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., Mumbai"
                 required
               />
@@ -128,251 +374,188 @@ export const ShippingInfoForm = ({
               </label>
               <input
                 type="text"
-                value={formData.state}
+                value={formData.state || ''}
                 onChange={(e) => updateFormData('state', e.target.value)}
-                className="w-full px-4 py-3 text-black border border-gray-600 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., Maharashtra"
                 required
               />
             </div>
             
             {/* Country */}
-            <div className="md:col-span-2">
+            <div className="">
               <label className="block text-sm font-medium text-black mb-1">
                 Country <span className="text-red-500">*</span>
               </label>
               <select
-                value={formData.country}
+                value={formData.country || ''}
                 onChange={(e) => updateFormData('country', e.target.value)}
-                className="w-full px-4 py-3 text-black border border-gray-600 rounded-lg text-black focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
                 <option value="">Select Country</option>
-                <option value="IN">India</option>
-                <option value="US">United States</option>
-                <option value="UK">United Kingdom</option>
-                <option value="CA">Canada</option>
-                <option value="AU">Australia</option>
-                <option value="DE">Germany</option>
-                <option value="FR">France</option>
-                <option value="JP">Japan</option>
-                <option value="SG">Singapore</option>
-                <option value="AE">United Arab Emirates</option>
-                <option value="other">Other</option>
+                <option value="China">China</option>
               </select>
             </div>
-            
-            {/* School/College/Organization Name */}
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                {selectedCategory === 'student' ? 'School / College Name' : 
-                 selectedCategory === 'professional' ? 'Organization / Company' :
-                 selectedCategory === 'institute' ? 'Institution Name' :
-                 'Company Name'} {selectedCategory !== 'professional' && <span className="text-red-500">*</span>}
-              </label>
-              <input
-                type="text"
-                value={formData.institute}
-                onChange={(e) => updateFormData('institute', e.target.value)}
-                className="w-full px-4 py-3 text-black border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                placeholder={`Enter ${selectedCategory === 'student' ? 'school/college' : selectedCategory === 'professional' ? 'organization' : selectedCategory === 'institute' ? 'institution' : 'company'} name`}
-                required={selectedCategory !== 'professional'}
-              />
-            </div>
-            
-            {/* Grade/Class/Position */}
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                {selectedCategory === 'student' ? 'Grade / Class / Year' : 
-                 selectedCategory === 'professional' ? 'Position / Role' :
-                 selectedCategory === 'institute' ? 'Department' :
-                 'Industry Sector'}
-              </label>
-              <input
-                type="text"
-                value={formData.grade}
-                onChange={(e) => updateFormData('grade', e.target.value)}
-                className="w-full px-4 py-3 text-black border border-gray-600 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                placeholder={
-                  selectedCategory === 'student' ? 'e.g., 10th Grade or 2nd Year Engineering' : 
-                  selectedCategory === 'professional' ? 'e.g., Robotics Engineer or Technical Lead' :
-                  selectedCategory === 'institute' ? 'e.g., Computer Science Department' :
-                  'e.g., Technology or Education'
-                }
-              />
-            </div>
-            
-            {/* Additional Notes (Optional) */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-black mb-1">
-                Additional Notes (Optional)
-              </label>
-              <textarea
-                value={formData.notes || ''}
-                onChange={(e) => updateFormData('notes', e.target.value)}
-                className="w-full px-4 py-3 text-black border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                placeholder="Any special requirements or additional information..."
-                rows="2"
-              />
-            </div>
+
+            {/* Affiliation Fields - Conditional based on category */}
+            {categoryName === 'institute' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    Institute Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.instituteName || ''}
+                    onChange={(e) => updateFormData('instituteName', e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter institute name"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    Representative Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.RepresentativeName || ''}
+                    onChange={(e) => updateFormData('RepresentativeName', e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter representative name"
+                  />
+                </div>
+              </>
+            )}
+
+            {categoryName === 'corporate' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    Company Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.companyName || ''}
+                    onChange={(e) => updateFormData('companyName', e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter company name"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    Industry Sector
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.industrySector || ''}
+                    onChange={(e) => updateFormData('industrySector', e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g., Technology, Education, Manufacturing"
+                  />
+                </div>
+              </>
+            )}
+
+            {categoryName === 'student' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    School / College Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.schoolOrCollege || ''}
+                    onChange={(e) => updateFormData('schoolOrCollege', e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter school/college name"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    Class / Grade <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.classOrGrade || ''}
+                    onChange={(e) => updateFormData('classOrGrade', e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g., 10th Grade or 2nd Year Engineering"
+                    required
+                  />
+                </div>
+              </>
+            )}
+
+            {categoryName === 'professional' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    Organization Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.organizationName || ''}
+                    onChange={(e) => updateFormData('organizationName', e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter organization/company name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    Job Title
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.jobTitle || ''}
+                    onChange={(e) => updateFormData('jobTitle', e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g., Robotics Engineer or Technical Lead"
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
 
         {/* Right Column - Order Summary */}
-        <div className="md:w-1/3">
-          <div className=" rounded-xl p-6 border border-gray-700 sticky top-6">
-            <h3 className="text-lg font-bold text-black mb-4">Order Summary</h3>
-
-            {/* Membership Plan Details */}
-            <div className="mb-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-black">Membership Plan</span>
-                <span className="text-sm font-medium text-black">
-                  {selectedCategory === 'student' ? 'Student' : 
-                   selectedCategory === 'professional' ? 'Professional' :
-                   selectedCategory === 'institute' ? 'Institute' : 'Corporate'} 
-                  {selectedCategory === 'student' && selectedPlan === 'basic' ? ' Basic' : 
-                   selectedCategory === 'student' && selectedPlan === 'premium' ? ' Premium' : ''}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-black">Duration</span>
-                <span className="text-sm text-black">1 Year</span>
-              </div>
-            </div>
-
-            <div className="border-t border-gray-700 my-4"></div>
-
-            {/* Price Breakdown */}
-            <div className="space-y-3 mb-4">
-              <div className="flex justify-between">
-                <span className="text-sm text-black">Membership Fee</span>
-                <span className="text-sm">
-                  ${prices.subtotal} USD
-                </span>
-              </div>
-              
-              {/* Optional: Add shipping cost if applicable */}
-              <div className="flex justify-between">
-                <span className="text-sm text-black">Shipping</span>
-                <span className="text-sm text-blue-400">Free</span>
-              </div>
-              
-              <div className="flex justify-between text-lg font-semibold mt-4 pt-2 border-t border-gray-700">
-                <span className="text-black">Total Amount</span>
-                <span className="text-blue-600">
-                  ${prices.total} USD
-                </span>
-              </div>
-            </div>
-
-            {/* Benefits Preview */}
-            <div className="mt-6 pt-4 border-t border-gray-700">
-              <h4 className="text-sm font-medium text-black mb-2">What's Included:</h4>
-              <ul className="text-xs text-gray-400 space-y-1">
-                {selectedCategory === 'student' && selectedPlan === 'basic' && (
-                  <>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-1">✓</span>
-                      <span  className="text-black" >WORSO Digital Certificate & ID</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-1">✓</span>
-                      <span  className="text-black" >Student Directory Listing</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-1">✓</span>
-                      <span  className="text-black" >Discounted DIY Kits Access</span>
-                    </li>
-                  </>
-                )}
-                {selectedCategory === 'student' && selectedPlan === 'premium' && (
-                  <>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-1">✓</span>
-                      <span  className="text-black" >Personalized ID Card with QR</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-1">✓</span>
-                      <span  className="text-black" >Premium Digital Badge</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-1">✓</span>
-                      <span  className="text-black" >Priority Internship Access</span>
-                    </li>
-                  </>
-                )}
-                {selectedCategory === 'professional' && (
-                  <>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-1">✓</span>
-                      <span className="text-black">Certified Professional Badge</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-1">✓</span>
-                      <span className="text-black">Global Expert Directory Listing</span>
-                    </li>
-                  </>
-                )}
-                {selectedCategory === 'institute' && (
-                  <>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-1">✓</span>
-                      <span className="text-black">Accredited Institution Badge</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-1">✓</span>
-                      <span className="text-black">STEM Lab Setup Support</span>
-                    </li>
-                  </>
-                )}
-                {selectedCategory === 'corporate' && (
-                  <>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-1">✓</span>
-                      <span className="text-black">Official Corporate Member Badge</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-1">✓</span>
-                      <span className="text-black">Brand Exposure & Recognition</span>
-                    </li>
-                  </>
-                )}
-              </ul>
-            </div>
-
-            {/* Security Badge */}
-            <div className="mt-6 pt-4 border-t border-gray-700">
-              <div className="flex items-center text-xs text-gray-400">
-                <svg className="w-4 h-4 mr-2 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span className="text-black">Secure & encrypted payment</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        
       </div>
 
-      <div className="pt-6 border-t border-gray-700 flex justify-between">
+      <div className="pt-6 border-t border-gray-200 flex flex-wrap gap-5 justify-between">
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.98 }}
           type="button"
           onClick={onBack}
-          className="px-6 py-3 border border-gray-600 text-black font-medium rounded-lg hover:text-black transition-colors"
+          className="px-6 py-3 border border-gray-300 text-gray-600 font-medium rounded-lg hover:bg-gray-50 transition-colors"
         >
           Back
         </motion.button>
         <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: isSubmitting ? 1 : 1.03 }}
+          whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
           type="button"
-          onClick={onNext}
-          className="px-8 py-3 bg-blue-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
+          onClick={handleProceedToPayment}
+          disabled={isSubmitting}
+          className={`px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 ${
+            isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
-          <span>Proceed to Payment</span>
-          <ArrowRight size={18} />
+          {isSubmitting ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Saving...</span>
+            </>
+          ) : (
+            <>
+              <span>Proceed to Payment</span>
+              <ArrowRight size={18} />
+            </>
+          )}
         </motion.button>
       </div>
     </div>
