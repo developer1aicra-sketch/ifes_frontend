@@ -1,9 +1,26 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone, UserCircle } from 'lucide-react';
+import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone, UserCircle, Trophy, Trash2, Pencil } from 'lucide-react';
 import ForumView from '../components/ForumView';
+import CompetitionFormModal from '../components/CompetitionFormModal';
 import { DEFAULT_SITES } from '../constants/data';
 import { callGemini } from '../utils/gemini';
-import { updatePartner, setPartnerAuth, getPartnerAuth } from '../utils/api';
+import {
+  updatePartner,
+  setPartnerAuth,
+  getPartnerAuth,
+  listSeasons,
+  listEvents,
+  listCompetitions,
+  addSeason,
+  updateSeason,
+  deleteSeason,
+  addEvent,
+  updateEvent,
+  deleteEvent,
+  addCompetition,
+  updateCompetition,
+  deleteCompetition,
+} from '../utils/api';
 
 const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => {
   const [isAdminMode] = useState(defaultMode || user?.role || 'super');
@@ -29,6 +46,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       });
     }
   }, [partner?._id]);
+
   const [teamMembers, setTeamMembers] = useState([
     {
       id: 1,
@@ -177,6 +195,104 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
   const [newEvent, setNewEvent] = useState({ title: '', date: '', location: '' });
   const [genLoading, setGenLoading] = useState(false);
   const [genResult, setGenResult] = useState('');
+
+  // My Events (Seasons / Events / Competitions) — API-driven
+  const [eventsSubTab, setEventsSubTab] = useState('seasons');
+  const [seasons, setSeasons] = useState([]);
+  const [seasonsLoading, setSeasonsLoading] = useState(false);
+  const [seasonsError, setSeasonsError] = useState('');
+  const [eventList, setEventList] = useState([]); // from API list + newly added this session
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventsListError, setEventsListError] = useState('');
+  const [seasonForm, setSeasonForm] = useState({ name: '', year: new Date().getFullYear(), isActive: true });
+  const [seasonSaving, setSeasonSaving] = useState(false);
+  const [seasonError, setSeasonError] = useState('');
+  const [editingSeasonId, setEditingSeasonId] = useState(null);
+  const [editSeasonForm, setEditSeasonForm] = useState({ name: '', year: new Date().getFullYear(), isActive: true });
+  const [eventForm, setEventForm] = useState({
+    season_id: '',
+    name: '',
+    type: 'PRC',
+    start_date: '',
+    end_date: '',
+    country: '',
+    state: '',
+    city: '',
+    venue: '',
+    registration_fee: 1000,
+  });
+  const [eventSaving, setEventSaving] = useState(false);
+  const [eventError, setEventError] = useState('');
+
+  const [competitionSaving, setCompetitionSaving] = useState(false);
+  const [competitionError, setCompetitionError] = useState('');
+  const [competitionList, setCompetitionList] = useState([]);
+  const [competitionsLoading, setCompetitionsLoading] = useState(false);
+  const [competitionsListError, setCompetitionsListError] = useState('');
+  const [editingEventId, setEditingEventId] = useState(null);
+  const [editEventForm, setEditEventForm] = useState({
+    name: '', type: 'PRC', start_date: '', end_date: '', country: '', state: '', city: '', venue: '', registration_fee: 0, status: 'upcoming',
+  });
+  const [competitionDeletingId, setCompetitionDeletingId] = useState(null);
+  const [showCompetitionModal, setShowCompetitionModal] = useState(false);
+  const [editingCompetition, setEditingCompetition] = useState(null);
+
+  // Fetch seasons and events list when My Events tab is active
+  useEffect(() => {
+    if (activeTab !== 'events') return;
+    let cancelled = false;
+    setSeasonsLoading(true);
+    setSeasonsError('');
+    setEventsLoading(true);
+    setEventsListError('');
+    Promise.allSettled([listSeasons(), listEvents()]).then(([seasonsResult, eventsResult]) => {
+      if (cancelled) return;
+      if (seasonsResult.status === 'fulfilled') {
+        const list = seasonsResult.value?.data ?? seasonsResult.value?.seasons ?? (Array.isArray(seasonsResult.value) ? seasonsResult.value : []);
+        setSeasons(Array.isArray(list) ? list : []);
+      } else {
+        setSeasonsError(seasonsResult.reason?.message ?? 'Failed to load seasons');
+        setSeasons([]);
+      }
+      if (eventsResult.status === 'fulfilled') {
+        const eventData = eventsResult.value?.data ?? (Array.isArray(eventsResult.value) ? eventsResult.value : []);
+        setEventList(Array.isArray(eventData) ? eventData : []);
+      } else {
+        setEventsListError(eventsResult.reason?.message ?? 'Failed to load events');
+        setEventList([]);
+      }
+    }).finally(() => {
+      if (!cancelled) {
+        setSeasonsLoading(false);
+        setEventsLoading(false);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [activeTab]);
+
+  // Fetch competitions list when Competitions sub-tab is active
+  useEffect(() => {
+    if (activeTab !== 'events' || eventsSubTab !== 'competitions') return;
+    let cancelled = false;
+    setCompetitionsLoading(true);
+    setCompetitionsListError('');
+    listCompetitions()
+      .then((res) => {
+        if (cancelled) return;
+        const list = res?.data ?? (Array.isArray(res) ? res : []);
+        setCompetitionList(Array.isArray(list) ? list : []);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setCompetitionsListError(err?.message ?? 'Failed to load competitions');
+          setCompetitionList([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setCompetitionsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [activeTab, eventsSubTab]);
 
   // Course related states
   // Forum related states
@@ -371,6 +487,203 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     setNewEvent({ title: '', date: '', location: '' });
   };
 
+  const handleAddSeason = async () => {
+    setSeasonError('');
+    setSeasonSaving(true);
+    try {
+      const res = await addSeason(seasonForm);
+      const created = res?.data ?? res?.season ?? res;
+      if (created?._id) setSeasons((prev) => [...prev, created]);
+      else setSeasons((prev) => [...prev, { _id: res?.id ?? Date.now(), ...seasonForm }]);
+      setSeasonForm({ name: '', year: new Date().getFullYear(), isActive: true });
+    } catch (err) {
+      setSeasonError(err?.message ?? 'Failed to add season');
+    } finally {
+      setSeasonSaving(false);
+    }
+  };
+
+  const handleEditSeason = (s) => {
+    setEditingSeasonId(s._id);
+    setEditSeasonForm({ name: s.name ?? '', year: s.year ?? new Date().getFullYear(), isActive: s.isActive !== false });
+  };
+
+  const handleSaveEditSeason = async () => {
+    if (!editingSeasonId) return;
+    setSeasonError('');
+    setSeasonSaving(true);
+    try {
+      await updateSeason(editingSeasonId, editSeasonForm);
+      setSeasons((prev) => prev.map((s) => (s._id === editingSeasonId ? { ...s, ...editSeasonForm } : s)));
+      setEditingSeasonId(null);
+    } catch (err) {
+      setSeasonError(err?.message ?? 'Failed to update season');
+    } finally {
+      setSeasonSaving(false);
+    }
+  };
+
+  const handleDeleteSeason = async (id) => {
+    if (!window.confirm('Delete this season?')) return;
+    setSeasonError('');
+    setSeasonSaving(true);
+    try {
+      await deleteSeason(id);
+      setSeasons((prev) => prev.filter((s) => s._id !== id));
+      if (editingSeasonId === id) setEditingSeasonId(null);
+    } catch (err) {
+      setSeasonError(err?.message ?? 'Failed to delete season');
+    } finally {
+      setSeasonSaving(false);
+    }
+  };
+
+  const handleAddEvent = async () => {
+    setEventError('');
+    setEventSaving(true);
+    try {
+      const res = await addEvent(eventForm);
+      const created = res?.data ?? res?.event ?? res;
+      const id = created?._id ?? created?.id;
+      const name = created?.name ?? eventForm.name;
+      if (id) setEventList((prev) => [...prev, { _id: id, name, season_id: eventForm.season_id }]);
+      setEventForm({
+        season_id: eventForm.season_id,
+        name: '',
+        type: 'PRC',
+        start_date: '',
+        end_date: '',
+        country: '',
+        state: '',
+        city: '',
+        venue: '',
+        registration_fee: 1000,
+      });
+    } catch (err) {
+      setEventError(err?.message ?? 'Failed to add event');
+    } finally {
+      setEventSaving(false);
+    }
+  };
+
+  const handleEditEvent = (ev) => {
+    setEditingEventId(ev._id);
+    setEditEventForm({
+      name: ev.name ?? '',
+      type: ev.type ?? 'PRC',
+      start_date: ev.start_date ? ev.start_date.slice(0, 10) : '',
+      end_date: ev.end_date ? ev.end_date.slice(0, 10) : '',
+      country: ev.country ?? '',
+      state: ev.state ?? '',
+      city: ev.city ?? '',
+      venue: ev.venue ?? '',
+      registration_fee: ev.registration_fee ?? 0,
+      status: ev.status ?? 'upcoming',
+    });
+  };
+
+  const handleSaveEditEvent = async () => {
+    if (!editingEventId) return;
+    setEventError('');
+    setEventSaving(true);
+    try {
+      await updateEvent(editingEventId, editEventForm);
+      setEventList((prev) => prev.map((e) => (e._id === editingEventId ? { ...e, ...editEventForm } : e)));
+      setEditingEventId(null);
+    } catch (err) {
+      setEventError(err?.message ?? 'Failed to update event');
+    } finally {
+      setEventSaving(false);
+    }
+  };
+
+  const handleDeleteEvent = async (id) => {
+    if (!window.confirm('Delete this event? This cannot be undone.')) return;
+    setEventError('');
+    setEventSaving(true);
+    try {
+      await deleteEvent(id);
+      setEventList((prev) => prev.filter((e) => e._id !== id));
+      if (editingEventId === id) setEditingEventId(null);
+    } catch (err) {
+      setEventError(err?.message ?? 'Failed to delete event');
+    } finally {
+      setEventSaving(false);
+    }
+  };
+
+  const handleDeleteCompetition = async (_id) => {
+    if (!window.confirm('Delete this competition? This cannot be undone.')) return;
+    setCompetitionError('');
+    setCompetitionDeletingId(_id);
+    try {
+      await deleteCompetition(_id);
+      setCompetitionList((prev) => prev.filter((c) => c._id !== _id));
+    } catch (err) {
+      setCompetitionError(err?.message ?? 'Failed to delete competition');
+    } finally {
+      setCompetitionDeletingId(null);
+    }
+  };
+
+  // Normalize competition payload so backend always receives valid numbers (prizePool, duration.value, minMembers, maxMembers)
+  // Normalize competition payload (flat bracket keys: duration[value], teamRequirements[minMembers], downloadTitles[i])
+  const normalizeCompetitionPayload = (data) => {
+    const prizePool = Number(data.prizePool);
+    const prizePoolNum = Number.isFinite(prizePool) && prizePool >= 0 ? prizePool : 0;
+
+    const rawMin = data['teamRequirements[minMembers]'] ?? data.teamRequirements?.minMembers;
+    const rawMax = data['teamRequirements[maxMembers]'] ?? data.teamRequirements?.maxMembers;
+    let minMembers = Number(rawMin);
+    let maxMembers = Number(rawMax);
+    minMembers = Number.isFinite(minMembers) && minMembers >= 0 ? minMembers : 1;
+    maxMembers = Number.isFinite(maxMembers) && maxMembers >= 0 ? maxMembers : 4;
+    if (minMembers > maxMembers) maxMembers = minMembers;
+
+    const rawDurationValue = data['duration[value]'] ?? data.duration?.value;
+    const rawDurationUnit = data['duration[unit]'] ?? data.duration?.unit;
+    const durationValue = Number(rawDurationValue);
+    const durationVal = Number.isFinite(durationValue) && durationValue >= 0 ? durationValue : 1;
+    const durationUnit = typeof rawDurationUnit === 'string' && rawDurationUnit ? rawDurationUnit : 'day';
+
+    const out = { ...data };
+    out.prizePool = prizePoolNum;
+    out['teamRequirements[minMembers]'] = minMembers;
+    out['teamRequirements[maxMembers]'] = maxMembers;
+    out['duration[value]'] = durationVal;
+    out['duration[unit]'] = durationUnit;
+    out.bannerImage = data.bannerImage instanceof File ? data.bannerImage : data.bannerImage || '';
+    return out;
+  };
+
+  const handleCompetitionModalSave = async (competitionData) => {
+    setCompetitionError('');
+    setCompetitionSaving(true);
+    try {
+      const payload = normalizeCompetitionPayload(competitionData);
+      if (editingCompetition?._id) {
+        await updateCompetition(editingCompetition._id, payload);
+      } else {
+        await addCompetition(payload);
+      }
+      setShowCompetitionModal(false);
+      setEditingCompetition(null);
+      const res = await listCompetitions();
+      const list = res?.data ?? (Array.isArray(res) ? res : []);
+      setCompetitionList(Array.isArray(list) ? list : []);
+    } catch (err) {
+      setCompetitionError(err?.message ?? 'Failed to save competition');
+    } finally {
+      setCompetitionSaving(false);
+    }
+  };
+
+  const handleCompetitionModalCancel = () => {
+    setShowCompetitionModal(false);
+    setEditingCompetition(null);
+    setCompetitionError('');
+  };
+
   const generatePressRelease = async (event) => {
     setGenLoading(true);
     const prompt = `Write a short, exciting press release (max 100 words) for a robotics event titled "${event.title}" happening at "${event.location}" on "${event.date}". Use professional but energetic tone.`;
@@ -447,15 +760,26 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                 )}
 
                 {isAdminMode === 'super' ? (
-                  <button
-                    onClick={() => setActiveTab('partners')}
-                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${activeTab === 'partners'
-                        ? 'bg-white/15 border-blue-400 text-white'
-                        : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
-                      }`}
-                  >
-                    <Building size={18} /> Manage Partners
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setActiveTab('partners')}
+                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${activeTab === 'partners'
+                          ? 'bg-white/15 border-blue-400 text-white'
+                          : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
+                        }`}
+                    >
+                      <Building size={18} /> Manage Partners
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('events')}
+                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${activeTab === 'events'
+                          ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
+                          : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
+                        }`}
+                    >
+                      <Calendar size={18} /> Event Manager
+                    </button>
+                  </>
                 ) : (
                   <div className="space-y-2 w-full">
                     <button
@@ -571,7 +895,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                     {activeTab === 'overview' && 'Dashboard Overview'}
                     {activeTab === 'partner-profile' && 'Edit Partner Profile'}
                     {activeTab === 'partners' && 'Partner Management'}
-                    {activeTab === 'events' && 'Local Event Manager'}
+                    {activeTab === 'events' && (isAdminMode === 'super' ? 'Event Manager' : 'My Events')}
 
                     {activeTab === 'courses' && 'Course Management'}
                     {activeTab === 'academia' && 'Academia Portal'}
@@ -789,54 +1113,419 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
               )}
 
               {activeTab === 'events' && (
-                <div className="space-y-8">
-                  <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm max-w-2xl">
-                    <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
-                      <Calendar size={20} /> Create Local Event
-                    </h3>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Event Title</label>
-                        <input
-                          type="text"
-                          className="w-full p-3 border border-slate-300 rounded focus:ring-2 focus:ring-emerald-500 outline-none"
-                          placeholder="e.g. Dubai Zonal Qualifier"
-                          value={newEvent.title}
-                          onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-                        />
-                      </div>
-                      <button onClick={handleCreateEvent} className="px-6 py-3 bg-emerald-600 text-white font-bold rounded hover:bg-emerald-700 w-full">
-                        Publish Event
-                      </button>
-                    </div>
+                <div className="space-y-6">
+                  <div className="flex gap-2 border-b border-slate-200 pb-2">
+                    <button
+                      onClick={() => setEventsSubTab('seasons')}
+                      className={`px-4 py-2 rounded-lg text-sm font-semibold ${eventsSubTab === 'seasons' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                    >
+                      Seasons
+                    </button>
+                    <button
+                      onClick={() => setEventsSubTab('events')}
+                      className={`px-4 py-2 rounded-lg text-sm font-semibold ${eventsSubTab === 'events' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                    >
+                      Events
+                    </button>
+                    <button
+                      onClick={() => setEventsSubTab('competitions')}
+                      className={`px-4 py-2 rounded-lg text-sm font-semibold ${eventsSubTab === 'competitions' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                    >
+                      Competitions
+                    </button>
                   </div>
 
-                  <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm max-w-2xl">
-                    <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-purple-600">
-                      <Sparkles size={20} /> AI Press Generator
-                    </h3>
-                    <p className="text-sm text-slate-500 mb-4">Generate instant press releases for your local events using Gemini AI.</p>
-                    {sites.uae.local_events.map((evt) => (
-                      <div key={evt.id} className="flex justify-between items-center p-3 border border-slate-100 rounded-lg mb-2">
-                        <div>
-                          <div className="font-bold">{evt.title}</div>
-                          <div className="text-xs text-slate-500">{evt.date}</div>
+                  {eventsSubTab === 'seasons' && (
+                    <div className="space-y-6">
+                      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                          <Calendar size={20} /> Add Season
+                        </h3>
+                        {seasonsError && <p className="text-sm text-red-600 mb-3">{seasonsError}</p>}
+                        {seasonError && <p className="text-sm text-red-600 mb-3">{seasonError}</p>}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Name</label>
+                            <input
+                              type="text"
+                              value={seasonForm.name}
+                              onChange={(e) => setSeasonForm((f) => ({ ...f, name: e.target.value }))}
+                              placeholder="e.g. Technoxian World Cup 16"
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Year</label>
+                            <input
+                              type="number"
+                              value={seasonForm.year}
+                              onChange={(e) => setSeasonForm((f) => ({ ...f, year: Number(e.target.value) || new Date().getFullYear() }))}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                          </div>
+                          <div className="flex items-end">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={seasonForm.isActive}
+                                onChange={(e) => setSeasonForm((f) => ({ ...f, isActive: e.target.checked }))}
+                                className="rounded border-slate-300"
+                              />
+                              <span className="text-sm font-medium text-slate-700">Active</span>
+                            </label>
+                          </div>
+                          <div className="flex items-end">
+                            <button onClick={handleAddSeason} disabled={seasonSaving} className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                              {seasonSaving ? 'Adding…' : 'Add Season'}
+                            </button>
+                          </div>
                         </div>
-                        <button
-                          onClick={() => generatePressRelease(evt)}
-                          disabled={genLoading}
-                          className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded font-bold hover:bg-purple-200"
-                        >
-                          {genLoading ? 'Generating...' : '✨ Generate'}
+                        <div className="border-t border-slate-100 pt-4">
+                          <h4 className="font-semibold text-slate-800 mb-3">Seasons list</h4>
+                          {seasonsLoading ? (
+                            <p className="text-slate-500 text-sm">Loading seasons…</p>
+                          ) : seasons.length === 0 ? (
+                            <p className="text-slate-500 text-sm">No seasons yet. Add one above.</p>
+                          ) : (
+                            <ul className="space-y-2">
+                              {seasons.map((s) => (
+                                <li key={s._id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+                                  {editingSeasonId === s._id ? (
+                                    <div className="flex flex-wrap items-center gap-2 flex-1">
+                                      <input
+                                        type="text"
+                                        value={editSeasonForm.name}
+                                        onChange={(e) => setEditSeasonForm((f) => ({ ...f, name: e.target.value }))}
+                                        className="flex-1 min-w-[120px] p-2 border rounded"
+                                      />
+                                      <input
+                                        type="number"
+                                        value={editSeasonForm.year}
+                                        onChange={(e) => setEditSeasonForm((f) => ({ ...f, year: Number(e.target.value) || new Date().getFullYear() }))}
+                                        className="w-20 p-2 border rounded"
+                                      />
+                                      <label className="flex items-center gap-1 text-sm">
+                                        <input
+                                          type="checkbox"
+                                          checked={editSeasonForm.isActive}
+                                          onChange={(e) => setEditSeasonForm((f) => ({ ...f, isActive: e.target.checked }))}
+                                        />
+                                        Active
+                                      </label>
+                                      <button onClick={handleSaveEditSeason} className="px-3 py-1 bg-emerald-600 text-white text-sm rounded">Save</button>
+                                      <button onClick={() => setEditingSeasonId(null)} className="px-3 py-1 bg-slate-200 text-slate-700 text-sm rounded">Cancel</button>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <span className="font-medium text-slate-800">{s.name} ({s.year})</span>
+                                      <span className="text-xs text-slate-500">{s.isActive !== false ? 'Active' : 'Inactive'}</span>
+                                      <div className="flex gap-2">
+                                        <button onClick={() => handleEditSeason(s)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded" title="Edit"><Pencil size={14} /></button>
+                                        <button onClick={() => handleDeleteSeason(s._id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Delete"><Trash2 size={14} /></button>
+                                      </div>
+                                    </>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {eventsSubTab === 'events' && (
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-2xl">
+                      <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                        <Calendar size={20} /> Add Event
+                      </h3>
+                      {eventsListError && <p className="text-sm text-amber-600 mb-3">{eventsListError}</p>}
+                      {eventError && <p className="text-sm text-red-600 mb-3">{eventError}</p>}
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-1">Season</label>
+                          <select
+                            value={eventForm.season_id}
+                            onChange={(e) => setEventForm((f) => ({ ...f, season_id: e.target.value }))}
+                            className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                          >
+                            <option value="">Select season</option>
+                            {seasons.map((s) => (
+                              <option key={s._id} value={s._id}>{s.name} ({s.year})</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Name</label>
+                            <input
+                              type="text"
+                              value={eventForm.name}
+                              onChange={(e) => setEventForm((f) => ({ ...f, name: e.target.value }))}
+                              placeholder="e.g. PRC Bangalore Open"
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Type</label>
+                            <select
+                              value={eventForm.type}
+                              onChange={(e) => setEventForm((f) => ({ ...f, type: e.target.value }))}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            >
+                              <option value="PRC">PRC</option>
+                              <option value="ZRC">ZRC</option>
+                              <option value="NRC">NRC</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Start date</label>
+                            <input
+                              type="date"
+                              value={eventForm.start_date}
+                              onChange={(e) => setEventForm((f) => ({ ...f, start_date: e.target.value }))}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">End date</label>
+                            <input
+                              type="date"
+                              value={eventForm.end_date}
+                              onChange={(e) => setEventForm((f) => ({ ...f, end_date: e.target.value }))}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Country</label>
+                            <input
+                              type="text"
+                              value={eventForm.country}
+                              onChange={(e) => setEventForm((f) => ({ ...f, country: e.target.value }))}
+                              placeholder="e.g. India"
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">State</label>
+                            <input
+                              type="text"
+                              value={eventForm.state}
+                              onChange={(e) => setEventForm((f) => ({ ...f, state: e.target.value }))}
+                              placeholder="e.g. Karnataka"
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">City</label>
+                            <input
+                              type="text"
+                              value={eventForm.city}
+                              onChange={(e) => setEventForm((f) => ({ ...f, city: e.target.value }))}
+                              placeholder="e.g. Bangalore"
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-1">Venue</label>
+                          <input
+                            type="text"
+                            value={eventForm.venue}
+                            onChange={(e) => setEventForm((f) => ({ ...f, venue: e.target.value }))}
+                            placeholder="e.g. Kanteerava Stadium"
+                            className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-1">Registration fee</label>
+                          <input
+                            type="number"
+                            value={eventForm.registration_fee}
+                            onChange={(e) => setEventForm((f) => ({ ...f, registration_fee: Number(e.target.value) || 0 }))}
+                            className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                          />
+                        </div>
+                        <button onClick={handleAddEvent} disabled={eventSaving} className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                          {eventSaving ? 'Adding…' : 'Add Event'}
                         </button>
                       </div>
-                    ))}
-                    {genResult && <div className="mt-4 p-4 bg-purple-50 rounded-lg text-sm border border-purple-100 italic">{genResult}</div>}
-                  </div>
-                  <div className="bg-white p-6 rounded-xl border border-amber-200 shadow-sm max-w-2xl">
-                    <div className="text-sm font-bold text-amber-700 mb-2">Field-Level Permissions</div>
-                    <p className="text-sm text-amber-700">Partner admins cannot edit logos or core rules. Only local content blocks (welcome message, galleries, registrations) are writable.</p>
-                  </div>
+                      <div className="mt-6 border-t border-slate-100 pt-4">
+                        <h4 className="font-semibold text-slate-800 mb-3">All events (from API)</h4>
+                        {eventsLoading ? (
+                          <p className="text-sm text-slate-500">Loading events…</p>
+                        ) : eventList.length === 0 ? (
+                          <p className="text-sm text-slate-500">No events yet. Add one above or they will appear here once loaded.</p>
+                        ) : (
+                          <div className="space-y-4 max-h-[32rem] overflow-y-auto pr-1">
+                            {eventList.map((ev) => {
+                              const isEditing = editingEventId === ev._id;
+                              const startDate = ev.start_date ? new Date(ev.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+                              const endDate = ev.end_date ? new Date(ev.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+                              const seasonName = Array.isArray(ev.season) && ev.season[0] ? `${ev.season[0].name} (${ev.season[0].year})` : null;
+                              const competitions = Array.isArray(ev.competition) ? ev.competition : [];
+                              const statusColor = ev.status === 'live' ? 'bg-emerald-100 text-emerald-700' : ev.status === 'closed' ? 'bg-slate-200 text-slate-700' : 'bg-amber-100 text-amber-700';
+                              return (
+                                <div key={ev._id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+                                  {isEditing ? (
+                                    <div className="space-y-3">
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                        <input value={editEventForm.name} onChange={(e) => setEditEventForm((f) => ({ ...f, name: e.target.value }))} placeholder="Name" className="p-2 border rounded text-sm" />
+                                        <select value={editEventForm.type} onChange={(e) => setEditEventForm((f) => ({ ...f, type: e.target.value }))} className="p-2 border rounded text-sm">
+                                          <option value="PRC">PRC</option><option value="ZRC">ZRC</option><option value="NRC">NRC</option><option value="WRC">WRC</option>
+                                        </select>
+                                        <input type="date" value={editEventForm.start_date} onChange={(e) => setEditEventForm((f) => ({ ...f, start_date: e.target.value }))} className="p-2 border rounded text-sm" />
+                                        <input type="date" value={editEventForm.end_date} onChange={(e) => setEditEventForm((f) => ({ ...f, end_date: e.target.value }))} className="p-2 border rounded text-sm" />
+                                        <input value={editEventForm.country} onChange={(e) => setEditEventForm((f) => ({ ...f, country: e.target.value }))} placeholder="Country" className="p-2 border rounded text-sm" />
+                                        <input value={editEventForm.state} onChange={(e) => setEditEventForm((f) => ({ ...f, state: e.target.value }))} placeholder="State" className="p-2 border rounded text-sm" />
+                                        <input value={editEventForm.city} onChange={(e) => setEditEventForm((f) => ({ ...f, city: e.target.value }))} placeholder="City" className="p-2 border rounded text-sm" />
+                                        <input value={editEventForm.venue} onChange={(e) => setEditEventForm((f) => ({ ...f, venue: e.target.value }))} placeholder="Venue" className="p-2 border rounded text-sm md:col-span-2" />
+                                        <input type="number" value={editEventForm.registration_fee} onChange={(e) => setEditEventForm((f) => ({ ...f, registration_fee: Number(e.target.value) || 0 }))} placeholder="Fee" className="p-2 border rounded text-sm" />
+                                        <select value={editEventForm.status} onChange={(e) => setEditEventForm((f) => ({ ...f, status: e.target.value }))} className="p-2 border rounded text-sm">
+                                          <option value="upcoming">Upcoming</option><option value="live">Live</option><option value="closed">Closed</option>
+                                        </select>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <button onClick={handleSaveEditEvent} disabled={eventSaving} className="px-3 py-1.5 bg-emerald-600 text-white text-sm font-medium rounded hover:bg-emerald-700 disabled:opacity-50">Save</button>
+                                        <button onClick={() => setEditingEventId(null)} className="px-3 py-1.5 bg-slate-200 text-slate-700 text-sm rounded hover:bg-slate-300">Cancel</button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
+                                        <div>
+                                          <h5 className="font-bold text-slate-900">{ev.name}</h5>
+                                          {ev.publicEventId && <p className="text-xs text-slate-500 font-mono">{ev.publicEventId}</p>}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${statusColor}`}>
+                                            {ev.status ?? 'upcoming'}
+                                          </span>
+                                          <button onClick={() => handleEditEvent(ev)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded" title="Edit"><Pencil size={14} /></button>
+                                          <button onClick={() => handleDeleteEvent(ev._id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Delete"><Trash2 size={14} /></button>
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-wrap gap-2 mb-2">
+                                        <span className="inline-flex px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs font-medium">{ev.type}</span>
+                                        {ev.zone && <span className="inline-flex px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-xs">{ev.zone}</span>}
+                                      </div>
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm text-slate-600 mb-2">
+                                        <p><span className="text-slate-500">Dates:</span> {startDate} – {endDate}</p>
+                                        <p><span className="text-slate-500">Venue:</span> {ev.venue || '—'}</p>
+                                        <p><span className="text-slate-500">Location:</span> {[ev.city, ev.state, ev.country].filter(Boolean).join(', ') || '—'}</p>
+                                        <p><span className="text-slate-500">Fee:</span> ₹{Number(ev.registration_fee ?? 0).toLocaleString()}</p>
+                                      </div>
+                                      {seasonName && <p className="text-xs text-slate-500 mb-2">Season: {seasonName}</p>}
+                                      {competitions.length > 0 && (
+                                        <div className="mt-2 pt-2 border-t border-slate-100">
+                                          <p className="text-xs font-semibold text-slate-600 mb-1">Competitions ({competitions.length})</p>
+                                          <ul className="flex flex-wrap gap-1">
+                                            {competitions.map((c) => (
+                                              <li key={c._id} className="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700">{c.name}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {eventsSubTab === 'competitions' && (
+                    <div className="space-y-6">
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                      <div className="flex items-center justify-between gap-4 flex-wrap">
+                        <h3 className="font-bold text-lg flex items-center gap-2">
+                          <Trophy size={20} /> Competitions
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => { setEditingCompetition(null); setShowCompetitionModal(true); }}
+                          className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                        >
+                          <Plus size={18} /> Add Competition
+                        </button>
+                      </div>
+                      {competitionError && <p className="text-sm text-red-600 mt-3">{competitionError}</p>}
+                    </div>
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                      <h4 className="font-semibold text-slate-800 mb-3">All competitions (from API)</h4>
+                      {competitionsListError && <p className="text-sm text-amber-600 mb-2">{competitionsListError}</p>}
+                      {competitionsLoading ? (
+                        <p className="text-sm text-slate-500">Loading competitions…</p>
+                      ) : competitionList.length === 0 ? (
+                        <p className="text-sm text-slate-500">No competitions yet.</p>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[28rem] overflow-y-auto">
+                          {competitionList.map((c) => {
+                            const ev = c.event && typeof c.event === 'object' ? c.event : {};
+                            const season = c.season && typeof c.season === 'object' && !Array.isArray(c.season) ? c.season : null;
+                            const seasonName = season ? `${season.name} (${season.year})` : null;
+                            return (
+                              <div key={c._id} className="rounded-xl border border-slate-200 p-4 bg-slate-50/50 hover:shadow-sm transition-shadow">
+                                <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                                  <div>
+                                    <h5 className="font-bold text-slate-900">{c.name}</h5>
+                                    <span className="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-800">{c.category}</span>
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => { setEditingCompetition(c); setShowCompetitionModal(true); }}
+                                      className="p-1.5 text-slate-600 hover:bg-slate-200 rounded"
+                                      title="Edit competition"
+                                    >
+                                      <Pencil size={14} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteCompetition(c._id)}
+                                      disabled={competitionDeletingId === c._id}
+                                      className="p-1.5 text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
+                                      title="Delete competition"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                </div>
+                                {c.bannerImage && <img src={c.bannerImage} alt="" className="w-full h-28 object-cover rounded-lg mb-2" />}
+                                <p className="text-sm text-slate-600 mb-2 line-clamp-2">{c.description || '—'}</p>
+                                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
+                                  <span>Event: {ev.name || '—'}</span>
+                                  {seasonName && <span>Season: {seasonName}</span>}
+                                  <span>Prize: ₹{Number(c.prizePool ?? 0).toLocaleString()}</span>
+                                  <span>Team: {c.teamRequirements?.minMembers ?? 0}–{c.teamRequirements?.maxMembers ?? 0}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                    </div>
+                  )}
+
+                  {showCompetitionModal && (
+                    <CompetitionFormModal
+                      competition={editingCompetition}
+                      events={eventList}
+                      seasons={seasons}
+                      selectedEvent={null}
+                      selectedSeason={null}
+                      onSave={handleCompetitionModalSave}
+                      onCancel={handleCompetitionModalCancel}
+                    />
+                  )}
                 </div>
               )}
               {activeTab === 'academia' && (

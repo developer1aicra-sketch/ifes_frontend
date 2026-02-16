@@ -1,5 +1,7 @@
 // API utility functions
 
+import { apiRoutes } from '../constants/apiRoutes';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://worso-backend-psi.vercel.app/api';
 
 /**
@@ -59,15 +61,15 @@ export const fetchPartnerById = async (identifier) => {
  */
 export const getCurrentSubdomain = () => {
   if (typeof window === 'undefined') return null;
-  
+
   const hostname = window.location.hostname;
   const parts = hostname.split('.');
-  
+
   // If we have at least 3 parts (subdomain.domain.tld), return the subdomain
   if (parts.length >= 3) {
     return parts[0];
   }
-  
+
   return null;
 };
 
@@ -79,11 +81,11 @@ export const getCurrentSubdomain = () => {
  */
 export const findPartnerBySubdomain = (partners, subdomain) => {
   if (!partners || !subdomain) return null;
-  
+
   return partners.find(
-    partner => partner.subdomain === subdomain || 
-    partner.subdomain?.includes(subdomain) ||
-    partner.partnerWebsite?.includes(subdomain)
+    partner => partner.subdomain === subdomain ||
+      partner.subdomain?.includes(subdomain) ||
+      partner.partnerWebsite?.includes(subdomain)
   ) || null;
 };
 
@@ -95,7 +97,7 @@ export const findPartnerBySubdomain = (partners, subdomain) => {
  */
 export const findPartnersByLocation = (partners, locationCode) => {
   if (!partners || !locationCode) return [];
-  
+
   return partners.filter(
     partner => partner.location === locationCode && partner.isActive
   );
@@ -158,7 +160,7 @@ export const detectPartnerFromUrl = async () => {
         }
       }
     }
-  } catch (_) {}
+  } catch (_) { }
 
   return { locationCode: null, partner: null };
 };
@@ -213,7 +215,7 @@ export const getPartnerAuth = () => {
 export const setPartnerAuth = (data) => {
   try {
     localStorage.setItem(PARTNER_AUTH_KEY, JSON.stringify(data));
-  } catch (_) {}
+  } catch (_) { }
 };
 
 /**
@@ -222,7 +224,7 @@ export const setPartnerAuth = (data) => {
 export const clearPartnerAuth = () => {
   try {
     localStorage.removeItem(PARTNER_AUTH_KEY);
-  } catch (_) {}
+  } catch (_) { }
 };
 
 /**
@@ -294,5 +296,342 @@ export const updatePartner = async (partnerId, token, payload) => {
     throw new Error(message);
   }
 
+  return data;
+};
+
+// --- Admin dashboard: Season API ---
+
+/**
+ * List all seasons
+ * @returns {Promise<{ success: boolean, data?: Array }>}
+ */
+export const listSeasons = async () => {
+  const response = await fetch(`${API_BASE_URL}${apiRoutes.season.list}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to list seasons (${response.status})`);
+  }
+  return data;
+};
+
+/**
+ * Add a season
+ * @param {{ name: string, year: number, isActive: boolean }} payload
+ * @returns {Promise<{ success: boolean, data?: object }>}
+ */
+export const addSeason = async (payload) => {
+  const body = {
+    name: payload.name ?? '',
+    year: payload.year ?? new Date().getFullYear(),
+    isActive: payload.isActive !== undefined ? payload.isActive : true,
+  };
+  const response = await fetch(`${API_BASE_URL}${apiRoutes.season.add}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to add season (${response.status})`);
+  }
+  return data;
+};
+
+/**
+ * Get a season by id
+ * @param {string} id - Season _id
+ * @returns {Promise<{ success: boolean, data?: object }>}
+ */
+export const getSeason = async (id) => {
+  const response = await fetch(`${API_BASE_URL}${apiRoutes.season.get(id)}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to get season (${response.status})`);
+  }
+  return data;
+};
+
+/**
+ * Update a season
+ * @param {string} id - Season _id
+ * @param {{ name?: string, year?: number, isActive?: boolean }} payload
+ * @returns {Promise<{ success: boolean, data?: object }>}
+ */
+export const updateSeason = async (id, payload) => {
+  const response = await fetch(`${API_BASE_URL}${apiRoutes.season.edit(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to update season (${response.status})`);
+  }
+  return data;
+};
+
+/**
+ * Delete a season
+ * @param {string} id - Season _id
+ * @returns {Promise<{ success: boolean }>}
+ */
+export const deleteSeason = async (id) => {
+  const response = await fetch(`${API_BASE_URL}${apiRoutes.season.delete(id)}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to delete season (${response.status})`);
+  }
+  return data;
+};
+
+// --- Admin dashboard: Event API ---
+
+/**
+ * List all events
+ * @returns {Promise<{ message?: string, data?: Array }>}
+ */
+export const listEvents = async () => {
+  const response = await fetch(`${API_BASE_URL}${apiRoutes.event.list}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to list events (${response.status})`);
+  }
+  return data;
+};
+
+/**
+ * Add an event
+ * @param {{ season_id: string, name: string, type: string, start_date: string, end_date: string, country: string, state?: string, city?: string, venue?: string, registration_fee?: number }} payload
+ * @returns {Promise<{ success: boolean, data?: object }>}
+ */
+export const addEvent = async (payload) => {
+  const body = {
+    season_id: payload.season_id ?? '',
+    name: payload.name ?? '',
+    type: payload.type ?? '',
+    start_date: payload.start_date ?? '',
+    end_date: payload.end_date ?? '',
+    country: payload.country ?? '',
+    state: payload.state ?? '',
+    city: payload.city ?? '',
+    venue: payload.venue ?? '',
+    registration_fee: payload.registration_fee ?? 0,
+  };
+  const response = await fetch(`${API_BASE_URL}${apiRoutes.event.add}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to add event (${response.status})`);
+  }
+  return data;
+};
+
+/**
+ * Update an event (PATCH)
+ * @param {string} id - Event _id
+ * @param {object} payload - Partial event fields to update
+ * @returns {Promise<{ success: boolean, data?: object }>}
+ */
+export const updateEvent = async (id, payload) => {
+  const response = await fetch(`${API_BASE_URL}${apiRoutes.event.update(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to update event (${response.status})`);
+  }
+  return data;
+};
+
+/**
+ * Delete an event
+ * @param {string} _id - Event _id
+ * @returns {Promise<{ success: boolean }>}
+ */
+export const deleteEvent = async (_id) => {
+  const response = await fetch(`${API_BASE_URL}${apiRoutes.event.delete(_id)}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to delete event (${response.status})`);
+  }
+  return data;
+};
+
+/**
+ * Get an event by id
+ * @param {string} _id - Event _id
+ * @returns {Promise<{ success: boolean, data?: object }>}
+ */
+export const getEvent = async (_id) => {
+  const response = await fetch(`${API_BASE_URL}${apiRoutes.event.get(_id)}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to get event (${response.status})`);
+  }
+  return data;
+};
+
+// --- Admin dashboard: Competition API ---
+
+/**
+ * List all competitions
+ * @returns {Promise<{ status?: number, success?: boolean, data?: Array }>}
+ */
+export const listCompetitions = async () => {
+  const response = await fetch(`${API_BASE_URL}${apiRoutes.competition.list}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to list competitions (${response.status})`);
+  }
+  return data;
+};
+
+/**
+ * Build FormData from competition payload for add competition.
+ * Nested objects (teamRequirements, duration) and arrays (downloadTitles) are sent as JSON strings.
+ * bannerImage: if it's a File, append as file; otherwise append as string if present.
+ * Supports flat bracket keys: duration[value], duration[unit], teamRequirements[minMembers], teamRequirements[maxMembers], downloadTitles[0], downloadTitles[1], ...
+ * @param {object} competition - Competition fields (flat or nested)
+ * @returns {FormData}
+ */
+export const buildCompetitionFormData = (competition) => {
+  const form = new FormData();
+
+  // Support flat bracket keys (duration[value], teamRequirements[minMembers], downloadTitles[i]) or nested
+  const minMembersRaw = competition['teamRequirements[minMembers]'] ?? competition.teamRequirements?.minMembers;
+  const maxMembersRaw = competition['teamRequirements[maxMembers]'] ?? competition.teamRequirements?.maxMembers;
+  let minMembers = Number(minMembersRaw);
+  let maxMembers = Number(maxMembersRaw);
+  minMembers = Number.isFinite(minMembers) && minMembers >= 0 ? minMembers : 1;
+  maxMembers = Number.isFinite(maxMembers) && maxMembers >= 0 ? maxMembers : 4;
+  if (minMembers > maxMembers) maxMembers = minMembers;
+
+  const durationValueRaw = competition['duration[value]'] ?? competition.duration?.value;
+  const durationUnitRaw = competition['duration[unit]'] ?? competition.duration?.unit;
+  const durationValue = Number(durationValueRaw);
+  const value = Number.isFinite(durationValue) && durationValue >= 0 ? durationValue : 1;
+  const unit = (typeof durationUnitRaw === 'string' && durationUnitRaw) ? durationUnitRaw : (typeof durationUnitRaw === 'number' && Number.isFinite(durationUnitRaw)) ? String(durationUnitRaw) : 'day';
+
+  const prizePool = Number(competition.prizePool);
+  const prizePoolNum = Number.isFinite(prizePool) && prizePool >= 0 ? prizePool : 0;
+
+  // downloadTitles: from array or from flat keys downloadTitles[0], downloadTitles[1], ...
+  let downloadTitles = competition.downloadTitles ?? [];
+  if (!Array.isArray(downloadTitles) || downloadTitles.length === 0) {
+    downloadTitles = [];
+    let i = 0;
+    while (competition[`downloadTitles[${i}]`] !== undefined) {
+      downloadTitles.push(competition[`downloadTitles[${i}]`]);
+      i += 1;
+    }
+  }
+
+  form.append('name', competition.name ?? '');
+  form.append('category', competition.category ?? '');
+  form.append('description', competition.description ?? '');
+  form.append('prizePool', String(prizePoolNum));
+  form.append('teamRequirements[minMembers]', String(minMembers));
+  form.append('teamRequirements[maxMembers]', String(maxMembers));
+  form.append('duration[value]', String(value));
+  form.append('duration[unit]', unit);
+  downloadTitles.forEach((title, i) => form.append(`downloadTitles[${i}]`, title));
+  form.append('rulesAndRegulations', competition.rulesAndRegulations ?? '');
+  form.append('trainingResourseUrl', competition.trainingResourseUrl ?? '');
+  form.append('pastWinnerUrl', competition.pastWinnerUrl ?? '');
+  form.append('globalRankingeUrl', competition.globalRankingeUrl ?? '');
+  form.append('hasBots', competition.hasBots !== undefined ? String(competition.hasBots) : 'false');
+  form.append('isActive', competition.isActive !== undefined ? String(competition.isActive) : 'true');
+  form.append('event_id', competition.event_id ?? competition.eventId ?? '');
+  form.append('season_id', competition.season_id ?? competition.seasonId ?? '');
+
+  const bannerImage = competition.bannerImage;
+  if (bannerImage instanceof File) {
+    form.append('bannerImage', bannerImage);
+  } else if (bannerImage && typeof bannerImage === 'string') {
+    form.append('bannerImage', bannerImage);
+  }
+
+  return form;
+};
+
+/**
+ * Add a competition (payload sent as FormData)
+ * @param {object} competition - Competition fields (see buildCompetitionFormData); bannerImage can be File or string
+ * @returns {Promise<{ success: boolean, data?: object }>}
+ */
+export const addCompetition = async (competition) => {
+  const formData = buildCompetitionFormData(competition);
+  const response = await fetch(`${API_BASE_URL}${apiRoutes.competition.add}`, {
+    method: 'POST',
+    body: formData,
+    // Do not set Content-Type; browser sets multipart/form-data with boundary
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to add competition (${response.status})`);
+  }
+  return data;
+};
+
+/**
+ * Update a competition (PUT, payload sent as FormData)
+ * Endpoint: PUT /api/competition/update/{_id} (e.g. https://worso-backend-psi.vercel.app/api/competition/update/{_id})
+ * @param {string} _id - Competition _id
+ * @param {object} competition - Competition fields (flat bracket keys or nested); bannerImage can be File or string
+ * @returns {Promise<{ success: boolean, data?: object }>}
+ */
+export const updateCompetition = async (_id, competition) => {
+  const formData = buildCompetitionFormData(competition);
+  const response = await fetch(`${API_BASE_URL}${apiRoutes.competition.update(_id)}`, {
+    method: 'PUT',
+    body: formData,
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to update competition (${response.status})`);
+  }
+  return data;
+};
+
+/**
+ * Delete a competition
+ * @param {string} _id - Competition _id
+ * @returns {Promise<{ success: boolean }>}
+ */
+export const deleteCompetition = async (_id) => {
+  const response = await fetch(`${API_BASE_URL}${apiRoutes.competition.delete(_id)}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to delete competition (${response.status})`);
+  }
   return data;
 };
