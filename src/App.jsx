@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
+import { ToastProvider } from './contexts/ToastContext';
+import { ToastContainer } from './components/Toast';
 import './App.css';
 
 import LiveTicker from './components/LiveTicker';
@@ -266,10 +268,12 @@ const AppContent = ({
   };
 
   return (
-    <div
-      className={`font-sans antialiased text-slate-900 bg-white min-h-screen flex flex-col ${getSelectionClasses()}`}
-    >
-      <PartnerWebsiteRedirect />
+    <ToastProvider>
+      <div
+        className={`font-sans antialiased text-slate-900 bg-white min-h-screen flex flex-col ${getSelectionClasses()}`}
+      >
+        <ToastContainer />
+        <PartnerWebsiteRedirect />
       <LocationRouteHandler />
       <LiveTicker tickerText={tickerText} siteConfig={currentSite} />
       <Navigation
@@ -360,7 +364,8 @@ const AppContent = ({
 
       <AIReferee siteConfig={currentSite} />
       <Footer setView={setViewRespectingLocation} locationPrefix={locationPrefix} switchSite={switchSite} currentSite={currentSite} />
-    </div>
+      </div>
+    </ToastProvider>
   );
 };
 

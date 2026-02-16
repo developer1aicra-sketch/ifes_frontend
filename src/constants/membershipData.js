@@ -1,3 +1,5 @@
+import { Briefcase, Building2, GraduationCap, School } from "lucide-react";
+
 export const CATEGORIES = [
   {
     id: "student",
@@ -28,7 +30,12 @@ export const CATEGORIES = [
     color: "#D97706"
   }
 ];
-
+export const categoryIcons = [
+  GraduationCap, // index 0
+  Briefcase,     // index 1
+  School,        // index 2
+  Building2      // index 3
+];
 export const STUDENT_PLANS = [
   {
     id: "basic",

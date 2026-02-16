@@ -15,21 +15,26 @@ export const useMembershipForm = () => {
     designation: '',
     email: '',
     phone: '',
+    countryCode: '+91', // Default to India
+    otp: '',
+    categoryId: '',
+    planId: '',
     dateOfBirth: '',
     gender: '',
     tshirtSize: '',
     address: '',
     city: '',
     state: '',
-    country: '',
+    country: 'CN', // Default to China
     institute: '',
     grade: '',
+    personalAndShippingAddress: {},
     currentFormStep: 1
   });
 
-  const handleCategorySelect = (categoryId) => {
-    setSelectedCategory(categoryId);
-  };
+  // const handleCategorySelect = (categoryId) => {
+  //   setSelectedCategory(categoryId);
+  // };
 
   const handleContinue = () => {
     if (currentStep < 3) {
@@ -53,6 +58,8 @@ export const useMembershipForm = () => {
 
   const prevStepCategory = () => {
     setCurrentStep(0);
+    // Reset form step to 1 (PersonalInfoForm) when going back to category selection
+    setFormData(prev => ({ ...prev, currentFormStep: 1 }));
   };
 
   const handlePayment = () => {
@@ -76,7 +83,7 @@ export const useMembershipForm = () => {
     setSelectedPayment,
     formData,
     updateFormData,
-    handleCategorySelect,
+    // handleCategorySelect,
     handleContinue,
     handleBack,
     nextStep,
