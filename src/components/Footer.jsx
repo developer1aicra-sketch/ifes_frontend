@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaYoutube } from "react-icons/fa";
 import { Mail, Phone, MapPin } from "lucide-react";
 import logo from '../assets/logo.png';
 import { fetchPartners, getCurrentSubdomain, findPartnerBySubdomain, getPrimaryPartnerByLocation } from '../utils/api';
 import { useTheme } from '../contexts/ThemeContext';
-import { getThemeConfig } from '../utils/theme';
 import LocationSwitcher, { DEFAULT_LOCATION_CODES } from './LocationSwitcher';
 
 const Footer = ({ setView, switchSite, currentSite }) => {
@@ -12,6 +12,23 @@ const Footer = ({ setView, switchSite, currentSite }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { updateTheme, themeConfig, selectedLocation } = useTheme();
+  const routerLocation = useLocation();
+
+  // Route countryCode (e.g. /TH, /AE). If present, LocationRouteHandler owns theme switching.
+  const routeCountryCode = useMemo(() => {
+    const seg = routerLocation.pathname.split('/').filter(Boolean)[0];
+    const code = seg ? String(seg).toUpperCase().trim() : null;
+    if (!code) return null;
+    const isTwoLetter = code.length === 2 && /^[A-Z]{2}$/.test(code);
+    return isTwoLetter ? code : null;
+  }, [routerLocation.pathname]);
+
+  const activeCountryCode = routeCountryCode || selectedLocation || null;
+
+  const activePartner = useMemo(() => {
+    if (!activeCountryCode || !partners?.length) return null;
+    return getPrimaryPartnerByLocation(partners, activeCountryCode);
+  }, [partners, activeCountryCode]);
 
   useEffect(() => {
     const loadPartners = async () => {
@@ -21,49 +38,6 @@ const Footer = ({ setView, switchSite, currentSite }) => {
         
         if (data.success && data.partners && data.partners.length > 0) {
           setPartners(data.partners);
-          
-          // Check if there's a persisted location selection (from route or localStorage)
-          if (selectedLocation) {
-            const locationPartner = getPrimaryPartnerByLocation(data.partners, selectedLocation);
-            if (locationPartner?.themeColor) {
-              console.log(`[Footer] Applying persisted theme: ${locationPartner.themeColor} for ${selectedLocation}`);
-              updateTheme(locationPartner.themeColor, selectedLocation);
-              return;
-            }
-          }
-          
-          // Only apply default theme if no location is selected (don't override route-based theme)
-          // Check if we're on a location route
-          const currentPath = window.location.pathname;
-          const pathSegments = currentPath.split('/').filter(Boolean);
-          const routeLocationCode = pathSegments[0]?.toUpperCase();
-          const isLocationRoute = routeLocationCode && routeLocationCode.length === 2 && /^[A-Z]{2}$/.test(routeLocationCode);
-          
-          if (isLocationRoute) {
-            console.log(`[Footer] Location route detected (${routeLocationCode}), skipping default theme`);
-            return; // Let LocationRouteHandler handle it
-          }
-          
-          // Try to find partner by current subdomain first
-          const currentSubdomain = getCurrentSubdomain();
-          let partnerToUse = null;
-          
-          if (currentSubdomain) {
-            partnerToUse = findPartnerBySubdomain(data.partners, currentSubdomain);
-          }
-          
-          // Fallback to first active partner or first partner (only if not on location route)
-          if (!partnerToUse && !isLocationRoute) {
-            partnerToUse = data.partners.find(p => p.isActive) || data.partners[0];
-          }
-          
-          // Apply theme from the selected partner (only if not on location route)
-          if (partnerToUse?.themeColor && !isLocationRoute) {
-            console.log(`[Footer] Initial theme applied: ${partnerToUse.themeColor} from partner ${partnerToUse.academyName} (${partnerToUse.location})`);
-            updateTheme(partnerToUse.themeColor, partnerToUse.location);
-          } else if (!isLocationRoute) {
-            console.warn('[Footer] No themeColor found in partner data');
-          }
         }
         setError(null);
       } catch (err) {
@@ -78,40 +52,70 @@ const Footer = ({ setView, switchSite, currentSite }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Map location code -> themeColor for LocationSwitcher (RW, RO, AE, CL). API data + Blue fallback.
+  // Build country codes for LocationSwitcher from API (fallback to DEFAULT_LOCATION_CODES)
+  const countryCodes = useMemo(() => {
+    const fromApi = partners
+      .filter((p) => p?.isActive && p?.countryCode)
+      .map((p) => String(p.countryCode).toUpperCase().trim())
+      .filter(Boolean);
+    const unique = Array.from(new Set(fromApi));
+    return unique.length > 0 ? unique : DEFAULT_LOCATION_CODES;
+  }, [partners]);
+
+  // Map countryCode -> themeColor for LocationSwitcher. API data + Blue fallback.
   const locationThemeMap = useMemo(() => {
     const map = {};
-    DEFAULT_LOCATION_CODES.forEach(code => {
+    countryCodes.forEach(code => {
       map[code] = 'Blue';
     });
     partners.forEach(partner => {
-      if (partner.location && partner.isActive && partner.themeColor) {
-        const code = String(partner.location).toUpperCase();
-        if (DEFAULT_LOCATION_CODES.includes(code)) {
+      const code = partner?.countryCode ? String(partner.countryCode).toUpperCase().trim() : null;
+      if (code && partner.isActive && partner.themeColor) {
+        if (countryCodes.includes(code)) {
           map[code] = partner.themeColor;
         }
       }
     });
     return map;
-  }, [partners]);
+  }, [partners, countryCodes]);
 
-  // Legacy: unique locations from partners (for backward compatibility if needed elsewhere)
-  const locationsWithPartners = useMemo(() => {
-    const locationMap = new Map();
-    partners.forEach(partner => {
-      if (partner.location && partner.isActive && partner.themeColor) {
-        if (!locationMap.has(partner.location)) {
-          locationMap.set(partner.location, {
-            code: partner.location,
-            themeColor: partner.themeColor,
-            partner: partner,
-            academyName: partner.academyName,
-          });
-        }
+  // Apply theme when NOT on a country route:
+  // - priority: selectedLocation (persisted) -> subdomain partner -> first active
+  useEffect(() => {
+    if (!partners?.length) return;
+    if (routeCountryCode) return; // Route handler should own theme selection on /XX
+
+    // 1) Persisted selection (countryCode)
+    if (selectedLocation) {
+      const locationPartner = getPrimaryPartnerByLocation(partners, selectedLocation);
+      if (locationPartner?.themeColor) {
+        updateTheme(locationPartner.themeColor, selectedLocation);
+        return;
       }
-    });
-    return Array.from(locationMap.values());
-  }, [partners]);
+    }
+
+    // 2) Subdomain partner
+    const currentSubdomain = getCurrentSubdomain();
+    let partnerToUse = null;
+    if (currentSubdomain) {
+      partnerToUse = findPartnerBySubdomain(partners, currentSubdomain);
+    }
+
+    // 3) Fallback
+    if (!partnerToUse) {
+      partnerToUse = partners.find(p => p.isActive) || partners[0];
+    }
+
+    const partnerCode = partnerToUse?.countryCode ? String(partnerToUse.countryCode).toUpperCase().trim() : null;
+    if (partnerToUse?.themeColor) {
+      updateTheme(partnerToUse.themeColor, partnerCode);
+    }
+  }, [partners, routeCountryCode, selectedLocation, updateTheme]);
+
+  const footerEmail = activePartner?.footerInfo?.email || activePartner?.contactEmail || 'info@worso.in';
+  const footerPhone = activePartner?.footerInfo?.phone || activePartner?.phoneNumber || '+91 7835053333';
+  const footerAddress = activePartner?.footerInfo?.address || activePartner?.location || '';
+  const social = activePartner?.socialLinks || {};
 
   return (
     <footer className={`${themeConfig?.colors?.gradient || 'bg-[#0f172a]'} text-slate-400 py-16`}>
@@ -145,29 +149,54 @@ const Footer = ({ setView, switchSite, currentSite }) => {
               <div className="flex items-center gap-3">
                 <Mail size={16} className="text-slate-500" />
                 <a
-                  href="mailto:info@worso.in"
+                  href={`mailto:${footerEmail}`}
                   className="text-sm hover:text-white transition-colors"
                 >
-                  info@worso.in
+                  {footerEmail}
                 </a>
               </div>
               <div className="flex items-center gap-3">
                 <Phone size={16} className="text-slate-500" />
                 <a
-                  href="tel:+917835053333"
+                  href={`tel:${footerPhone}`}
                   className="text-sm hover:text-white transition-colors"
                 >
-                  +91 7835053333</a>
+                  {footerPhone}</a>
               </div>
               
-              {/* Delhi location routes: RW, RO, AE, CL – opens /RW, /RO, /AE, /CL with theme */}
+              {/* Country routes: /TH, /VN, /AE, etc – opens /XX and applies partner themeColor */}
               <div className="flex items-center gap-3 mt-4">
                 <MapPin size={16} className="text-slate-500 flex-shrink-0" />
-                <LocationSwitcher
-                  regionLabel="Delhi"
-                  locationCodes={DEFAULT_LOCATION_CODES}
-                  locationThemeMap={locationThemeMap}
-                />
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <LocationSwitcher
+                      regionLabel="Country"
+                      locationCodes={countryCodes}
+                      locationThemeMap={locationThemeMap}
+                    />
+                    <span className="text-xs text-slate-300 border border-white/10 bg-white/5 px-2 py-1 rounded-md">
+                      Active: <span className="font-bold text-white">{activeCountryCode || 'GLOBAL'}</span>
+                      {activePartner?.themeColor ? (
+                        <span className="ml-2 text-slate-300">Theme: <span className="font-semibold text-white">{activePartner.themeColor}</span></span>
+                      ) : null}
+                    </span>
+                  </div>
+                  {footerAddress ? (
+                    <div className="text-xs text-slate-400">
+                      {footerAddress}
+                    </div>
+                  ) : null}
+                  {error ? (
+                    <div className="text-xs text-red-300">
+                      {error}
+                    </div>
+                  ) : null}
+                  {loading ? (
+                    <div className="text-xs text-slate-500">
+                      Loading partners…
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </div>
 
@@ -177,21 +206,28 @@ const Footer = ({ setView, switchSite, currentSite }) => {
               <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">Follow Us</h4>
               <div className="flex gap-4 text-xl">
                 <a
-                  href="https://www.facebook.com/WORSOcommunity"
+                  href={social.facebook || "https://www.facebook.com/WORSOcommunity"}
                   className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
                   aria-label="Facebook"
                 >
                   <FaFacebookF />
                 </a>
                 <a
-                  href="https://in.linkedin.com/company/worso"
+                  href={social.instagram || "https://www.instagram.com/worsoassociation"}
+                  className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
+                  aria-label="Instagram"
+                >
+                  <FaInstagram />
+                </a>
+                <a
+                  href={social.linkedin || "https://in.linkedin.com/company/worso"}
                   className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
                   aria-label="LinkedIn"
                 >
                   <FaLinkedinIn />
                 </a>
                 <a
-                  href="https://www.youtube.com/@WORSOassociation"
+                  href={social.youtube || "https://www.youtube.com/@WORSOassociation"}
                   className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
                   aria-label="YouTube"
                 >

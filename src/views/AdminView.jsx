@@ -1009,14 +1009,14 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                           <span className="text-slate-500 block">Students</span>
                           <span className="font-semibold text-slate-900">{partner.studentsCount ?? 0}</span>
                         </div>
-                        <div>
+                        {/* <div>
                           <span className="text-slate-500 block">Subdomain</span>
                           <span className="font-semibold text-slate-900 break-all">{partner.subdomain ?? '—'}</span>
-                        </div>
-                        <div>
+                        </div> */}
+                        {/* <div>
                           <span className="text-slate-500 block">Website</span>
                           <a href={partner.partnerWebsite} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 hover:underline break-all">{partner.partnerWebsite ?? '—'}</a>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
                   )}

@@ -98,9 +98,16 @@ export const findPartnerBySubdomain = (partners, subdomain) => {
 export const findPartnersByLocation = (partners, locationCode) => {
   if (!partners || !locationCode) return [];
 
-  return partners.filter(
-    partner => partner.location === locationCode && partner.isActive
-  );
+  const code = String(locationCode).toUpperCase().trim();
+  return partners.filter((partner) => {
+    if (!partner?.isActive) return false;
+    // New backend shape: countryCode is the canonical 2-letter identifier (e.g. AE, TH)
+    const partnerCountryCode = partner.countryCode ? String(partner.countryCode).toUpperCase().trim() : null;
+    if (partnerCountryCode && partnerCountryCode === code) return true;
+    // Backward compatibility: some older data used "location" as the 2-letter code
+    const partnerLocation = partner.location ? String(partner.location).toUpperCase().trim() : null;
+    return Boolean(partnerLocation && partnerLocation === code);
+  });
 };
 
 /**
