@@ -14,14 +14,19 @@ import {
   Network,
   ServerCog,
   LayoutDashboard,
+  ExternalLink,
+  Play,
 } from 'lucide-react';
 import LogoTicker from '../components/LogoTicker';
 import FeaturedShopSection from '../components/FeaturedShopSection';
 import { NavLink } from 'react-router-dom';
 import { useThemeClasses } from '../hooks/useThemeClasses';
+import { fetchPartnerHome } from '../utils/api';
+import { useLocationPrefix } from '../hooks/useLocationPrefix';
 
-const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError }) => {
+const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError, locationCode }) => {
   const theme = useThemeClasses();
+  const { locationPrefix } = useLocationPrefix();
   void motion;
 
   const [latestNewsIndex, setLatestNewsIndex] = useState(0);
@@ -31,11 +36,65 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
   /** ✅ FIX: parent-controlled open state (Zoom-style) */
   const [openRows, setOpenRows] = useState({});
 
+  // Partner home data state
+  const [partnerHomeData, setPartnerHomeData] = useState(null);
+  const [partnerHomeLoading, setPartnerHomeLoading] = useState(false);
+  const [partnerHomeError, setPartnerHomeError] = useState(null);
 
-  const preparedNews = useMemo(() => newsItems.filter(Boolean), [newsItems]);
+  // Fetch partner home data when locationCode is present
+  useEffect(() => {
+    if (!locationCode) return;
+
+    const loadPartnerHome = async () => {
+      setPartnerHomeLoading(true);
+      setPartnerHomeError(null);
+      try {
+        const data = await fetchPartnerHome(locationCode);
+        if (data.success) {
+          setPartnerHomeData(data);
+        } else {
+          setPartnerHomeError('Failed to load partner home data');
+        }
+      } catch (error) {
+        console.error('Error fetching partner home:', error);
+        setPartnerHomeError(error.message || 'Failed to load partner home data');
+      } finally {
+        setPartnerHomeLoading(false);
+      }
+    };
+
+    loadPartnerHome();
+  }, [locationCode]);
+
+
+  // Use partner home news if available, otherwise use props newsItems
+  const newsData = useMemo(() => {
+    if (partnerHomeData?.news && partnerHomeData.news.length > 0) {
+      return partnerHomeData.news.filter(item => item.isActive).map(item => ({
+        id: item._id,
+        title: item.title,
+        body: item.description,
+        desc: item.description,
+        category: item.type || 'GENERAL',
+        date: new Date().toLocaleDateString(),
+        featuredImage: item.image,
+      }));
+    }
+    return newsItems;
+  }, [partnerHomeData?.news, newsItems]);
+
+  const preparedNews = useMemo(() => newsData.filter(Boolean), [newsData]);
   const headline = preparedNews[0];
   const latestPool = preparedNews.slice(1);
   const mostReadPool = [...preparedNews].reverse().slice(1);
+
+  // Helper function to build paths with location prefix
+  const buildPath = (path) => {
+    if (locationPrefix && path) {
+      return `${locationPrefix}${path.startsWith('/') ? path : `/${path}`}`;
+    }
+    return path || '#';
+  };
 
   useEffect(() => {
     if (latestPool.length < 2) return;
@@ -53,6 +112,39 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
     return () => clearInterval(i);
   }, [mostReadPool.length]);
 
+  // Show loading state
+  if (partnerHomeLoading && locationCode) {
+    return (
+      <div className="animate-fadeIn bg-slate-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading partner home data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (partnerHomeError && locationCode) {
+    return (
+      <div className="animate-fadeIn bg-slate-50 min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="text-red-600 mb-4">
+            <Shield size={48} className="mx-auto" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Error Loading Content</h2>
+          <p className="text-slate-600 mb-4">{partnerHomeError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="animate-fadeIn bg-slate-50">
       <div className={`relative min-h-[600px] flex items-center ${theme.bgGradient || siteConfig.colors.gradient} text-white overflow-hidden`}>
@@ -65,26 +157,53 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
                   <Shield size={12} /> Global Regulatory Body
                 </div>
               )}
+              {/* Banner Image */}
+              {partnerHomeData?.home?.bannerImage && (
+                <div className="absolute inset-0 z-0">
+                  <img 
+                    src={partnerHomeData.home.bannerImage} 
+                    alt={partnerHomeData.home.title || 'Banner'} 
+                    className="w-full h-full object-cover opacity-20"
+                  />
+                </div>
+              )}
+              
               <h1 className="text-6xl md:text-7xl font-bold leading-tight tracking-tight">
-                {siteConfig.is_partner ? 'The governing body ' : 'The governing body'} <br />
-                <span className={theme.textLight || (siteConfig.is_partner ? 'text-emerald-400' : 'text-blue-400')}>for sport of robotics.</span>
+                {partnerHomeData?.home?.title || (siteConfig.is_partner ? 'The governing body ' : 'The governing body')} <br />
+                {!partnerHomeData?.home?.title && (
+                  <span className={theme.textLight || (siteConfig.is_partner ? 'text-emerald-400' : 'text-blue-400')}>for sport of robotics.</span>
+                )}
               </h1>
               <p className="text-lg text-slate-300 max-w-xl leading-relaxed">
-                {siteConfig.is_partner
+                {partnerHomeData?.home?.subtitle || (siteConfig.is_partner
                   ? `Technoxian ${siteConfig.name.split(' ')[1]} runs autonomous qualifiers on a protected WORSO shell—local language, local sponsors, global rulebook.`
-                  : 'WORSO sets the root rules, partners operate subdomains, and every chapter inherits the global brand without losing local context.'}
+                  : 'WORSO sets the root rules, partners operate subdomains, and every chapter inherits the global brand without losing local context.')}
               </p>
 
               <div className="flex flex-wrap gap-4 pt-6">
-                <button
-                  onClick={() => setView('technoxian')}
-                  className={`${theme.bgPrimary || siteConfig.colors.primary} px-8 py-4 rounded-lg font-bold text-base transition-all shadow-lg flex items-center gap-2 hover:-translate-y-1`}
-                >
-                  {siteConfig.is_partner ? 'View Local Events' : 'Explore Technoxian'} <ArrowRight size={18} />
-                </button>
-                <button onClick={() => setView('teams')} className="bg-transparent border border-white/20 hover:bg-white/10 px-8 py-4 rounded-lg font-bold text-base transition-all flex items-center gap-2">
-                  <Users size={18} /> Teams & Rankings
-                </button>
+                {partnerHomeData?.quickLinks && partnerHomeData.quickLinks.length > 0 ? (
+                  partnerHomeData.quickLinks.slice(0, 2).map((link) => (
+                    <NavLink
+                      key={link._id}
+                      to={buildPath(link.url)}
+                      className={`${theme.bgPrimary || siteConfig.colors.primary} px-8 py-4 rounded-lg font-bold text-base transition-all shadow-lg flex items-center gap-2 hover:-translate-y-1`}
+                    >
+                      {link.title} <ArrowRight size={18} />
+                    </NavLink>
+                  ))
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setView('technoxian')}
+                      className={`${theme.bgPrimary || siteConfig.colors.primary} px-8 py-4 rounded-lg font-bold text-base transition-all shadow-lg flex items-center gap-2 hover:-translate-y-1`}
+                    >
+                      {siteConfig.is_partner ? 'View Local Events' : 'Explore Technoxian'} <ArrowRight size={18} />
+                    </button>
+                    <button onClick={() => setView('teams')} className="bg-transparent border border-white/20 hover:bg-white/10 px-8 py-4 rounded-lg font-bold text-base transition-all flex items-center gap-2">
+                      <Users size={18} /> Teams & Rankings
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -106,17 +225,33 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
                         <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
                         {siteConfig.is_partner ? 'Next Local Event' : 'Upcoming Championship'}
                       </div>
-                      <h2 className="text-2xl font-bold text-white">Technoxian World Cup '26</h2>
+                      <h2 className="text-2xl font-bold text-white">
+                        {partnerHomeData?.event?.title || 'Technoxian World Cup \'26'}
+                      </h2>
                     </div>
                     <Trophy size={32} className="text-white/30 group-hover:text-yellow-400 transition-colors" />
                   </div>
                   <div className="flex gap-4 text-xs font-bold text-white/90 relative z-10">
-                    <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
-                      <MapPin size={12} /> Dubai, UAE
-                    </div>
-                    <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
-                      <Calendar size={12} /> Oct 12-15
-                    </div>
+                    {partnerHomeData?.event?.location && (
+                      <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
+                        <MapPin size={12} /> {partnerHomeData.event.location}
+                      </div>
+                    )}
+                    {partnerHomeData?.event?.date && (
+                      <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
+                        <Calendar size={12} /> {partnerHomeData.event.date}
+                      </div>
+                    )}
+                    {!partnerHomeData?.event && (
+                      <>
+                        <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
+                          <MapPin size={12} /> Dubai, UAE
+                        </div>
+                        <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
+                          <Calendar size={12} /> Oct 12-15
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -136,18 +271,43 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
         </div>
       </div>
 
-      <div className="bg-white border-b border-slate-200 py-10">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-slate-100">
-            {[{ label: 'Member Nations', val: '95+' }, { label: 'Registered Teams', val: '120k+' }, { label: 'Global Spectators', val: '2.5M' }, { label: 'Prize Pool', val: '$250k' }].map((stat, i) => (
-              <div key={i}>
-                <div className={`text-4xl font-extrabold ${theme.textPrimary || (siteConfig.is_partner ? 'text-emerald-600' : 'text-blue-600')}`}>{stat.val}</div>
-                <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">{stat.label}</div>
-              </div>
-            ))}
+      {/* Stats Section */}
+      {partnerHomeData?.stats && (
+        <div className="bg-white border-b border-slate-200 py-10">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-slate-100">
+              {[
+                { label: 'Students', val: partnerHomeData.stats.studentsCount || 0 },
+                { label: 'Performance Score', val: partnerHomeData.stats.performanceScore || 0 },
+                { label: 'Revenue', val: `$${partnerHomeData.stats.revenue || 0}` },
+                { label: 'Total Revenue', val: `$${partnerHomeData.stats.totalRevenue || 0}` },
+              ].map((stat, i) => (
+                <div key={i}>
+                  <div className={`text-4xl font-extrabold ${theme.textPrimary || (siteConfig.is_partner ? 'text-emerald-600' : 'text-blue-600')}`}>
+                    {stat.val}
+                  </div>
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">{stat.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
+      
+      {!partnerHomeData?.stats && (
+        <div className="bg-white border-b border-slate-200 py-10">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-slate-100">
+              {[{ label: 'Member Nations', val: '95+' }, { label: 'Registered Teams', val: '120k+' }, { label: 'Global Spectators', val: '2.5M' }, { label: 'Prize Pool', val: '$250k' }].map((stat, i) => (
+                <div key={i}>
+                  <div className={`text-4xl font-extrabold ${theme.textPrimary || (siteConfig.is_partner ? 'text-emerald-600' : 'text-blue-600')}`}>{stat.val}</div>
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {!siteConfig.is_partner && (
         <section className="py-20 bg-slate-50 container mx-auto px-4">
@@ -179,127 +339,188 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError 
       )}
 
       {!siteConfig.is_partner && <LogoTicker />}
-           <FeaturedShopSection/>
-      {/* Video Section */}
-      <section className="py-16 bg-white border-t border-slate-100">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-slate-900">Latest Videos</h2>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setView('videos')}
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
-              >
-                See More
-                <ChevronRight size={18} />
-              </button>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const container = document.getElementById('video-carousel');
-                    container.scrollBy({ left: -400, behavior: 'smooth' });
-                  }}
-                  className="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
-                  aria-label="Previous videos"
+      
+      {/* Quick Links Section */}
+      {partnerHomeData?.quickLinks && partnerHomeData.quickLinks.length > 0 && (
+        <section className="py-16 bg-white border-t border-slate-100">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">Quick Links</h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {partnerHomeData.quickLinks.map((link) => (
+                <NavLink
+                  key={link._id}
+                  to={buildPath(link.url)}
+                  className="p-6 bg-slate-50 rounded-xl border border-slate-200 hover:bg-blue-50 hover:border-blue-300 transition-all hover:-translate-y-1 group"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left">
-                    <path d="m15 18-6-6 6-6" />
-                  </svg>
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const container = document.getElementById('video-carousel');
-                    container.scrollBy({ left: 400, behavior: 'smooth' });
-                  }}
-                  className="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
-                  aria-label="Next videos"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right">
-                    <path d="m9 18 6-6-6-6" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative group">
-            <div id="video-carousel" className="flex overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory">
-              <div className="flex space-x-8">
-                {[
-                  {
-                    id: 1,
-                    title: 'Championship Finals 2023 Highlights',
-                    date: 'Mar 15, 2023',
-                    description: 'Watch the most exciting moments from the championship finals.',
-                    duration: '12:45'
-                  },
-                  {
-                    id: 2,
-                    title: 'Behind the Scenes: Team Preparations',
-                    date: 'Feb 28, 2023',
-                    description: 'Exclusive look at how teams prepare for the big competition.',
-                    duration: '8:22'
-                  },
-                  {
-                    id: 3,
-                    title: 'Robot Showcase: Best of 2023',
-                    date: 'Feb 15, 2023',
-                    description: 'See the most innovative robot designs from this year\'s competition.',
-                    duration: '15:30'
-                  },
-                  {
-                    id: 4,
-                    title: 'Interview with the Champions',
-                    date: 'Feb 1, 2023',
-                    description: 'Hear from the winning team about their journey to victory.',
-                    duration: '9:45'
-                  },
-                  {
-                    id: 5,
-                    title: 'Judges Panel Discussion',
-                    date: 'Jan 20, 2023',
-                    description: 'Our judges discuss what makes a winning performance.',
-                    duration: '18:15'
-                  },
-                  {
-                    id: 6,
-                    title: 'Future of Robotics Competition',
-                    date: 'Jan 5, 2023',
-                    description: 'Experts discuss emerging trends in competitive robotics.',
-                    duration: '22:10'
-                  }
-                ].map((video) => (
-                  <div key={video.id} className="flex-shrink-0 w-[320px] snap-start bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition-all hover:-translate-y-1">
-                    <div className="relative pt-[56.25%] bg-slate-100 overflow-hidden group">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center transform transition-all duration-300 group-hover:scale-110">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600 ml-1">
-                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                          </svg>
-                        </div>
-                      </div>
-                      <div className="absolute bottom-4 left-4 bg-black/70 text-white text-sm px-3 py-1 rounded-full">
-                        {video.duration}
-                      </div>
-                    </div>
-                    <div className="p-5">
-                      <div className="text-sm text-slate-500 mb-2 font-medium">{video.date}</div>
-                      <h3 className="font-semibold text-lg text-slate-900 line-clamp-2 mb-3 leading-tight">
-                        {video.title}
-                      </h3>
-                      <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
-                        {video.description}
-                      </p>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+                      {link.title}
+                    </span>
+                    <ChevronRight className="text-slate-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" size={20} />
                   </div>
-                ))}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+      
+      <FeaturedShopSection/>
+      {/* Video Section */}
+      {(partnerHomeData?.videos && partnerHomeData.videos.length > 0) && (
+        <section className="py-16 bg-white border-t border-slate-100">
+          <div className="container mx-auto px-4">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-bold text-slate-900">Latest Videos</h2>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const container = document.getElementById('video-carousel');
+                      container?.scrollBy({ left: -400, behavior: 'smooth' });
+                    }}
+                    className="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+                    aria-label="Previous videos"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left">
+                      <path d="m15 18-6-6 6-6" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const container = document.getElementById('video-carousel');
+                      container?.scrollBy({ left: 400, behavior: 'smooth' });
+                    }}
+                    className="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+                    aria-label="Next videos"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative group">
+              <div id="video-carousel" className="flex overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory">
+                <div className="flex space-x-8">
+                  {partnerHomeData.videos
+                    .filter(video => video.isActive)
+                    .map((video) => (
+                      <a
+                        key={video._id}
+                        href={video.youtubeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-shrink-0 w-[320px] snap-start bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition-all hover:-translate-y-1"
+                      >
+                        <div className="relative pt-[56.25%] bg-slate-100 overflow-hidden group">
+                          {video.thumbnail ? (
+                            <img 
+                              src={video.thumbnail} 
+                              alt={video.title}
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600">
+                              <Play className="w-20 h-20 text-white" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
+                            <div className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center transform transition-all duration-300 group-hover:scale-110 opacity-0 group-hover:opacity-100">
+                              <Play className="text-blue-600 ml-1" size={28} fill="currentColor" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-5">
+                          <h3 className="font-semibold text-lg text-slate-900 line-clamp-2 mb-3 leading-tight">
+                            {video.title}
+                          </h3>
+                        </div>
+                      </a>
+                    ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* Products Section */}
+      {partnerHomeData?.products && partnerHomeData.products.length > 0 && (
+        <section className="py-16 bg-slate-50 border-t border-slate-100">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-slate-900 mb-8">Featured Products</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {partnerHomeData.products
+                .filter(product => product.isActive)
+                .map((product) => (
+                  <NavLink
+                    key={product._id}
+                    to={buildPath(product.buyLink)}
+                    className="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition-all hover:-translate-y-1"
+                  >
+                    {product.image && (
+                      <div className="relative pt-[56.25%] bg-slate-100 overflow-hidden">
+                        <img 
+                          src={product.image} 
+                          alt={product.title}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="p-5">
+                      <h3 className="font-semibold text-lg text-slate-900 mb-2 line-clamp-2">
+                        {product.title}
+                      </h3>
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl font-bold text-blue-600">
+                          {product.currency || 'USD'} {product.price}
+                        </span>
+                        <ExternalLink className="text-slate-400" size={20} />
+                      </div>
+                    </div>
+                  </NavLink>
+                ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Supporters Section */}
+      {partnerHomeData?.supporters && partnerHomeData.supporters.length > 0 && (
+        <section className="py-16 bg-white border-t border-slate-100">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">Our Supporters</h2>
+            <div className="grid md:grid-cols-4 gap-8 items-center justify-items-center">
+              {partnerHomeData.supporters
+                .filter(supporter => supporter.isActive)
+                .map((supporter) => (
+                  <a
+                    key={supporter._id}
+                    href={supporter.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center p-6 bg-white rounded-lg border border-slate-200 hover:shadow-md transition-all hover:-translate-y-1"
+                  >
+                    {supporter.logo ? (
+                      <img 
+                        src={supporter.logo} 
+                        alt={supporter.name}
+                        className="max-h-16 max-w-full object-contain"
+                      />
+                    ) : (
+                      <span className="text-slate-600 font-medium">{supporter.name}</span>
+                    )}
+                  </a>
+                ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="py-16 bg-white border-t border-slate-100">
         <div className="container mx-auto px-4">

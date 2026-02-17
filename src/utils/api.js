@@ -306,6 +306,71 @@ export const updatePartner = async (partnerId, token, payload) => {
   return data;
 };
 
+// --- Partner Home Content API ---
+
+/**
+ * Partner home content API base URL (uses amber backend)
+ */
+const PARTNER_HOME_API_BASE_URL = 'https://worso-backend-amber.vercel.app/api';
+
+/**
+ * Fetch partner home content by country code
+ * @param {string} countryCode - Country code (e.g., "IN", "TH")
+ * @returns {Promise<{ success: boolean, home?: object, event?: object, socialLinks?: object, footer?: object, quickLinks?: Array, videos?: Array, products?: Array, news?: Array, supporters?: Array, stats?: object }>}
+ */
+export const fetchPartnerHome = async (countryCode) => {
+  try {
+    const response = await fetch(`${PARTNER_HOME_API_BASE_URL}/partners/home/${countryCode}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching partner home:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update partner home content
+ * @param {string} partnerId - Partner _id
+ * @param {string} token - JWT from partner login (optional, may be required by backend)
+ * @param {object} payload - Partner home content to update
+ * @returns {Promise<{ success: boolean, ... }>}
+ */
+export const updatePartnerHome = async (partnerId, token, payload) => {
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${PARTNER_HOME_API_BASE_URL}/partners/${partnerId}`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message = data?.message || data?.error || `Update failed (${response.status})`;
+    throw new Error(message);
+  }
+
+  return data;
+};
+
 // --- Admin dashboard: Season API ---
 
 /**

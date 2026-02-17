@@ -54,6 +54,10 @@ const endpoints = {
       remove: (clubId, teamId, memberId) => `/squad/clubs/${clubId}/teams/${teamId}/members/${memberId}`,
       updateCaptain: (clubId, teamId) => `/squad/clubs/${clubId}/teams/${teamId}/captain`
     }
+  },
+  partners: {
+    home: (countryCode) => `/partners/home/${countryCode}`,
+    update: (id) => `/partners/${id}`
   }
 };
 

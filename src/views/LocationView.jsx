@@ -18,8 +18,8 @@ const LocationView = ({ setView, siteConfig, ...props }) => {
   
   console.log(`[LocationView] Rendering for location: ${locationCode}, Theme: ${themeConfig?.theme || 'default'}, Selected: ${selectedLocation}`);
 
-  // Show home view with theme applied
-  return <HomeView setView={setView} siteConfig={siteConfig} {...props} />;
+  // Show home view with theme applied and pass locationCode for partner home API
+  return <HomeView setView={setView} siteConfig={siteConfig} locationCode={locationCode} {...props} />;
 };
 
 export default LocationView;

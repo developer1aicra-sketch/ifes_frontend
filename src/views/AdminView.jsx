@@ -21,6 +21,8 @@ import {
   addCompetition,
   updateCompetition,
   deleteCompetition,
+  fetchPartnerHome,
+  updatePartnerHome,
 } from '../utils/api';
 
 const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => {
@@ -47,6 +49,38 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       });
     }
   }, [partner?._id]);
+
+  // Partner home content state
+  const [partnerHomeData, setPartnerHomeData] = useState(null);
+  const [partnerHomeLoading, setPartnerHomeLoading] = useState(false);
+  const [partnerHomeSaving, setPartnerHomeSaving] = useState(false);
+  const [partnerHomeError, setPartnerHomeError] = useState('');
+  const [partnerHomeSuccess, setPartnerHomeSuccess] = useState(false);
+  
+  // Fetch partner home content
+  useEffect(() => {
+    const loadPartnerHome = async () => {
+      if (!partner?.countryCode && !partner?.location) return;
+      const countryCode = partner?.countryCode || partner?.location || 'IN';
+      setPartnerHomeLoading(true);
+      setPartnerHomeError('');
+      try {
+        const data = await fetchPartnerHome(countryCode);
+        if (data?.success && data.home) {
+          setPartnerHomeData(data);
+        }
+      } catch (err) {
+        console.error('Failed to load partner home:', err);
+        setPartnerHomeError(err?.message || 'Failed to load content');
+      } finally {
+        setPartnerHomeLoading(false);
+      }
+    };
+    
+    if (partner && activeTab === 'partner-home') {
+      loadPartnerHome();
+    }
+  }, [partner?._id, partner?.countryCode, partner?.location, activeTab]);
 
   const [teamMembers, setTeamMembers] = useState([
     {
@@ -751,6 +785,35 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     }
   };
 
+  const savePartnerHome = async () => {
+    if (!partner?._id || !partnerHomeData) return;
+    setPartnerHomeError('');
+    setPartnerHomeSuccess(false);
+    setPartnerHomeSaving(true);
+    try {
+      const payload = {
+        home: partnerHomeData.home || {},
+        event: partnerHomeData.event || {},
+        socialLinks: partnerHomeData.socialLinks || {},
+        footer: partnerHomeData.footer || {},
+        quickLinks: partnerHomeData.quickLinks || [],
+        videos: partnerHomeData.videos || [],
+        products: partnerHomeData.products || [],
+        news: partnerHomeData.news || [],
+        supporters: partnerHomeData.supporters || [],
+        stats: partnerHomeData.stats || {},
+      };
+      const data = await updatePartnerHome(partner._id, user?.token, payload);
+      setPartnerHomeData(data);
+      setPartnerHomeSuccess(true);
+      setTimeout(() => setPartnerHomeSuccess(false), 3000);
+    } catch (err) {
+      setPartnerHomeError(err?.message || 'Failed to save home content.');
+    } finally {
+      setPartnerHomeSaving(false);
+    }
+  };
+
   return (
     <div className="bg-slate-50 animate-fadeIn h-screen flex flex-col overflow-hidden">
       <div className="container mx-auto px-4 py-4 h-full">
@@ -779,15 +842,26 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                 </button>
 
                 {partner && (
-                  <button
-                    onClick={() => setActiveTab('partner-profile')}
-                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${activeTab === 'partner-profile'
-                        ? 'bg-white/15 border-blue-400 text-white'
-                        : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
-                      }`}
-                  >
-                    <UserCircle size={18} /> Partner Profile
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setActiveTab('partner-profile')}
+                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${activeTab === 'partner-profile'
+                          ? 'bg-white/15 border-blue-400 text-white'
+                          : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
+                        }`}
+                    >
+                      <UserCircle size={18} /> Partner Profile
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('partner-home')}
+                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${activeTab === 'partner-home'
+                          ? 'bg-white/15 border-blue-400 text-white'
+                          : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
+                        }`}
+                    >
+                      <Layout size={18} /> Home Content
+                    </button>
+                  </>
                 )}
 
                 {isAdminMode === 'super' ? (
@@ -944,6 +1018,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                   <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
                     {activeTab === 'overview' && 'Dashboard Overview'}
                     {activeTab === 'partner-profile' && 'Edit Partner Profile'}
+                    {activeTab === 'partner-home' && 'Partner Home Content'}
                     {activeTab === 'partners' && 'Partner Management'}
                     {activeTab === 'events' && (isAdminMode === 'super' ? 'Event Manager' : 'My Events')}
                     {activeTab === 'membership' && 'My Membership'}
@@ -1114,6 +1189,735 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       {partnerProfileSaving ? 'Saving…' : 'Save profile'}
                     </button>
                   </div>
+                </div>
+              )}
+
+              {activeTab === 'partner-home' && partner && (
+                <div className="space-y-6">
+                  {partnerHomeLoading ? (
+                    <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
+                      <div className="text-center py-8">
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <p className="mt-4 text-slate-600">Loading partner home content...</p>
+                      </div>
+                    </div>
+                  ) : partnerHomeError && !partnerHomeData ? (
+                    <div className="bg-white p-8 rounded-xl border border-red-200 shadow-sm">
+                      <div className="text-red-600 font-medium">{partnerHomeError}</div>
+                    </div>
+                  ) : partnerHomeData ? (
+                    <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm space-y-8">
+                      <div className="text-xs font-bold text-slate-500 uppercase mb-4">Partner Home Content Editor</div>
+                      
+                      {/* Home Section */}
+                      <div className="border-b border-slate-200 pb-6">
+                        <h3 className="text-lg font-bold text-slate-900 mb-4">Home Section</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Title</label>
+                            <input
+                              type="text"
+                              value={partnerHomeData.home?.title || ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                home: { ...partnerHomeData.home, title: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="Enter home title"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Subtitle</label>
+                            <input
+                              type="text"
+                              value={partnerHomeData.home?.subtitle || ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                home: { ...partnerHomeData.home, subtitle: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="Enter subtitle"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Banner Image URL</label>
+                            <input
+                              type="url"
+                              value={partnerHomeData.home?.bannerImage || ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                home: { ...partnerHomeData.home, bannerImage: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="https://example.com/banner.jpg"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Theme Color</label>
+                            <select
+                              value={partnerHomeData.home?.themeColor || 'Blue'}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                home: { ...partnerHomeData.home, themeColor: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            >
+                              <option value="Blue">Blue</option>
+                              <option value="Dark">Dark</option>
+                              <option value="Purple">Purple</option>
+                              <option value="Orange">Orange</option>
+                              <option value="Red">Red</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Event Section */}
+                      <div className="border-b border-slate-200 pb-6">
+                        <h3 className="text-lg font-bold text-slate-900 mb-4">Event Information</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Event Title</label>
+                            <input
+                              type="text"
+                              value={partnerHomeData.event?.title || ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                event: { ...partnerHomeData.event, title: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="Event title"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Location</label>
+                            <input
+                              type="text"
+                              value={partnerHomeData.event?.location || ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                event: { ...partnerHomeData.event, location: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="Event location"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Date</label>
+                            <input
+                              type="text"
+                              value={partnerHomeData.event?.date || ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                event: { ...partnerHomeData.event, date: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="Oct 12-15"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Social Links */}
+                      <div className="border-b border-slate-200 pb-6">
+                        <h3 className="text-lg font-bold text-slate-900 mb-4">Social Links</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Facebook</label>
+                            <input
+                              type="url"
+                              value={partnerHomeData.socialLinks?.facebook || ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                socialLinks: { ...partnerHomeData.socialLinks, facebook: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="https://facebook.com/..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Instagram</label>
+                            <input
+                              type="url"
+                              value={partnerHomeData.socialLinks?.instagram || ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                socialLinks: { ...partnerHomeData.socialLinks, instagram: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="https://instagram.com/..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">LinkedIn</label>
+                            <input
+                              type="url"
+                              value={partnerHomeData.socialLinks?.linkedin || ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                socialLinks: { ...partnerHomeData.socialLinks, linkedin: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="https://linkedin.com/company/..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">YouTube</label>
+                            <input
+                              type="url"
+                              value={partnerHomeData.socialLinks?.youtube || ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                socialLinks: { ...partnerHomeData.socialLinks, youtube: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="https://youtube.com/..."
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Footer */}
+                      <div className="border-b border-slate-200 pb-6">
+                        <h3 className="text-lg font-bold text-slate-900 mb-4">Footer Information</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Email</label>
+                            <input
+                              type="email"
+                              value={partnerHomeData.footer?.email || ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                footer: { ...partnerHomeData.footer, email: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="info@example.com"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Phone</label>
+                            <input
+                              type="tel"
+                              value={partnerHomeData.footer?.phone || ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                footer: { ...partnerHomeData.footer, phone: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="+1 234 567 8900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Address</label>
+                            <input
+                              type="text"
+                              value={partnerHomeData.footer?.address || ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                footer: { ...partnerHomeData.footer, address: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="City, Country"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Countries (comma-separated)</label>
+                            <input
+                              type="text"
+                              value={Array.isArray(partnerHomeData.footer?.countries) ? partnerHomeData.footer.countries.join(', ') : ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                footer: {
+                                  ...partnerHomeData.footer,
+                                  countries: e.target.value.split(',').map(c => c.trim()).filter(c => c)
+                                }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="IN, AE, TH"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="border-b border-slate-200 pb-6">
+                        <h3 className="text-lg font-bold text-slate-900 mb-4">Statistics</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Students Count</label>
+                            <input
+                              type="number"
+                              value={partnerHomeData.stats?.studentsCount || 0}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                stats: { ...partnerHomeData.stats, studentsCount: parseInt(e.target.value) || 0 }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Performance Score</label>
+                            <input
+                              type="number"
+                              value={partnerHomeData.stats?.performanceScore || 0}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                stats: { ...partnerHomeData.stats, performanceScore: parseInt(e.target.value) || 0 }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Revenue</label>
+                            <input
+                              type="number"
+                              value={partnerHomeData.stats?.revenue || 0}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                stats: { ...partnerHomeData.stats, revenue: parseInt(e.target.value) || 0 }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Total Revenue</label>
+                            <input
+                              type="number"
+                              value={partnerHomeData.stats?.totalRevenue || 0}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                stats: { ...partnerHomeData.stats, totalRevenue: parseInt(e.target.value) || 0 }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Quick Links */}
+                      <div className="border-b border-slate-200 pb-6">
+                        <h3 className="text-lg font-bold text-slate-900 mb-4">Quick Links</h3>
+                        <div className="space-y-3">
+                          {partnerHomeData.quickLinks?.map((link, index) => (
+                            <div key={link._id || index} className="flex gap-3 items-center">
+                              <input
+                                type="text"
+                                value={link.title || ''}
+                                onChange={(e) => {
+                                  const newLinks = [...partnerHomeData.quickLinks];
+                                  newLinks[index] = { ...newLinks[index], title: e.target.value };
+                                  setPartnerHomeData({ ...partnerHomeData, quickLinks: newLinks });
+                                }}
+                                placeholder="Link title"
+                                className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              />
+                              <input
+                                type="text"
+                                value={link.url || ''}
+                                onChange={(e) => {
+                                  const newLinks = [...partnerHomeData.quickLinks];
+                                  newLinks[index] = { ...newLinks[index], url: e.target.value };
+                                  setPartnerHomeData({ ...partnerHomeData, quickLinks: newLinks });
+                                }}
+                                placeholder="/path"
+                                className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              />
+                              <button
+                                onClick={() => {
+                                  const newLinks = partnerHomeData.quickLinks.filter((_, i) => i !== index);
+                                  setPartnerHomeData({ ...partnerHomeData, quickLinks: newLinks });
+                                }}
+                                className="p-3 text-red-600 hover:bg-red-50 rounded-lg"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          ))}
+                          <button
+                            onClick={() => {
+                              const newLinks = [...(partnerHomeData.quickLinks || []), { title: '', url: '', _id: `temp-${Date.now()}` }];
+                              setPartnerHomeData({ ...partnerHomeData, quickLinks: newLinks });
+                            }}
+                            className="w-full py-2 px-4 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-blue-500 hover:text-blue-600 font-medium"
+                          >
+                            + Add Quick Link
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Videos */}
+                      <div className="border-b border-slate-200 pb-6">
+                        <h3 className="text-lg font-bold text-slate-900 mb-4">Videos</h3>
+                        <div className="space-y-3">
+                          {partnerHomeData.videos?.map((video, index) => (
+                            <div key={video._id || index} className="border border-slate-200 rounded-lg p-4 space-y-3">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input
+                                  type="text"
+                                  value={video.title || ''}
+                                  onChange={(e) => {
+                                    const newVideos = [...partnerHomeData.videos];
+                                    newVideos[index] = { ...newVideos[index], title: e.target.value };
+                                    setPartnerHomeData({ ...partnerHomeData, videos: newVideos });
+                                  }}
+                                  placeholder="Video title"
+                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                                <input
+                                  type="url"
+                                  value={video.youtubeUrl || ''}
+                                  onChange={(e) => {
+                                    const newVideos = [...partnerHomeData.videos];
+                                    newVideos[index] = { ...newVideos[index], youtubeUrl: e.target.value };
+                                    setPartnerHomeData({ ...partnerHomeData, videos: newVideos });
+                                  }}
+                                  placeholder="YouTube URL"
+                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <input
+                                  type="url"
+                                  value={video.thumbnail || ''}
+                                  onChange={(e) => {
+                                    const newVideos = [...partnerHomeData.videos];
+                                    newVideos[index] = { ...newVideos[index], thumbnail: e.target.value };
+                                    setPartnerHomeData({ ...partnerHomeData, videos: newVideos });
+                                  }}
+                                  placeholder="Thumbnail URL"
+                                  className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                                <label className="flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={video.isActive !== false}
+                                    onChange={(e) => {
+                                      const newVideos = [...partnerHomeData.videos];
+                                      newVideos[index] = { ...newVideos[index], isActive: e.target.checked };
+                                      setPartnerHomeData({ ...partnerHomeData, videos: newVideos });
+                                    }}
+                                    className="w-4 h-4"
+                                  />
+                                  <span className="text-sm text-slate-700">Active</span>
+                                </label>
+                                <button
+                                  onClick={() => {
+                                    const newVideos = partnerHomeData.videos.filter((_, i) => i !== index);
+                                    setPartnerHomeData({ ...partnerHomeData, videos: newVideos });
+                                  }}
+                                  className="p-3 text-red-600 hover:bg-red-50 rounded-lg"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                          <button
+                            onClick={() => {
+                              const newVideos = [...(partnerHomeData.videos || []), { title: '', youtubeUrl: '', thumbnail: '', isActive: true, _id: `temp-${Date.now()}` }];
+                              setPartnerHomeData({ ...partnerHomeData, videos: newVideos });
+                            }}
+                            className="w-full py-2 px-4 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-blue-500 hover:text-blue-600 font-medium"
+                          >
+                            + Add Video
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Products */}
+                      <div className="border-b border-slate-200 pb-6">
+                        <h3 className="text-lg font-bold text-slate-900 mb-4">Products</h3>
+                        <div className="space-y-3">
+                          {partnerHomeData.products?.map((product, index) => (
+                            <div key={product._id || index} className="border border-slate-200 rounded-lg p-4 space-y-3">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input
+                                  type="text"
+                                  value={product.title || ''}
+                                  onChange={(e) => {
+                                    const newProducts = [...partnerHomeData.products];
+                                    newProducts[index] = { ...newProducts[index], title: e.target.value };
+                                    setPartnerHomeData({ ...partnerHomeData, products: newProducts });
+                                  }}
+                                  placeholder="Product title"
+                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                                <input
+                                  type="url"
+                                  value={product.image || ''}
+                                  onChange={(e) => {
+                                    const newProducts = [...partnerHomeData.products];
+                                    newProducts[index] = { ...newProducts[index], image: e.target.value };
+                                    setPartnerHomeData({ ...partnerHomeData, products: newProducts });
+                                  }}
+                                  placeholder="Product image URL"
+                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <input
+                                  type="number"
+                                  value={product.price || 0}
+                                  onChange={(e) => {
+                                    const newProducts = [...partnerHomeData.products];
+                                    newProducts[index] = { ...newProducts[index], price: parseFloat(e.target.value) || 0 };
+                                    setPartnerHomeData({ ...partnerHomeData, products: newProducts });
+                                  }}
+                                  placeholder="Price"
+                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                                <input
+                                  type="text"
+                                  value={product.currency || 'USD'}
+                                  onChange={(e) => {
+                                    const newProducts = [...partnerHomeData.products];
+                                    newProducts[index] = { ...newProducts[index], currency: e.target.value };
+                                    setPartnerHomeData({ ...partnerHomeData, products: newProducts });
+                                  }}
+                                  placeholder="Currency"
+                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                                <input
+                                  type="text"
+                                  value={product.buyLink || ''}
+                                  onChange={(e) => {
+                                    const newProducts = [...partnerHomeData.products];
+                                    newProducts[index] = { ...newProducts[index], buyLink: e.target.value };
+                                    setPartnerHomeData({ ...partnerHomeData, products: newProducts });
+                                  }}
+                                  placeholder="Buy link"
+                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <label className="flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={product.isActive !== false}
+                                    onChange={(e) => {
+                                      const newProducts = [...partnerHomeData.products];
+                                      newProducts[index] = { ...newProducts[index], isActive: e.target.checked };
+                                      setPartnerHomeData({ ...partnerHomeData, products: newProducts });
+                                    }}
+                                    className="w-4 h-4"
+                                  />
+                                  <span className="text-sm text-slate-700">Active</span>
+                                </label>
+                                <button
+                                  onClick={() => {
+                                    const newProducts = partnerHomeData.products.filter((_, i) => i !== index);
+                                    setPartnerHomeData({ ...partnerHomeData, products: newProducts });
+                                  }}
+                                  className="ml-auto p-3 text-red-600 hover:bg-red-50 rounded-lg"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                          <button
+                            onClick={() => {
+                              const newProducts = [...(partnerHomeData.products || []), { title: '', image: '', price: 0, currency: 'USD', buyLink: '', isActive: true, _id: `temp-${Date.now()}` }];
+                              setPartnerHomeData({ ...partnerHomeData, products: newProducts });
+                            }}
+                            className="w-full py-2 px-4 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-blue-500 hover:text-blue-600 font-medium"
+                          >
+                            + Add Product
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* News */}
+                      <div className="border-b border-slate-200 pb-6">
+                        <h3 className="text-lg font-bold text-slate-900 mb-4">News</h3>
+                        <div className="space-y-3">
+                          {partnerHomeData.news?.map((item, index) => (
+                            <div key={item._id || index} className="border border-slate-200 rounded-lg p-4 space-y-3">
+                              <input
+                                type="text"
+                                value={item.title || ''}
+                                onChange={(e) => {
+                                  const newNews = [...partnerHomeData.news];
+                                  newNews[index] = { ...newNews[index], title: e.target.value };
+                                  setPartnerHomeData({ ...partnerHomeData, news: newNews });
+                                }}
+                                placeholder="News title"
+                                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              />
+                              <textarea
+                                value={item.description || ''}
+                                onChange={(e) => {
+                                  const newNews = [...partnerHomeData.news];
+                                  newNews[index] = { ...newNews[index], description: e.target.value };
+                                  setPartnerHomeData({ ...partnerHomeData, news: newNews });
+                                }}
+                                placeholder="News description"
+                                rows={3}
+                                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              />
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input
+                                  type="url"
+                                  value={item.image || ''}
+                                  onChange={(e) => {
+                                    const newNews = [...partnerHomeData.news];
+                                    newNews[index] = { ...newNews[index], image: e.target.value };
+                                    setPartnerHomeData({ ...partnerHomeData, news: newNews });
+                                  }}
+                                  placeholder="Image URL"
+                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                                <select
+                                  value={item.type || 'GENERAL'}
+                                  onChange={(e) => {
+                                    const newNews = [...partnerHomeData.news];
+                                    newNews[index] = { ...newNews[index], type: e.target.value };
+                                    setPartnerHomeData({ ...partnerHomeData, news: newNews });
+                                  }}
+                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                >
+                                  <option value="GENERAL">General</option>
+                                  <option value="EVENT">Event</option>
+                                  <option value="REGULATION">Regulation</option>
+                                </select>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <label className="flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={item.isActive !== false}
+                                    onChange={(e) => {
+                                      const newNews = [...partnerHomeData.news];
+                                      newNews[index] = { ...newNews[index], isActive: e.target.checked };
+                                      setPartnerHomeData({ ...partnerHomeData, news: newNews });
+                                    }}
+                                    className="w-4 h-4"
+                                  />
+                                  <span className="text-sm text-slate-700">Active</span>
+                                </label>
+                                <button
+                                  onClick={() => {
+                                    const newNews = partnerHomeData.news.filter((_, i) => i !== index);
+                                    setPartnerHomeData({ ...partnerHomeData, news: newNews });
+                                  }}
+                                  className="ml-auto p-3 text-red-600 hover:bg-red-50 rounded-lg"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                          <button
+                            onClick={() => {
+                              const newNews = [...(partnerHomeData.news || []), { title: '', description: '', image: '', type: 'GENERAL', isActive: true, _id: `temp-${Date.now()}` }];
+                              setPartnerHomeData({ ...partnerHomeData, news: newNews });
+                            }}
+                            className="w-full py-2 px-4 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-blue-500 hover:text-blue-600 font-medium"
+                          >
+                            + Add News Item
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Supporters */}
+                      <div className="pb-6">
+                        <h3 className="text-lg font-bold text-slate-900 mb-4">Supporters</h3>
+                        <div className="space-y-3">
+                          {partnerHomeData.supporters?.map((supporter, index) => (
+                            <div key={supporter._id || index} className="border border-slate-200 rounded-lg p-4">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <input
+                                  type="text"
+                                  value={supporter.name || ''}
+                                  onChange={(e) => {
+                                    const newSupporters = [...partnerHomeData.supporters];
+                                    newSupporters[index] = { ...newSupporters[index], name: e.target.value };
+                                    setPartnerHomeData({ ...partnerHomeData, supporters: newSupporters });
+                                  }}
+                                  placeholder="Supporter name"
+                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                                <input
+                                  type="url"
+                                  value={supporter.logo || ''}
+                                  onChange={(e) => {
+                                    const newSupporters = [...partnerHomeData.supporters];
+                                    newSupporters[index] = { ...newSupporters[index], logo: e.target.value };
+                                    setPartnerHomeData({ ...partnerHomeData, supporters: newSupporters });
+                                  }}
+                                  placeholder="Logo URL"
+                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                                <div className="flex items-center gap-3">
+                                  <input
+                                    type="url"
+                                    value={supporter.website || ''}
+                                    onChange={(e) => {
+                                      const newSupporters = [...partnerHomeData.supporters];
+                                      newSupporters[index] = { ...newSupporters[index], website: e.target.value };
+                                      setPartnerHomeData({ ...partnerHomeData, supporters: newSupporters });
+                                    }}
+                                    placeholder="Website URL"
+                                    className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                  />
+                                  <label className="flex items-center gap-2">
+                                    <input
+                                      type="checkbox"
+                                      checked={supporter.isActive !== false}
+                                      onChange={(e) => {
+                                        const newSupporters = [...partnerHomeData.supporters];
+                                        newSupporters[index] = { ...newSupporters[index], isActive: e.target.checked };
+                                        setPartnerHomeData({ ...partnerHomeData, supporters: newSupporters });
+                                      }}
+                                      className="w-4 h-4"
+                                    />
+                                    <span className="text-sm text-slate-700">Active</span>
+                                  </label>
+                                  <button
+                                    onClick={() => {
+                                      const newSupporters = partnerHomeData.supporters.filter((_, i) => i !== index);
+                                      setPartnerHomeData({ ...partnerHomeData, supporters: newSupporters });
+                                    }}
+                                    className="p-3 text-red-600 hover:bg-red-50 rounded-lg"
+                                  >
+                                    <Trash2 size={18} />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          <button
+                            onClick={() => {
+                              const newSupporters = [...(partnerHomeData.supporters || []), { name: '', logo: '', website: '', isActive: true, _id: `temp-${Date.now()}` }];
+                              setPartnerHomeData({ ...partnerHomeData, supporters: newSupporters });
+                            }}
+                            className="w-full py-2 px-4 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-blue-500 hover:text-blue-600 font-medium"
+                          >
+                            + Add Supporter
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Error and Success Messages */}
+                      {partnerHomeError && (
+                        <div className="text-sm text-red-600 font-medium bg-red-50 p-4 rounded-lg">{partnerHomeError}</div>
+                      )}
+                      {partnerHomeSuccess && (
+                        <div className="text-sm text-emerald-600 font-medium bg-emerald-50 p-4 rounded-lg flex items-center gap-2">
+                          <CheckCircle size={18} /> Home content saved successfully.
+                        </div>
+                      )}
+
+                      {/* Save Button */}
+                      <button
+                        onClick={savePartnerHome}
+                        disabled={partnerHomeSaving}
+                        className="w-full py-3 px-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {partnerHomeSaving ? 'Saving…' : 'Save Home Content'}
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               )}
 
