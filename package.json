@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.2.6",
     "framer-motion": "^11.18.2",
     "lucide-react": "^0.556.0",
     "ngrok": "^5.0.0-beta.2",
