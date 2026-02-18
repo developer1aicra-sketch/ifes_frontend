@@ -2,7 +2,7 @@
 
 import { apiRoutes } from '../constants/apiRoutes';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://worso-backend-psi.vercel.app/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://worso-backend-rm6w.vercel.app/api';
 
 /**
  * Fetches partners data from the API
@@ -673,7 +673,7 @@ export const addCompetition = async (competition) => {
 
 /**
  * Update a competition (PUT, payload sent as FormData)
- * Endpoint: PUT /api/competition/update/{_id} (e.g. https://worso-backend-psi.vercel.app/api/competition/update/{_id})
+ * Endpoint: PUT /api/competition/update/{_id} (e.g. https://worso-backend-rm6w.vercel.app/api/competition/update/{_id})
  * @param {string} _id - Competition _id
  * @param {object} competition - Competition fields (flat bracket keys or nested); bannerImage can be File or string
  * @returns {Promise<{ success: boolean, data?: object }>}

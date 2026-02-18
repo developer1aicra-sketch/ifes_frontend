@@ -5,7 +5,7 @@ import { getAuthToken } from './authToken';
 
 // Create axios instance
 const axiosInstance = axios.create({
-  baseURL: "https://worso-backend-psi.vercel.app/api/",
+  baseURL: "https://worso-backend-rm6w.vercel.app/api/",
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

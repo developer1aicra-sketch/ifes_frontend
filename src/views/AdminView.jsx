@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone, UserCircle, Trophy, Trash2, Pencil, CreditCard } from 'lucide-react';
+import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone, UserCircle, Trophy, Trash2, Pencil, CreditCard, Shield, ArrowRight, User, Building2, GraduationCap, MapPin } from 'lucide-react';
 import ForumView from '../components/ForumView';
 import CompetitionFormModal from '../components/CompetitionFormModal';
 import { DEFAULT_SITES } from '../constants/data';
 import { callGemini } from '../utils/gemini';
-import { getMyMembership } from '../app/auth/authApi';
+import { getMyMembership, signUpSendOtp, signUpVerifyOtp } from '../app/auth/authApi';
+import { addClub } from '../app/club/clubApi';
+import { setAuthToken } from '../api/authToken';
 import {
   updatePartner,
   setPartnerAuth,
@@ -358,6 +360,152 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       });
     return () => { cancelled = true; };
   }, [activeTab]);
+
+  // RoboClub Registration states
+  const [roboClubStep, setRoboClubStep] = useState('email'); // 'email', 'otp', 'register'
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [roboClubError, setRoboClubError] = useState('');
+  const [roboClubLoading, setRoboClubLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [roboClubForm, setRoboClubForm] = useState({
+    name: '',
+    clubName: '',
+    instituteName: '',
+    countryCode: 'IN',
+    state: '',
+    city: '',
+    mobile: '',
+  });
+
+  // Resend OTP cooldown timer
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
+
+  // Country options for club registration
+  const COUNTRY_OPTIONS = [
+    { code: 'IN', name: 'India' },
+    { code: 'US', name: 'United States' },
+    { code: 'UK', name: 'United Kingdom' },
+    { code: 'CA', name: 'Canada' },
+    { code: 'AU', name: 'Australia' },
+    { code: 'DE', name: 'Germany' },
+    { code: 'FR', name: 'France' },
+    { code: 'JP', name: 'Japan' },
+    { code: 'CN', name: 'China' },
+    { code: 'BR', name: 'Brazil' },
+    { code: 'AE', name: 'United Arab Emirates' },
+    { code: 'SG', name: 'Singapore' },
+    { code: 'MY', name: 'Malaysia' },
+    { code: 'TH', name: 'Thailand' },
+    { code: 'PH', name: 'Philippines' },
+    { code: 'ID', name: 'Indonesia' },
+    { code: 'VN', name: 'Vietnam' },
+    { code: 'KR', name: 'South Korea' },
+    { code: 'NZ', name: 'New Zealand' },
+    { code: 'ZA', name: 'South Africa' },
+  ];
+
+  // Handle send OTP
+  const handleSendOtp = async () => {
+    if (!email || !email.includes('@')) {
+      setRoboClubError('Please enter a valid email address');
+      return;
+    }
+    setRoboClubLoading(true);
+    setRoboClubError('');
+    try {
+      const response = await signUpSendOtp({ email });
+      if (response?.data?.success || response?.status === 200) {
+        setRoboClubStep('otp');
+        setResendCooldown(60); // 60 second cooldown
+      } else {
+        setRoboClubError(response?.data?.message || 'Failed to send OTP');
+      }
+    } catch (err) {
+      setRoboClubError(err?.response?.data?.message || err?.message || 'Failed to send OTP. Please try again.');
+    } finally {
+      setRoboClubLoading(false);
+    }
+  };
+
+  // Handle verify OTP
+  const handleVerifyOtp = async () => {
+    if (!otp || otp.replace(/\D/g, '').length !== 6) {
+      setRoboClubError('Please enter a valid 6-digit OTP');
+      return;
+    }
+    setRoboClubLoading(true);
+    setRoboClubError('');
+    try {
+      const response = await signUpVerifyOtp({ email, otp });
+      const token = response?.data?.token || response?.data?.data?.token;
+      if (token) {
+        setAuthToken(token);
+        setRoboClubStep('register');
+      } else {
+        setRoboClubError('Invalid OTP or verification failed');
+      }
+    } catch (err) {
+      setRoboClubError(err?.response?.data?.message || err?.message || 'Invalid OTP. Please try again.');
+    } finally {
+      setRoboClubLoading(false);
+    }
+  };
+
+  // Handle club registration form update
+  const updateRoboClubForm = (field, value) => {
+    setRoboClubForm((prev) => ({ ...prev, [field]: value }));
+    setRoboClubError('');
+  };
+
+  // Handle submit club registration
+  const handleSubmitClub = async () => {
+    if (!roboClubForm.name || !roboClubForm.clubName || !roboClubForm.instituteName) {
+      setRoboClubError('Please fill in all required fields');
+      return;
+    }
+    setRoboClubLoading(true);
+    setRoboClubError('');
+    try {
+      const response = await addClub({
+        name: roboClubForm.name,
+        clubName: roboClubForm.clubName,
+        instituteName: roboClubForm.instituteName,
+        countryCode: roboClubForm.countryCode,
+        state: roboClubForm.state,
+        city: roboClubForm.city,
+        mobile: roboClubForm.mobile,
+        email: email,
+      });
+      if (response?.data?.success || response?.status === 200 || response?.status === 201) {
+        alert('RoboClub registered successfully!');
+        // Reset form
+        setRoboClubStep('email');
+        setEmail('');
+        setOtp('');
+        setRoboClubForm({
+          name: '',
+          clubName: '',
+          instituteName: '',
+          countryCode: 'IN',
+          state: '',
+          city: '',
+          mobile: '',
+        });
+      } else {
+        setRoboClubError(response?.data?.message || 'Failed to register club');
+      }
+    } catch (err) {
+      setRoboClubError(err?.response?.data?.message || err?.message || 'Failed to register club. Please try again.');
+    } finally {
+      setRoboClubLoading(false);
+    }
+  };
 
   // Course related states
   // Forum related states
@@ -1004,6 +1152,28 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       )}
                     </button>
 
+                    <button
+                      onClick={() => {
+                        setActiveTab('roboclub');
+                        setRoboClubStep('email');
+                      }}
+                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${activeTab === 'roboclub'
+                          ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
+                          : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-300/50 text-blue-100 hover:text-white'
+                        }`}
+                    >
+                      <div className={`p-1.5 rounded-lg ${activeTab === 'roboclub'
+                          ? 'bg-blue-500/20'
+                          : 'bg-white/5 group-hover:bg-blue-500/20'
+                        }`}>
+                        <Building2 size={16} className="text-blue-300" />
+                      </div>
+                      <span className="font-medium">RoboClub Registration</span>
+                      {activeTab === 'roboclub' && (
+                        <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                      )}
+                    </button>
+
                       
                   </div>
                 )}
@@ -1026,6 +1196,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                     {activeTab === 'courses' && 'Course Management'}
                     {activeTab === 'academia' && 'Academia Portal'}
                     {activeTab === 'forum' && 'Community Forum'}
+                    {activeTab === 'roboclub' && 'RoboClub Registration'}
                   </h1>
                 </div>
                 <div className="px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-semibold border border-slate-200">
@@ -2731,6 +2902,268 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
               )}
               {activeTab === 'forum' && (
                 <ForumView />
+              )}
+              {activeTab === 'roboclub' && (
+                <div className="max-w-2xl mx-auto">
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8">
+                    {roboClubStep === 'email' && (
+                      <div className="space-y-6">
+                        <div className="text-center">
+                          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Mail size={28} className="text-blue-600" />
+                          </div>
+                          <h3 className="text-2xl font-bold text-slate-900 mb-2">Register your RoboClub</h3>
+                          <p className="text-slate-600 text-sm">Enter your email to receive a verification code</p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="block text-slate-700 text-sm font-medium">Email address</label>
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => {
+                              setEmail(e.target.value);
+                              setRoboClubError('');
+                            }}
+                            placeholder="your.email@example.com"
+                            className="w-full border border-slate-300 text-slate-900 p-4 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                          />
+                          {roboClubError && (
+                            <p className="text-red-600 text-sm flex items-center gap-2 bg-red-50 p-2 rounded">
+                              <Shield size={14} />
+                              {roboClubError}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          <p className="text-slate-700 text-xs flex items-center gap-2">
+                            <Shield size={14} className="text-blue-600" />
+                            We will send a one-time code to verify your email
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={handleSendOtp}
+                          disabled={roboClubLoading}
+                          className="w-full bg-blue-600 text-white font-bold py-4 rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {roboClubLoading ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              Sending OTP...
+                            </>
+                          ) : (
+                            <>
+                              Send OTP
+                              <ArrowRight size={18} />
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
+                    {roboClubStep === 'otp' && (
+                      <div className="space-y-6">
+                        <div className="text-center">
+                          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Shield size={28} className="text-blue-600" />
+                          </div>
+                          <h3 className="text-2xl font-bold text-slate-900 mb-2">Verify your email</h3>
+                          <p className="text-slate-600 text-sm">Enter the 6-digit code sent to {email}</p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="block text-slate-700 text-sm font-medium">OTP</label>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={otp}
+                            onChange={(e) => {
+                              setOtp(e.target.value.replace(/\D/g, '').slice(0, 6));
+                              setRoboClubError('');
+                            }}
+                            placeholder="000000"
+                            className="w-full border border-slate-300 text-slate-900 p-4 rounded-lg text-center text-xl font-mono tracking-widest outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                            maxLength={6}
+                          />
+                          {roboClubError && (
+                            <p className="text-red-600 text-sm flex items-center gap-2 bg-red-50 p-2 rounded">
+                              <Shield size={14} />
+                              {roboClubError}
+                            </p>
+                          )}
+                          {resendCooldown > 0 ? (
+                            <p className="text-slate-500 text-xs">Resend OTP in {resendCooldown}s</p>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={handleSendOtp}
+                              className="text-blue-600 text-sm hover:text-blue-700 font-medium"
+                            >
+                              Resend OTP
+                            </button>
+                          )}
+                        </div>
+
+                        <button
+                          onClick={handleVerifyOtp}
+                          disabled={roboClubLoading || otp.replace(/\D/g, '').length !== 6}
+                          className="w-full bg-blue-600 text-white font-bold py-4 rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {roboClubLoading ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              Verifying...
+                            </>
+                          ) : (
+                            <>
+                              Verify OTP
+                              <ArrowRight size={18} />
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
+                    {roboClubStep === 'register' && (
+                      <div className="space-y-5">
+                        <div className="text-center border-b border-slate-200 pb-4">
+                          <h3 className="text-xl font-bold text-slate-900">Register for RoboClub</h3>
+                          <p className="text-slate-600 text-sm">Fill in your club and institute details. Your verified session is used to complete registration.</p>
+                        </div>
+
+                        {roboClubError && (
+                          <p className="text-red-600 text-sm flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg p-3">
+                            <Shield size={14} />
+                            {roboClubError}
+                          </p>
+                        )}
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="sm:col-span-2">
+                            <label className="block text-slate-700 text-sm font-medium mb-1">Name</label>
+                            <div className="relative">
+                              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                              <input
+                                type="text"
+                                value={roboClubForm.name}
+                                onChange={(e) => updateRoboClubForm('name', e.target.value)}
+                                placeholder="e.g. John Doe"
+                                className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-slate-700 text-sm font-medium mb-1">Club name</label>
+                            <div className="relative">
+                              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                              <input
+                                type="text"
+                                value={roboClubForm.clubName}
+                                onChange={(e) => updateRoboClubForm('clubName', e.target.value)}
+                                placeholder="e.g. Tech Innovators"
+                                className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-slate-700 text-sm font-medium mb-1">Institute name</label>
+                            <div className="relative">
+                              <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                              <input
+                                type="text"
+                                value={roboClubForm.instituteName}
+                                onChange={(e) => updateRoboClubForm('instituteName', e.target.value)}
+                                placeholder="e.g. ABC College"
+                                className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-slate-700 text-sm font-medium mb-1">Country</label>
+                            <select
+                              value={roboClubForm.countryCode}
+                              onChange={(e) => updateRoboClubForm('countryCode', e.target.value)}
+                              className="w-full border border-slate-300 text-slate-900 px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                            >
+                              {COUNTRY_OPTIONS.map((c) => (
+                                <option key={c.code} value={c.code}>
+                                  {c.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-slate-700 text-sm font-medium mb-1">State</label>
+                            <div className="relative">
+                              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                              <input
+                                type="text"
+                                value={roboClubForm.state}
+                                onChange={(e) => updateRoboClubForm('state', e.target.value)}
+                                placeholder="e.g. Karnataka"
+                                className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-slate-700 text-sm font-medium mb-1">City</label>
+                            <div className="relative">
+                              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                              <input
+                                type="text"
+                                value={roboClubForm.city}
+                                onChange={(e) => updateRoboClubForm('city', e.target.value)}
+                                placeholder="e.g. Bangalore"
+                                className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="sm:col-span-2">
+                            <label className="block text-slate-700 text-sm font-medium mb-1">Mobile</label>
+                            <div className="relative">
+                              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                              <input
+                                type="tel"
+                                value={roboClubForm.mobile}
+                                onChange={(e) => updateRoboClubForm('mobile', e.target.value.replace(/\D/g, '').slice(0, 15))}
+                                placeholder="e.g. 9876543210"
+                                className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-slate-500 text-xs">Registered email: {email}</p>
+
+                        <button
+                          onClick={handleSubmitClub}
+                          disabled={roboClubLoading}
+                          className="w-full bg-blue-600 text-white font-bold py-4 rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {roboClubLoading ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              Submitting...
+                            </>
+                          ) : (
+                            <>
+                              Register for RoboClub
+                              <ArrowRight size={18} />
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
               {activeTab === 'membership' && (
                 <div className="space-y-6">

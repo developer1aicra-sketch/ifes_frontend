@@ -20,7 +20,7 @@ export const apiRoutes = {
   competition: {
     list: '/competition/list',
     add: '/competition/add',
-    /** PUT https://worso-backend-psi.vercel.app/api/competition/update/{_id} */
+    /** PUT https://worso-backend-rm6w.vercel.app/api/competition/update/{_id} */
     update: (_id) => `/competition/update/${_id}`,
     delete: (_id) => `/competition/delete/${_id}`,
   },
