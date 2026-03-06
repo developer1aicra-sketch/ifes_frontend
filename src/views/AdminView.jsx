@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone, UserCircle, Trophy, Trash2, Pencil, CreditCard, Shield, ArrowRight, User, Building2, GraduationCap, MapPin } from 'lucide-react';
 import ForumView from '../components/ForumView';
 import CompetitionFormModal from '../components/CompetitionFormModal';
 import { DEFAULT_SITES } from '../constants/data';
 import { callGemini } from '../utils/gemini';
 import { getMyMembership, signUpSendOtp, signUpVerifyOtp } from '../app/auth/authApi';
-import { addClub } from '../app/club/clubApi';
-import { setAuthToken } from '../api/authToken';
+import { addClub, getMyClub } from '../app/club/clubApi';
+import { setAuthToken, getAuthToken } from '../api/authToken';
 import {
+  fetchPartnerById,
   updatePartner,
   setPartnerAuth,
   getPartnerAuth,
@@ -23,8 +24,6 @@ import {
   addCompetition,
   updateCompetition,
   deleteCompetition,
-  fetchPartnerHome,
-  updatePartnerHome,
 } from '../utils/api';
 
 const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => {
@@ -58,18 +57,122 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
   const [partnerHomeSaving, setPartnerHomeSaving] = useState(false);
   const [partnerHomeError, setPartnerHomeError] = useState('');
   const [partnerHomeSuccess, setPartnerHomeSuccess] = useState(false);
-  
+
+  const mapPartnerToHomeContent = (partnerRecord) => {
+    if (!partnerRecord) return null;
+
+    const footerInfo = partnerRecord.footerInfo || {};
+
+    return {
+      home: {
+        title: partnerRecord.heroTitle || '',
+        subtitle: partnerRecord.heroSubtitle || '',
+        bannerImage: partnerRecord.heroBannerImage || partnerRecord.bannerImage || '',
+        themeColor: partnerRecord.themeColor || 'Blue',
+      },
+      event: {
+        title: partnerRecord.eventTitle || '',
+        location: partnerRecord.eventLocation || '',
+        date: partnerRecord.eventDate || '',
+      },
+      socialLinks: partnerRecord.socialLinks || {},
+      footer: {
+        email: footerInfo.email || '',
+        phone: footerInfo.phone || '',
+        address: footerInfo.address || '',
+        countries: Array.isArray(footerInfo.countries) ? footerInfo.countries : [],
+      },
+      quickLinks: Array.isArray(partnerRecord.quickLinks) ? partnerRecord.quickLinks : [],
+      videos: Array.isArray(partnerRecord.videos) ? partnerRecord.videos : [],
+      products: Array.isArray(partnerRecord.products) ? partnerRecord.products : [],
+      news: Array.isArray(partnerRecord.news) ? partnerRecord.news : [],
+      supporters: Array.isArray(partnerRecord.supporters) ? partnerRecord.supporters : [],
+      stats: {
+        studentsCount: typeof partnerRecord.studentsCount === 'number' ? partnerRecord.studentsCount : 0,
+        performanceScore: typeof partnerRecord.performanceScore === 'number' ? partnerRecord.performanceScore : 0,
+        revenue: typeof partnerRecord.revenue === 'number' ? partnerRecord.revenue : 0,
+        totalRevenue: typeof partnerRecord.totalRevenue === 'number' ? partnerRecord.totalRevenue : 0,
+      },
+    };
+  };
+
+  const buildHomeContentPayload = (data) => {
+    if (!data) return {};
+
+    const payload = {
+      heroTitle: data.home?.title?.trim() || undefined,
+      heroSubtitle: data.home?.subtitle?.trim() || undefined,
+      themeColor: data.home?.themeColor || undefined,
+      eventTitle: data.event?.title?.trim() || undefined,
+      eventLocation: data.event?.location?.trim() || undefined,
+      eventDate: data.event?.date?.trim() || undefined,
+      socialLinks: data.socialLinks || undefined,
+      footerInfo: data.footer || undefined,
+      quickLinks: Array.isArray(data.quickLinks) ? data.quickLinks : undefined,
+      videos: Array.isArray(data.videos) ? data.videos : undefined,
+      products: Array.isArray(data.products) ? data.products : undefined,
+      news: Array.isArray(data.news) ? data.news : undefined,
+      supporters: Array.isArray(data.supporters) ? data.supporters : undefined,
+    };
+
+    if (data.stats) {
+      payload.studentsCount =
+        typeof data.stats.studentsCount === 'number' ? data.stats.studentsCount : undefined;
+      payload.performanceScore =
+        typeof data.stats.performanceScore === 'number' ? data.stats.performanceScore : undefined;
+      payload.revenue =
+        typeof data.stats.revenue === 'number' ? data.stats.revenue : undefined;
+      payload.totalRevenue =
+        typeof data.stats.totalRevenue === 'number' ? data.stats.totalRevenue : undefined;
+    }
+
+    return payload;
+  };
+
+  const handleVideoThumbnailFileChange = (index, event) => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      window.alert('Please select an image file for the thumbnail.');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      window.alert('Thumbnail image should be smaller than 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result;
+      if (typeof dataUrl !== 'string') return;
+
+      setPartnerHomeData((prev) => {
+        if (!prev) return prev;
+        const videos = Array.isArray(prev.videos) ? [...prev.videos] : [];
+        const existing = videos[index] || {};
+        videos[index] = { ...existing, thumbnail: dataUrl };
+        return { ...prev, videos };
+      });
+    };
+
+    reader.readAsDataURL(file);
+  };
+
   // Fetch partner home content
   useEffect(() => {
     const loadPartnerHome = async () => {
-      if (!partner?.countryCode && !partner?.location) return;
-      const countryCode = partner?.countryCode || partner?.location || 'IN';
+      if (!partner?._id) return;
       setPartnerHomeLoading(true);
       setPartnerHomeError('');
       try {
-        const data = await fetchPartnerHome(countryCode);
-        if (data?.success && data.home) {
-          setPartnerHomeData(data);
+        const data = await fetchPartnerById(partner._id);
+        const partnerRecord = data?.partner ?? data;
+        if (partnerRecord) {
+          setPartnerHomeData(mapPartnerToHomeContent(partnerRecord));
+        } else {
+          setPartnerHomeError('Partner not found.');
         }
       } catch (err) {
         console.error('Failed to load partner home:', err);
@@ -82,7 +185,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     if (partner && activeTab === 'partner-home') {
       loadPartnerHome();
     }
-  }, [partner?._id, partner?.countryCode, partner?.location, activeTab]);
+  }, [partner?._id, activeTab]);
 
   const [teamMembers, setTeamMembers] = useState([
     {
@@ -361,6 +464,61 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     return () => { cancelled = true; };
   }, [activeTab]);
 
+  // RoboClub: my club list states
+  const [myClubs, setMyClubs] = useState([]);
+  const [myClubsLoading, setMyClubsLoading] = useState(false);
+  const [myClubsError, setMyClubsError] = useState('');
+
+  const refreshMyClubs = useCallback(async () => {
+    setMyClubsLoading(true);
+    setMyClubsError('');
+    try {
+      const res = await getMyClub();
+      const payload = res?.data;
+      const clubs = Array.isArray(payload?.data)
+        ? payload.data
+        : Array.isArray(payload)
+          ? payload
+          : [];
+      setMyClubs(clubs);
+      return clubs;
+    } catch (err) {
+      setMyClubsError(err?.response?.data?.message ?? err?.message ?? 'Failed to load club data');
+      setMyClubs([]);
+      return [];
+    } finally {
+      setMyClubsLoading(false);
+    }
+  }, []);
+
+  // Fetch club data when RoboClub tab is active
+  useEffect(() => {
+    if (activeTab !== 'roboclub') return;
+    let cancelled = false;
+    (async () => {
+      setMyClubsLoading(true);
+      setMyClubsError('');
+      try {
+        const res = await getMyClub();
+        if (cancelled) return;
+        const payload = res?.data;
+        const clubs = Array.isArray(payload?.data)
+          ? payload.data
+          : Array.isArray(payload)
+            ? payload
+            : [];
+        setMyClubs(clubs);
+      } catch (err) {
+        if (cancelled) return;
+        setMyClubsError(err?.response?.data?.message ?? err?.message ?? 'Failed to load club data');
+        setMyClubs([]);
+      } finally {
+        if (!cancelled) setMyClubsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTab]);
+
   // RoboClub Registration states
   const [roboClubStep, setRoboClubStep] = useState('email'); // 'email', 'otp', 'register'
   const [email, setEmail] = useState('');
@@ -465,13 +623,25 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
   // Handle submit club registration
   const handleSubmitClub = async () => {
+    // Validate required form fields
     if (!roboClubForm.name || !roboClubForm.clubName || !roboClubForm.instituteName) {
       setRoboClubError('Please fill in all required fields');
       return;
     }
+
+    // Validate Authorization Bearer Token exists before submission
+    const authToken = getAuthToken();
+    if (!authToken) {
+      setRoboClubError('Authentication token is missing. Please verify your email OTP again.');
+      setRoboClubStep('email');
+      return;
+    }
+
     setRoboClubLoading(true);
     setRoboClubError('');
     try {
+      // The axiosInstance interceptor automatically adds Authorization: Bearer <token> header
+      // Token is retrieved from localStorage via getAuthToken() in the interceptor
       const response = await addClub({
         name: roboClubForm.name,
         clubName: roboClubForm.clubName,
@@ -482,8 +652,10 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
         mobile: roboClubForm.mobile,
         email: email,
       });
+      
       if (response?.data?.success || response?.status === 200 || response?.status === 201) {
         alert('RoboClub registered successfully!');
+        refreshMyClubs();
         // Reset form
         setRoboClubStep('email');
         setEmail('');
@@ -501,7 +673,14 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
         setRoboClubError(response?.data?.message || 'Failed to register club');
       }
     } catch (err) {
-      setRoboClubError(err?.response?.data?.message || err?.message || 'Failed to register club. Please try again.');
+      // Handle authentication errors (401/403)
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
+        setRoboClubError('Authentication failed. Please verify your email OTP again.');
+        setRoboClubStep('email');
+        setAuthToken(null); // Clear invalid token
+      } else {
+        setRoboClubError(err?.response?.data?.message || err?.message || 'Failed to register club. Please try again.');
+      }
     } finally {
       setRoboClubLoading(false);
     }
@@ -939,20 +1118,17 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     setPartnerHomeSuccess(false);
     setPartnerHomeSaving(true);
     try {
-      const payload = {
-        home: partnerHomeData.home || {},
-        event: partnerHomeData.event || {},
-        socialLinks: partnerHomeData.socialLinks || {},
-        footer: partnerHomeData.footer || {},
-        quickLinks: partnerHomeData.quickLinks || [],
-        videos: partnerHomeData.videos || [],
-        products: partnerHomeData.products || [],
-        news: partnerHomeData.news || [],
-        supporters: partnerHomeData.supporters || [],
-        stats: partnerHomeData.stats || {},
-      };
-      const data = await updatePartnerHome(partner._id, user?.token, payload);
-      setPartnerHomeData(data);
+      const payload = buildHomeContentPayload(partnerHomeData);
+      const data = await updatePartner(partner._id, user?.token, payload);
+      const updatedPartner = data?.partner ?? data;
+      if (updatedPartner) {
+        const auth = getPartnerAuth();
+        if (auth) setPartnerAuth({ ...auth, partner: updatedPartner });
+        if (typeof setUser === 'function') {
+          setUser({ ...user, partner: updatedPartner });
+        }
+        setPartnerHomeData(mapPartnerToHomeContent(updatedPartner));
+      }
       setPartnerHomeSuccess(true);
       setTimeout(() => setPartnerHomeSuccess(false), 3000);
     } catch (err) {
@@ -1423,23 +1599,6 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                               placeholder="https://example.com/banner.jpg"
                             />
                           </div>
-                          <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Theme Color</label>
-                            <select
-                              value={partnerHomeData.home?.themeColor || 'Blue'}
-                              onChange={(e) => setPartnerHomeData({
-                                ...partnerHomeData,
-                                home: { ...partnerHomeData.home, themeColor: e.target.value }
-                              })}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            >
-                              <option value="Blue">Blue</option>
-                              <option value="Dark">Dark</option>
-                              <option value="Purple">Purple</option>
-                              <option value="Orange">Orange</option>
-                              <option value="Red">Red</option>
-                            </select>
-                          </div>
                         </div>
                       </div>
 
@@ -1747,17 +1906,39 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 />
                               </div>
                               <div className="flex items-center gap-3">
-                                <input
-                                  type="url"
-                                  value={video.thumbnail || ''}
-                                  onChange={(e) => {
-                                    const newVideos = [...partnerHomeData.videos];
-                                    newVideos[index] = { ...newVideos[index], thumbnail: e.target.value };
-                                    setPartnerHomeData({ ...partnerHomeData, videos: newVideos });
-                                  }}
-                                  placeholder="Thumbnail URL"
-                                  className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
+                                <div className="flex items-center gap-3 flex-1">
+                                  {video.thumbnail && (
+                                    <img
+                                      src={video.thumbnail}
+                                      alt={video.title || 'Video thumbnail'}
+                                      className="w-16 h-16 rounded object-cover border border-slate-200"
+                                    />
+                                  )}
+                                  <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                                      Thumbnail image
+                                    </label>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const input = document.getElementById(`video-thumbnail-input-${index}`);
+                                        if (input) {
+                                          input.click();
+                                        }
+                                      }}
+                                      className="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:border-blue-500 hover:text-blue-600"
+                                    >
+                                      {video.thumbnail ? 'Change image' : 'Upload image'}
+                                    </button>
+                                    <input
+                                      id={`video-thumbnail-input-${index}`}
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={(event) => handleVideoThumbnailFileChange(index, event)}
+                                    />
+                                  </div>
+                                </div>
                                 <label className="flex items-center gap-2">
                                   <input
                                     type="checkbox"
@@ -2118,18 +2299,6 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         onChange={(e) => setNewPartner({ ...newPartner, subdomain: e.target.value })}
                       />
                       <p className="text-xs text-slate-500 mt-1">Middleware will auto-route *.worso.org to the correct tenant.</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-1">Theme Color</label>
-                      <select
-                        className="w-full p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                        value={newPartner.theme}
-                        onChange={(e) => setNewPartner({ ...newPartner, theme: e.target.value })}
-                      >
-                        <option value="blue">Worso Blue</option>
-                        <option value="emerald">Emerald Green</option>
-                        <option value="red">Crimson Red</option>
-                      </select>
                     </div>
                     <button onClick={handleCreatePartner} className="px-6 py-3 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 w-full">
                       Generate Micro-Site & Credentials
@@ -2904,129 +3073,11 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                 <ForumView />
               )}
               {activeTab === 'roboclub' && (
-                <div className="max-w-2xl mx-auto">
+                <div className="max-w-2xl mx-auto space-y-6">
                   <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8">
-                    {roboClubStep === 'email' && (
-                      <div className="space-y-6">
-                        <div className="text-center">
-                          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Mail size={28} className="text-blue-600" />
-                          </div>
-                          <h3 className="text-2xl font-bold text-slate-900 mb-2">Register your RoboClub</h3>
-                          <p className="text-slate-600 text-sm">Enter your email to receive a verification code</p>
-                        </div>
+                 
 
-                        <div className="space-y-2">
-                          <label className="block text-slate-700 text-sm font-medium">Email address</label>
-                          <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => {
-                              setEmail(e.target.value);
-                              setRoboClubError('');
-                            }}
-                            placeholder="your.email@example.com"
-                            className="w-full border border-slate-300 text-slate-900 p-4 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                          />
-                          {roboClubError && (
-                            <p className="text-red-600 text-sm flex items-center gap-2 bg-red-50 p-2 rounded">
-                              <Shield size={14} />
-                              {roboClubError}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                          <p className="text-slate-700 text-xs flex items-center gap-2">
-                            <Shield size={14} className="text-blue-600" />
-                            We will send a one-time code to verify your email
-                          </p>
-                        </div>
-
-                        <button
-                          onClick={handleSendOtp}
-                          disabled={roboClubLoading}
-                          className="w-full bg-blue-600 text-white font-bold py-4 rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                          {roboClubLoading ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                              Sending OTP...
-                            </>
-                          ) : (
-                            <>
-                              Send OTP
-                              <ArrowRight size={18} />
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    )}
-
-                    {roboClubStep === 'otp' && (
-                      <div className="space-y-6">
-                        <div className="text-center">
-                          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Shield size={28} className="text-blue-600" />
-                          </div>
-                          <h3 className="text-2xl font-bold text-slate-900 mb-2">Verify your email</h3>
-                          <p className="text-slate-600 text-sm">Enter the 6-digit code sent to {email}</p>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="block text-slate-700 text-sm font-medium">OTP</label>
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            value={otp}
-                            onChange={(e) => {
-                              setOtp(e.target.value.replace(/\D/g, '').slice(0, 6));
-                              setRoboClubError('');
-                            }}
-                            placeholder="000000"
-                            className="w-full border border-slate-300 text-slate-900 p-4 rounded-lg text-center text-xl font-mono tracking-widest outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                            maxLength={6}
-                          />
-                          {roboClubError && (
-                            <p className="text-red-600 text-sm flex items-center gap-2 bg-red-50 p-2 rounded">
-                              <Shield size={14} />
-                              {roboClubError}
-                            </p>
-                          )}
-                          {resendCooldown > 0 ? (
-                            <p className="text-slate-500 text-xs">Resend OTP in {resendCooldown}s</p>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={handleSendOtp}
-                              className="text-blue-600 text-sm hover:text-blue-700 font-medium"
-                            >
-                              Resend OTP
-                            </button>
-                          )}
-                        </div>
-
-                        <button
-                          onClick={handleVerifyOtp}
-                          disabled={roboClubLoading || otp.replace(/\D/g, '').length !== 6}
-                          className="w-full bg-blue-600 text-white font-bold py-4 rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                          {roboClubLoading ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                              Verifying...
-                            </>
-                          ) : (
-                            <>
-                              Verify OTP
-                              <ArrowRight size={18} />
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    )}
-
-                    {roboClubStep === 'register' && (
+                  
                       <div className="space-y-5">
                         <div className="text-center border-b border-slate-200 pb-4">
                           <h3 className="text-xl font-bold text-slate-900">Register for RoboClub</h3>
@@ -3160,6 +3211,97 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                             </>
                           )}
                         </button>
+                      </div>
+                   
+                  </div>
+
+                  {/* My RoboClubs (GET /club/my/get) */}
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-900">My RoboClubs</h3>
+                        <p className="text-slate-600 text-sm">Your registered clubs linked to this account</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={refreshMyClubs}
+                        disabled={myClubsLoading}
+                        className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
+                      >
+                        Refresh
+                      </button>
+                    </div>
+
+                    {myClubsLoading ? (
+                      <div className="flex items-center justify-center py-10">
+                        <div className="text-center">
+                          <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3"></div>
+                          <p className="text-slate-600">Loading your clubs...</p>
+                        </div>
+                      </div>
+                    ) : myClubsError ? (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <p className="text-red-800 font-medium">Error loading clubs</p>
+                        <p className="text-red-600 text-sm mt-1">{myClubsError}</p>
+                      </div>
+                    ) : Array.isArray(myClubs) && myClubs.length > 0 ? (
+                      <div className="space-y-3">
+                        {myClubs.map((club) => (
+                          <div key={club?._id ?? `${club?.clubCode ?? 'club'}-${club?.email ?? ''}`} className="border border-slate-200 rounded-xl p-4 hover:bg-slate-50/60 transition-all">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h4 className="text-base font-bold text-slate-900 truncate">{club?.clubName || 'RoboClub'}</h4>
+                                  {club?.clubCode && (
+                                    <span className="text-xs font-mono px-2 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                                      {club.clubCode}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-slate-600 text-sm mt-1">
+                                  {club?.instituteName ? club.instituteName : '—'}
+                                  {(club?.city || club?.state) ? (
+                                    <span className="text-slate-400"> • {club?.city}{club?.city && club?.state ? ', ' : ''}{club?.state}</span>
+                                  ) : null}
+                                </p>
+                              </div>
+                              <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                                club?.status === 'ACTIVE' || club?.status === 'active'
+                                  ? 'bg-green-100 text-green-800'
+                                  : club?.status === 'PENDING' || club?.status === 'pending'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : club?.status === 'REJECTED' || club?.status === 'rejected'
+                                      ? 'bg-red-100 text-red-800'
+                                      : 'bg-slate-100 text-slate-800'
+                              }`}>
+                                {club?.status || 'N/A'}
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4 text-sm">
+                              <div className="flex items-center gap-2 text-slate-700">
+                                <Mail size={14} className="text-slate-400" />
+                                <span className="truncate">{club?.email || '—'}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-slate-700">
+                                <Phone size={14} className="text-slate-400" />
+                                <span className="truncate">{club?.mobile || '—'}</span>
+                              </div>
+                            </div>
+
+                            {club?.createdAt && (
+                              <div className="mt-3 text-xs text-slate-500">
+                                Created: {new Date(club.createdAt).toLocaleString()}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-10">
+                        <Building2 className="mx-auto mb-3 text-slate-300" size={42} />
+                        <h4 className="text-base font-bold text-slate-700 mb-1">No clubs found</h4>
+                        <p className="text-slate-500 text-sm">Register your RoboClub above to see it here.</p>
                       </div>
                     )}
                   </div>

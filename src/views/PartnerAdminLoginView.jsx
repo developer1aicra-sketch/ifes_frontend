@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Mail, KeyRound, Shield } from 'lucide-react';
 import { partnerLoginSendOtp, partnerLoginVerifyOtp, setPartnerAuth } from '../utils/api';
+import { setAuthToken } from '../api/authToken';
 
 const PartnerAdminLoginView = ({ setView, setUser, siteConfig, user }) => {
   const [email, setEmail] = useState('');
@@ -55,6 +56,8 @@ const PartnerAdminLoginView = ({ setView, setUser, siteConfig, user }) => {
       };
       if (token && partner) {
         setPartnerAuth({ token, partner, email: userPayload.email });
+        // Save token to token storage for use in API calls
+        setAuthToken(token);
       }
       setUser(userPayload);
       setView('admin-dashboard');

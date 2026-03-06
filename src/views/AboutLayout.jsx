@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers, ArrowRight, Building, Trophy, FileText, Mail, Phone, Calendar, BookOpen, Code, GraduationCap, Megaphone, Target, Rocket, BarChart, Briefcase, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers, ArrowRight, Building, Trophy, FileText, Mail, Phone, Calendar, BookOpen, Code, GraduationCap, Megaphone, Target, Rocket, BarChart, Briefcase, ChevronLeft, ChevronRight, Linkedin } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import axiosInstance from '../api/axiosInstance';
+import endpoints from '../api/endpoints';
 
 // Import Advisory Board images
 import ajBeleza from '../assets/advisoryBoard/AJ-Beleza.png';
@@ -29,6 +31,16 @@ const AboutLayout = ({ setView }) => {
   const [activeSection, setActiveSection] = useState(getInitialSection);
   const tabsContainerRef = useRef(null);
   const tabRefs = useRef({});
+
+  // Advisory Board state
+  const [advisoryMembers, setAdvisoryMembers] = useState([]);
+  const [advisoryLoading, setAdvisoryLoading] = useState(false);
+  const [advisoryError, setAdvisoryError] = useState(null);
+
+  // Board of Directors state
+  const [boardMembers, setBoardMembers] = useState([]);
+  const [boardLoading, setBoardLoading] = useState(false);
+  const [boardError, setBoardError] = useState(null);
   
   // Update activeSection when URL hash changes
   useEffect(() => {
@@ -59,6 +71,70 @@ const AboutLayout = ({ setView }) => {
       }
     }
   }, [activeSection]);
+
+  // Fetch Advisory Board members when advisory tab is active
+  useEffect(() => {
+    if (activeSection !== 'advisory' || advisoryMembers.length > 0 || advisoryLoading) {
+      return;
+    }
+
+    const fetchAdvisoryBoard = async () => {
+      setAdvisoryLoading(true);
+      setAdvisoryError(null);
+      try {
+        const response = await axiosInstance.get(endpoints.about.people('ADVISORY_BOARD'));
+        const data = Array.isArray(response?.data?.data) ? response.data.data : [];
+
+        // Sort by display_order if available
+        const sorted = [...data].sort((a, b) => {
+          const aOrder = typeof a.display_order === 'number' ? a.display_order : 0;
+          const bOrder = typeof b.display_order === 'number' ? b.display_order : 0;
+          return aOrder - bOrder;
+        });
+
+        setAdvisoryMembers(sorted);
+      } catch (error) {
+        console.error('Failed to load advisory board members', error);
+        setAdvisoryError('Unable to load Advisory Board at the moment.');
+      } finally {
+        setAdvisoryLoading(false);
+      }
+    };
+
+    fetchAdvisoryBoard();
+  }, [activeSection, advisoryMembers.length, advisoryLoading]);
+  
+  // Fetch Board of Directors when board tab is active
+  useEffect(() => {
+    if (activeSection !== 'board' || boardMembers.length > 0 || boardLoading) {
+      return;
+    }
+
+    const fetchBoardMembers = async () => {
+      setBoardLoading(true);
+      setBoardError(null);
+      try {
+        const response = await axiosInstance.get(endpoints.about.people('BOARD_OF_DIRECTORS'));
+        const data = Array.isArray(response?.data?.data) ? response.data.data : [];
+
+        // Sort by display_order if available
+        const sorted = [...data].sort((a, b) => {
+          const aOrder = typeof a.display_order === 'number' ? a.display_order : 0;
+          const bOrder = typeof b.display_order === 'number' ? b.display_order : 0;
+          return aOrder - bOrder;
+        });
+
+        setBoardMembers(sorted);
+      } catch (error) {
+        console.error('Failed to load board of directors members', error);
+        setBoardError('Unable to load Board of Directors at the moment.');
+      } finally {
+        setBoardLoading(false);
+      }
+    };
+
+    fetchBoardMembers();
+  }, [activeSection, boardMembers.length, boardLoading]);
   
   // Update URL hash when activeSection changes
   const handleSectionChange = (sectionId) => {
@@ -512,101 +588,68 @@ const AboutLayout = ({ setView }) => {
               </p>
             </div>
 
-            {/* Board Members Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[
-                {
-                  name: 'Raj Kumar Sharma',
-                  role: 'President, World Robotics Sports Organization (WORSO)',
-                  img: 'https://worso.org/images/executive-committee/rajkumar.png',
-                
-                
-                },
-                {
-                  name: 'Ajay Pratap Singh',
-                  role: 'Director Marketing',
-                  img: 'https://worso.org/images/executive-committee/AjayPratapSingh.png',
-                 
-                },
-                {
-                  name: 'Navin Chhabra',
-                  role: 'Director Operations',
-                  img: 'https://worso.org/images/executive-committee/navin.png',
+            {/* Board Members */}
+            {boardLoading && (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="bg-white rounded-2xl border border-slate-200 p-8 flex flex-col items-center text-center shadow-sm animate-pulse"
+                  >
+                    <div className="w-32 h-32 rounded-full bg-slate-100 mb-4" />
+                    <div className="h-4 bg-slate-200 rounded w-3/4 mb-2" />
+                    <div className="h-3 bg-slate-100 rounded w-1/2" />
+                  </div>
+                ))}
+              </div>
+            )}
 
-                
-                },
-                {
-                  name: 'Rahul Chakraborty',
-                  role: 'Director - Esports Startups',
-                  img: 'https://worso.org/images/executive-committee/rahul.png',
-               
-                },
-                {
-                  name: 'Homa Siddiqui',
-                  role: 'Strategy Manager- Tech Sports',
-                  img: 'https://worso.org/images/executive-committee/homa.png',
-                
-                },
-              ].map((member, index) => (
-                <div
-                  key={member.name}
-                  className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 p-8 flex flex-col items-center text-center hover:border-blue-200"
-                >
-                  {/* Circular Image Container */}
-                  <div className="relative w-48 h-48 mb-6">
-                    <div className="absolute inset-0 rounded-full overflow-hidden border-4 border-white shadow-lg group-hover:border-blue-100 transition-colors duration-300">
-                      <img
-                        src={member.img}
-                        alt={member.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = `data:image/svg+xml;base64,${btoa(`
-                            <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
-                              <rect width="400" height="400" fill="#f1f5f9"/>
-                              <circle cx="200" cy="150" r="80" fill="#9da8ab"/>
-                              <circle cx="200" cy="380" r="120" fill="#9da8ab"/>
-                            </svg>
-                          `)}`;
-                        }}
-                      />
+            {!boardLoading && boardError && (
+              <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+                {boardError}
+              </div>
+            )}
+
+            {!boardLoading && !boardError && boardMembers.length === 0 && (
+              <p className="text-slate-500 text-sm">Board of Directors will be announced soon.</p>
+            )}
+
+            {!boardLoading && boardMembers.length > 0 && (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {boardMembers.map((member) => (
+                  <div
+                    key={member._id}
+                    className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 p-8 flex flex-col items-center text-center hover:border-blue-200"
+                  >
+                    {/* Circular Image Container */}
+                    <div className="relative w-40 h-40 mb-6">
+                      <div className="absolute inset-0 rounded-full overflow-hidden border-4 border-white shadow-lg group-hover:border-blue-100 transition-colors duration-300">
+                        <img
+                          src={member.photo_url}
+                          alt={member.full_name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src =
+                              'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLiUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+';
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Member Info */}
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">
+                        {member.full_name}
+                      </h3>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        {member.role}
+                      </p>
                     </div>
                   </div>
-
-                  {/* Member Info */}
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">
-                      {member.name}
-                    </h3>
-                    <p className="text-sm text-slate-600 mb-4 leading-relaxed">
-                      {member.role}
-                    </p>
-
-                    {/* Contact Info */}
-                    {/* <div className="mt-4 pt-4 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
-                          <Mail size={14} />
-                          <span className="truncate">{member.email}</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
-                          <Phone size={14} />
-                          <span>{member.phone}</span>
-                        </div>
-                      </div>
-                    </div> */}
-                  </div>
-
-                  {/* View Profile Button */}
-                  {/* <button
-                    className="mt-6 px-6 py-2 bg-blue-50 text-blue-600 rounded-lg font-medium hover:bg-blue-100 transition-colors duration-200 text-sm opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300"
-                    onClick={() => console.log(`View ${member.name}'s profile`)}
-                  >
-                    View Profile
-                  </button> */}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             {/* Additional Info Section */}
             <div className="mt-12 pt-8 border-t border-slate-200">
@@ -749,103 +792,80 @@ const AboutLayout = ({ setView }) => {
       case 'advisory':
         return (
           <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-8">Advisory Board</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                {
-                  name: 'Rahman Rasulzada',
-                  role: 'Member',
-                  country: 'Azerbaijan',
-                  flag: '🇦🇿',
-                  image: rahmanRasulzada
-                },
-                {
-                  name: 'Prof. Dr. Md. Helal-An-Nahiyan',
-                  role: 'Member',
-                  country: 'Bangladesh',
-                  flag: '🇧🇩',
-                  image: mdHelalAnNahiyan
-                },
-                {
-                  name: 'Salah Eissa',
-                  role: 'Member',
-                  country: 'Egypt',
-                  flag: '🇪🇬',
-                  image: salahEissa
-                },
-                {
-                  name: 'Davoud jafari',
-                  role: 'Member',
-                  country: 'Iran',
-                  flag: '🇮🇷',
-                  image: davoudJafari
-                },
-                {
-                  name: 'Wael Abbas Kadhim',
-                  role: 'Member',
-                  country: 'Iraq',
-                  flag: '🇮🇶',
-                  image: waelAbbasKadhim
-                },
-                {
-                  name: 'Nina Drakulic',
-                  role: 'Member',
-                  country: 'Montenegro',
-                  flag: '🇲🇪',
-                  image: ninaDrakulic
-                },
-                {
-                  name: 'Maxim Turushev',
-                  role: 'Member',
-                  country: 'Russia',
-                  flag: '🇷🇺',
-                  image: maximTurushev
-                },
-                {
-                  name: 'AJ Beleza',
-                  role: 'Member',
-                  country: 'Mozambique',
-                  flag: '🇲🇿',
-                  image: ajBeleza
-                },
-                {
-                  name: 'Orlando anach Quintero Aponte',
-                  role: 'Member',
-                  country: 'Venezuela',
-                  flag: '🇻🇪',
-                  image: orlandoAnach
-                },
-                {
-                  name: 'Mr.Dambudzo Roy Nyathi',
-                  role: 'Member',
-                  country: 'Zimbabwe',
-                  flag: '🇿🇼',
-                  image: mrDambudzoRoyNyathi
-                }
-              ].map((member, index) => (
-                <div key={index} className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                  <div className="relative pt-[100%] bg-slate-100">
-                    <img
-                      src={member.image}
-                      alt={member.name}
-                      className="absolute top-0 left-0 w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLiUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+'
-                      }}
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold text-slate-900 text-lg">{member.name}</h3>
-                    <p className="text-sm text-slate-600 mt-1">{member.role}</p>
-                    <div className="mt-3 flex items-center text-sm text-slate-500">
-                      <span className="text-lg mr-2">{member.flag}</span>
-                      {member.country}
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">Advisory Board</h2>
+            <p className="text-slate-600 mb-8 max-w-2xl">
+              Global leaders and experts guiding WORSO&apos;s mission, governance, and long-term strategy.
+            </p>
+
+            {advisoryLoading && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm animate-pulse"
+                  >
+                    <div className="relative pt-[100%] bg-slate-100" />
+                    <div className="p-4 space-y-2">
+                      <div className="h-4 bg-slate-200 rounded w-3/4" />
+                      <div className="h-3 bg-slate-200 rounded w-1/2" />
+                      <div className="h-3 bg-slate-100 rounded w-full mt-3" />
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {!advisoryLoading && advisoryError && (
+              <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+                {advisoryError}
+              </div>
+            )}
+
+            {!advisoryLoading && !advisoryError && advisoryMembers.length === 0 && (
+              <p className="text-slate-500 text-sm">Advisory Board will be announced soon.</p>
+            )}
+
+            {!advisoryLoading && advisoryMembers.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {advisoryMembers.map((member) => (
+                  <div
+                    key={member._id}
+                    className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col"
+                  >
+                    <div className="relative pt-[100%] bg-slate-100">
+                      <img
+                        src={member.photo_url}
+                        alt={member.full_name}
+                        className="absolute top-0 left-0 w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src =
+                            'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLiUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+';
+                        }}
+                      />
+                    </div>
+                    <div className="p-4 flex-1 flex flex-col">
+                      <h3 className="font-bold text-slate-900 text-lg">{member.full_name}</h3>
+                      <p className="text-sm text-slate-600 mt-1">{member.role}</p>
+                      {member.bio && (
+                        <p className="text-xs text-slate-500 mt-3 line-clamp-3">{member.bio}</p>
+                      )}
+                      {member.linkedin_url && (
+                        <a
+                          href={member.linkedin_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+                        >
+                          <Linkedin size={14} />
+                          <span>View LinkedIn</span>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         );
 

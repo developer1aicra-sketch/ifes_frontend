@@ -152,7 +152,7 @@ const FeaturedShopSection = () => {
           </div>
         </div>
       )}
-      <section className="py-16 md:py-24 relative bg-white">
+      <section className="py-16 md:py-24 relative bg-white hidden">
         {/* Cart Floating Button */}
         <div className="fixed bottom-5 right-20 z-50 hidden">
           <button 

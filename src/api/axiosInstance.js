@@ -9,6 +9,8 @@ const axiosInstance = axios.create({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    'x-website': 'worso',
+    'x-partner-code': ''
   },
 });
 
@@ -64,9 +66,9 @@ axiosRetry(axiosInstance, {
   },
   retryCondition: (error) => {
     // Retry only on network errors or 5xx status codes
-    return axiosRetry.isNetworkError(error) || 
-           axiosRetry.isRetryableError(error) ||
-           (error.response && error.response.status >= 500);
+    return axiosRetry.isNetworkError(error) ||
+      axiosRetry.isRetryableError(error) ||
+      (error.response && error.response.status >= 500);
   },
 });
 

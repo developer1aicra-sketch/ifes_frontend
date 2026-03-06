@@ -37,7 +37,7 @@ import { galleryImages } from "../assets/gallery";
 const TechnoxianView = () => {
   void motion;
   const [activeTab, setActiveTab] = useState("overview");
-  const [regType, setRegType] = useState("team");
+  const [regType, setRegType] = useState("visitor");
   const [trophyIndex, setTrophyIndex] = useState(0);
   const [imageErrors, setImageErrors] = useState({});
   const [selectedTechnoxianMembership, setSelectedTechnoxianMembership] =
@@ -1506,26 +1506,24 @@ const TechnoxianView = () => {
               <div className="md:w-64 bg-[#0f172a] p-6 text-white">
                 <h3 className="font-bold text-white mb-6">Registration Type</h3>
                 <div className="space-y-2">
-                  {["Team Registration", "Visitor Pass", "Exhibitor Space"].map(
-                    (type) => {
-                      const id = type.split(" ")[0].toLowerCase();
-                      return (
-                        <button
-                          key={id}
-                          onClick={() => setRegType(id)}
-                          className={`w-full text-left px-4 py-3 rounded-xl  transition-all shadow-sm flex items-center justify-between ${regType === id
-                            ? 'bg-gradient-to-r from-blue-500/20 to-indigo-500/10 text-white shadow-lg'
-                            : 'text-blue-100/80 hover:bg-white/5'
-                            }`}
-                        >
-                          <span className="font-semibold text-sm">{type}</span>
-                          {regType === id && (
-                            <ChevronRight size={14} className="text-blue-200" />
-                          )}
-                        </button>
-                      );
-                    },
-                  )}
+                  {["Visitor Pass", "Exhibitor Space"].map((type) => {
+                    const id = type.split(" ")[0].toLowerCase();
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => setRegType(id)}
+                        className={`w-full text-left px-4 py-3 rounded-xl  transition-all shadow-sm flex items-center justify-between ${regType === id
+                          ? 'bg-gradient-to-r from-blue-500/20 to-indigo-500/10 text-white shadow-lg'
+                          : 'text-blue-100/80 hover:bg-white/5'
+                          }`}
+                      >
+                        <span className="font-semibold text-sm">{type}</span>
+                        {regType === id && (
+                          <ChevronRight size={14} className="text-blue-200" />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

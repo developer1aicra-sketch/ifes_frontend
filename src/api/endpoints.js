@@ -58,6 +58,9 @@ const endpoints = {
   partners: {
     home: (countryCode) => `/partners/home/${countryCode}`,
     update: (id) => `/partners/${id}`
+  },
+  about: {
+    people: (category) => `/about-worso/people?category=${encodeURIComponent(category)}`,
   }
 };
 
