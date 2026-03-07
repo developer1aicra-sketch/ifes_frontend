@@ -2,6 +2,33 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import { getAuthToken } from './authToken';
+import { getLocationCodeFromPath } from '../utils/locationRoutes';
+import { getPartnerCode } from './partnerCode';
+
+const setRequestHeader = (headers, key, value) => {
+  // Axios v1 uses AxiosHeaders (has .set/.delete). Older/other configs can be plain objects.
+  if (!headers) return { [key]: value };
+  if (typeof headers.set === 'function') {
+    headers.set(key, value);
+    return headers;
+  }
+  headers[key] = value;
+  return headers;
+};
+
+const deleteRequestHeader = (headers, key) => {
+  if (!headers) return headers;
+  if (typeof headers.delete === 'function') {
+    headers.delete(key);
+    return headers;
+  }
+  try {
+    delete headers[key];
+  } catch {
+    // no-op
+  }
+  return headers;
+};
 
 // Create axios instance
 const axiosInstance = axios.create({
@@ -10,7 +37,7 @@ const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'x-website': 'worso',
-    'x-partner-code': ''
+    'x-partner-code': '' // set per-request from route in interceptor
   },
 });
 
@@ -28,9 +55,17 @@ const protectedEndpoints = [
 // Add request interceptor: attach Bearer token from authToken (set after verify OTP)
 axiosInstance.interceptors.request.use(
   (config) => {
+    // Set x-partner-code from current route (e.g. /VE or /VE/technoxian → "VE")
+    if (typeof window !== 'undefined' && window.location?.pathname) {
+      const partnerCodeFromRoute = getLocationCodeFromPath(window.location.pathname);
+      const partnerCode = getPartnerCode() || partnerCodeFromRoute;
+      config.headers = setRequestHeader(config.headers, 'x-partner-code', partnerCode || '');
+      console.log('partnerCode', partnerCode);
+    }
+   
     const token = getAuthToken();
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers = setRequestHeader(config.headers, 'Authorization', `Bearer ${token}`);
       if (config.url) {
         console.log(`🔐 Adding Authorization Bearer to request: ${config.method?.toUpperCase()} ${config.url}`);
       }
@@ -45,8 +80,8 @@ axiosInstance.interceptors.request.use(
     if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
       // Axios headers can be case-insensitive; remove both to be safe.
       try {
-        delete config.headers['Content-Type'];
-        delete config.headers['content-type'];
+        config.headers = deleteRequestHeader(config.headers, 'Content-Type');
+        config.headers = deleteRequestHeader(config.headers, 'content-type');
       } catch {
         // no-op
       }

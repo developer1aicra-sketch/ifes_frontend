@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { fetchPartners, getPrimaryPartnerByLocation } from '../utils/api';
+import { setPartnerCode } from '../api/partnerCode';
 
 /**
  * Component that handles route-based theme switching
@@ -55,6 +56,8 @@ const LocationRouteHandler = () => {
           !knownRoutes.includes(locationCode.toLowerCase());
       
       if (isValidLocationCode) {
+        // Keep current partner code in sync with route for API requests
+        setPartnerCode(locationCode);
         // Always apply theme for location route (even if already selected, to ensure it's active)
         console.log(`[LocationRouteHandler] ✅ Valid location route detected: ${locationCode}`);
         
@@ -73,6 +76,8 @@ const LocationRouteHandler = () => {
           updateTheme('Blue', locationCode);
         }
       } else {
+        // Clear partner code on non-location routes
+        setPartnerCode('');
         // Not a location route - keep current theme if we have one
         if (selectedLocation && location.pathname !== '/') {
           console.log(`[LocationRouteHandler] 📌 Keeping theme for ${selectedLocation} on route: ${location.pathname}`);

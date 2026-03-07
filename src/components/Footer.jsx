@@ -4,8 +4,22 @@ import { FaFacebookF, FaInstagram, FaLinkedinIn, FaYoutube } from "react-icons/f
 import { Mail, Phone, MapPin } from "lucide-react";
 import logo from '../assets/logo.png';
 import { fetchPartners, getCurrentSubdomain, findPartnerBySubdomain, getPrimaryPartnerByLocation } from '../utils/api';
+import { getLocationCodeFromPath } from '../utils/locationRoutes';
 import { useTheme } from '../contexts/ThemeContext';
 import LocationSwitcher, { DEFAULT_LOCATION_CODES } from './LocationSwitcher';
+
+// Default footer contact & social when NOT on a partner route (/XX or /XX/...)
+const DEFAULT_FOOTER = {
+  email: 'info@worso.in',
+  phone: '+91 7835053333',
+  address: '',
+  social: {
+    facebook: 'https://www.facebook.com/WORSOcommunity',
+    instagram: 'https://www.instagram.com/worsoassociation',
+    linkedin: 'https://in.linkedin.com/company/worso',
+    youtube: 'https://www.youtube.com/@WORSOassociation',
+  },
+};
 
 const Footer = ({ setView, switchSite, currentSite }) => {
   const [partners, setPartners] = useState([]);
@@ -22,6 +36,12 @@ const Footer = ({ setView, switchSite, currentSite }) => {
     const isTwoLetter = code.length === 2 && /^[A-Z]{2}$/.test(code);
     return isTwoLetter ? code : null;
   }, [routerLocation.pathname]);
+
+  // Only treat as "partner route" when path starts with a valid location code (same as LocationRouteHandler).
+  const isOnPartnerRoute = useMemo(
+    () => getLocationCodeFromPath(routerLocation.pathname) != null,
+    [routerLocation.pathname]
+  );
 
   const activeCountryCode = routeCountryCode || selectedLocation || null;
 
@@ -112,10 +132,18 @@ const Footer = ({ setView, switchSite, currentSite }) => {
     }
   }, [partners, routeCountryCode, selectedLocation, updateTheme]);
 
-  const footerEmail = activePartner?.footerInfo?.email || activePartner?.contactEmail || 'info@worso.in';
-  const footerPhone = activePartner?.footerInfo?.phone || activePartner?.phoneNumber || '+91 7835053333';
-  const footerAddress = activePartner?.footerInfo?.address || activePartner?.location || '';
-  const social = activePartner?.socialLinks || {};
+  const footerEmail = isOnPartnerRoute && activePartner
+    ? (activePartner?.footerInfo?.email || activePartner?.contactEmail || DEFAULT_FOOTER.email)
+    : DEFAULT_FOOTER.email;
+  const footerPhone = isOnPartnerRoute && activePartner
+    ? (activePartner?.footerInfo?.phone || activePartner?.phoneNumber || DEFAULT_FOOTER.phone)
+    : DEFAULT_FOOTER.phone;
+  const footerAddress = isOnPartnerRoute && activePartner
+    ? (activePartner?.footerInfo?.address || activePartner?.location || DEFAULT_FOOTER.address)
+    : DEFAULT_FOOTER.address;
+  const social = isOnPartnerRoute && activePartner?.socialLinks
+    ? { ...DEFAULT_FOOTER.social, ...activePartner.socialLinks }
+    : DEFAULT_FOOTER.social;
 
   return (
     <footer className={`${themeConfig?.colors?.gradient || 'bg-[#0f172a]'} text-slate-400 py-16`}>
@@ -202,6 +230,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
 
 
             {/* SOCIAL ICONS */}
+         
             <div>
               <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">Follow Us</h4>
               <div className="flex gap-4 text-xl">

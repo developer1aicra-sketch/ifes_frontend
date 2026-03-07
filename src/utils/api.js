@@ -1,8 +1,36 @@
 // API utility functions
 
 import { apiRoutes } from '../constants/apiRoutes';
+import { getPartnerCode } from '../api/partnerCode';
+import { getLocationCodeFromPath } from './locationRoutes';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://worso-backend-rm6w.vercel.app/api';
+
+const getPartnerCodeForRequest = () => {
+  const fromStore = getPartnerCode();
+  if (fromStore) return fromStore;
+  if (typeof window === 'undefined') return '';
+  return getLocationCodeFromPath(window.location?.pathname || '') || '';
+};
+
+/**
+ * fetch() wrapper for WORSO API calls.
+ * Ensures `x-website` + `x-partner-code` are always sent in Request Headers.
+ */
+const apiFetch = (url, options = {}) => {
+  const opts = options || {};
+  const headers = new Headers(opts.headers || {});
+
+  headers.set('x-website', 'worso');
+  headers.set('x-partner-code', getPartnerCodeForRequest());
+
+  const isFormData = typeof FormData !== 'undefined' && opts.body instanceof FormData;
+  if (!isFormData && !headers.has('Content-Type') && !headers.has('content-type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  return fetch(url, { ...opts, headers });
+};
 
 /**
  * Fetches partners data from the API
@@ -10,11 +38,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://worso-backend
  */
 export const fetchPartners = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/partners`, {
+    const response = await apiFetch(`${API_BASE_URL}/partners`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -36,11 +61,8 @@ export const fetchPartners = async () => {
  */
 export const fetchPartnerById = async (identifier) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/partners/${identifier}`, {
+    const response = await apiFetch(`${API_BASE_URL}/partners/${identifier}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -178,11 +200,8 @@ export const detectPartnerFromUrl = async () => {
  * @returns {Promise<{ success: boolean, message?: string }>}
  */
 export const partnerLoginSendOtp = async (email) => {
-  const response = await fetch(`${API_BASE_URL}/partners/login/send-otp`, {
+  const response = await apiFetch(`${API_BASE_URL}/partners/login/send-otp`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({ email }),
   });
 
@@ -240,10 +259,9 @@ export const clearPartnerAuth = () => {
  * @returns {Promise<void>}
  */
 export const partnerLogout = async (token) => {
-  const response = await fetch(`${API_BASE_URL}/partners/logout`, {
+  const response = await apiFetch(`${API_BASE_URL}/partners/logout`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
       Authorization: token ? `Bearer ${token}` : '',
     },
   });
@@ -261,11 +279,8 @@ export const partnerLogout = async (token) => {
  * @returns {Promise<{ success: boolean, message?: string, token?: string, user?: object }>}
  */
 export const partnerLoginVerifyOtp = async (email, otp) => {
-  const response = await fetch(`${API_BASE_URL}/partners/login/verify-otp`, {
+  const response = await apiFetch(`${API_BASE_URL}/partners/login/verify-otp`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({ email, otp }),
   });
 
@@ -287,10 +302,9 @@ export const partnerLoginVerifyOtp = async (email, otp) => {
  * @returns {Promise<{ success: boolean, partner?: object }>}
  */
 export const updatePartner = async (partnerId, token, payload) => {
-  const response = await fetch(`${API_BASE_URL}/partners/${partnerId}`, {
+  const response = await apiFetch(`${API_BASE_URL}/partners/${partnerId}`, {
     method: 'PUT',
     headers: {
-      'Content-Type': 'application/json',
       Authorization: token ? `Bearer ${token}` : '',
     },
     body: JSON.stringify(payload),
@@ -320,11 +334,8 @@ const PARTNER_HOME_API_BASE_URL = 'https://worso-backend-amber.vercel.app/api';
  */
 export const fetchPartnerHome = async (countryCode) => {
   try {
-    const response = await fetch(`${PARTNER_HOME_API_BASE_URL}/partners/home/${countryCode}`, {
+    const response = await apiFetch(`${PARTNER_HOME_API_BASE_URL}/partners/home/${countryCode}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -348,14 +359,13 @@ export const fetchPartnerHome = async (countryCode) => {
  */
 export const updatePartnerHome = async (partnerId, token, payload) => {
   const headers = {
-    'Content-Type': 'application/json',
   };
   
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${PARTNER_HOME_API_BASE_URL}/partners/${partnerId}`, {
+  const response = await apiFetch(`${PARTNER_HOME_API_BASE_URL}/partners/${partnerId}`, {
     method: 'PUT',
     headers,
     body: JSON.stringify(payload),
@@ -378,9 +388,8 @@ export const updatePartnerHome = async (partnerId, token, payload) => {
  * @returns {Promise<{ success: boolean, data?: Array }>}
  */
 export const listSeasons = async () => {
-  const response = await fetch(`${API_BASE_URL}${apiRoutes.season.list}`, {
+  const response = await apiFetch(`${API_BASE_URL}${apiRoutes.season.list}`, {
     method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -400,9 +409,8 @@ export const addSeason = async (payload) => {
     year: payload.year ?? new Date().getFullYear(),
     isActive: payload.isActive !== undefined ? payload.isActive : true,
   };
-  const response = await fetch(`${API_BASE_URL}${apiRoutes.season.add}`, {
+  const response = await apiFetch(`${API_BASE_URL}${apiRoutes.season.add}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
   const data = await response.json().catch(() => ({}));
@@ -418,9 +426,8 @@ export const addSeason = async (payload) => {
  * @returns {Promise<{ success: boolean, data?: object }>}
  */
 export const getSeason = async (id) => {
-  const response = await fetch(`${API_BASE_URL}${apiRoutes.season.get(id)}`, {
+  const response = await apiFetch(`${API_BASE_URL}${apiRoutes.season.get(id)}`, {
     method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -436,9 +443,8 @@ export const getSeason = async (id) => {
  * @returns {Promise<{ success: boolean, data?: object }>}
  */
 export const updateSeason = async (id, payload) => {
-  const response = await fetch(`${API_BASE_URL}${apiRoutes.season.edit(id)}`, {
+  const response = await apiFetch(`${API_BASE_URL}${apiRoutes.season.edit(id)}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
   const data = await response.json().catch(() => ({}));
@@ -454,9 +460,8 @@ export const updateSeason = async (id, payload) => {
  * @returns {Promise<{ success: boolean }>}
  */
 export const deleteSeason = async (id) => {
-  const response = await fetch(`${API_BASE_URL}${apiRoutes.season.delete(id)}`, {
+  const response = await apiFetch(`${API_BASE_URL}${apiRoutes.season.delete(id)}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -472,9 +477,8 @@ export const deleteSeason = async (id) => {
  * @returns {Promise<{ message?: string, data?: Array }>}
  */
 export const listEvents = async () => {
-  const response = await fetch(`${API_BASE_URL}${apiRoutes.event.list}`, {
+  const response = await apiFetch(`${API_BASE_URL}${apiRoutes.event.list}`, {
     method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -501,9 +505,8 @@ export const addEvent = async (payload) => {
     venue: payload.venue ?? '',
     registration_fee: payload.registration_fee ?? 0,
   };
-  const response = await fetch(`${API_BASE_URL}${apiRoutes.event.add}`, {
+  const response = await apiFetch(`${API_BASE_URL}${apiRoutes.event.add}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
   const data = await response.json().catch(() => ({}));
@@ -520,9 +523,8 @@ export const addEvent = async (payload) => {
  * @returns {Promise<{ success: boolean, data?: object }>}
  */
 export const updateEvent = async (id, payload) => {
-  const response = await fetch(`${API_BASE_URL}${apiRoutes.event.update(id)}`, {
+  const response = await apiFetch(`${API_BASE_URL}${apiRoutes.event.update(id)}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
   const data = await response.json().catch(() => ({}));
@@ -538,9 +540,8 @@ export const updateEvent = async (id, payload) => {
  * @returns {Promise<{ success: boolean }>}
  */
 export const deleteEvent = async (_id) => {
-  const response = await fetch(`${API_BASE_URL}${apiRoutes.event.delete(_id)}`, {
+  const response = await apiFetch(`${API_BASE_URL}${apiRoutes.event.delete(_id)}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -555,9 +556,8 @@ export const deleteEvent = async (_id) => {
  * @returns {Promise<{ success: boolean, data?: object }>}
  */
 export const getEvent = async (_id) => {
-  const response = await fetch(`${API_BASE_URL}${apiRoutes.event.get(_id)}`, {
+  const response = await apiFetch(`${API_BASE_URL}${apiRoutes.event.get(_id)}`, {
     method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -573,9 +573,8 @@ export const getEvent = async (_id) => {
  * @returns {Promise<{ status?: number, success?: boolean, data?: Array }>}
  */
 export const listCompetitions = async () => {
-  const response = await fetch(`${API_BASE_URL}${apiRoutes.competition.list}`, {
+  const response = await apiFetch(`${API_BASE_URL}${apiRoutes.competition.list}`, {
     method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -659,7 +658,7 @@ export const buildCompetitionFormData = (competition) => {
  */
 export const addCompetition = async (competition) => {
   const formData = buildCompetitionFormData(competition);
-  const response = await fetch(`${API_BASE_URL}${apiRoutes.competition.add}`, {
+  const response = await apiFetch(`${API_BASE_URL}${apiRoutes.competition.add}`, {
     method: 'POST',
     body: formData,
     // Do not set Content-Type; browser sets multipart/form-data with boundary
@@ -680,7 +679,7 @@ export const addCompetition = async (competition) => {
  */
 export const updateCompetition = async (_id, competition) => {
   const formData = buildCompetitionFormData(competition);
-  const response = await fetch(`${API_BASE_URL}${apiRoutes.competition.update(_id)}`, {
+  const response = await apiFetch(`${API_BASE_URL}${apiRoutes.competition.update(_id)}`, {
     method: 'PUT',
     body: formData,
   });
@@ -697,9 +696,8 @@ export const updateCompetition = async (_id, competition) => {
  * @returns {Promise<{ success: boolean }>}
  */
 export const deleteCompetition = async (_id) => {
-  const response = await fetch(`${API_BASE_URL}${apiRoutes.competition.delete(_id)}`, {
+  const response = await apiFetch(`${API_BASE_URL}${apiRoutes.competition.delete(_id)}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {

@@ -158,7 +158,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
                 </div>
               )}
               {/* Banner Image */}
-              {partnerHomeData?.home?.bannerImage && (
+              {/* {partnerHomeData?.home?.bannerImage && (
                 <div className="absolute inset-0 z-0">
                   <img 
                     src={partnerHomeData.home.bannerImage} 
@@ -166,7 +166,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
                     className="w-full h-full object-cover opacity-20"
                   />
                 </div>
-              )}
+              )} */}
               
               <h1 className="text-6xl md:text-7xl font-bold leading-tight tracking-tight">
                 {partnerHomeData?.home?.title || (siteConfig.is_partner ? 'The governing body ' : 'The governing body')} <br />
