@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { Zap, Gift, Wrench, Lock } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Zap, Gift, Wrench, Lock, Copy, Check } from 'lucide-react';
 
 const ROBOTICS_KITS = [
   {
@@ -9,6 +9,7 @@ const ROBOTICS_KITS = [
     description: 'Everything you need to assemble your first autonomous robot and learn core electronics.',
     couponCode: 'TX-STARTER-10',
     discountLabel: 'Flat 10% OFF',
+    maxDiscount: 10,
   },
   {
     id: 'advance',
@@ -17,6 +18,7 @@ const ROBOTICS_KITS = [
     description: 'High-torque motors, sensor pack, and controller board for competition-ready builds.',
     couponCode: 'TX-ROBO-15',
     discountLabel: 'Up to 15% OFF',
+    maxDiscount: 15,
   },
   {
     id: 'ai',
@@ -25,8 +27,108 @@ const ROBOTICS_KITS = [
     description: 'Camera + edge AI module to experiment with computer vision and autonomous navigation.',
     couponCode: 'TX-AI-20',
     discountLabel: 'Premium Member Offer',
+    maxDiscount: 25,
   },
 ];
+
+/** Red ribbon offer tag: "UP TO" stacked small + "X% OFF" bold, with curled/folded 3D effect */
+function OfferRibbon({ maxDiscount }) {
+  return (
+    <div
+      className="absolute top-0 right-0 z-10 flex items-center gap-1 pr-2 pl-3 py-1.5 rounded-bl-lg rounded-tr-2xl overflow-visible"
+      style={{
+        background: 'linear-gradient(180deg, #e04550 0%, #dc3545 45%, #c92a38 100%)',
+        boxShadow:
+          'inset 0 1px 0 rgba(255,255,255,0.2), 2px 2px 6px rgba(0,0,0,0.35), 0 4px 8px rgba(0,0,0,0.2)',
+      }}
+    >
+      {/* Left fold (shadow under fold) */}
+      <div
+        className="absolute left-0 bottom-0 w-2 h-full rounded-r-sm opacity-90"
+        style={{
+          background: 'linear-gradient(90deg, #8b1a28 0%, transparent 100%)',
+          transform: 'skewY(6deg) translateX(-2px)',
+        }}
+        aria-hidden
+      />
+      <div className="flex flex-col items-center justify-center leading-tight" style={{ fontSize: '9px' }}>
+        <span className="font-medium text-white uppercase tracking-wider">Up</span>
+        <span className="font-medium text-white uppercase tracking-wider">To</span>
+      </div>
+      <span
+        className="font-bold text-white uppercase tracking-wide whitespace-nowrap"
+        style={{ fontSize: '14px', lineHeight: 1.1, textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}
+      >
+        {maxDiscount}% OFF
+      </span>
+      {/* Curled right edge (fold) */}
+      <div
+        className="absolute -right-1 top-0 w-4 h-full rounded-l-md"
+        style={{
+          background: 'linear-gradient(135deg, #a02030 0%, #8b1a28 100%)',
+          transform: 'skewY(-8deg) translateX(2px)',
+          boxShadow: '2px 0 4px rgba(0,0,0,0.25)',
+        }}
+        aria-hidden
+      />
+    </div>
+  );
+}
+
+function RoboticsKitCard({ kit }) {
+  const [copiedId, setCopiedId] = useState(null);
+
+  const handleCopyCode = (e) => {
+    e.preventDefault();
+    navigator.clipboard?.writeText(kit.couponCode).then(() => {
+      setCopiedId(kit.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  };
+
+  return (
+    <div className="relative overflow-visible rounded-2xl border border-slate-700/80 flex flex-col justify-between min-h-[200px]">
+      <div className="absolute inset-0 rounded-2xl overflow-hidden bg-slate-900/80">
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0_0,rgba(251,191,36,0.2),transparent_55%),radial-gradient(circle_at_100%_100%,rgba(96,165,250,0.18),transparent_55%)]" />
+      </div>
+      <OfferRibbon maxDiscount={kit.maxDiscount} />
+      <div className="relative p-4 space-y-2 pr-20">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-amber-300/80">{kit.level}</p>
+        <h3 className="text-sm font-semibold text-slate-50">{kit.title}</h3>
+        <p className="text-xs text-slate-400 leading-relaxed line-clamp-3">{kit.description}</p>
+      </div>
+
+      <div className="relative px-4 pb-4 mt-0 space-y-2">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+          Coupon code available
+        </p>
+        <div className="inline-flex items-center gap-2 flex-wrap">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/70 border border-amber-400/50">
+            <span className="font-mono text-xs text-amber-200 tracking-[0.22em]">
+              {kit.couponCode}
+            </span>
+            <button
+              type="button"
+              onClick={handleCopyCode}
+              className="p-0.5 rounded text-slate-400 hover:text-amber-300 hover:bg-slate-700/50 transition-colors"
+              title="Copy coupon code"
+              aria-label={`Copy ${kit.couponCode}`}
+            >
+              {copiedId === kit.id ? (
+                <Check size={14} className="text-emerald-400" />
+              ) : (
+                <Copy size={14} />
+              )}
+            </button>
+          </div>
+          <span className="text-[10px] text-amber-300/90 uppercase tracking-[0.18em]">
+            {kit.discountLabel}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const DEFAULT_ACCENT = {
   badge: 'bg-amber-500/15 border-amber-400/40 text-amber-300',
@@ -75,35 +177,7 @@ export function DiyOffers({ activeSection = 'kits', membershipPlanName, themeAcc
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {ROBOTICS_KITS.map((kit) => (
-              <div
-                key={kit.id}
-                className="relative overflow-hidden rounded-2xl bg-slate-900/80 border border-slate-700/80 p-4 flex flex-col justify-between"
-              >
-                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0_0,rgba(251,191,36,0.2),transparent_55%),radial-gradient(circle_at_100%_100%,rgba(96,165,250,0.18),transparent_55%)]" />
-                <div className="relative space-y-2">
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-amber-300/80">
-                    {kit.level}
-                  </p>
-                  <h3 className="text-sm font-semibold text-slate-50">{kit.title}</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed line-clamp-3">
-                    {kit.description}
-                  </p>
-                </div>
-
-                <div className="relative mt-4 space-y-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                    Coupon Code
-                  </p>
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/70 border border-amber-400/50">
-                    <span className="font-mono text-xs text-amber-200 tracking-[0.22em]">
-                      {kit.couponCode}
-                    </span>
-                    <span className="text-[10px] text-amber-300/90 uppercase tracking-[0.18em]">
-                      {kit.discountLabel}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <RoboticsKitCard key={kit.id} kit={kit} />
             ))}
           </div>
         </section>

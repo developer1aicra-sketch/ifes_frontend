@@ -14,6 +14,7 @@
     "axios": "^1.7.9",
     "axios-retry": "^4.0.0",
     "framer-motion": "^11.18.2",
+    "html2canvas": "^1.4.1",
     "lucide-react": "^0.556.0",
     "ngrok": "^5.0.0-beta.2",
     "react": "^19.2.0",

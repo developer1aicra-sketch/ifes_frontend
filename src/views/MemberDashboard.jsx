@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import html2canvas from 'html2canvas';
 import { Award, Download, LayoutDashboard, Zap, ChevronDown, ChevronUp, Briefcase, Users, Calendar, CalendarClock } from 'lucide-react';
 import { getMyClub } from '../app/club/clubApi';
 import { getMyMembership } from '../app/membership/membershipApi';
@@ -127,6 +128,8 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
   const [membership, setMembership] = useState(null);
   const [membershipLoading, setMembershipLoading] = useState(false);
   const [membershipError, setMembershipError] = useState('');
+  const [cardDownloading, setCardDownloading] = useState(false);
+  const membershipCardRef = useRef(null);
 
   const memberName = getMemberDisplayName(user, club);
   const memberInitials = getMemberInitials(user, club);
@@ -139,6 +142,32 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
     if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase().slice(0, 2);
     return name.slice(0, 2).toUpperCase() || 'M';
   })();
+
+  const handleDownloadCard = async () => {
+    const el = membershipCardRef.current;
+    if (!el || cardDownloading) return;
+    setCardDownloading(true);
+    try {
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        logging: false,
+        windowWidth: el.scrollWidth,
+        windowHeight: el.scrollHeight,
+      });
+      const filename = `worso-membership-card-${membership?.publicMembershipId || 'card'}.png`;
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      console.error('Card download failed:', err);
+    } finally {
+      setCardDownloading(false);
+    }
+  };
 
   useEffect(() => {
     if (activeTab === 'diy-offers') setDiyOpen(true);
@@ -695,181 +724,116 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
             
 
               {activeTab === 'membership' && (
-                <div className="space-y-6">
-                  <section className={`${cardBg} text-slate-100 rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 shadow-xl relative`}>
-                    <div className="absolute inset-0 pointer-events-none" aria-hidden />
-                    <div className={`absolute -right-20 -top-32 w-80 h-80 rounded-full bg-gradient-to-br ${accent.ring} blur-3xl pointer-events-none`} aria-hidden />
-                    <div className={`absolute -left-10 -bottom-24 w-72 h-72 rounded-full bg-gradient-to-tr ${accent.ring} opacity-60 blur-3xl pointer-events-none`} aria-hidden />
+                <div className="space-y-6 flex flex-col items-center">
+                  {/* Membership card — reference: credit-card layout, aspect 1.586:1, gradient + glow + overlay */}
+                  <div className="w-full max-w-md flex flex-col items-center">
+                    <div className="w-full flex justify-end mb-3">
+                      {/* <button
+                        type="button"
+                        onClick={handleDownloadCard}
+                        disabled={cardDownloading}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/70 text-white font-medium text-sm px-5 py-2.5 shadow-lg hover:shadow-indigo-500/25 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all"
+                        aria-label="Download membership card as image"
+                      >
+                        <Download className="w-4 h-4 shrink-0" aria-hidden />
+                        {cardDownloading ? 'Preparing…' : 'Download card'}
+                      </button> */}
+                    </div>
+                    <section
+                      ref={membershipCardRef}
+                      className="group relative w-full aspect-[1.5/1] overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-indigo-600 via-purple-700 to-slate-900 px-6 pt-6 pb-7 sm:px-8 sm:pt-8 sm:pb-9 shadow-2xl text-white transition-all duration-500 hover:scale-[1.02] hover:shadow-indigo-500/20"
+                      aria-label="Membership card"
+                    >
+                      <div className="absolute inset-0 bg-white/5 backdrop-blur-[2px] pointer-events-none" aria-hidden />
+                      <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-blue-400/20 blur-[80px] transition-all group-hover:bg-blue-400/30 pointer-events-none" aria-hidden />
 
-                    <div className="relative p-4 sm:p-6 md:p-8 lg:p-10 space-y-5 sm:space-y-6 min-w-0">
-                      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className={`text-[10px] sm:text-xs font-semibold tracking-[0.15em] sm:tracking-[0.2em] ${accent.title} uppercase mb-0.5`}>
-                            WORSO Membership Card
-                          </p>
-                          <p className="text-[10px] sm:text-[11px] text-slate-400">
-                            Digital card with QR verification and membership status.
+                      <div className="relative flex h-full flex-col justify-between">
+                        {/* Top: branding left, photo (chip-style) right — fixed aspect, object-cover for any image ratio */}
+                        <div className="flex flex-shrink-0 items-start justify-between gap-3">
+                          <div className="space-y-0.5 min-w-0">
+                            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-indigo-200/80">
+                              {membership?.category || 'Premium'} Member
+                            </p>
+                            <p className="text-lg sm:text-xl md:text-2xl font-black italic tracking-tighter text-white/95">
+                              WORSO<span className="text-indigo-300">CARD</span>
+                            </p>
+                          </div>
+                          <div
+                            className="relative flex-shrink-0 rounded-xl overflow-hidden border border-white/25 bg-black/50 shadow-inner ring-1 ring-white/10 flex items-center justify-center"
+                            style={{ width: '4.5rem', height: '4.5rem', aspectRatio: '1' }}
+                          >
+                            {membership?.user?.logo ? (
+                              <img
+                                src={membership.user.logo}
+                                alt=""
+                                className="absolute inset-0 w-full h-full object-cover object-center"
+                              />
+                            ) : (
+                              <span className="relative text-base sm:text-lg font-bold text-white/90 select-none">
+                                {getMemberInitials(membership?.user || user, club)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Middle: membership ID as card number — can shrink so bottom (name) is never clipped in download */}
+                        <div className="min-h-0 flex-shrink space-y-0.5">
+                          <p className="font-mono text-sm sm:text-base md:text-lg tracking-[0.15em] sm:tracking-[0.2em] text-white/90 break-all">
+                            {membership?.publicMembershipId
+                              ? (() => {
+                                  const s = String(membership.publicMembershipId);
+                                  const chunks = s.match(/.{1,4}/g) || [];
+                                  return chunks.join(' • ');
+                                })()
+                              : '—'}
                           </p>
                         </div>
-                        <span className={`inline-flex items-center gap-1.5 rounded-full ${accent.badge} px-2.5 sm:px-3 py-1 sm:py-1.5 border text-[10px] sm:text-[11px] font-semibold tracking-wide shrink-0 w-fit`}>
-                          <span className={`h-1.5 w-1.5 rounded-full ${accent.badgeDot} animate-pulse`} />
-                          {membership?.status || 'VERIFIED'}
-                        </span>
-                      </header>
 
-                      <div className="grid grid-cols-1 lg:grid-cols-[2.1fr,1fr] gap-5 sm:gap-6 lg:gap-8 items-stretch">
-                        <div className="space-y-4 sm:space-y-5 min-w-0">
-                          <div className="text-[10px] sm:text-[11px] font-semibold tracking-[0.15em] sm:tracking-[0.18em] text-slate-400 uppercase">
-                            Technoxian Federation • Digital Card
-                          </div>
-
-                          {/* Member photo + name row — stacks cleanly on mobile */}
-                          <div className="flex flex-wrap items-center gap-4 sm:gap-5">
-                            <div className="relative flex-shrink-0">
-                              <div className={`absolute -inset-1 rounded-full bg-gradient-to-br ${accent.ring} opacity-80`} aria-hidden />
-                              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-white/30 bg-black/40 flex items-center justify-center overflow-hidden shadow-lg">
-                                {membership?.user?.logo ? (
-                                  <img
-                                    src={membership.user.logo}
-                                    alt=""
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <span className="text-xl sm:text-2xl font-bold tracking-wide text-white">
-                                    {getMemberInitials(membership?.user || user, club)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-50 truncate" title={membership?.user?.fullName || memberName}>
-                                {membership?.user?.fullName || memberName}
-                              </h2>
-                              <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-                                {membership?.category || 'Student'}
-                              </p>
+                        {/* Bottom: Card Holder left, Valid Thru right — extra margin so name stays inside bounds when html2canvas captures */}
+                        <div className="flex flex-shrink-0 items-end justify-between gap-4 mt-1">
+                          <div className="space-y-0.5 min-w-0 flex-1 overflow-visible">
+                            <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-indigo-200/60">
+                              Card Holder
+                            </p>
+                            <p className="font-medium tracking-wide text-white/95 break-words line-clamp-2" title={membership?.user?.fullName || memberName}>
+                              {membership?.user?.fullName || memberName}
+                            </p>
+                            <p className="text-[9px] sm:text-[10px] text-indigo-200/70">
+                              {membership?.category || 'Student'}
                               {(membership?.user?.mobile || user?.mobile) && (() => {
                                 const raw = membership?.user?.mobile || user?.mobile;
                                 const display = formatMobileDisplay(raw);
                                 const telDigits = (raw || '').replace(/\D/g, '');
                                 return display ? (
-                                  <p className="mt-1.5 text-[10px] sm:text-[11px]">
-                                    <span className="text-slate-400 uppercase tracking-wide">Mobile</span>
-                                    <a
-                                      href={`tel:${telDigits}`}
-                                      className="ml-1.5 font-mono text-slate-200 break-all hover:text-white hover:underline focus:outline-none focus:ring-2 focus:ring-white/30 rounded"
-                                      title="Tap to call"
-                                    >
+                                  <span>
+                                    {' · '}
+                                    <a href={`tel:${telDigits}`} className="font-mono hover:text-indigo-200 underline focus:outline-none focus:ring-2 focus:ring-white/50 rounded">
                                       {display}
                                     </a>
-                                  </p>
+                                  </span>
                                 ) : null;
                               })()}
-                              <div className="mt-2 inline-flex items-center rounded-full border border-white/20 bg-white/5 px-2.5 sm:px-3 py-1 text-[9px] sm:text-[10px] uppercase tracking-wide text-slate-200">
-                                {membership?.planName || 'Student Basic'}
-                              </div>
-                            </div>
+                            </p>
                           </div>
-
-                          {/* Stat cards — vertical stack on mobile, justified row from sm */}
-                          <div className="flex flex-col gap-3 pt-1 sm:pt-2">
-                            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:justify-between gap-3 w-full text-xs">
-                              <div className="rounded-xl bg-black/40 border border-white/10 px-3 py-2.5 w-full sm:w-auto sm:min-w-[8rem] shrink-0">
-                                <div className="text-[10px] text-slate-400 uppercase tracking-wide">
-                                  Member ID
-                                </div>
-                                <div className="mt-1 font-mono text-[11px] break-all text-slate-200">
-                                  {membership?.publicMembershipId || '—'}
-                                </div>
-                              </div>
-                              <div className="rounded-xl bg-black/40 border border-white/10 px-3 py-2.5 w-full sm:w-auto sm:min-w-[8rem] shrink-0">
-                                <div className="text-[10px] text-slate-400 uppercase tracking-wide">
-                                  Duration
-                                </div>
-                                <div className="mt-1 font-mono text-[11px] text-slate-200">
-                                  {membership?.duration
-                                    ? `${membership.duration.value} ${membership.duration.unit}`
-                                    : '—'}
-                                </div>
-                              </div>
-                              {/* <div className="rounded-xl bg-black/40 border border-white/10 px-3 py-2.5 w-full sm:w-auto sm:min-w-[8rem] shrink-0">
-                                <div className="text-[10px] text-slate-400 uppercase tracking-wide">
-                                  Price
-                                </div>
-                                <div className="mt-1 text-[11px] text-slate-200">
-                                  {membership?.price
-                                    ? `${membership.price.amount} ${membership.price.currency}`
-                                    : '—'}
-                                </div>
-                              </div> */}
-                            </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-indigo-200/60">
+                              Valid Thru
+                            </p>
+                            <p className="font-mono text-xs sm:text-sm text-white/90">
+                              {membership?.endDate
+                                ? (() => {
+                                    const d = new Date(membership.endDate);
+                                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                                    const yy = String(d.getFullYear()).slice(-2);
+                                    return `${mm} / ${yy}`;
+                                  })()
+                                : '—'}
+                            </p>
                           </div>
                         </div>
-
-                        <aside className="relative bg-black/30 border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-5 flex flex-col justify-between min-w-0 min-h-[10rem]">
-                          <div className="space-y-3 sm:space-y-4">
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="text-[10px] uppercase tracking-[0.12em] sm:tracking-[0.18em] text-slate-400 min-w-0">
-                                Since
-                                <div className="mt-1 text-[11px] sm:text-xs text-slate-200">
-                                  {membership?.startDate
-                                    ? new Date(membership.startDate).toLocaleDateString('en-GB', {
-                                        day: '2-digit',
-                                        month: 'short',
-                                        year: 'numeric',
-                                      })
-                                    : '—'}
-                                </div>
-                              </div>
-                              <div className="rounded-xl bg-black/40 border border-white/10 p-2 flex flex-col items-center justify-center gap-0.5 shrink-0">
-                                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-black/50 flex items-center justify-center text-[9px] sm:text-[10px] text-white/80">
-                                  QR
-                                </div>
-                                <div className="text-[8px] sm:text-[9px] text-slate-400 uppercase tracking-wide">
-                                  Scan to Verify
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="text-[10px] sm:text-[11px] text-slate-400 leading-relaxed">
-                              Scan the QR code to verify this membership in real time
-                              and view linked certificates.
-                            </div>
-
-                            <div>
-                              <div className="text-[10px] uppercase tracking-[0.12em] sm:tracking-[0.18em] text-slate-500">
-                                Digital Membership
-                              </div>
-                              <div className="mt-1 text-[10px] sm:text-[11px] text-slate-300">
-                                Status:{' '}
-                                <span className={`${accent.statusText} font-semibold`}>
-                                  {membership?.status || 'Active'}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="mt-4 pt-3 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-[9px] sm:text-[10px] text-slate-400">
-                            <span className="shrink-0">{membership?.category || 'Student'} Member</span>
-                            <span className="text-slate-400 min-w-0 break-words">
-                              Valid{' '}
-                              <span className="text-slate-200">
-                                {membership?.startDate
-                                  ? new Date(membership.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-                                  : '—'}
-                              </span>
-                              {' – '}
-                              <span className="text-slate-200">
-                                {membership?.endDate
-                                  ? new Date(membership.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-                                  : '—'}
-                              </span>
-                            </span>
-                          </div>
-                        </aside>
                       </div>
-                    </div>
-                  </section>
+                    </section>
+                  </div>
 
                   {membershipLoading && (
                     <div className="text-sm text-slate-500">Loading membership details…</div>
