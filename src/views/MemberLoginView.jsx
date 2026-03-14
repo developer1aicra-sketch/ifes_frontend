@@ -1,13 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, KeyRound, User } from 'lucide-react';
 import { memberLogin } from '../utils/api';
 import { setAuthToken } from '../api/authToken';
 
-const MemberLoginView = ({ setView, setUser, siteConfig }) => {
+const MemberLoginView = ({ setView, setUser, siteConfig, user }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // If already logged in as member, go straight to dashboard (don't show login page)
+  useEffect(() => {
+    if (user?.type === 'member') {
+      setView('member-dashboard', { replace: true });
+    }
+  }, [user, setView]);
+
+  if (user?.type === 'member') {
+    return null;
+  }
 
   const validateEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
 
@@ -39,7 +50,7 @@ const MemberLoginView = ({ setView, setUser, siteConfig }) => {
         ...data,
       });
 
-      setView('member-dashboard');
+      setView('member-dashboard', { replace: true });
     } catch (err) {
       setError(err?.message || 'Login failed. Please try again.');
     } finally {
@@ -100,9 +111,7 @@ const MemberLoginView = ({ setView, setUser, siteConfig }) => {
             {loading ? 'Logging in...' : 'Login'}
           </button>
 
-          <div className="text-[11px] text-slate-500 mt-1">
-            For testing, you can use email <span className="font-mono font-semibold">dd@gmail.com</span> and password <span className="font-mono font-semibold">dd</span>.
-          </div>
+          
         </form>
       </div>
     </div>

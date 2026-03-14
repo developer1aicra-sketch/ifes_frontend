@@ -190,9 +190,9 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
     };
   }, []);
 
-  // Refetch membership when user opens Membership tab and we have no data (e.g. after login)
-  const refetchMembership = () => {
-    if (membershipLoading || membership) return;
+  // Refetch membership when user opens Membership or Overview tab (e.g. after login or for fresh data)
+  const refetchMembership = (force = false) => {
+    if (membershipLoading && !force) return;
     setMembershipError('');
     setMembershipLoading(true);
     getMyMembership()
@@ -237,7 +237,10 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
             >
               <div className="space-y-2">
                 <button
-                  onClick={() => setActiveTab('overview')}
+                  onClick={() => {
+                    setActiveTab('overview');
+                    refetchMembership(true);
+                  }}
                   className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${
                     activeTab === 'overview'
                       ? `${accent.sidebarActive} text-white`
@@ -526,64 +529,127 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
             </div>
 
             <div
-              className="flex-1 p-8 lg:p-10 overflow-y-auto"
+              className="flex-1 px-4 py-6 sm:p-8 lg:p-10 overflow-y-auto"
               style={{ scrollbarColor: '#1d4ed8 #f8fafc', scrollbarWidth: 'thin' }}
             >
               {activeTab === 'overview' && (
                 <div className="space-y-8">
-                
+                  {/* Profile & Membership from GET /membership/my/get */}
+                  {membershipLoading && (
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm text-sm text-slate-500">
+                      Loading profile and membership…
+                    </div>
+                  )}
 
-                  {/* Club details block (read-only) */}
-                  <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    {clubLoading && (
-                      <div className="text-sm text-slate-500">Loading club details…</div>
-                    )}
+                  {membershipError && !membershipLoading && (
+                    <div className="bg-white p-6 rounded-xl border border-red-200 shadow-sm text-sm text-red-600 font-semibold">
+                      {membershipError}
+                    </div>
+                  )}
 
-                    {clubError && !clubLoading && (
-                      <div className="text-sm text-red-600 font-semibold">
-                        {clubError}
-                      </div>
-                    )}
+                  {!membershipLoading && !membershipError && (membership?.user || membership) && (
+                    <>
+                      {/* Profile card – from API data.user */}
+                      {membership?.user && (
+                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                          <h2 className="text-lg font-bold text-slate-900 mb-4">Profile</h2>
+                          <div className="flex flex-col sm:flex-row gap-6">
+                            <div className="flex-shrink-0">
+                              {membership.user.logo ? (
+                                <img
+                                  src={membership.user.logo}
+                                  alt=""
+                                  className="w-20 h-20 rounded-full object-cover border-2 border-slate-200"
+                                />
+                              ) : (
+                                <div className={`w-20 h-20 rounded-full flex items-center justify-center text-xl font-bold text-white ${themeConfig?.colors?.primary || 'bg-blue-600'}`}>
+                                  {getMemberInitials(membership.user, club)}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                              <div>
+                                <dt className="text-slate-500">Full name</dt>
+                                <dd className="font-semibold text-slate-900">{membership.user.fullName || membership.user.email || '—'}</dd>
+                              </div>
+                              <div>
+                                <dt className="text-slate-500">Email</dt>
+                                <dd className="font-semibold text-slate-900 break-all">{membership.user.email || '—'}</dd>
+                              </div>
+                              <div>
+                                <dt className="text-slate-500">Mobile</dt>
+                                <dd className="font-semibold text-slate-900">{membership.user.mobile || '—'}</dd>
+                              </div>
+                              <div>
+                                <dt className="text-slate-500">Designation</dt>
+                                <dd className="font-semibold text-slate-900 capitalize">{membership.user.designation || '—'}</dd>
+                              </div>
+                              {membership.user.personalAndShippingAddress && (
+                                <>
+                                  <div>
+                                    <dt className="text-slate-500">City</dt>
+                                    <dd className="font-semibold text-slate-900">{membership.user.personalAndShippingAddress.city || '—'}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="text-slate-500">State</dt>
+                                    <dd className="font-semibold text-slate-900">{membership.user.personalAndShippingAddress.state || '—'}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="text-slate-500">Country</dt>
+                                    <dd className="font-semibold text-slate-900">{membership.user.personalAndShippingAddress.country || '—'}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="text-slate-500">Date of birth</dt>
+                                    <dd className="font-semibold text-slate-900">{membership.user.personalAndShippingAddress.dob || '—'}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="text-slate-500">Gender</dt>
+                                    <dd className="font-semibold text-slate-900">{membership.user.personalAndShippingAddress.gender || '—'}</dd>
+                                  </div>
+                                </>
+                              )}
+                              {membership.user.affiliation && (membership.user.affiliation.schoolOrCollege || membership.user.affiliation.classOrGrade) && (
+                                <>
+                                  <div>
+                                    <dt className="text-slate-500">School / College</dt>
+                                    <dd className="font-semibold text-slate-900">{membership.user.affiliation.schoolOrCollege || '—'}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="text-slate-500">Class / Grade</dt>
+                                    <dd className="font-semibold text-slate-900">{membership.user.affiliation.classOrGrade || '—'}</dd>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${membership.user.isProfileCompleted ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                              Profile {membership.user.isProfileCompleted ? 'Completed' : 'Incomplete'}
+                            </span>
+                            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${membership.user.hasActiveMembership ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600'}`}>
+                              {membership.user.hasActiveMembership ? 'Active membership' : 'No active membership'}
+                            </span>
+                            {membership.user.role && (
+                              <span className="inline-flex rounded-full px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-700">
+                                {membership.user.role}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
-                    {!clubLoading && !clubError && club && (
-                      <dl className="grid md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                        <div>
-                          <dt className="text-slate-500">Name</dt>
-                          <dd className="font-semibold text-slate-900">{club.name}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-slate-500">Institute</dt>
-                          <dd className="font-semibold text-slate-900">{club.instituteName}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-slate-500">Country</dt>
-                          <dd className="font-semibold text-slate-900">{club.country}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-slate-500">State</dt>
-                          <dd className="font-semibold text-slate-900">{club.state}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-slate-500">City</dt>
-                          <dd className="font-semibold text-slate-900">{club.city}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-slate-500">Email</dt>
-                          <dd className="font-semibold text-slate-900 break-all">{club.email}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-slate-500">Mobile</dt>
-                          <dd className="font-semibold text-slate-900">{club.mobile}</dd>
-                        </div>
-                      </dl>
-                    )}
+                      {/* Membership summary – from API data (top-level) */}
+                    
+                    </>
+                  )}
 
-                    {!clubLoading && !clubError && !club && (
-                      <div className="text-sm text-slate-500">
-                        No club information found for this account.
-                      </div>
-                    )}
-                  </div>
+                  {!membershipLoading && !membershipError && !membership?.user && !membership?.publicMembershipId && (
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm text-sm text-slate-500">
+                      No profile or membership data found. Complete signup or contact support.
+                    </div>
+                  )}
+
+              
                 </div>
               )}
 
@@ -591,82 +657,80 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
 
               {activeTab === 'membership' && (
                 <div className="space-y-6">
-                  <section className={`${cardBg} text-slate-100 rounded-3xl overflow-hidden border border-white/10 shadow-xl relative`}>
-                    <div className="absolute inset-0 pointer-events-none">
-                      <div className={`absolute -right-20 -top-32 w-80 h-80 rounded-full bg-gradient-to-br ${accent.ring} blur-3xl`} />
-                      <div className={`absolute -left-10 -bottom-24 w-72 h-72 rounded-full bg-gradient-to-tr ${accent.ring} opacity-60 blur-3xl`} />
-                    </div>
+                  <section className={`${cardBg} text-slate-100 rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 shadow-xl relative`}>
+                    <div className="absolute inset-0 pointer-events-none" aria-hidden />
+                    <div className={`absolute -right-20 -top-32 w-80 h-80 rounded-full bg-gradient-to-br ${accent.ring} blur-3xl pointer-events-none`} aria-hidden />
+                    <div className={`absolute -left-10 -bottom-24 w-72 h-72 rounded-full bg-gradient-to-tr ${accent.ring} opacity-60 blur-3xl pointer-events-none`} aria-hidden />
 
-                    <div className="relative p-6 sm:p-8 lg:p-10 space-y-6">
-                      <header className="flex items-center justify-between gap-4">
-                        <div>
-                          <p className={`text-xs font-semibold tracking-[0.2em] ${accent.title} uppercase mb-1`}>
-                            WORSO Student Membership Card
+                    <div className="relative p-4 sm:p-6 md:p-8 lg:p-10 space-y-5 sm:space-y-6 min-w-0">
+                      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className={`text-[10px] sm:text-xs font-semibold tracking-[0.15em] sm:tracking-[0.2em] ${accent.title} uppercase mb-0.5`}>
+                            WORSO Membership Card
                           </p>
-                          <p className="text-[11px] text-slate-400">
-                            Personalized digital card with QR verification and membership status.
+                          <p className="text-[10px] sm:text-[11px] text-slate-400">
+                            Digital card with QR verification and membership status.
                           </p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`inline-flex items-center gap-1 rounded-full ${accent.badge} px-3 py-1 border text-[11px] font-semibold tracking-wide`}>
-                            <span className={`h-1.5 w-1.5 rounded-full ${accent.badgeDot} animate-pulse`} />
-                            {membership?.status || 'VERIFIED'}
-                          </span>
-                        </div>
+                        <span className={`inline-flex items-center gap-1.5 rounded-full ${accent.badge} px-2.5 sm:px-3 py-1 sm:py-1.5 border text-[10px] sm:text-[11px] font-semibold tracking-wide shrink-0 w-fit`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${accent.badgeDot} animate-pulse`} />
+                          {membership?.status || 'VERIFIED'}
+                        </span>
                       </header>
 
-                      <div className="grid lg:grid-cols-[2.1fr,1fr] gap-8 items-stretch">
-                        <div className="space-y-6">
-                          <div className="text-[11px] font-semibold tracking-[0.18em] text-slate-400 uppercase">
+                      <div className="grid grid-cols-1 lg:grid-cols-[2.1fr,1fr] gap-5 sm:gap-6 lg:gap-8 items-stretch">
+                        <div className="space-y-4 sm:space-y-5 min-w-0">
+                          <div className="text-[10px] sm:text-[11px] font-semibold tracking-[0.15em] sm:tracking-[0.18em] text-slate-400 uppercase">
                             Technoxian Federation • Digital Card
                           </div>
 
-                          <div className="flex items-start justify-between gap-4">
-                            <div>
-                              <h2 className="text-2xl sm:text-3xl font-bold text-slate-50 truncate" title={memberName}>
-                                {memberName}
-                              </h2>
-                              <p className="text-sm text-slate-400">
-                                {club?.clubName || 'Technoxian RoboClub'}
-                              </p>
+                          {/* Member photo + name row — stacks cleanly on mobile */}
+                          <div className="flex flex-wrap items-center gap-4 sm:gap-5">
+                            <div className="relative flex-shrink-0">
+                              <div className={`absolute -inset-1 rounded-full bg-gradient-to-br ${accent.ring} opacity-80`} aria-hidden />
+                              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-white/30 bg-black/40 flex items-center justify-center overflow-hidden shadow-lg">
+                                {membership?.user?.logo ? (
+                                  <img
+                                    src={membership.user.logo}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <span className="text-xl sm:text-2xl font-bold tracking-wide text-white">
+                                    {getMemberInitials(membership?.user || user, club)}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            <div className="text-right text-[11px] text-slate-400">
-                              <div className="font-semibold text-slate-300">Member Type</div>
-                              <div className="mt-1 inline-flex items-center rounded-full border border-white/20 px-3 py-1 text-[10px] uppercase tracking-wide text-slate-200">
+                            <div className="min-w-0 flex-1">
+                              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-50 truncate" title={membership?.user?.fullName || memberName}>
+                                {membership?.user?.fullName || memberName}
+                              </h2>
+                              <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
                                 {membership?.category || 'Student'}
+                              </p>
+                              {(membership?.user?.mobile || user?.mobile) && (
+                                <p className="mt-1.5 text-[10px] sm:text-[11px]">
+                                  <span className="text-slate-400 uppercase tracking-wide">Mobile</span>
+                                  <a
+                                    href={`tel:${(membership?.user?.mobile || user?.mobile).replace(/\s/g, '')}`}
+                                    className="ml-1.5 font-mono text-slate-200 break-all hover:text-white hover:underline focus:outline-none focus:ring-2 focus:ring-white/30 rounded"
+                                    title="Tap to call"
+                                  >
+                                    {membership?.user?.mobile || user?.mobile}
+                                  </a>
+                                </p>
+                              )}
+                              <div className="mt-2 inline-flex items-center rounded-full border border-white/20 bg-white/5 px-2.5 sm:px-3 py-1 text-[9px] sm:text-[10px] uppercase tracking-wide text-slate-200">
+                                {membership?.planName || 'Student Basic'}
                               </div>
                             </div>
                           </div>
 
-                          <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                            <div className="flex items-center gap-6">
-                              <div className="w-20 h-20 rounded-full border border-white/20 bg-black/30 flex items-center justify-center relative">
-                                <div className={`absolute inset-[-6px] rounded-full bg-gradient-to-tr ${accent.ring} opacity-60`} />
-                                <div className="relative w-16 h-16 rounded-full bg-black/40 flex items-center justify-center text-lg font-semibold tracking-[0.2em] text-white">
-                                  <span>TX</span>
-                                </div>
-                              </div>
-                              <div className="space-y-2">
-                                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                                  Plan
-                                </div>
-                                <div className="text-sm font-semibold text-slate-100">
-                                  {membership?.planName || 'Student Basic'} •{' '}
-                                  {membership?.planTitle || 'Best for Starters'}
-                                </div>
-                                <div className="flex flex-wrap gap-2 pt-1">
-                                  <span className={`inline-flex items-center gap-1 rounded-full ${accent.badge} px-2.5 py-1 border text-[10px] font-semibold`}>
-                                    ● {membership?.status || 'Active'}
-                                  </span>
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 border border-white/20 text-[10px] font-semibold text-slate-200">
-                                    ● {membership?.paymentStatus || 'SUCCESS'}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-3 text-xs">
-                              <div className="rounded-xl bg-black/40 border border-white/10 px-3 py-2.5">
+                          {/* Stat cards — vertical stack on mobile, justified row from sm */}
+                          <div className="flex flex-col gap-3 pt-1 sm:pt-2">
+                            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:justify-between gap-3 w-full text-xs">
+                              <div className="rounded-xl bg-black/40 border border-white/10 px-3 py-2.5 w-full sm:w-auto sm:min-w-[8rem] shrink-0">
                                 <div className="text-[10px] text-slate-400 uppercase tracking-wide">
                                   Member ID
                                 </div>
@@ -674,7 +738,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                                   {membership?.publicMembershipId || '—'}
                                 </div>
                               </div>
-                              <div className="rounded-xl bg-black/40 border border-white/10 px-3 py-2.5">
+                              <div className="rounded-xl bg-black/40 border border-white/10 px-3 py-2.5 w-full sm:w-auto sm:min-w-[8rem] shrink-0">
                                 <div className="text-[10px] text-slate-400 uppercase tracking-wide">
                                   Duration
                                 </div>
@@ -684,7 +748,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                                     : '—'}
                                 </div>
                               </div>
-                              <div className="rounded-xl bg-black/40 border border-white/10 px-3 py-2.5">
+                              <div className="rounded-xl bg-black/40 border border-white/10 px-3 py-2.5 w-full sm:w-auto sm:min-w-[8rem] shrink-0">
                                 <div className="text-[10px] text-slate-400 uppercase tracking-wide">
                                   Price
                                 </div>
@@ -698,12 +762,12 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                           </div>
                         </div>
 
-                        <aside className="relative bg-black/30 border border-white/10 rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">
+                        <aside className="relative bg-black/30 border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-5 flex flex-col justify-between min-w-0 min-h-[10rem]">
+                          <div className="space-y-3 sm:space-y-4">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="text-[10px] uppercase tracking-[0.12em] sm:tracking-[0.18em] text-slate-400 min-w-0">
                                 Since
-                                <div className="mt-1 text-xs text-slate-200">
+                                <div className="mt-1 text-[11px] sm:text-xs text-slate-200">
                                   {membership?.startDate
                                     ? new Date(membership.startDate).toLocaleDateString('en-GB', {
                                         day: '2-digit',
@@ -713,26 +777,26 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                                     : '—'}
                                 </div>
                               </div>
-                              <div className="rounded-xl bg-black/40 border border-white/10 p-2 flex flex-col items-center justify-center gap-1">
-                                <div className="w-14 h-14 rounded-lg bg-black/50 flex items-center justify-center text-[10px] text-white/80">
+                              <div className="rounded-xl bg-black/40 border border-white/10 p-2 flex flex-col items-center justify-center gap-0.5 shrink-0">
+                                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-black/50 flex items-center justify-center text-[9px] sm:text-[10px] text-white/80">
                                   QR
                                 </div>
-                                <div className="text-[9px] text-slate-400 uppercase tracking-wide">
+                                <div className="text-[8px] sm:text-[9px] text-slate-400 uppercase tracking-wide">
                                   Scan to Verify
                                 </div>
                               </div>
                             </div>
 
-                            <div className="mt-2 text-[11px] text-slate-400 leading-relaxed">
+                            <div className="text-[10px] sm:text-[11px] text-slate-400 leading-relaxed">
                               Scan the QR code to verify this membership in real time
                               and view linked certificates.
                             </div>
 
-                            <div className="mt-1">
-                              <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                            <div>
+                              <div className="text-[10px] uppercase tracking-[0.12em] sm:tracking-[0.18em] text-slate-500">
                                 Digital Membership
                               </div>
-                              <div className="mt-1 text-[11px] text-slate-300">
+                              <div className="mt-1 text-[10px] sm:text-[11px] text-slate-300">
                                 Status:{' '}
                                 <span className={`${accent.statusText} font-semibold`}>
                                   {membership?.status || 'Active'}
@@ -741,27 +805,19 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                             </div>
                           </div>
 
-                          <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[10px] text-slate-400">
-                            <span>Student Member</span>
-                            <span className="text-slate-400">
-                              Valid from{' '}
+                          <div className="mt-4 pt-3 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-[9px] sm:text-[10px] text-slate-400">
+                            <span className="shrink-0">{membership?.category || 'Student'} Member</span>
+                            <span className="text-slate-400 min-w-0 break-words">
+                              Valid{' '}
                               <span className="text-slate-200">
                                 {membership?.startDate
-                                  ? new Date(membership.startDate).toLocaleDateString('en-GB', {
-                                      day: '2-digit',
-                                      month: 'short',
-                                      year: 'numeric',
-                                    })
+                                  ? new Date(membership.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
                                   : '—'}
-                              </span>{' '}
-                              to{' '}
+                              </span>
+                              {' – '}
                               <span className="text-slate-200">
                                 {membership?.endDate
-                                  ? new Date(membership.endDate).toLocaleDateString('en-GB', {
-                                      day: '2-digit',
-                                      month: 'short',
-                                      year: 'numeric',
-                                    })
+                                  ? new Date(membership.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
                                   : '—'}
                               </span>
                             </span>

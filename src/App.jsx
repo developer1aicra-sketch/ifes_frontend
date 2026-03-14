@@ -145,16 +145,16 @@ const App = () => {
     window.scrollTo(0, 0);
   };
 
-  const setView = (view) => {
+  const setView = (view, options) => {
     const path = viewToPath(view);
-    navigate(path);
+    navigate(path, options);
     window.scrollTo(0, 0);
   };
   // Used by AppContent when on a location route to prefix paths
-  const setViewWithPrefix = (view, locationPrefix) => {
+  const setViewWithPrefix = (view, locationPrefix, options) => {
     const path = viewToPath(view);
     const targetPath = pathWithLocationPrefix(locationPrefix || '', path);
-    navigate(targetPath);
+    navigate(targetPath, options);
     window.scrollTo(0, 0);
   };
 
@@ -239,7 +239,7 @@ const AppContent = ({
   const { themeConfig } = useTheme();
   const { locationPrefix } = useLocationPrefix();
   const setViewRespectingLocation = useCallback(
-    (view) => (locationPrefix ? setViewWithPrefix(view, locationPrefix) : setView(view)),
+    (view, options) => (locationPrefix ? setViewWithPrefix(view, locationPrefix, options) : setView(view, options)),
     [locationPrefix, setViewWithPrefix, setView]
   );
   const newsPropsWithPrefix = useMemo(
@@ -313,7 +313,7 @@ const AppContent = ({
 
               <Route path="/membership" element={<MembershipView setView={setViewRespectingLocation} />} /> {/* ✅ NEW */}
 
-              <Route path="/login" element={<MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} />} />
+              <Route path="/login" element={<MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
               <Route path="/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} user={user} />} />
               <Route path="/login-partner-admin" element={<PartnerAdminLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
 
@@ -340,7 +340,7 @@ const AppContent = ({
               <Route path="/:locationCode/associates/list" element={<AssociationsListView />} />
               <Route path="/:locationCode/careers" element={<CareersView />} />
               <Route path="/:locationCode/partners" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
-              <Route path="/:locationCode/login" element={<MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} />} />
+              <Route path="/:locationCode/login" element={<MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
               <Route path="/:locationCode/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} user={user} />} />
               <Route path="/:locationCode/login-partner-admin" element={<PartnerAdminLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
               <Route path="/:locationCode/member-dashboard" element={<MemberDashboard user={user} currentSite={currentSite} setView={setViewRespectingLocation} />} />

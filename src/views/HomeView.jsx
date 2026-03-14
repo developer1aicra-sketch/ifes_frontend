@@ -302,7 +302,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
         <div className="bg-white border-b border-slate-200 py-10">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-slate-100">
-              {[{ label: 'Member Nations', val: '95+' }, { label: 'Registered Teams', val: '120k+' }, { label: 'Global Spectators', val: '2.5M' }, { label: 'Prize Pool', val: '$250k' }].map((stat, i) => (
+              {[{ label: 'Member Nations', val: '0+' }, { label: 'Registered Teams', val: '0k+' }, { label: 'Global Spectators', val: '0M' }, { label: 'Prize Pool', val: '$0k' }].map((stat, i) => (
                 <div key={i}>
                   <div className={`text-4xl font-extrabold ${theme.textPrimary || (siteConfig.is_partner ? 'text-emerald-600' : 'text-blue-600')}`}>{stat.val}</div>
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">{stat.label}</div>
