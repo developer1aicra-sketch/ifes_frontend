@@ -1,7 +1,7 @@
 // src/api/axiosClient.js
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
-import { getAuthToken } from './authToken';
+import { getAuthHeader } from './authToken';
 import { getLocationCodeFromPath } from '../utils/locationRoutes';
 import { getPartnerCode } from './partnerCode';
 
@@ -63,12 +63,9 @@ axiosInstance.interceptors.request.use(
       console.log('partnerCode', partnerCode);
     }
    
-    const token = getAuthToken();
-    if (token) {
-      config.headers = setRequestHeader(config.headers, 'Authorization', `Bearer ${token}`);
-      if (config.url) {
-        console.log(`🔐 Adding Authorization Bearer to request: ${config.method?.toUpperCase()} ${config.url}`);
-      }
+    const authHeader = getAuthHeader();
+    if (authHeader.Authorization) {
+      config.headers = setRequestHeader(config.headers, 'Authorization', authHeader.Authorization);
     } else {
       const isProtectedEndpoint = protectedEndpoints.some(endpoint => config.url?.includes(endpoint));
       if (isProtectedEndpoint) {

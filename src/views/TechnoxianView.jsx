@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Users,
   Ticket,
@@ -31,12 +32,22 @@ import {
   ChevronDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getLocationPrefix } from "../utils/locationRoutes";
 import { GAME_CATEGORIES } from "../constants/data";
 import { galleryImages } from "../assets/gallery";
 
 const TechnoxianView = () => {
   void motion;
-  const [activeTab, setActiveTab] = useState("overview");
+  const location = useLocation();
+  const locationPrefix = getLocationPrefix(location.pathname);
+  const isPartnerRoute = Boolean(locationPrefix);
+
+  const allTabs = ["overview", "competitions", "schedule", "gallery", "register"];
+  const partnerTabs = ["competitions", "schedule", "gallery", "register"];
+  const tabs = isPartnerRoute ? partnerTabs : allTabs;
+  const defaultTab = isPartnerRoute ? "competitions" : "overview";
+
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [regType, setRegType] = useState("visitor");
   const [trophyIndex, setTrophyIndex] = useState(0);
   const [imageErrors, setImageErrors] = useState({});
@@ -52,6 +63,12 @@ const TechnoxianView = () => {
   const [selectedDisciplineGame, setSelectedDisciplineGame] =
     useState("Innovation Jr.");
 
+  // On partner route, overview is hidden — ensure we never show overview tab
+  useEffect(() => {
+    if (isPartnerRoute && activeTab === "overview") {
+      setActiveTab("competitions");
+    }
+  }, [isPartnerRoute, activeTab]);
 
   // Define the 11 games for registration
   const GAMES_LIST = [
@@ -506,7 +523,7 @@ const TechnoxianView = () => {
     <div className="animate-fadeIn bg-slate-50 min-h-screen">
       <div className="bg-white border-b border-slate-200 sticky top-[56px] z-30 shadow-sm">
         <div className="container mx-auto px-4 flex gap-8 overflow-x-auto">
-          {["overview", "competitions", "schedule", "gallery", "register"].map(
+          {tabs.map(
             (tab) => (
               <button
                 key={tab}
@@ -524,7 +541,7 @@ const TechnoxianView = () => {
       </div>
 
       <AnimatePresence mode="wait">
-        {activeTab === "overview" && (
+        {!isPartnerRoute && activeTab === "overview" && (
           <motion.div
             key="overview"
             initial={{ opacity: 0, y: 12 }}

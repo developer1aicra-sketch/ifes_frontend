@@ -4,6 +4,8 @@ import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers, Ar
 import { useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import endpoints from '../api/endpoints';
+import { getLocationPrefix } from '../utils/locationRoutes';
+import { ABOUT_PARTNER_STATIC } from '../data/aboutPartnerStatic';
 
 // Import Advisory Board images
 import ajBeleza from '../assets/advisoryBoard/AJ-Beleza.png';
@@ -20,6 +22,10 @@ import waelAbbasKadhim from '../assets/advisoryBoard/WaelAbbasKadhim.jpg';
 const AboutLayout = ({ setView }) => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Partner route: /:locationCode/about — show single "About" page with static data, no sections
+  const locationPrefix = getLocationPrefix(location.pathname);
+  const isPartnerAboutRoute = Boolean(locationPrefix) && (location.pathname.endsWith('/about') || location.pathname.endsWith('/about/'));
   
   // Initialize activeSection from URL hash or default to 'about-worso'
   const getInitialSection = () => {
@@ -180,6 +186,64 @@ const AboutLayout = ({ setView }) => {
   const canGoNext = currentTabIndex < tabs.length - 1;
   
   void motion;
+
+  /* ------------------ Partner route: single About page, static data, no sections ------------------ */
+  if (isPartnerAboutRoute) {
+    const data = ABOUT_PARTNER_STATIC;
+    return (
+      <div className="animate-fadeIn min-h-screen flex flex-col">
+        {/* Page header: matches main site "About Worso" style — partner shows "About" */}
+        <section className="bg-[#0f172a] border-b border-white/10">
+          <div className="container mx-auto px-4 py-6 md:py-8">
+            <h1 className="text-center font-bold text-xl md:text-2xl tracking-wide text-cyan-200/95">
+              About
+            </h1>
+            <div className="mt-3 h-px w-full max-w-md mx-auto bg-white/20" aria-hidden="true" />
+          </div>
+        </section>
+
+        <div className="flex-grow bg-gradient-to-b from-slate-50 via-white to-slate-50">
+          <div className="container mx-auto px-4 py-8">
+            <div className="bg-white p-8 md:p-12 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50">
+              <div className="space-y-10">
+                <div className="bg-[#0f172a] rounded-3xl text-white p-10 md:p-12 shadow-2xl relative overflow-hidden">
+                  <div className="text-yellow-400 font-bold tracking-widest text-xs uppercase mb-3">{data.hero.eyebrow}</div>
+                  <h2 className="text-3xl md:text-4xl font-extrabold mb-3 leading-tight">{data.hero.heading}</h2>
+                  <p className="text-slate-200 text-lg max-w-2xl">{data.hero.tagline}</p>
+                </div>
+
+                <p className="text-lg text-slate-600 leading-relaxed">{data.intro}</p>
+
+                {data.sections.map((section) => (
+                  <div key={section.id} className="space-y-4 pt-6 border-t border-slate-100">
+                    <div className="flex items-center gap-3">
+                      <Target className="text-blue-600 flex-shrink-0" size={20} />
+                      <h2 className="text-xl font-bold text-slate-900">{section.title}</h2>
+                    </div>
+                    {section.content && <p className="text-slate-600 leading-relaxed pl-8">{section.content}</p>}
+                    {section.points && (
+                      <ul className="list-disc list-inside space-y-2 text-slate-600 pl-8">
+                        {section.points.map((point, i) => (
+                          <li key={i}>{point}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+
+                <div className="pt-6 border-t border-slate-100">
+                  <div className="bg-gradient-to-r from-blue-50 to-slate-50 rounded-2xl p-6 border border-blue-100">
+                    <h3 className="text-lg font-bold text-slate-900 mb-2">Join the movement</h3>
+                    <p className="text-slate-600">Participate in events, become a member, or get in touch to learn how you can be part of our community.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   /* ------------------ REFEREE DATA ------------------ */
   const referees = [

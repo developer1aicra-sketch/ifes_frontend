@@ -20,3 +20,14 @@ export function setAuthToken(token) {
 export function clearAuthToken() {
   localStorage.removeItem(TOKEN_KEY);
 }
+
+/**
+ * Returns the Authorization header object for API requests.
+ * Use this in axios interceptors and fetch wrappers for consistent Bearer token injection.
+ * @returns {{ Authorization?: string }} Header object; empty if no token.
+ */
+export function getAuthHeader() {
+  const token = getAuthToken();
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
+}

@@ -2,6 +2,7 @@
 
 import { apiRoutes } from '../constants/apiRoutes';
 import { getPartnerCode } from '../api/partnerCode';
+import { getAuthToken } from '../api/authToken';
 import { getLocationCodeFromPath } from './locationRoutes';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://worso-backend-rm6w.vercel.app/api';
@@ -15,7 +16,8 @@ const getPartnerCodeForRequest = () => {
 
 /**
  * fetch() wrapper for WORSO API calls.
- * Ensures `x-website` + `x-partner-code` are always sent in Request Headers.
+ * Ensures `x-website` + `x-partner-code` are always sent.
+ * Injects Authorization: Bearer <token> when a token exists (from authToken) and no Authorization was passed in options.
  */
 const apiFetch = (url, options = {}) => {
   const opts = options || {};
@@ -24,12 +26,40 @@ const apiFetch = (url, options = {}) => {
   headers.set('x-website', 'worso');
   headers.set('x-partner-code', getPartnerCodeForRequest());
 
+  if (!headers.has('Authorization') && !headers.has('authorization')) {
+    const token = getAuthToken();
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+  }
+
   const isFormData = typeof FormData !== 'undefined' && opts.body instanceof FormData;
   if (!isFormData && !headers.has('Content-Type') && !headers.has('content-type')) {
     headers.set('Content-Type', 'application/json');
   }
 
   return fetch(url, { ...opts, headers });
+};
+
+/**
+ * Member login with email + password.
+ * POST /auth/login on the primary backend.
+ * @param {string} email
+ * @param {string} password
+ * @returns {Promise<object>} Response JSON from backend
+ */
+export const memberLogin = async (email, password) => {
+  const response = await apiFetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message = data?.message || data?.error || `Login failed (${response.status})`;
+    throw new Error(message);
+  }
+
+  return data;
 };
 
 /**
@@ -399,6 +429,29 @@ export const listSeasons = async () => {
 };
 
 /**
+ * List seasons by partner (seasons/get?website=worso&partnerCode=XX).
+ * partnerCode should come from the partner route (e.g. /TH/admin-dashboard) or user.partner.partnerCode.
+ * @param {string} partnerCode - Partner code (e.g. 'TH')
+ * @returns {Promise<{ success?: boolean, data?: Array, seasons?: Array }>}
+ */
+export const listSeasonsGet = async (partnerCode) => {
+  const code = (partnerCode || '').toString().trim();
+  if (!code) {
+    return { success: true, data: [], seasons: [] };
+  }
+  const params = new URLSearchParams({ website: 'worso', partnerCode: code });
+  const response = await apiFetch(
+    `${API_BASE_URL}${apiRoutes.seasonsGetByPartner}?${params.toString()}`,
+    { method: 'GET' }
+  );
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to list seasons (${response.status})`);
+  }
+  return data;
+};
+
+/**
  * Add a season
  * @param {{ name: string, year: number, isActive: boolean }} payload
  * @returns {Promise<{ success: boolean, data?: object }>}
@@ -480,6 +533,29 @@ export const listEvents = async () => {
   const response = await apiFetch(`${API_BASE_URL}${apiRoutes.event.list}`, {
     method: 'GET',
   });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to list events (${response.status})`);
+  }
+  return data;
+};
+
+/**
+ * List events by partner (event/get?website=worso&partnerCode=XX).
+ * partnerCode from partner route (e.g. /TH/admin-dashboard) or user.partner.partnerCode.
+ * @param {string} partnerCode - Partner code (e.g. 'TH')
+ * @returns {Promise<{ success?: boolean, data?: Array, events?: Array }>}
+ */
+export const listEventsGet = async (partnerCode) => {
+  const code = (partnerCode || '').toString().trim();
+  if (!code) {
+    return { success: true, data: [], events: [] };
+  }
+  const params = new URLSearchParams({ website: 'worso', partnerCode: code });
+  const response = await apiFetch(
+    `${API_BASE_URL}${apiRoutes.eventGetByPartner}?${params.toString()}`,
+    { method: 'GET' }
+  );
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(data?.message || data?.error || `Failed to list events (${response.status})`);
@@ -576,6 +652,29 @@ export const listCompetitions = async () => {
   const response = await apiFetch(`${API_BASE_URL}${apiRoutes.competition.list}`, {
     method: 'GET',
   });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to list competitions (${response.status})`);
+  }
+  return data;
+};
+
+/**
+ * List competitions by partner (competitions/get?partnerCode=XX).
+ * partnerCode from partner route (e.g. /TH/admin-dashboard) or user.partner.partnerCode.
+ * @param {string} partnerCode - Partner code (e.g. 'TH')
+ * @returns {Promise<{ success?: boolean, data?: Array, competitions?: Array }>}
+ */
+export const listCompetitionsGet = async (partnerCode) => {
+  const code = (partnerCode || '').toString().trim();
+  if (!code) {
+    return { success: true, data: [], competitions: [] };
+  }
+  const params = new URLSearchParams({ partnerCode: code });
+  const response = await apiFetch(
+    `${API_BASE_URL}${apiRoutes.competitionsGetByPartner}?${params.toString()}`,
+    { method: 'GET' }
+  );
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(data?.message || data?.error || `Failed to list competitions (${response.status})`);

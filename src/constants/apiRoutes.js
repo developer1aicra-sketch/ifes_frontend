@@ -10,6 +10,8 @@ export const apiRoutes = {
     edit: (id) => `/season/update/${id}`,
     delete: (id) => `/season/delete/${id}`,
   },
+  /** GET /seasons/get?website=worso&partnerCode=XX - list seasons by partner (from route) */
+  seasonsGetByPartner: '/seasons/get',
   event: {
     list: '/event/list',
     add: '/event/add',
@@ -17,6 +19,8 @@ export const apiRoutes = {
     get: (_id) => `/event/get/${_id}`,
     delete: (_id) => `/event/delete/${_id}`,
   },
+  /** GET /event/get?website=worso&partnerCode=XX - list events by partner (from route) */
+  eventGetByPartner: '/event/get',
   competition: {
     list: '/competition/list',
     add: '/competition/add',
@@ -24,4 +28,6 @@ export const apiRoutes = {
     update: (_id) => `/competition/update/${_id}`,
     delete: (_id) => `/competition/delete/${_id}`,
   },
+  /** GET /competitions/get?partnerCode=XX - list competitions by partner (from route) */
+  competitionsGetByPartner: '/competitions/get',
 };

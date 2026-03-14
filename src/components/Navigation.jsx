@@ -64,18 +64,18 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
         </div>
 
         <div className="hidden md:flex items-center gap-8 font-bold text-[11px] uppercase tracking-widest text-slate-300">
-          {!siteConfig.is_partner && (
+          {(
             <div className="relative group">
               <button onClick={() => setView('about')} className="hover:text-white transition-colors py-2 flex items-center gap-1">
-                About Worso
+                {(locationPrefix || siteConfig.is_partner) ? 'About' : 'About Worso'}
               </button>
             </div>
           )}
          
           <Link to={path('/membership')}>Membership</Link>
-          <Link to={path('/roboclub')} className="flex gap-2 items-center">
+          {/* <Link to={path('/roboclub')} className="flex gap-2 items-center">
             <Star size={14} className={location.pathname.endsWith('/roboclub') ? 'text-yellow-400' : 'text-yellow-500'} /> roboclub
-          </Link>
+          </Link> */}
 
           <button onClick={() => setView('teams')} className="hover:text-white transition-colors">
             Teams / Players
@@ -83,7 +83,7 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
           
           <button onClick={() => setView('technoxian')} className="hover:text-white transition-colors flex items-center gap-1">
             <Trophy className="w-3 h-3 text-yellow-500" />
-            {siteConfig.is_partner ? 'Local Events' : 'Technoxian Games'}
+            {siteConfig.is_partner ? 'Local Events' : 'WRC Challenges'}
           </button>
           {/* {!siteConfig.is_partner && (
             <button onClick={() => setView('partners')} className="hover:text-white transition-colors">

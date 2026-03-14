@@ -1,39 +1,50 @@
 import { useState } from 'react';
 import { Mail, KeyRound, User } from 'lucide-react';
+import { memberLogin } from '../utils/api';
+import { setAuthToken } from '../api/authToken';
 
 const MemberLoginView = ({ setView, setUser, siteConfig }) => {
   const [email, setEmail] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [generatedOtp, setGeneratedOtp] = useState('');
-  const [otpInput, setOtpInput] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const validateEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
 
-  const sendOtp = () => {
+  const handleSubmit = async (e) => {
+    e?.preventDefault();
     setError('');
+
     if (!validateEmail(email)) {
       setError('Enter a valid email address');
       return;
     }
-    setLoading(true);
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    setGeneratedOtp(code);
-    setTimeout(() => {
-      setOtpSent(true);
-      setLoading(false);
-    }, 600);
-  };
-
-  const verifyOtp = () => {
-    setError('');
-    if (otpInput.trim() !== generatedOtp) {
-      setError('Invalid OTP');
+    if (!password) {
+      setError('Enter your password');
       return;
     }
-    setUser({ type: 'member', email });
-    setView('member-dashboard');
+
+    setLoading(true);
+    try {
+      const data = await memberLogin(email, password);
+
+      // Store token so /membership/my/get and other protected APIs get Authorization header
+      if (data?.token) {
+        setAuthToken(data.token);
+      }
+
+      setUser({
+        type: 'member',
+        email,
+        ...data,
+      });
+
+      setView('member-dashboard');
+    } catch (err) {
+      setError(err?.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -46,53 +57,53 @@ const MemberLoginView = ({ setView, setUser, siteConfig }) => {
           <h2 className="text-2xl font-bold text-slate-900">Member Login</h2>
         </div>
 
-        {!otpSent ? (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-1">Email Address</label>
-              <div className="flex items-center gap-2">
-                <div className="p-3 bg-slate-100 rounded-lg">
-                  <Mail size={18} className="text-slate-500" />
-                </div>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="flex-1 p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                />
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">Email Address</label>
+            <div className="flex items-center gap-2">
+              <div className="p-3 bg-slate-100 rounded-lg">
+                <Mail size={18} className="text-slate-500" />
               </div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="flex-1 p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+              />
             </div>
-            {error && <div className="text-xs text-red-600 font-bold">{error}</div>}
-            <button onClick={sendOtp} disabled={loading} className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50">
-              {loading ? 'Sending OTP...' : 'Send OTP'}
-            </button>
           </div>
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <div className="text-xs font-bold text-slate-500 mb-1">OTP sent to {email}</div>
-              <div className="text-[11px] font-bold text-slate-600 mb-2">Demo OTP: {generatedOtp}</div>
-              <div className="flex items-center gap-2">
-                <div className="p-3 bg-slate-100 rounded-lg">
-                  <KeyRound size={18} className="text-slate-500" />
-                </div>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={otpInput}
-                  onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
-                  placeholder="Enter 6-digit OTP"
-                  className="flex-1 p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none tracking-widest"
-                />
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">Password</label>
+            <div className="flex items-center gap-2">
+              <div className="p-3 bg-slate-100 rounded-lg">
+                <KeyRound size={18} className="text-slate-500" />
               </div>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className="flex-1 p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+              />
             </div>
-            {error && <div className="text-xs text-red-600 font-bold">{error}</div>}
-            <button onClick={verifyOtp} className="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700">Verify & Continue</button>
-            <button onClick={() => { setOtpSent(false); setGeneratedOtp(''); setOtpInput(''); }} className="w-full text-slate-600 font-bold text-xs mt-2">Resend / Change Email</button>
           </div>
-        )}
+
+          {error && <div className="text-xs text-red-600 font-bold">{error}</div>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+
+          <div className="text-[11px] text-slate-500 mt-1">
+            For testing, you can use email <span className="font-mono font-semibold">dd@gmail.com</span> and password <span className="font-mono font-semibold">dd</span>.
+          </div>
+        </form>
       </div>
     </div>
   );

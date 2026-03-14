@@ -15,18 +15,22 @@ import {
   ServerCog,
   LayoutDashboard,
   ExternalLink,
-  Play,
 } from 'lucide-react';
 import LogoTicker from '../components/LogoTicker';
 import FeaturedShopSection from '../components/FeaturedShopSection';
-import { NavLink } from 'react-router-dom';
+import { PartnerVideoSection, PartnerNewsSection, PartnerSupporterSection } from '../components/partner';
+import { NavLink, useParams } from 'react-router-dom';
 import { useThemeClasses } from '../hooks/useThemeClasses';
 import { fetchPartnerHome } from '../utils/api';
 import { useLocationPrefix } from '../hooks/useLocationPrefix';
+import { PARTNER_HOME_STATIC } from '../data/partnerHomeStatic';
 
-const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError, locationCode }) => {
+const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError, locationCode: locationCodeProp }) => {
   const theme = useThemeClasses();
-  const { locationPrefix } = useLocationPrefix();
+  const { locationPrefix, locationCode: locationCodeFromPath } = useLocationPrefix();
+  const { locationCode: locationCodeFromParams } = useParams();
+  // Partner content: prefer prop (LocationView), then URL param, then path-derived code
+  const locationCode = locationCodeProp ?? locationCodeFromParams ?? locationCodeFromPath ?? null;
   void motion;
 
   const [latestNewsIndex, setLatestNewsIndex] = useState(0);
@@ -197,7 +201,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
                       onClick={() => setView('technoxian')}
                       className={`${theme.bgPrimary || siteConfig.colors.primary} px-8 py-4 rounded-lg font-bold text-base transition-all shadow-lg flex items-center gap-2 hover:-translate-y-1`}
                     >
-                      {siteConfig.is_partner ? 'View Local Events' : 'Explore Technoxian'} <ArrowRight size={18} />
+                      {siteConfig.is_partner ? 'View Local Events' : 'Explore WRC Challenges'} <ArrowRight size={18} />
                     </button>
                     <button onClick={() => setView('teams')} className="bg-transparent border border-white/20 hover:bg-white/10 px-8 py-4 rounded-lg font-bold text-base transition-all flex items-center gap-2">
                       <Users size={18} /> Teams & Rankings
@@ -366,87 +370,19 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
       )}
       
       <FeaturedShopSection/>
-      {/* Video Section */}
-      {(partnerHomeData?.videos && partnerHomeData.videos.length > 0) && (
-        <section className="py-16 bg-white border-t border-slate-100">
-          <div className="container mx-auto px-4">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-bold text-slate-900">Latest Videos</h2>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const container = document.getElementById('video-carousel');
-                      container?.scrollBy({ left: -400, behavior: 'smooth' });
-                    }}
-                    className="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
-                    aria-label="Previous videos"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left">
-                      <path d="m15 18-6-6 6-6" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const container = document.getElementById('video-carousel');
-                      container?.scrollBy({ left: 400, behavior: 'smooth' });
-                    }}
-                    className="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
-                    aria-label="Next videos"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right">
-                      <path d="m9 18 6-6-6-6" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative group">
-              <div id="video-carousel" className="flex overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory">
-                <div className="flex space-x-8">
-                  {partnerHomeData.videos
-                    .filter(video => video.isActive)
-                    .map((video) => (
-                      <a
-                        key={video._id}
-                        href={video.youtubeUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-shrink-0 w-[320px] snap-start bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition-all hover:-translate-y-1"
-                      >
-                        <div className="relative pt-[56.25%] bg-slate-100 overflow-hidden group">
-                          {video.thumbnail ? (
-                            <img 
-                              src={video.thumbnail} 
-                              alt={video.title}
-                              className="absolute inset-0 w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600">
-                              <Play className="w-20 h-20 text-white" />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
-                            <div className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center transform transition-all duration-300 group-hover:scale-110 opacity-0 group-hover:opacity-100">
-                              <Play className="text-blue-600 ml-1" size={28} fill="currentColor" />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-5">
-                          <h3 className="font-semibold text-lg text-slate-900 line-clamp-2 mb-3 leading-tight">
-                            {video.title}
-                          </h3>
-                        </div>
-                      </a>
-                    ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+      {/* Partner route: Video, News, Supporter sections (API data with static fallback) */}
+      {locationCode && (
+        <>
+          <PartnerVideoSection
+            videos={partnerHomeData?.videos?.length ? partnerHomeData.videos : PARTNER_HOME_STATIC.videos}
+            title="Latest Videos"
+          />
+          <PartnerNewsSection
+            news={partnerHomeData?.news?.length ? partnerHomeData.news : PARTNER_HOME_STATIC.news}
+            title="News"
+            onNewsClick={(id) => setView(`news-${id}`)}
+          />
+        </>
       )}
 
       {/* Products Section */}
@@ -490,36 +426,12 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
         </section>
       )}
 
-      {/* Supporters Section */}
-      {partnerHomeData?.supporters && partnerHomeData.supporters.length > 0 && (
-        <section className="py-16 bg-white border-t border-slate-100">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">Our Supporters</h2>
-            <div className="grid md:grid-cols-4 gap-8 items-center justify-items-center">
-              {partnerHomeData.supporters
-                .filter(supporter => supporter.isActive)
-                .map((supporter) => (
-                  <a
-                    key={supporter._id}
-                    href={supporter.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center p-6 bg-white rounded-lg border border-slate-200 hover:shadow-md transition-all hover:-translate-y-1"
-                  >
-                    {supporter.logo ? (
-                      <img 
-                        src={supporter.logo} 
-                        alt={supporter.name}
-                        className="max-h-16 max-w-full object-contain"
-                      />
-                    ) : (
-                      <span className="text-slate-600 font-medium">{supporter.name}</span>
-                    )}
-                  </a>
-                ))}
-            </div>
-          </div>
-        </section>
+      {/* Partner route: Supporters section */}
+      {locationCode && (
+        <PartnerSupporterSection
+          supporters={partnerHomeData?.supporters?.length ? partnerHomeData.supporters : PARTNER_HOME_STATIC.supporters}
+          title="Our Supporters"
+        />
       )}
 
       <section className="py-16 bg-white border-t border-slate-100">
@@ -690,9 +602,6 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
           </div>
         </div>
       </section>
-
-
-
       <section className="py-20 bg-white border-t border-slate-100">
         <div className="container mx-auto px-4 max-w-7xl">
           {newsError && <div className="text-sm text-red-500 mb-4">{newsError}</div>}

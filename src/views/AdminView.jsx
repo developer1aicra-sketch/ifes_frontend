@@ -522,6 +522,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
   // RoboClub Registration states
   const [roboClubStep, setRoboClubStep] = useState('email'); // 'email', 'otp', 'register'
   const [email, setEmail] = useState('');
+  const [verifiedEmail, setVerifiedEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [roboClubError, setRoboClubError] = useState('');
   const [roboClubLoading, setRoboClubLoading] = useState(false);
@@ -570,14 +571,16 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
   // Handle send OTP
   const handleSendOtp = async () => {
-    if (!email || !email.includes('@')) {
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    if (!normalizedEmail || !normalizedEmail.includes('@')) {
       setRoboClubError('Please enter a valid email address');
       return;
     }
     setRoboClubLoading(true);
     setRoboClubError('');
     try {
-      const response = await signUpSendOtp({ email });
+      setEmail(normalizedEmail);
+      const response = await signUpSendOtp({ email: normalizedEmail });
       if (response?.data?.success || response?.status === 200) {
         setRoboClubStep('otp');
         setResendCooldown(60); // 60 second cooldown
@@ -600,10 +603,13 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     setRoboClubLoading(true);
     setRoboClubError('');
     try {
-      const response = await signUpVerifyOtp({ email, otp });
+      const normalizedEmail = String(email || '').trim().toLowerCase();
+      const response = await signUpVerifyOtp({ email: normalizedEmail, otp });
       const token = response?.data?.token || response?.data?.data?.token;
       if (token) {
         setAuthToken(token);
+        setEmail(normalizedEmail);
+        setVerifiedEmail(normalizedEmail);
         setRoboClubStep('register');
       } else {
         setRoboClubError('Invalid OTP or verification failed');
@@ -621,11 +627,39 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     setRoboClubError('');
   };
 
+  const handleRoboClubEmailChange = (value) => {
+    const nextEmail = value;
+    const normalizedNext = String(nextEmail || '').trim().toLowerCase();
+    const normalizedVerified = String(verifiedEmail || '').trim().toLowerCase();
+    setEmail(nextEmail);
+    setRoboClubError('');
+
+    // If email changes after verification, invalidate the verified session.
+    if (normalizedVerified && normalizedNext !== normalizedVerified) {
+      setVerifiedEmail('');
+      setOtp('');
+      setAuthToken(null);
+      setRoboClubStep('email');
+    }
+  };
+
   // Handle submit club registration
   const handleSubmitClub = async () => {
     // Validate required form fields
     if (!roboClubForm.name || !roboClubForm.clubName || !roboClubForm.instituteName) {
       setRoboClubError('Please fill in all required fields');
+      return;
+    }
+
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    if (!normalizedEmail || !normalizedEmail.includes('@')) {
+      setRoboClubError('Please enter a valid email address');
+      return;
+    }
+
+    if (!verifiedEmail || normalizedEmail !== String(verifiedEmail).trim().toLowerCase()) {
+      setRoboClubError('Please verify this email via OTP before registering your RoboClub.');
+      setRoboClubStep('email');
       return;
     }
 
@@ -650,7 +684,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
         state: roboClubForm.state,
         city: roboClubForm.city,
         mobile: roboClubForm.mobile,
-        email: email,
+        email: normalizedEmail,
       });
       
       if (response?.data?.success || response?.status === 200 || response?.status === 201) {
@@ -659,6 +693,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
         // Reset form
         setRoboClubStep('email');
         setEmail('');
+        setVerifiedEmail('');
         setOtp('');
         setRoboClubForm({
           name: '',
@@ -678,6 +713,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
         setRoboClubError('Authentication failed. Please verify your email OTP again.');
         setRoboClubStep('email');
         setAuthToken(null); // Clear invalid token
+        setVerifiedEmail('');
       } else {
         setRoboClubError(err?.response?.data?.message || err?.message || 'Failed to register club. Please try again.');
       }
@@ -2822,6 +2858,23 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                             </div>
                           </div>
 
+                          <div className="sm:col-span-2">
+                            <label className="block text-slate-700 text-sm font-medium mb-1">Email</label>
+                            <div className="relative">
+                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                              <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => handleRoboClubEmailChange(e.target.value)}
+                                placeholder="your@email.com"
+                                className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                              />
+                            </div>
+                            <p className="text-slate-500 text-xs mt-1">
+                              If you change this email, you’ll need to verify it again via OTP before registration.
+                            </p>
+                          </div>
+
                           <div>
                             <label className="block text-slate-700 text-sm font-medium mb-1">Club name</label>
                             <div className="relative">
@@ -2907,8 +2960,6 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                             </div>
                           </div>
                         </div>
-
-                        <p className="text-slate-500 text-xs">Registered email: {email}</p>
 
                         <button
                           onClick={handleSubmitClub}

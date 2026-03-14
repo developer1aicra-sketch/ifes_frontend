@@ -1,0 +1,151 @@
+import React, { useMemo, useState } from 'react';
+import { ArrowRight, FileText, Calendar, Scale } from 'lucide-react';
+import { useThemeClasses } from '../../hooks/useThemeClasses';
+
+const CATEGORY_CONFIG = {
+  GENERAL: { label: 'General', icon: FileText, color: 'text-slate-600 bg-slate-100' },
+  EVENT: { label: 'Event', icon: Calendar, color: 'text-blue-700 bg-blue-100' },
+  REGULATION: { label: 'Regulation', icon: Scale, color: 'text-amber-700 bg-amber-100' },
+  default: { label: 'General', icon: FileText, color: 'text-slate-600 bg-slate-100' },
+};
+
+/**
+ * Reusable News section for Partner home.
+ * Displays news items with title, description, image, and category in a card layout.
+ *
+ * @param {object} props
+ * @param {Array<{ _id: string, title: string, description?: string, image?: string, type?: string, isActive?: boolean }>} props.news - List of news items
+ * @param {string} [props.title] - Section heading
+ * @param {(id: string) => void} [props.onNewsClick] - Callback when user clicks a news item (e.g. open detail view)
+ * @param {string} [props.className] - Optional section wrapper class
+ */
+const PartnerNewsSection = ({
+  news = [],
+  title = 'News',
+  onNewsClick,
+  className = '',
+}) => {
+  const theme = useThemeClasses();
+  const [activeCategory, setActiveCategory] = useState('ALL');
+
+  const activeNews = useMemo(
+    () => (news || []).filter((n) => n && (n.isActive !== false)),
+    [news]
+  );
+
+  const categories = useMemo(() => {
+    const set = new Set(['ALL']);
+    activeNews.forEach((n) => {
+      const type = (n.type || 'GENERAL').toUpperCase();
+      set.add(type);
+    });
+    return Array.from(set);
+  }, [activeNews]);
+
+  const filteredNews = useMemo(() => {
+    if (activeCategory === 'ALL') return activeNews;
+    return activeNews.filter((n) => (n.type || 'GENERAL').toUpperCase() === activeCategory);
+  }, [activeNews, activeCategory]);
+
+  const getCategoryMeta = (type) => {
+    const key = (type || 'GENERAL').toUpperCase();
+    return CATEGORY_CONFIG[key] || CATEGORY_CONFIG.default;
+  };
+
+  if (activeNews.length === 0) return null;
+
+  return (
+    <section
+      className={`py-16 bg-slate-50 border-t border-slate-100 ${className}`}
+      aria-labelledby="partner-news-section-title"
+    >
+      <div className="container mx-auto px-4">
+        <h2 id="partner-news-section-title" className="text-3xl font-bold text-slate-900 mb-8">
+          {title}
+        </h2>
+
+        {/* Category filter */}
+        <div className="flex flex-wrap gap-2 mb-8">
+          {categories.map((cat) => {
+            const isAll = cat === 'ALL';
+            const label = isAll ? 'All' : (CATEGORY_CONFIG[cat]?.label ?? cat);
+            const isActive = activeCategory === cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  isActive
+                    ? theme.bgPrimary
+                      ? `${theme.bgPrimary} text-white focus:ring-slate-400`
+                      : 'bg-blue-600 text-white focus:ring-blue-400'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 focus:ring-slate-300'
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredNews.map((item) => {
+            const meta = getCategoryMeta(item.type);
+            const Icon = meta.icon;
+
+            return (
+              <article
+                key={item._id}
+                className="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col"
+              >
+                {item.image && (
+                  <div className="relative pt-[56.25%] bg-slate-100 overflow-hidden">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                <div className="p-5 flex flex-col flex-grow">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${meta.color}`}
+                    >
+                      <Icon size={12} />
+                      {meta.label}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-lg text-slate-900 line-clamp-2 mb-2 leading-tight">
+                    {item.title}
+                  </h3>
+                  {item.description && (
+                    <p className="text-sm text-slate-600 leading-relaxed line-clamp-3 flex-grow">
+                      {item.description}
+                    </p>
+                  )}
+                  {onNewsClick && (
+                    <button
+                      type="button"
+                      onClick={() => onNewsClick(item._id)}
+                      className={`mt-4 text-sm font-medium inline-flex items-center gap-1 self-start ${
+                        theme.textPrimary ? `${theme.textPrimary} hover:underline` : 'text-blue-600 hover:underline'
+                      }`}
+                    >
+                      Read more
+                      <ArrowRight size={14} />
+                    </button>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default PartnerNewsSection;

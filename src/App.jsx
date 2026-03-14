@@ -39,7 +39,7 @@ import { pathWithLocationPrefix } from './utils/locationRoutes';
 import { getPartnerAuth } from './utils/api';
 import { useLocationPrefix } from './hooks/useLocationPrefix';
 import { StoreView } from './views/StoreView';
-import RoboClubView from './views/RoboClubView';
+// import RoboClubView from './views/RoboClubView';
 
 const viewToPath = (view) => {
   if (!view) return '/';
@@ -300,7 +300,7 @@ const AppContent = ({
               <Route path="/" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
               <Route path="/teams" element={<TeamsView />} />
               <Route path="/technoxian" element={<TechnoxianView />} />
-              <Route path="/roboclub" element={<RoboClubView />} />
+              {/* <Route path="/roboclub" element={<RoboClubView />} /> */}
 
               <Route path="/about" element={<AboutLayout setView={setViewRespectingLocation} />} />
               <Route path="/governance" element={<AboutLayout setView={setViewRespectingLocation} />} />
@@ -317,7 +317,7 @@ const AppContent = ({
               <Route path="/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} user={user} />} />
               <Route path="/login-partner-admin" element={<PartnerAdminLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
 
-              <Route path="/member-dashboard" element={<MemberDashboard currentSite={currentSite} setView={setViewRespectingLocation} />} />
+              <Route path="/member-dashboard" element={<MemberDashboard user={user} currentSite={currentSite} setView={setViewRespectingLocation} />} />
               <Route path="/admin-dashboard" element={<AdminView setSites={setSites} sites={sites} setView={setViewRespectingLocation} defaultMode={user?.role} user={user} setUser={setUser} />} />
 
               <Route path="/privacy-policy" element={<PrivacyPolicyView />} />
@@ -333,7 +333,7 @@ const AppContent = ({
               <Route path="/:locationCode/membership" element={<MembershipView setView={setViewRespectingLocation} />} />
               <Route path="/:locationCode/teams" element={<TeamsView />} />
               <Route path="/:locationCode/technoxian" element={<TechnoxianView />} />
-              <Route path="/:locationCode/roboclub" element={<RoboClubView />} />
+              {/* <Route path="/:locationCode/roboclub" element={<RoboClubView />} /> */}
               <Route path="/:locationCode/about" element={<AboutLayout setView={setViewRespectingLocation} />} />
               <Route path="/:locationCode/governance" element={<AboutLayout setView={setViewRespectingLocation} />} />
               <Route path="/:locationCode/associates/join-worso" element={<JoinWorsoView />} />
@@ -343,7 +343,7 @@ const AppContent = ({
               <Route path="/:locationCode/login" element={<MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} />} />
               <Route path="/:locationCode/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} user={user} />} />
               <Route path="/:locationCode/login-partner-admin" element={<PartnerAdminLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
-              <Route path="/:locationCode/member-dashboard" element={<MemberDashboard currentSite={currentSite} setView={setViewRespectingLocation} />} />
+              <Route path="/:locationCode/member-dashboard" element={<MemberDashboard user={user} currentSite={currentSite} setView={setViewRespectingLocation} />} />
               <Route path="/:locationCode/admin-dashboard" element={<AdminView setSites={setSites} sites={sites} setView={setViewRespectingLocation} defaultMode={user?.role} user={user} setUser={setUser} />} />
               <Route path="/:locationCode/privacy-policy" element={<PrivacyPolicyView />} />
               <Route path="/:locationCode/terms-of-use" element={<TermsOfUseView />} />
