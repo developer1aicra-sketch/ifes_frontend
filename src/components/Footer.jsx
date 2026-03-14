@@ -209,21 +209,21 @@ const Footer = ({ setView, switchSite, currentSite }) => {
                       ) : null}
                     </span>
                   </div>
-                  {footerAddress ? (
+                  {/* {footerAddress ? (
                     <div className="text-xs text-slate-400">
                       {footerAddress}
                     </div>
-                  ) : null}
-                  {error ? (
+                  ) : null} */}
+                  {/* {error ? (
                     <div className="text-xs text-red-300">
                       {error}
                     </div>
-                  ) : null}
-                  {loading ? (
+                  ) : null} */}
+                  {/* {loading ? (
                     <div className="text-xs text-slate-500">
                       Loading partners…
                     </div>
-                  ) : null}
+                  ) : null} */}
                 </div>
               </div>
             </div>
