@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Mail, KeyRound, User } from 'lucide-react';
+import { Mail, KeyRound, User, Eye, EyeOff } from 'lucide-react';
 import { memberLogin } from '../utils/api';
 import { setAuthToken } from '../api/authToken';
 
 const MemberLoginView = ({ setView, setUser, siteConfig, user }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -92,12 +93,22 @@ const MemberLoginView = ({ setView, setUser, siteConfig, user }) => {
                 <KeyRound size={18} className="text-slate-500" />
               </div>
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
+                autoComplete="current-password"
                 className="flex-1 p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((p) => !p)}
+                className="p-3 bg-slate-100 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 

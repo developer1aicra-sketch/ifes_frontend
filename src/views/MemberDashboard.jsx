@@ -99,6 +99,14 @@ const getMemberInitials = (user, club) => {
   return name.slice(0, 2).toUpperCase() || 'M';
 };
 
+/** Normalize mobile for display: exactly 10 digits (strip country code/whitespace). */
+const formatMobileDisplay = (mobile) => {
+  if (!mobile || typeof mobile !== 'string') return null;
+  const digits = mobile.replace(/\D/g, '');
+  if (digits.length < 10) return mobile.trim() || null;
+  return digits.slice(-10);
+};
+
 const MemberDashboard = ({ user, currentSite, setView }) => {
   const { themeConfig } = useTheme();
   const themeKey = themeConfig?.theme || 'blue';
@@ -122,6 +130,15 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
 
   const memberName = getMemberDisplayName(user, club);
   const memberInitials = getMemberInitials(user, club);
+  // Sidebar: show name only (never email); fall back to "Member" if no name available
+  const sidebarDisplayName = membership?.user?.fullName || user?.fullName || user?.name || club?.name?.trim() || 'Member';
+  const sidebarInitials = (() => {
+    const name = membership?.user?.fullName || user?.fullName || user?.name || club?.name?.trim() || '';
+    if (!name) return 'M';
+    const parts = name.replace(/\s+/g, ' ').trim().split(' ');
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase().slice(0, 2);
+    return name.slice(0, 2).toUpperCase() || 'M';
+  })();
 
   useEffect(() => {
     if (activeTab === 'diy-offers') setDiyOpen(true);
@@ -222,10 +239,10 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
             {/* Profile header – fixed at top */}
             <div className="relative flex-shrink-0 p-6 pb-2">
               <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 ${themeConfig?.colors?.primary || 'bg-blue-600'} rounded-full flex items-center justify-center text-white text-xl font-bold`}>{memberInitials}</div>
+                <div className={`w-12 h-12 ${themeConfig?.colors?.primary || 'bg-blue-600'} rounded-full flex items-center justify-center text-white text-xl font-bold`}>{sidebarInitials}</div>
                 <div className="min-w-0">
                   <div className="text-[11px] font-bold uppercase text-white/70">Member</div>
-                  <div className="font-extrabold truncate" title={memberName}>{memberName}</div>
+                  <div className="font-extrabold truncate" title={sidebarDisplayName}>{sidebarDisplayName}</div>
                 </div>
               </div>
             </div>
@@ -304,7 +321,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                   >
                     <span className="flex items-center gap-3">
                       <Zap size={18} className={`flex-shrink-0 ${activeTab === 'diy-offers' ? accent.title : 'text-white/70'}`} />
-                      <span>DIY Offers</span>
+                      <span>Offers</span>
                     </span>
                     {diyOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                   </button>
@@ -322,7 +339,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                             : 'bg-white/5 text-white/80 hover:bg-white/10 border border-transparent'
                         }`}
                       >
-                        Robotics Kits
+                       DIY Robotics Kits
                       </button>
                       <button
                         type="button"
@@ -600,7 +617,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                               </div>
                               <div>
                                 <dt className="text-slate-500">Mobile</dt>
-                                <dd className="font-semibold text-slate-900">{membership.user.mobile || '—'}</dd>
+                                <dd className="font-semibold text-slate-900">{formatMobileDisplay(membership.user.mobile) || '—'}</dd>
                               </div>
                               <div>
                                 <dt className="text-slate-500">Designation</dt>
@@ -648,9 +665,9 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                             <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${membership.user.isProfileCompleted ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
                               Profile {membership.user.isProfileCompleted ? 'Completed' : 'Incomplete'}
                             </span>
-                            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${membership.user.hasActiveMembership ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600'}`}>
+                            {/* <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${membership.user.hasActiveMembership ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600'}`}>
                               {membership.user.hasActiveMembership ? 'Active membership' : 'No active membership'}
-                            </span>
+                            </span> */}
                             {membership.user.role && (
                               <span className="inline-flex rounded-full px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-700">
                                 {membership.user.role}
@@ -731,18 +748,23 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                               <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
                                 {membership?.category || 'Student'}
                               </p>
-                              {(membership?.user?.mobile || user?.mobile) && (
-                                <p className="mt-1.5 text-[10px] sm:text-[11px]">
-                                  <span className="text-slate-400 uppercase tracking-wide">Mobile</span>
-                                  <a
-                                    href={`tel:${(membership?.user?.mobile || user?.mobile).replace(/\s/g, '')}`}
-                                    className="ml-1.5 font-mono text-slate-200 break-all hover:text-white hover:underline focus:outline-none focus:ring-2 focus:ring-white/30 rounded"
-                                    title="Tap to call"
-                                  >
-                                    {membership?.user?.mobile || user?.mobile}
-                                  </a>
-                                </p>
-                              )}
+                              {(membership?.user?.mobile || user?.mobile) && (() => {
+                                const raw = membership?.user?.mobile || user?.mobile;
+                                const display = formatMobileDisplay(raw);
+                                const telDigits = (raw || '').replace(/\D/g, '');
+                                return display ? (
+                                  <p className="mt-1.5 text-[10px] sm:text-[11px]">
+                                    <span className="text-slate-400 uppercase tracking-wide">Mobile</span>
+                                    <a
+                                      href={`tel:${telDigits}`}
+                                      className="ml-1.5 font-mono text-slate-200 break-all hover:text-white hover:underline focus:outline-none focus:ring-2 focus:ring-white/30 rounded"
+                                      title="Tap to call"
+                                    >
+                                      {display}
+                                    </a>
+                                  </p>
+                                ) : null;
+                              })()}
                               <div className="mt-2 inline-flex items-center rounded-full border border-white/20 bg-white/5 px-2.5 sm:px-3 py-1 text-[9px] sm:text-[10px] uppercase tracking-wide text-slate-200">
                                 {membership?.planName || 'Student Basic'}
                               </div>
@@ -770,7 +792,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                                     : '—'}
                                 </div>
                               </div>
-                              <div className="rounded-xl bg-black/40 border border-white/10 px-3 py-2.5 w-full sm:w-auto sm:min-w-[8rem] shrink-0">
+                              {/* <div className="rounded-xl bg-black/40 border border-white/10 px-3 py-2.5 w-full sm:w-auto sm:min-w-[8rem] shrink-0">
                                 <div className="text-[10px] text-slate-400 uppercase tracking-wide">
                                   Price
                                 </div>
@@ -779,7 +801,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                                     ? `${membership.price.amount} ${membership.price.currency}`
                                     : '—'}
                                 </div>
-                              </div>
+                              </div> */}
                             </div>
                           </div>
                         </div>
@@ -869,11 +891,11 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                     </div>
                     <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mb-2">Class Schedule</h2>
                     <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-                      Your class schedule and sessions will appear here. This feature is coming soon.
+                    Classes will start on 1 March.
                     </p>
-                    <span className="mt-5 inline-flex items-center rounded-full bg-white/10 border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    {/* <span className="mt-5 inline-flex items-center rounded-full bg-white/10 border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300">
                       Coming soon
-                    </span>
+                    </span> */}
                   </div>
                 </div>
               )}

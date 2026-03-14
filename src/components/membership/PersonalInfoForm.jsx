@@ -74,8 +74,9 @@ export const PersonalInfoForm = ({
       });
       return;
     }
-    if (formData.phone.trim().length < 10) {
-      toast.error('Please enter a valid phone number', {
+    const phoneDigits = formData.phone.trim().replace(/\D/g, '');
+    if (phoneDigits.length !== 10) {
+      toast.error('Mobile number must be exactly 10 digits', {
         position: "top-right",
         autoClose: 2000,
         theme: "dark",
@@ -99,7 +100,7 @@ export const PersonalInfoForm = ({
       return;
     }
     const countryCode = formData.countryCode?.trim() || '+91';
-    const completeMobileNumber = `${countryCode}${formData.phone.trim().replace(/[\s\-\(\)\.]/g, '')}`;
+    const completeMobileNumber = `${countryCode}${phoneDigits}`;
 
     setIsSubmitting(true);
     try {
@@ -262,10 +263,16 @@ export const PersonalInfoForm = ({
                 </div>
                 <input
                   type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={10}
                   value={formData.phone}
-                  onChange={(e) => updateFormData('phone', e.target.value)}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    updateFormData('phone', digits);
+                  }}
                   className="flex-1 px-4 py-3 bg-white border border-l-0 border-gray-300 rounded-r-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter phone number"
+                  placeholder="10-digit mobile number"
                   required
                 />
               </div>
@@ -286,7 +293,7 @@ export const PersonalInfoForm = ({
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={isSubmitting || !formData.fullName?.trim() || !formData.designation || !formData.phone?.trim() || !formData.categoryId || !formData.planId}
+              disabled={isSubmitting || !formData.fullName?.trim() || !formData.designation || (formData.phone?.replace(/\D/g, '') || '').length !== 10 || !formData.categoryId || !formData.planId}
               className={`px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 ${
                 isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
               }`}

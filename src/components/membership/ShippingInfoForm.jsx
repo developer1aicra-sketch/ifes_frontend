@@ -304,7 +304,7 @@ export const ShippingInfoForm = ({
           {/* Logo Upload */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-black mb-2">
-              Logo (Optional)
+              picture
             </label>
             <div className="flex items-center gap-4">
               {logoPreview ? (
