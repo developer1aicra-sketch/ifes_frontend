@@ -3,13 +3,18 @@ import { Check, Shield, Lock, CreditCard, Globe, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../contexts/ToastContext";
-import { createPayment, verifyPayment } from "../../api/paymentApi";
+import { verifyPayment, normalizePaymentCreateResponse } from "../../api/paymentApi";
+import { createMembershipThenPayment } from "../../app/membership/membershipApi";
 
 export const PaymentSection = ({
   selectedPayment,
   setSelectedPayment,
   selectedCategory,
   selectedPlan,
+  categoryName = '',
+  planName = '',
+  displayAmountRupees,
+  displayCurrency: displayCurrencyProp = 'INR',
   formData,
   onBack,
   onPayment
@@ -28,37 +33,26 @@ export const PaymentSection = ({
       setSelectedPayment('razorpay');
     }
   }, [selectedPayment]); // Removed setSelectedPayment from deps to avoid unnecessary re-renders
-  
-  const calculateTotal = () => {
-    switch (selectedCategory) {
-      case 'student':
-        return selectedPlan === 'basic' ? 10 : 50;
-      case 'professional':
-        return 100;
-      case 'institute':
-        return 200;
-      case 'corporate':
-        return 500;
-      default:
-        return 0;
-    }
-  };
 
-  const totalAmount = calculateTotal();
-  
   // Format amount from API response (amount is in paise, convert to rupees)
-  const formatAmount = (amountInPaise) => {
-    if (!amountInPaise) return totalAmount;
-    return (amountInPaise / 100).toFixed(2);
-  };
-  
-  // Get display amount - use API response if available, otherwise use calculated total
-  const displayAmount = paymentData?.amount 
-    ? formatAmount(paymentData.amount) 
-    : totalAmount;
-  
-  // Get currency from API response or default to INR
-  const displayCurrency = paymentData?.currency || "INR";
+  const formatAmountFromPaise = (amountInPaise) =>
+    amountInPaise != null ? (Number(amountInPaise) / 100).toFixed(2) : '';
+
+  // Display amount: use payment/create response when available, else use plan price from props
+  const displayAmount =
+    paymentData?.amount != null
+      ? formatAmountFromPaise(paymentData.amount)
+      : (displayAmountRupees != null && displayAmountRupees !== '')
+        ? Number(displayAmountRupees).toFixed(2)
+        : '';
+
+  const displayCurrency = paymentData?.currency || displayCurrencyProp || 'INR';
+
+  // Order summary title: "CategoryName PlanName" e.g. "Student Basic"
+  const orderSummaryTitle =
+    categoryName && planName
+      ? `${categoryName} ${planName}`
+      : planName || categoryName || 'Membership';
 
   // Load Razorpay script on component mount (always needed since it's the only payment option)
   useEffect(() => {
@@ -112,25 +106,6 @@ export const PaymentSection = ({
     features: ['Cards (Visa/Mastercard/Rupay)', 'UPI', 'Net Banking', 'Wallets']
   };
 
-  const getPlanName = () => {
-    const categoryNames = {
-      student: 'Student',
-      professional: 'Professional',
-      institute: 'Institute',
-      corporate: 'Corporate'
-    };
-    
-    const planNames = {
-      basic: 'Basic',
-      premium: 'Premium',
-      professional: 'Professional',
-      institute: 'Institute',
-      corporate: 'Corporate'
-    };
-    
-    return `${categoryNames[selectedCategory]} ${planNames[selectedPlan]}`;
-  };
-
   // Handle Razorpay payment
   const handleRazorpayPayment = async () => {
     if (!termsAccepted) {
@@ -151,67 +126,72 @@ export const PaymentSection = ({
       return;
     }
 
+    // user_id for membership/bulk = objectId from auth/signup (e.g. "69b4fd868055802980b91e90")
+    const userId = formData?.createdUserId;
+    if (!userId) {
+      toast.error('Session expired. Please complete signup from the beginning.', {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "dark",
+      });
+      return;
+    }
+
+    if (!selectedCategory || !selectedPlan) {
+      toast.error('Category and plan are required. Please go back and select them.', {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "dark",
+      });
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
-      // Create payment order via API
-      const response = await createPayment({
-        gateway: "RAZORPAY",
-        currency: "INR"
+      // Complete Registration: run /api/membership/bulk then /api/payment/create; use payment/create response for Razorpay
+      const { paymentResponse } = await createMembershipThenPayment({
+        userId,
+        categoryId: selectedCategory,
+        planId: selectedPlan,
       });
 
-      // Extract payment data from API response
-      // Expected response structure:
-      // {
-      //   "success": true,
-      //   "data": {
-      //     "paymentId": "698daa634f31a0886addeca8",
-      //     "orderId": "order_SFCTljhspOYAtp",
-      //     "amount": 90738,
-      //     "currency": "INR",
-      //     "razorpayKey": "rzp_live_vOWkG1W1TBWQ1H",
-      //     "userName": "Kailash Tanwar"
-      //   }
-      // }
-      const paymentData = response.data?.success 
-        ? response.data.data 
-        : (response.data?.data || response.data);
-
-      // Validate required fields from API response
-      if (!paymentData) {
-        throw new Error('Invalid payment response: No data received');
-      }
-
-      if (!paymentData.razorpayKey) {
-        throw new Error('Invalid payment response: Missing razorpayKey');
-      }
-
-      if (!paymentData.orderId) {
-        throw new Error('Invalid payment response: Missing orderId');
-      }
-
-      if (!paymentData.amount || paymentData.amount <= 0) {
-        throw new Error('Invalid payment response: Missing or invalid amount');
-      }
-
-      console.log('Payment order created:', {
+      const paymentData = normalizePaymentCreateResponse(paymentResponse);
+      console.log('Payment order created (/payment/create response):', {
         paymentId: paymentData.paymentId,
         orderId: paymentData.orderId,
         amount: paymentData.amount,
         currency: paymentData.currency,
-        userName: paymentData.userName
+        userName: paymentData.userName,
       });
 
       // Store payment data for display
       setPaymentData(paymentData);
 
+      // Amount in paise: prefer API response; fallback to plan-derived (displayAmountRupees * 100) when backend doesn't return amount
+      const amountPaise =
+        paymentData.amount != null && paymentData.amount > 0
+          ? paymentData.amount
+          : displayAmountRupees != null && displayAmountRupees !== ''
+            ? Math.round(Number(displayAmountRupees) * 100)
+            : undefined;
+      if (!amountPaise || amountPaise <= 0) {
+        toast.error('Unable to determine payment amount. Please go back and select a plan.', {
+          position: 'top-right',
+          autoClose: 4000,
+          theme: 'dark',
+        });
+        setIsProcessing(false);
+        return;
+      }
+
       // Razorpay checkout options
       const options = {
         key: paymentData.razorpayKey, // Razorpay public key from backend
-        amount: paymentData.amount, // Amount in paise (already in correct format from API)
-        currency: paymentData.currency || "INR", // Currency from API response
+        amount: amountPaise, // Amount in paise (from API or plan-derived)
+        currency: paymentData.currency || displayCurrencyProp || 'INR',
         name: "Technoxian",
-        description: `Membership Payment - ${getPlanName()}`,
+        description: `Membership Payment - ${orderSummaryTitle}`,
         order_id: paymentData.orderId, // Razorpay order ID from backend
         handler: function (razorpayResponse) {
           // Payment success handler - called by Razorpay after successful payment
@@ -261,16 +241,27 @@ export const PaymentSection = ({
       console.error('Payment initialization error:', error);
       setIsProcessing(false);
       setPaymentData(null); // Reset payment data on error
-      
+
+      // Log API details when membership/bulk or payment/create fails (helps debug)
+      if (error.response) {
+        console.error('API error:', {
+          status: error.response.status,
+          url: error.config?.url,
+          data: error.response.data,
+        });
+      }
+
       // Extract error message from API response or use default
-      const errorMessage = error.response?.data?.message 
-        || error.response?.data?.error 
-        || error.message 
-        || 'Failed to initialize payment. Please try again.';
-      
+      const errData = error.response?.data;
+      const errorMessage =
+        (typeof errData?.message === 'string' && errData.message) ||
+        (typeof errData?.error === 'string' && errData.error) ||
+        errData?.msg ||
+        error.message ||
+        'Failed to initialize payment. Please try again.';
       toast.error(errorMessage, {
         position: "top-right",
-        autoClose: 4000,
+        autoClose: 5000,
         theme: "dark",
       });
     }
@@ -307,9 +298,9 @@ export const PaymentSection = ({
         
         console.log('Payment verification successful:', verificationResponse.data);
         
-        toast.success('Payment verified! Processing your membership...', {
+        toast.success('Payment verified! Redirecting to home...', {
           position: "top-right",
-          autoClose: 3000,
+          autoClose: 2000,
           theme: "dark",
         });
 
@@ -324,6 +315,9 @@ export const PaymentSection = ({
             verificationData: verificationResponse.data,
           });
         }
+
+        // Navigate to home on successful verification
+        navigate('/', { replace: true });
       } catch (verifyError) {
         console.error('Payment verification error:', verifyError);
         
@@ -523,11 +517,11 @@ export const PaymentSection = ({
                 <div className="bg-gray-900/50 rounded-lg p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h3 className="font-medium text-white">{getPlanName()}</h3>
+                      <h3 className="font-medium text-white">{orderSummaryTitle}</h3>
                       <p className="text-sm text-gray-400">Annual Membership</p>
                     </div>
                     <span className="font-bold text-red-400">
-                      {displayCurrency === "INR" ? "₹" : "$"}{displayAmount}
+                      {displayAmount !== '' ? (displayCurrency === "INR" ? "₹" : "$") + displayAmount : '—'}
                     </span>
                   </div>
                   <div className="text-xs text-gray-500">
@@ -567,7 +561,7 @@ export const PaymentSection = ({
                   <div className="flex justify-between text-gray-300">
                     <span>Subtotal</span>
                     <span>
-                      {displayCurrency === "INR" ? "₹" : "$"}{displayAmount} {displayCurrency}
+                      {displayAmount !== '' ? (displayCurrency === "INR" ? "₹" : "$") + displayAmount + " " + displayCurrency : "—"}
                     </span>
                   </div>
                   
@@ -581,7 +575,7 @@ export const PaymentSection = ({
                   <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-700">
                     <span className="text-white">Total Amount</span>
                     <span className="text-red-400">
-                      {displayCurrency === "INR" ? "₹" : "$"}{displayAmount} {displayCurrency}
+                      {displayAmount !== '' ? (displayCurrency === "INR" ? "₹" : "$") + displayAmount + " " + displayCurrency : "—"}
                     </span>
                   </div>
                   
@@ -640,7 +634,7 @@ export const PaymentSection = ({
                 ) : (
                   <>
                     <Check size={20} />
-                    Complete Registration - {displayCurrency === "INR" ? "₹" : "$"}{displayAmount} {displayCurrency}
+                    Complete Registration{displayAmount !== '' ? ` - ${displayCurrency === "INR" ? "₹" : "$"}${displayAmount} ${displayCurrency}` : ''}
                   </>
                 )}
               </motion.button>

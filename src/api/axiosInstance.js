@@ -41,15 +41,17 @@ const axiosInstance = axios.create({
   },
 });
 
-// Protected endpoints require Authorization: Bearer <token> (token from /auth/signup/verify/otp)
+// Protected endpoints require Authorization: Bearer <token> (token from /auth/signup)
 const protectedEndpoints = [
-  '/signup',        // POST /signup requires Bearer token from verify OTP
+  '/signup',
   '/signup/step2',
+  '/signup/step3',
   '/payment/create',
   '/payments/verify',
   '/club/add',
   '/club/my/get',
   '/membership/my/get',
+  '/membership/bulk',
 ];
 
 // Add request interceptor: attach Bearer token from authToken (set after verify OTP)

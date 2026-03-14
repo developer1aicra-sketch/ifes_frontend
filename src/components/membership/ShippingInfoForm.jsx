@@ -1,10 +1,11 @@
 import { ArrowRight, Upload, X } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { selectCategories } from "../../app/categories/categoriesSlice";
 import { signUpStep2 } from "../../app/auth/authApi";
 import { useToast } from "../../contexts/ToastContext";
+import { COUNTRIES, getStatesByCountry, getCitiesByState } from "../../constants/locationData";
 
 export const ShippingInfoForm = ({
   formData,
@@ -28,6 +29,44 @@ export const ShippingInfoForm = ({
   };
 
   const categoryName = getCategoryName();
+
+  // Cascading location: Country → State → City (order matters)
+  const selectedCountryId = useMemo(
+    () => COUNTRIES.find((c) => c.name === formData.country)?.id,
+    [formData.country]
+  );
+  const statesForCountry = useMemo(
+    () => getStatesByCountry(selectedCountryId),
+    [selectedCountryId]
+  );
+  const selectedStateId = useMemo(
+    () => statesForCountry.find((s) => s.name === formData.state)?.id,
+    [formData.state, statesForCountry]
+  );
+  const citiesForState = useMemo(
+    () => getCitiesByState(selectedStateId),
+    [selectedStateId]
+  );
+
+  const handleCountryChange = (countryId) => {
+    const country = COUNTRIES.find((c) => c.id === countryId);
+    if (country) {
+      updateFormData("country", country.name);
+      updateFormData("state", "");
+      updateFormData("city", "");
+    }
+  };
+  const handleStateChange = (stateId) => {
+    const state = statesForCountry.find((s) => s.id === stateId);
+    if (state) {
+      updateFormData("state", state.name);
+      updateFormData("city", "");
+    }
+  };
+  const handleCityChange = (cityId) => {
+    const city = citiesForState.find((c) => c.id === cityId);
+    if (city) updateFormData("city", city.name);
+  };
   
   const calculatePrice = () => {
     switch (categoryName) {
@@ -128,7 +167,7 @@ export const ShippingInfoForm = ({
       const classOrGrade = (formData.classOrGrade || '').trim();
 
       if (!schoolOrCollege) {
-        toast.error('Please enter School/College Name', {
+        toast.error('Please enter Institute name', {
           position: "top-right",
           autoClose: 2000,
           theme: "dark",
@@ -213,8 +252,8 @@ export const ShippingInfoForm = ({
         personalAndShippingAddress,
         affiliation
       });
-      console.log('API Endpoint:', '/signup/step2');
-      console.log('Full URL will be:', 'https://worso-backend-rm6w.vercel.app/api/signup/step2');
+      console.log('API Endpoint:', '/signup/step3');
+      console.log('Full URL will be:', 'https://worso-backend-rm6w.vercel.app/api/signup/step3');
 
       // Call API
       const response = await signUpStep2(formDataToSend);
@@ -352,50 +391,90 @@ export const ShippingInfoForm = ({
               />
             </div>
             
-            {/* City */}
+            {/* 1. Country (select first) */}
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                City <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.city || ''}
-                onChange={(e) => updateFormData('city', e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., Mumbai"
-                required
-              />
-            </div>
-            
-            {/* State/Province */}
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                State / Province <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.state || ''}
-                onChange={(e) => updateFormData('state', e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., Maharashtra"
-                required
-              />
-            </div>
-            
-            {/* Country */}
-            <div className="">
               <label className="block text-sm font-medium text-black mb-1">
                 Country <span className="text-red-500">*</span>
               </label>
               <select
-                value={formData.country || ''}
-                onChange={(e) => updateFormData('country', e.target.value)}
+                value={selectedCountryId || ''}
+                onChange={(e) => handleCountryChange(e.target.value)}
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
                 <option value="">Select Country</option>
-                <option value="China">China</option>
+                {COUNTRIES.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
               </select>
+            </div>
+
+            {/* 2. State / Province (depends on country) */}
+            <div>
+              <label className="block text-sm font-medium text-black mb-1">
+                State / Province <span className="text-red-500">*</span>
+              </label>
+              {statesForCountry.length > 0 ? (
+                <select
+                  value={selectedStateId || ''}
+                  onChange={(e) => handleStateChange(e.target.value)}
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                  disabled={!formData.country}
+                >
+                  <option value="">Select State</option>
+                  {statesForCountry.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={formData.state || ''}
+                  onChange={(e) => updateFormData('state', e.target.value)}
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="State / Province"
+                  required
+                  disabled={!formData.country}
+                />
+              )}
+            </div>
+            
+            {/* 3. City (depends on state) */}
+            <div>
+              <label className="block text-sm font-medium text-black mb-1">
+                City <span className="text-red-500">*</span>
+              </label>
+              {citiesForState.length > 0 ? (
+                <select
+                  value={citiesForState.find((c) => c.name === formData.city)?.id || ''}
+                  onChange={(e) => handleCityChange(e.target.value)}
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                  disabled={!formData.state}
+                >
+                  <option value="">Select City</option>
+                  {citiesForState.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={formData.city || ''}
+                  onChange={(e) => updateFormData('city', e.target.value)}
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="e.g., Mumbai"
+                  required
+                  disabled={!formData.state}
+                />
+              )}
             </div>
 
             {/* Affiliation Fields - Conditional based on category */}
@@ -463,14 +542,14 @@ export const ShippingInfoForm = ({
               <>
                 <div>
                   <label className="block text-sm font-medium text-black mb-1">
-                    School / College Name <span className="text-red-500">*</span>
+                    Institute name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.schoolOrCollege || ''}
                     onChange={(e) => updateFormData('schoolOrCollege', e.target.value)}
                     className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter school/college name"
+                    placeholder="Enter institute name"
                     required
                   />
                 </div>

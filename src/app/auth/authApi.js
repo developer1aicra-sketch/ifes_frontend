@@ -12,36 +12,52 @@ export const signUpVerifyOtp = (data) =>
   axiosInstance.post(endpoints.signupAuth.verifyOtp, data);
 
 /**
- * Complete signup. Requires Authorization: Bearer <token> (token from verify OTP response).
- * Token is attached automatically by axios interceptor from authToken.
+ * Step 1: Create account with email + password.
+ * POST /api/auth/signup. Returns token and user (e.g. user._id). Token must be stored for subsequent calls.
+ * @param {{ email: string, password: string }} data
+ * @returns {Promise} Axios response - response.data.data or response.data may contain { token, user: { _id } }
  */
-export const signUp = (data) =>
-  axiosInstance.put(endpoints.signupAuth.signup, data);
+export const authSignup = (data) =>
+  axiosInstance.post(endpoints.signupAuth.authSignup, data);
 
 /**
- * Submit step 2 of signup (shipping information)
- * 
- * Note: This API requires Authorization token in the header.
- * The token is automatically added from localStorage via axiosInstance interceptor.
- * Token is obtained from /api/signup response and stored in localStorage.
- * 
- * @param {FormData|Object} data - Form data containing shipping information
- * @returns {Promise} Axios response
+ * Step 2: Submit profile (category, designation, fullName, mobile, plan).
+ * PUT /api/signup/step2. Requires Authorization: Bearer token from auth/signup.
+ * @param {{ categoryId: string, designation: string, fullName: string, mobile: string, planId: string }} data
  */
-export const signUpStep2 = (data) => {
-  // For FormData, axios will automatically detect it and set Content-Type to multipart/form-data with boundary
-  // We use transformRequest to ensure the default JSON Content-Type is removed for FormData
-  // No custom headers - only Content-Type will be auto-set by axios for FormData
-  // Authorization token is automatically added by axiosInstance interceptor
-  return axiosInstance.put(endpoints.signupAuth.step2, data, {
+export const signupStep2 = (data) =>
+  axiosInstance.put(endpoints.signupAuth.signupStep2, data);
+
+/**
+ * Step 3: Submit shipping/affiliation (FormData).
+ * Requires Authorization: Bearer token.
+ * @param {FormData} data
+ */
+export const signupStep3 = (data) => {
+  return axiosInstance.put(endpoints.signupAuth.signupStep3, data, {
     transformRequest: (data, reqHeaders) => {
-      // If data is FormData, remove Content-Type header so axios can set it with boundary
       if (data instanceof FormData) {
         delete reqHeaders['Content-Type'];
       }
       return data;
     }
   });
+};
+
+/**
+ * Complete signup (legacy OTP flow). Requires Authorization: Bearer <token> (token from verify OTP response).
+ * Token is attached automatically by axios interceptor from authToken.
+ */
+export const signUp = (data) =>
+  axiosInstance.put(endpoints.signupAuth.signup, data);
+
+/**
+ * Submit step 3 of signup - shipping information (legacy name kept for backward compatibility).
+ * @param {FormData|Object} data - Form data containing shipping information
+ * @returns {Promise} Axios response
+ */
+export const signUpStep2 = (data) => {
+  return signupStep3(data);
 };
 
 export const loginSendOtp = (data) => 

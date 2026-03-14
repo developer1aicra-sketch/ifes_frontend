@@ -14,18 +14,19 @@ export const useMembershipForm = () => {
     fullName: '',
     designation: '',
     email: '',
+    password: '',
     phone: '',
     countryCode: '+91', // Default to India
-    otp: '',
     categoryId: '',
     planId: '',
+    createdUserId: '', // Backend objectId from auth/signup; sent as user_id in membership/bulk
     dateOfBirth: '',
     gender: '',
     tshirtSize: '',
     address: '',
     city: '',
     state: '',
-    country: 'CN', // Default to China
+    country: '', // Cascading: user selects Country first, then State, then City
     institute: '',
     grade: '',
     personalAndShippingAddress: {},

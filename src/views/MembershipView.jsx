@@ -18,7 +18,6 @@ import * as Icons from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategoriesRequest, fetchCategoryRequest, selectCategories, selectCategoriesLoading, selectHasCategoriesLoaded, selectSingleCategory } from "../app/categories/categoriesSlice";
-import { selectReceivedOtp, selectHasOtpLoaded } from "../app/auth/authSlice";
 
 // Simple Loading Component
 const SimpleLoading = () => (
@@ -39,6 +38,7 @@ const SimpleLoading = () => (
 const MembershipPage = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
+  const [selectedPaymentGateway, setSelectedPaymentGateway] = useState('razorpay'); // payment method only; never use for category_id
   const [isLoading, setIsLoading] = useState(true);
   const [hasShownLoading, setHasShownLoading] = useState(false);
 
@@ -46,9 +46,6 @@ const MembershipPage = () => {
   const hasCategoriesLoaded = useSelector(selectHasCategoriesLoaded);
   const categoriesLoading = useSelector(selectCategoriesLoading);
   const memberShipPlanData = useSelector(selectSingleCategory);
-  const signupResponse = useSelector(selectReceivedOtp);
-  const hasOtpLoaded = useSelector(selectHasOtpLoaded);
-  
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -281,18 +278,31 @@ const MembershipPage = () => {
           </motion.div>
         );
 
-      case 3:
+      case 3: {
+        const selectedPlanObj = memberShipPlanData?.plans?.find((p) => p._id === selectedPlanId);
+        const categoryName =
+          memberShipPlanData?.name ??
+          memberShipCategory?.data?.find((c) => c._id === selectedCategoryId)?.name ??
+          '';
+        const planName = selectedPlanObj?.name ?? '';
+        const displayAmountRupees = selectedPlanObj?.price?.amount;
+        const displayCurrency = selectedPlanObj?.price?.currency ?? 'INR';
         return (
           <PaymentSection
-            selectedPayment={selectedCategoryId}
-            setSelectedPayment={setSelectedCategoryId}
+            selectedPayment={selectedPaymentGateway}
+            setSelectedPayment={setSelectedPaymentGateway}
             selectedCategory={selectedCategoryId}
             selectedPlan={selectedPlanId}
+            categoryName={categoryName}
+            planName={planName}
+            displayAmountRupees={displayAmountRupees}
+            displayCurrency={displayCurrency}
             formData={formData}
             onBack={handleBack}
             onPayment={handlePayment}
           />
         );
+      }
 
       default:
         return null;

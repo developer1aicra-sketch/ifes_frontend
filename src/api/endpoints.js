@@ -8,15 +8,22 @@ const endpoints = {
   signupAuth: {
     sendOtp: `/auth/signup/send/otp`,
     verifyOtp: `/auth/signup/verify/otp`, // Response must include token; stored and sent as Bearer for /signup
-    signup: `/signup/step2`, // Requires Authorization: Bearer <token> (token from verify OTP)
-    step2: `/signup/step3` // Requires Authorization: Bearer token
+    /** POST email + password; returns token and user. Then use token for signup/step2, step3, membership/bulk, payment/create */
+    authSignup: `/auth/signup`,
+    /** PUT; JSON: categoryId, designation, fullName, mobile, planId. Requires Bearer token from auth/signup */
+    signupStep2: `/signup/step2`,
+    /** FormData: shipping/affiliation. Requires Bearer token */
+    signupStep3: `/signup/step3`,
+    signup: `/signup/step2`, // legacy alias
+    step2: `/signup/step3` // legacy alias
   },
   membership: {
     initiate: `/membership/initiate`,
+    bulk: `/membership/bulk`, // POST { members: [...] }; run before /payment/create; returns membership(s) with _id
     myGet: `/membership/my/get` // Requires Authorization: Bearer token
   },
   payment: {
-    create: `/payment/create`, // Requires Authorization token (automatically added from localStorage via axios interceptor)
+    create: `/payment/create`, // Run after /membership/bulk; uses membership_id from bulk response
     verify: `/payments/verify` // Verify payment after successful Razorpay transaction
   },
   loginAuth: {
