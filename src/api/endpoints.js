@@ -68,7 +68,11 @@ const endpoints = {
   },
   about: {
     people: (category) => `/about-worso/people?category=${encodeURIComponent(category)}`,
-  }
+  },
+  directory: {
+    /** GET all users data for Student Community Directory; may support ?page=&limit=&search= */
+    allUsers: `/all-users-data`,
+  },
 };
 
 export default endpoints;
