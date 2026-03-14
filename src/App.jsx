@@ -37,6 +37,8 @@ import { styles } from './styles/inlineStyles';
 import { fetchTechnoxianFeed } from './utils/rss';
 import { pathWithLocationPrefix } from './utils/locationRoutes';
 import { getPartnerAuth } from './utils/api';
+import { getAuthToken, clearAuthToken } from './api/authToken';
+import { getMyMembership } from './app/membership/membershipApi';
 import { useLocationPrefix } from './hooks/useLocationPrefix';
 import { StoreView } from './views/StoreView';
 // import RoboClubView from './views/RoboClubView';
@@ -122,6 +124,29 @@ const App = () => {
     }
     return null;
   });
+
+  // Restore member session from token so "Member Login" stays hidden and /login redirects after refresh
+  useEffect(() => {
+    if (user) return;
+    const token = getAuthToken();
+    if (!token) return;
+    let mounted = true;
+    getMyMembership()
+      .then((res) => {
+        if (!mounted) return;
+        setUser({ type: 'member', email: res?.data?.email });
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        const status = err?.response?.status;
+        if (status === 401 || status === 403) {
+          clearAuthToken();
+          setUser(null);
+        }
+      });
+    return () => { mounted = false; };
+  }, []);
+
   const [tickerText] = useState(
     'BREAKING: Zonal Round registrations for Asia Pacific are now OPEN!'
   );
@@ -313,7 +338,7 @@ const AppContent = ({
 
               <Route path="/membership" element={<MembershipView setView={setViewRespectingLocation} />} /> {/* ✅ NEW */}
 
-              <Route path="/login" element={<MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
+              <Route path="/login" element={user?.type === 'member' ? <Navigate to={pathWithLocationPrefix(locationPrefix, '/member-dashboard')} replace /> : <MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
               <Route path="/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} user={user} />} />
               <Route path="/login-partner-admin" element={<PartnerAdminLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
 
@@ -340,7 +365,7 @@ const AppContent = ({
               <Route path="/:locationCode/associates/list" element={<AssociationsListView />} />
               <Route path="/:locationCode/careers" element={<CareersView />} />
               <Route path="/:locationCode/partners" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
-              <Route path="/:locationCode/login" element={<MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
+              <Route path="/:locationCode/login" element={user?.type === 'member' ? <Navigate to={pathWithLocationPrefix(locationPrefix, '/member-dashboard')} replace /> : <MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
               <Route path="/:locationCode/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} user={user} />} />
               <Route path="/:locationCode/login-partner-admin" element={<PartnerAdminLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
               <Route path="/:locationCode/member-dashboard" element={<MemberDashboard user={user} currentSite={currentSite} setView={setViewRespectingLocation} />} />

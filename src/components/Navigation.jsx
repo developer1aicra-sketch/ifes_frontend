@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useThemeClasses } from '../hooks/useThemeClasses';
 import { pathWithLocationPrefix } from '../utils/locationRoutes';
 import { partnerLogout, clearPartnerAuth } from '../utils/api';
+import { clearAuthToken } from '../api/authToken';
 
 const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user, setUser, locationPrefix = '' }) => {
   const theme = useThemeClasses();
@@ -26,6 +27,7 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
 
   const logout = async () => {
     setIsDashMenuOpen(false);
+    const isMember = user?.type === 'member';
     const token = user?.token;
     try {
       if (token) {
@@ -34,7 +36,12 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
     } catch (_) {
       // still clear local session on logout API failure
     } finally {
-      if (token) clearPartnerAuth();
+      if (isMember) {
+        clearAuthToken();
+      }
+      if (token) {
+        clearPartnerAuth();
+      }
       setUser?.(null);
       setView('home');
     }

@@ -289,14 +289,6 @@ const Footer = ({ setView, switchSite, currentSite }) => {
             </li>
             <li>
               <button
-                onClick={() => setView("login")}
-                className="hover:text-white transition-colors text-left w-full py-1"
-              >
-              Member  Login
-              </button>
-            </li>
-            <li>
-              <button
                 onClick={() => setView("careers")}
                 className="hover:text-white transition-colors text-left w-full py-1"
               >

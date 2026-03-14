@@ -835,9 +835,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                     </section>
                   </div>
 
-                  {membershipLoading && (
-                    <div className="text-sm text-slate-500">Loading membership details…</div>
-                  )}
+                 
 
                   {membershipError && !membershipLoading && (
                     <div className="text-sm text-red-600 font-semibold">
