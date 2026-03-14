@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Award, Download, LayoutDashboard, Zap, ChevronDown, ChevronUp, Briefcase, Users, Calendar } from 'lucide-react';
+import { Award, Download, LayoutDashboard, Zap, ChevronDown, ChevronUp, Briefcase, Users, Calendar, CalendarClock } from 'lucide-react';
 import { getMyClub } from '../app/club/clubApi';
 import { getMyMembership } from '../app/membership/membershipApi';
 import { useTheme } from '../contexts/ThemeContext';
@@ -264,6 +264,27 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                   <LayoutDashboard size={18} /> Membership
                 </button>
 
+                {/* Class Schedule – coming soon */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('class-schedule')}
+                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between gap-2 ${
+                      activeTab === 'class-schedule'
+                        ? `${accent.sidebarActive} text-white`
+                        : 'bg-white/5 border-white/10 hover:border-white/20 text-white/90'
+                    }`}
+                  >
+                    <span className="flex items-center gap-3 min-w-0">
+                      <CalendarClock size={18} className={`flex-shrink-0 ${activeTab === 'class-schedule' ? accent.title : 'text-white/70'}`} />
+                      <span className="truncate">Class Schedule</span>
+                    </span>
+                    <span className="shrink-0 text-[9px] font-semibold uppercase tracking-wider text-white/50 bg-white/10 px-2 py-0.5 rounded">
+                      Coming soon
+                    </span>
+                  </button>
+                </div>
+
                 {/* DIY Offers – expandable section (theme-aligned) */}
                 <div className="space-y-1">
                   <button
@@ -518,6 +539,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                 <h1 className="text-2xl font-bold text-slate-900">
                   {activeTab === 'overview' && 'Dashboard Overview'}
                   {activeTab === 'membership' && 'Membership Card'}
+                  {activeTab === 'class-schedule' && 'Class Schedule'}
                   {activeTab === 'diy-offers' && 'DIY Offers'}
                   {activeTab === 'career-growth' && 'Career Growth'}
                   {activeTab === 'contact-directory' && 'Contact Directory'}
@@ -836,6 +858,23 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                       {membershipError}
                     </div>
                   )}
+                </div>
+              )}
+
+              {activeTab === 'class-schedule' && (
+                <div className={`rounded-2xl overflow-hidden ${cardBg} border border-white/10 shadow-xl min-h-[320px] flex flex-col items-center justify-center p-8 sm:p-12`}>
+                  <div className="flex flex-col items-center justify-center text-center max-w-sm">
+                    <div className={`w-16 h-16 rounded-2xl ${accent.iconBg} flex items-center justify-center mb-4`}>
+                      <CalendarClock size={32} className={accent.title} aria-hidden />
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mb-2">Class Schedule</h2>
+                    <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
+                      Your class schedule and sessions will appear here. This feature is coming soon.
+                    </p>
+                    <span className="mt-5 inline-flex items-center rounded-full bg-white/10 border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300">
+                      Coming soon
+                    </span>
+                  </div>
                 </div>
               )}
 
