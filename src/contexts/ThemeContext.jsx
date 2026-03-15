@@ -25,19 +25,12 @@ export const ThemeProvider = ({ children }) => {
   const [themeConfig, setThemeConfig] = useState(null);
 
   useEffect(() => {
-    if (themeColor) {
-      console.log(`[ThemeContext] Applying theme: ${themeColor}`);
-      const config = getThemeConfig(themeColor);
-      setThemeConfig(config);
-      applyThemeVariables(themeColor);
-      
-      // Persist theme to localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(THEME_STORAGE_KEY, themeColor);
-        console.log(`[ThemeContext] Theme saved to localStorage: ${themeColor}`);
-      }
-    } else {
-      console.log('[ThemeContext] No theme color set, using defaults');
+    const effectiveTheme = themeColor || 'Blue';
+    const config = getThemeConfig(effectiveTheme);
+    setThemeConfig(config);
+    applyThemeVariables(effectiveTheme);
+    if (themeColor && typeof window !== 'undefined') {
+      localStorage.setItem(THEME_STORAGE_KEY, themeColor);
     }
   }, [themeColor]);
 

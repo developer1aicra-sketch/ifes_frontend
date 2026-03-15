@@ -25,17 +25,19 @@ export const THEME_COLOR_MAP = {
     colors: {
       primary: 'bg-blue-600',
       hover: 'hover:bg-blue-700',
-      text: 'text-blue-600',
-      textLight: 'text-blue-500',
-      gradient: 'bg-[#0f172a]',
-      border: 'border-blue-600',
+      text: 'text-blue-400',
+      textLight: 'text-blue-400',
+      gradient: 'bg-[#0a0f1a]',
+      border: 'border-blue-500',
       ring: 'ring-blue-500',
     },
     cssVariables: {
-      '--theme-primary': '#2563eb',
-      '--theme-primary-hover': '#1d4ed8',
-      '--theme-text': '#2563eb',
-      '--theme-gradient': '#0f172a',
+      '--theme-primary': '#3b82f6',
+      '--theme-primary-hover': '#2563eb',
+      '--theme-text': '#60a5fa',
+      '--theme-gradient': '#0a0f1a',
+      '--theme-bg': '#0a0f1a',
+      '--theme-bg-elevated': '#0f172a',
     },
   },
   'Red': {
@@ -141,24 +143,12 @@ export const applyThemeVariables = (themeColor) => {
     return;
   }
   
-  console.log(`[Theme] Applying CSS variables for theme: ${themeColor} (${themeConfig.theme})`);
-  
-  // Add transition class for smooth theme changes
   root.classList.add('theme-transitioning');
-  
-  // Apply CSS variables
   Object.entries(themeConfig.cssVariables).forEach(([key, value]) => {
     root.style.setProperty(key, value);
-    console.log(`[Theme] Set CSS variable: ${key} = ${value}`);
   });
-  
-  // Add theme class to body for global styling
   body.setAttribute('data-theme', themeConfig.theme);
-  
-  // Add theme class to root element as well
   root.setAttribute('data-theme', themeConfig.theme);
-  
-  console.log(`[Theme] Applied data-theme="${themeConfig.theme}" to body and root`);
   
   // Remove transition class after animation completes
   setTimeout(() => {

@@ -272,30 +272,25 @@ const AppContent = ({
     [newsProps, setViewRespectingLocation]
   );
 
-  // Dynamic selection colors based on theme
   const getSelectionClasses = () => {
     if (!themeConfig) {
-      return currentSite.is_partner
-        ? 'selection:bg-emerald-100 selection:text-emerald-900'
-        : 'selection:bg-blue-100 selection:text-blue-900';
+      return 'selection:bg-blue-500/25 selection:text-slate-100';
     }
-    
     const themeSelectionMap = {
-      emerald: 'selection:bg-emerald-100 selection:text-emerald-900',
-      blue: 'selection:bg-blue-100 selection:text-blue-900',
-      red: 'selection:bg-red-100 selection:text-red-900',
-      purple: 'selection:bg-purple-100 selection:text-purple-900',
-      orange: 'selection:bg-orange-100 selection:text-orange-900',
-      yellow: 'selection:bg-yellow-100 selection:text-yellow-900',
+      emerald: 'selection:bg-emerald-500/25 selection:text-emerald-100',
+      blue: 'selection:bg-blue-500/25 selection:text-slate-100',
+      red: 'selection:bg-red-500/25 selection:text-red-100',
+      purple: 'selection:bg-purple-500/25 selection:text-purple-100',
+      orange: 'selection:bg-orange-500/25 selection:text-orange-100',
+      yellow: 'selection:bg-yellow-500/25 selection:text-yellow-100',
     };
-    
     return themeSelectionMap[themeConfig.theme] || themeSelectionMap.blue;
   };
 
   return (
     <ToastProvider>
       <div
-        className={`font-sans antialiased text-slate-900 bg-white min-h-screen flex flex-col ${getSelectionClasses()}`}
+        className={`font-sans antialiased text-slate-200 bg-[#0a0f1a] min-h-screen flex flex-col ${getSelectionClasses()}`}
       >
         <ToastContainer />
         <PartnerWebsiteRedirect />
@@ -311,7 +306,7 @@ const AppContent = ({
         setUser={setUser}
       />
 
-      <main className="flex-grow">
+      <main className="flex-grow w-full overflow-x-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}

@@ -22,7 +22,7 @@ const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, news
 
   if (newsLoading && !article) {
     return (
-      <div className="animate-fadeIn pt-24 pb-20 bg-white min-h-screen flex items-center justify-center text-slate-500">
+      <div className="animate-fadeIn pt-20 sm:pt-24 pb-20 bg-[#0a0f1a] min-h-screen flex items-center justify-center text-slate-400">
         Loading article…
       </div>
     );
@@ -30,9 +30,9 @@ const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, news
 
   if (!article) {
     return (
-      <div className="animate-fadeIn pt-24 pb-20 bg-white min-h-screen flex flex-col items-center justify-center text-center">
-        <p className="text-slate-600 mb-4">{newsError || 'Article not found.'}</p>
-        <button onClick={() => setView('home')} className="text-blue-600 font-semibold hover:underline flex items-center gap-2">
+      <div className="animate-fadeIn pt-20 sm:pt-24 pb-20 bg-[#0a0f1a] min-h-screen flex flex-col items-center justify-center text-center">
+        <p className="text-slate-400 mb-4">{newsError || 'Article not found.'}</p>
+        <button onClick={() => setView('home')} className="text-blue-400 font-semibold hover:underline flex items-center gap-2">
           <ArrowLeft size={16} /> Back to News
         </button>
       </div>
@@ -40,11 +40,11 @@ const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, news
   }
 
   return (
-    <div className="animate-fadeIn pt-24 pb-20 bg-white min-h-screen">
-      <div className="container mx-auto px-4 max-w-6xl">
+    <div className="animate-fadeIn pt-16 sm:pt-20 md:pt-24 pb-16 sm:pb-20 bg-[#0a0f1a] min-h-screen">
+      <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
         <button
           onClick={() => setView('home')}
-          className="flex items-center gap-2 text-slate-600 hover:text-blue-600 mb-8 transition-colors"
+          className="flex items-center gap-2 text-slate-400 hover:text-blue-400 mb-6 sm:mb-8 transition-colors"
         >
           <ArrowLeft size={18} />
           <span className="font-medium">Back to News</span>
@@ -76,12 +76,12 @@ const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, news
             </div>
 
             {/* Article Title */}
-            <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-8 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6 md:mb-8 leading-tight">
               {article.title}
             </h1>
 
             {/* Article Content */}
-            <div className="prose prose-lg max-w-none text-slate-700 mb-8">
+            <div className="prose prose-invert prose-lg max-w-none text-slate-300 mb-8">
               {article.contentHtml ? (
                 <div 
                   className="prose prose-lg max-w-none" 
@@ -115,7 +115,7 @@ const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, news
 
         <div className="border-t border-slate-200 pt-12">
           <div className="flex items-center gap-2 mb-8">
-            <h2 className="text-2xl font-bold text-slate-900">Related News</h2>
+            <h2 className="text-2xl font-bold text-white">Related News</h2>
             <ChevronRight size={20} className="text-slate-400" />
           </div>
           <div className="grid md:grid-cols-2 gap-6">
@@ -130,7 +130,7 @@ const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, news
                   <span className="text-xs font-bold text-slate-600 uppercase">{news.category}</span>
                   <span className="text-xs text-slate-400">{news.date}</span>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">{news.title}</h3>
+                <h3 className="text-lg font-bold text-slate-200 mb-2 group-hover:text-blue-400 transition-colors">{news.title}</h3>
                 <p className="text-sm text-slate-600 leading-relaxed mb-3 line-clamp-2">{news.body || news.desc}</p>
                 <a
                   href="#"

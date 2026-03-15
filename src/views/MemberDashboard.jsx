@@ -293,7 +293,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                       : 'bg-white/5 border-white/10 hover:border-white/20 text-white/90'
                   }`}
                 >
-                  <LayoutDashboard size={18} /> Overview
+                  <LayoutDashboard size={18} /> Profile
                 </button>
               
                 <button
@@ -323,11 +323,9 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                   >
                     <span className="flex items-center gap-3 min-w-0">
                       <CalendarClock size={18} className={`flex-shrink-0 ${activeTab === 'class-schedule' ? accent.title : 'text-white/70'}`} />
-                      <span className="truncate">Class Schedule</span>
+                      <span className="truncate">Make Your Botss</span>
                     </span>
-                    <span className="shrink-0 text-[9px] font-semibold uppercase tracking-wider text-white/50 bg-white/10 px-2 py-0.5 rounded">
-                      Coming soon
-                    </span>
+                   
                   </button>
                 </div>
 
@@ -583,10 +581,10 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
             <div className="flex items-center justify-between px-8 pt-8 pb-6 border-b border-slate-100">
               <div>
                 <h1 className="text-2xl font-bold text-slate-900">
-                  {activeTab === 'overview' && 'Dashboard Overview'}
+                  {activeTab === 'overview' && 'Profile'}
                   {activeTab === 'membership' && 'Membership Card'}
-                  {activeTab === 'class-schedule' && 'Class Schedule'}
-                  {activeTab === 'diy-offers' && 'DIY Offers'}
+                  {activeTab === 'class-schedule' && 'Make Your Bots'}
+                  {activeTab === 'diy-offers' && ' Offers'}
                   {activeTab === 'career-growth' && 'Career Growth'}
                   {activeTab === 'contact-directory' && 'Contact Directory'}
                   {activeTab === 'national-events' && 'National & Global Events'}
@@ -851,7 +849,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                     <div className={`w-16 h-16 rounded-2xl ${accent.iconBg} flex items-center justify-center mb-4`}>
                       <CalendarClock size={32} className={accent.title} aria-hidden />
                     </div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mb-2">Class Schedule</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mb-2">Make Your Bots</h2>
                     <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
                     Classes will start on 1 March.
                     </p>

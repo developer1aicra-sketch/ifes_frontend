@@ -135,6 +135,28 @@ const DEFAULT_ACCENT = {
   title: 'text-amber-300',
 };
 
+/** Per-section copy: left selection drives right-side heading + description. */
+const SECTION_COPY = {
+  kits: {
+    title: 'DIY Robotics Kits',
+    description:
+      'Member-exclusive discounts on starter, advanced, and AI vision kits. Apply your coupon at checkout on partner stores.',
+    Icon: Gift,
+  },
+  tools: {
+    title: 'Access Advanced Tools',
+    description:
+      'Cloud simulators, code templates, and AI-assisted build helpers. Available soon for all active student and club members.',
+    Icon: Wrench,
+  },
+  workshops: {
+    title: 'Premium Workshops',
+    description:
+      'Mentor-led robotics and AI workshops, lab time, and project reviews. Unlock with Student Premium membership.',
+    Icon: Zap,
+  },
+};
+
 export function DiyOffers({ activeSection = 'kits', membershipPlanName, themeAccent }) {
   const accent = themeAccent || DEFAULT_ACCENT;
   const sectionFlags = useMemo(
@@ -146,17 +168,22 @@ export function DiyOffers({ activeSection = 'kits', membershipPlanName, themeAcc
     [activeSection]
   );
 
+  const currentCopy = SECTION_COPY[activeSection] || SECTION_COPY.kits;
+  const SectionIcon = currentCopy.Icon;
+
   return (
     <div className="max-w-6xl mx-auto space-y-8">
+      {/* Dynamic header: heading + paragraph from selected left-side item */}
       <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${accent.badge}`}>
-          <Zap size={20} />
+        <div className={`w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 ${accent.badge}`}>
+          <SectionIcon size={20} className={accent.title} />
         </div>
-        <div>
-          <h1 className={`text-xl md:text-2xl font-bold ${accent.title}`}>DIY Offers</h1>
-          <p className="text-sm text-slate-400">
-            Exclusive Technoxian DIY benefits: discounted robotics kits, upcoming advanced tools, and
-            premium-only workshops.
+        <div className="min-w-0">
+          <h1 className={`text-xl md:text-2xl font-bold ${accent.title}`}>
+            {currentCopy.title}
+          </h1>
+          <p className="text-sm text-slate-400 mt-1">
+            {currentCopy.description}
           </p>
         </div>
       </div>

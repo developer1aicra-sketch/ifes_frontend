@@ -146,20 +146,19 @@ const Footer = ({ setView, switchSite, currentSite }) => {
     : DEFAULT_FOOTER.social;
 
   return (
-    <footer className={`${themeConfig?.colors?.gradient || 'bg-[#0f172a]'} text-slate-400 py-16`}>
-    <div className="container mx-auto px-4">
-      <div className="grid md:grid-cols-4 gap-12 mb-12">
+    <footer className={`${themeConfig?.colors?.gradient || 'bg-[#0a0f1a]'} text-slate-400 py-10 sm:py-12 md:py-16`}>
+    <div className="container mx-auto px-4 sm:px-6 max-w-[1600px]">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 mb-10 md:mb-12">
 
         {/* LOGO + CONTACT INFO + SOCIAL - LEFT SIDE */}
         <div className="md:col-span-3">
           <div className="flex flex-col">
-            {/* Logo and Contact Section */}
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-6">
+            <div className="mb-6 md:mb-8">
+              <div className="flex items-center gap-3 mb-4 md:mb-6">
                 <img
                   src={logo}
                   alt="WORSO Logo"
-                  className="h-12 w-auto object-contain"
+                  className="h-10 w-auto object-contain sm:h-12"
                 />
                 <span className="text-white font-bold text-xl tracking-tight">
                   {currentSite.is_partner ? "TECHNOXIAN" : "WORSO"}
@@ -324,9 +323,8 @@ const Footer = ({ setView, switchSite, currentSite }) => {
 
       </div>
 
-      {/* FOOTER BOTTOM */}
-      <div className="pt-8 border-t border-slate-800">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+      <div className="pt-6 md:pt-8 border-t border-slate-800">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
           <div className="flex items-center gap-4 flex-wrap">
             {/* <button
               onClick={() => setView("staff-login")}

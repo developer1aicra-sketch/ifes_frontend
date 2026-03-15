@@ -348,8 +348,8 @@ export const DEFAULT_SITES = {
     colors: {
       primary: 'bg-blue-600',
       hover: 'hover:bg-blue-700',
-      text: 'text-blue-600',
-      gradient: 'bg-[#0f172a]',
+      text: 'text-blue-400',
+      gradient: 'bg-[#0a0f1a]',
     },
     is_partner: false,
     local_events: [],

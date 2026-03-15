@@ -54,23 +54,27 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
   ) {
     return null;
   }
+  const closeAnd = (fn) => () => {
+    toggleMobileMenu?.();
+    fn?.();
+  };
+
   return (
-    <nav className={`sticky top-0 z-40 transition-all duration-300 ${theme.bgGradient || 'bg-[#0f172a]'} border-b border-white/10`}>
-      <div className="container mx-auto px-4 md:px-6 py-2 flex justify-between items-center">
-        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('home')}>
+    <nav className={`sticky top-0 z-40 transition-all duration-300 ${theme.bgGradient || 'bg-[#0a0f1a]'} border-b border-white/10`}>
+      <div className="container mx-auto px-4 sm:px-6 py-2 md:py-2.5 flex justify-between items-center max-w-[1600px]">
+        <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group min-w-0" onClick={() => setView('home')}>
           <img
             src={logo}
             alt="WORSO Logo"
-            className="h-12 w-auto object-contain"
+            className="h-10 w-auto object-contain sm:h-12"
           />
-
-          <div className="flex flex-col">
-            <span className="font-bold text-xl leading-none text-white tracking-wide">{siteConfig.logo_text}</span>
-            <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-semibold mt-1">{siteConfig.sub_text}</span>
+          <div className="flex flex-col min-w-0">
+            <span className="font-bold text-base sm:text-xl leading-none text-white tracking-wide truncate">{siteConfig.logo_text}</span>
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-slate-400 font-semibold mt-0.5 sm:mt-1">{siteConfig.sub_text}</span>
           </div>
         </div>
 
-        <div className="hidden md:flex items-center gap-8 font-bold text-[11px] uppercase tracking-widest text-slate-300">
+        <div className="hidden md:flex items-center gap-6 lg:gap-8 font-bold text-[11px] uppercase tracking-widest text-slate-300">
           {(
             <div className="relative group">
               <button onClick={() => setView('about')} className="hover:text-white transition-colors py-2 flex items-center gap-1">
@@ -126,10 +130,59 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
           </div>
         </div>
 
-        <button className="md:hidden text-white" onClick={toggleMobileMenu}>
-          {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+        <button className="md:hidden text-white p-2 -m-2 touch-manipulation" onClick={toggleMobileMenu} aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}>
+          {isMobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
         </button>
       </div>
+
+      {/* Mobile menu overlay + panel */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="Mobile menu">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={toggleMobileMenu} aria-hidden="true" />
+          <div className={`absolute top-0 right-0 bottom-0 w-full max-w-[320px] sm:max-w-sm ${theme.bgGradient || 'bg-[#0a0f1a]'} border-l border-white/10 shadow-2xl overflow-y-auto`}>
+            <div className="flex justify-between items-center p-4 border-b border-white/10">
+              <span className="text-white font-bold text-sm uppercase">Menu</span>
+              <button className="text-white p-2 -m-2" onClick={toggleMobileMenu} aria-label="Close menu">
+                <X size={24} />
+              </button>
+            </div>
+            <div className="flex flex-col py-4 font-bold text-[11px] uppercase tracking-widest text-slate-300">
+              <button onClick={closeAnd(() => setView('about'))} className="text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
+                {(locationPrefix || siteConfig.is_partner) ? 'About' : 'About Worso'}
+              </button>
+              <Link to={path('/membership')} onClick={closeAnd()} className="px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
+                Membership
+              </Link>
+              <button onClick={closeAnd(() => setView('teams'))} className="text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
+                Teams / Players
+              </button>
+              <button onClick={closeAnd(() => setView('technoxian'))} className="text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
+                <Trophy className="w-3 h-3 text-yellow-500 flex-shrink-0" />
+                {siteConfig.is_partner ? 'Local Events' : 'WRC Challenges'}
+              </button>
+              <div className="mt-4 pt-4 border-t border-white/10 px-6">
+                <button
+                  onClick={closeAnd(user ? goHome : () => setView('login'))}
+                  className={`${theme.bgPrimary || siteConfig.colors.primary} text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2`}
+                >
+                  <User size={16} />
+                  {user ? 'My Dashboard' : 'Member Login'}
+                </button>
+                {user && (
+                  <div className="mt-3 space-y-1">
+                    <button onClick={closeAnd(goHome)} className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-white/5 text-slate-300 flex items-center gap-2 text-sm">
+                      <Home size={14} /> Dashboard Home
+                    </button>
+                    <button onClick={closeAnd(logout)} className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-red-600/15 text-red-400 flex items-center gap-2 text-sm">
+                      <LogOut size={14} /> Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

@@ -50,8 +50,8 @@ export const styles = `
     background-position: 0 0, 0 0, 0 0, 0 0;
   }
   .custom-checkbox:checked {
-    background-color: #2563eb;
-    border-color: #2563eb;
+    background-color: #3b82f6;
+    border-color: #3b82f6;
   }
   .typing-dot {
     animation: typing 1.4s infinite ease-in-out both;

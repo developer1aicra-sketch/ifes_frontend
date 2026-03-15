@@ -6,6 +6,22 @@ const DEFAULT_ACCENT = {
   title: 'text-violet-300',
 };
 
+/** Per-section copy: left selection drives right-side heading + description (same pattern as DIY Offers). */
+const SECTION_COPY = {
+  internships: {
+    title: 'Internship Listings',
+    description:
+      'Standard internship opportunities for students. Available for Student Basic membership. Browse roles, apply, and grow with partner labs and studios.',
+    Icon: Briefcase,
+  },
+  priority: {
+    title: 'Priority Internships',
+    description:
+      'Reserved for Student Premium members. Get early access to high-signal internships, mentor referrals, and priority application windows.',
+    Icon: Star,
+  },
+};
+
 export function CareerGrowth({ activeSection = 'internships', membershipPlanName, themeAccent }) {
   const accent = themeAccent || DEFAULT_ACCENT;
   const sectionFlags = useMemo(
@@ -16,17 +32,22 @@ export function CareerGrowth({ activeSection = 'internships', membershipPlanName
     [activeSection]
   );
 
+  const currentCopy = SECTION_COPY[activeSection] || SECTION_COPY.internships;
+  const SectionIcon = currentCopy.Icon;
+
   return (
     <div className="max-w-6xl mx-auto space-y-8">
+      {/* Dynamic header: heading + paragraph from selected left-side item */}
       <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${accent.badge}`}>
-          <Briefcase size={20} />
+        <div className={`w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 ${accent.badge}`}>
+          <SectionIcon size={20} className={accent.title} />
         </div>
-        <div>
-          <h1 className={`text-xl md:text-2xl font-bold ${accent.title}`}>Career Growth</h1>
-          <p className="text-sm text-slate-400">
-            Internship opportunities for students. Basic members can access standard listings, while
-            premium members unlock priority internships.
+        <div className="min-w-0">
+          <h1 className={`text-xl md:text-2xl font-bold ${accent.title}`}>
+            {currentCopy.title}
+          </h1>
+          <p className="text-sm text-slate-400 mt-1">
+            {currentCopy.description}
           </p>
         </div>
       </div>

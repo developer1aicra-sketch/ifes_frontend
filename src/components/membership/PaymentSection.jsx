@@ -209,7 +209,7 @@ export const PaymentSection = ({
           membership_plan: selectedPlan,
         },
         theme: {
-          color: '#DC2626', // Red color matching your theme
+          color: '#3b82f6', // Dark blue theme accent
         },
         modal: {
           ondismiss: function() {
@@ -386,24 +386,24 @@ export const PaymentSection = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gray-900"
+      className="min-h-screen py-10 sm:py-12 px-4 sm:px-6 lg:px-8 bg-[#0a0f1a]"
     >
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-2">Complete Your Membership</h1>
-          <p className="text-gray-400">Final step to join our robotics community</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Complete Your Membership</h1>
+          <p className="text-slate-400">Final step to join our robotics community</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Left Column - Order Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Payment Gateway - Razorpay */}
-            <div className="bg-gray-800 rounded-xl shadow-lg p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-white">Payment Method</h2>
-                <div className="flex items-center text-green-400 text-sm max-sm:text-xs">
-                  <Lock size={14} className="mr-1" />
+            <div className="bg-slate-800/50 rounded-xl border border-white/10 shadow-lg p-5 sm:p-6">
+              <div className="flex items-center justify-between mb-5 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold text-white">Payment Method</h2>
+                <div className="flex items-center text-emerald-400 text-sm max-sm:text-xs">
+                  <Lock size={14} className="mr-1 flex-shrink-0" />
                   <span>Secure Payment</span>
                 </div>
               </div>
@@ -413,47 +413,45 @@ export const PaymentSection = ({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="border-2 border-red-600 bg-gray-700/50 rounded-xl p-5"
+                className="border-2 border-blue-500/50 bg-slate-900/50 rounded-xl p-4 sm:p-5"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold bg-red-600 text-white">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-lg font-bold bg-blue-600 text-white flex-shrink-0">
                       {razorpayGateway.icon}
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-semibold text-white">{razorpayGateway.name}</h3>
-                        <span className="text-xs px-2 py-1 rounded-full bg-red-600/20 text-red-400 border border-red-600/30">
+                        <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
                           {razorpayGateway.badge}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-400 mt-1">{razorpayGateway.description}</p>
-                      
+                      <p className="text-sm text-slate-400 mt-1">{razorpayGateway.description}</p>
                       <div className="flex flex-wrap gap-2 mt-3">
                         {razorpayGateway.features.map((feature, index) => (
-                          <span key={index} className="text-xs px-2 py-1 rounded bg-gray-900/50 text-gray-300">
+                          <span key={index} className="text-xs px-2 py-1 rounded bg-slate-800 text-slate-300">
                             {feature}
                           </span>
                         ))}
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="w-5 h-5 rounded-full border-2 border-red-600 bg-red-600 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full border-2 border-blue-500 bg-blue-600 flex items-center justify-center flex-shrink-0">
                     <Check size={12} className="text-white" />
                   </div>
                 </div>
               </motion.div>
 
               {/* Payment Security Info */}
-              <div className="mt-6 pt-6 border-t border-gray-700">
-                <div className="flex items-start gap-4">
+              <div className="mt-5 sm:mt-6 pt-5 sm:pt-6 border-t border-white/10">
+                <div className="flex items-start gap-3 sm:gap-4">
                   <div className="flex-shrink-0">
-                    <Shield className="text-green-400" size={20} />
+                    <Shield className="text-emerald-400" size={20} />
                   </div>
                   <div>
                     <h4 className="font-medium text-white mb-1">Payment Security</h4>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-slate-400">
                       Your payment information is encrypted and securely processed. 
                       We never store your credit card details on our servers.
                     </p>
@@ -462,16 +460,16 @@ export const PaymentSection = ({
               </div>
             </div>
 
-            {/* Payment Details Form (for direct card input if needed) */}
-            <div className="bg-gray-800 rounded-xl shadow-lg p-6 hidden">
+            {/* Payment Details Form (for direct card input if needed) - hidden */}
+            <div className="bg-slate-800/50 rounded-xl border border-white/10 shadow-lg p-6 hidden">
               <h3 className="text-lg font-semibold text-white mb-4">Card Details</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     Card Number
                   </label>
-                  <div className="flex items-center bg-gray-700 border border-gray-600 rounded-lg px-4 py-3">
-                    <CreditCard size={20} className="text-gray-400 mr-3" />
+                  <div className="flex items-center bg-slate-900/50 border border-white/10 rounded-lg px-4 py-3">
+                    <CreditCard size={20} className="text-slate-400 mr-3 flex-shrink-0" />
                     <input
                       type="text"
                       placeholder="1234 5678 9012 3456"
@@ -479,26 +477,25 @@ export const PaymentSection = ({
                     />
                   </div>
                 </div>
-                
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       Expiry Date
                     </label>
                     <input
                       type="text"
                       placeholder="MM/YY"
-                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white"
+                      className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-4 py-3 text-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       CVV
                     </label>
                     <input
                       type="text"
                       placeholder="123"
-                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white"
+                      className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-4 py-3 text-white"
                     />
                   </div>
                 </div>
@@ -509,77 +506,71 @@ export const PaymentSection = ({
           {/* Right Column - Order Summary & Payment */}
           <div className="space-y-6">
             {/* Order Summary */}
-            <div className="bg-gray-800 rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Order Summary</h2>
+            <div className="bg-slate-800/50 rounded-xl border border-white/10 shadow-lg p-5 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">Order Summary</h2>
 
               <div className="space-y-4">
                 {/* Membership Details */}
-                <div className="bg-gray-900/50 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
+                <div className="bg-slate-900/50 rounded-lg p-4 border border-white/5">
+                  <div className="flex justify-between items-start mb-2 gap-2">
+                    <div className="min-w-0">
                       <h3 className="font-medium text-white">{orderSummaryTitle}</h3>
-                      <p className="text-sm text-gray-400">Annual Membership</p>
+                      <p className="text-sm text-slate-400">Annual Membership</p>
                     </div>
-                    <span className="font-bold text-red-400">
+                    <span className="font-bold text-blue-400 flex-shrink-0">
                       {displayAmount !== '' ? (displayCurrency === "INR" ? "₹" : "$") + displayAmount : '—'}
                     </span>
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-slate-500">
                     Billed annually • Auto-renewable
                   </div>
                 </div>
 
                 {/* User Details */}
                 <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Name:</span>
-                    <span className="font-medium text-white">{formData?.fullName || 'N/A'}</span>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-slate-400">Name:</span>
+                    <span className="font-medium text-white text-right truncate max-w-[60%]">{formData?.fullName || 'N/A'}</span>
                   </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Email:</span>
-                    <span className="font-medium text-white">{formData?.email || 'N/A'}</span>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-slate-400">Email:</span>
+                    <span className="font-medium text-white text-right truncate max-w-[60%]">{formData?.email || 'N/A'}</span>
                   </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Phone:</span>
-                    <span className="font-medium text-white">{formData?.phone || 'N/A'}</span>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-slate-400">Phone:</span>
+                    <span className="font-medium text-white text-right">{formData?.phone || 'N/A'}</span>
                   </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Location:</span>
-                    <span className="font-medium text-white">
+                  <div className="flex justify-between gap-2">
+                    <span className="text-slate-400">Location:</span>
+                    <span className="font-medium text-white text-right truncate max-w-[60%]">
                       {formData?.city || 'N/A'}, {formData?.country || 'N/A'}
                     </span>
                   </div>
                 </div>
 
-                <hr className="my-4 border-gray-700" />
+                <hr className="my-4 border-white/10" />
 
                 {/* Total Amount */}
                 <div className="space-y-2">
-                  <div className="flex justify-between text-gray-300">
+                  <div className="flex justify-between text-slate-300">
                     <span>Subtotal</span>
                     <span>
                       {displayAmount !== '' ? (displayCurrency === "INR" ? "₹" : "$") + displayAmount + " " + displayCurrency : "—"}
                     </span>
                   </div>
-                  
-                  <div className="flex justify-between text-gray-300">
+                  <div className="flex justify-between text-slate-300">
                     <span>Processing Fee</span>
-                    <span className="text-green-400">
+                    <span className="text-emerald-400">
                       {displayCurrency === "INR" ? "₹" : "$"}0.00
                     </span>
                   </div>
-                  
-                  <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-700">
+                  <div className="flex justify-between text-lg font-bold pt-2 border-t border-white/10">
                     <span className="text-white">Total Amount</span>
-                    <span className="text-red-400">
+                    <span className="text-blue-400">
                       {displayAmount !== '' ? (displayCurrency === "INR" ? "₹" : "$") + displayAmount + " " + displayCurrency : "—"}
                     </span>
                   </div>
-                  
-                  <div className="text-xs text-gray-500 text-right">
+                  <div className="text-xs text-slate-500 text-right">
                     Currency: {displayCurrency}
                   </div>
                 </div>
@@ -587,26 +578,25 @@ export const PaymentSection = ({
             </div>
 
             {/* Terms & Conditions */}
-            <div className="bg-gray-800 rounded-xl shadow-lg p-6">
+            <div className="bg-slate-800/50 rounded-xl border border-white/10 shadow-lg p-5 sm:p-6">
               <div className="flex items-start gap-3 mb-4">
-                <Globe size={18} className="text-blue-400 mt-0.5" />
+                <Globe size={18} className="text-blue-400 mt-0.5 flex-shrink-0" />
                 <div>
                   <h4 className="font-medium text-white mb-1">Terms & Conditions</h4>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-slate-400">
                     By completing this payment, you agree to our Terms of Service and Privacy Policy. 
                     Membership is non-refundable after 7 days.
                   </p>
                 </div>
               </div>
-              
               <label className="flex items-center gap-2 cursor-pointer">
                 <input 
                   type="checkbox" 
                   checked={termsAccepted}
                   onChange={(e) => setTermsAccepted(e.target.checked)}
-                  className="rounded bg-gray-700 border-gray-600 text-red-600 focus:ring-red-500" 
+                  className="rounded bg-slate-700 border-white/20 text-blue-500 focus:ring-blue-500 focus:ring-offset-0 focus:ring-offset-transparent" 
                 />
-                <span className="text-sm text-gray-300">
+                <span className="text-sm text-slate-300">
                   I agree to the terms and conditions
                 </span>
               </label>
@@ -622,28 +612,27 @@ export const PaymentSection = ({
                 whileTap={{ scale: isProcessing ? 1 : 0.98 }}
                 type="submit"
                 disabled={isProcessing}
-                className={`w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-xl ${
+                className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 sm:py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-xl ${
                   isProcessing ? 'opacity-75 cursor-not-allowed' : ''
                 }`}
               >
                 {isProcessing ? (
                   <>
-                    <Loader2 size={20} className="animate-spin" />
+                    <Loader2 size={20} className="animate-spin flex-shrink-0" />
                     Processing Payment...
                   </>
                 ) : (
                   <>
-                    <Check size={20} />
-                    Complete Registration{displayAmount !== '' ? ` - ${displayCurrency === "INR" ? "₹" : "$"}${displayAmount} ${displayCurrency}` : ''}
+                    <Check size={20} className="flex-shrink-0" />
+                    <span className="truncate">Complete Registration{displayAmount !== '' ? ` - ${displayCurrency === "INR" ? "₹" : "$"}${displayAmount} ${displayCurrency}` : ''}</span>
                   </>
                 )}
               </motion.button>
-              
               <div className="text-center">
                 <button
                   type="button"
                   onClick={onBack}
-                  className="text-gray-400 hover:text-white text-sm font-medium transition-colors"
+                  className="text-slate-400 hover:text-white text-sm font-medium transition-colors"
                 >
                   ← Back to details
                 </button>
