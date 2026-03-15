@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
-import { Award, Download, LayoutDashboard, Zap, ChevronDown, ChevronUp, Briefcase, Users, Calendar, CalendarClock } from 'lucide-react';
+import { Award, Download, LayoutDashboard, Zap, ChevronDown, ChevronUp, Briefcase, Users, Calendar, CalendarClock, Menu, X } from 'lucide-react';
 import { getMyClub } from '../app/club/clubApi';
 import { getMyMembership } from '../app/membership/membershipApi';
 import { useTheme } from '../contexts/ThemeContext';
@@ -129,6 +129,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
   const [membershipLoading, setMembershipLoading] = useState(false);
   const [membershipError, setMembershipError] = useState('');
   const [cardDownloading, setCardDownloading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const membershipCardRef = useRef(null);
 
   const memberName = getMemberDisplayName(user, club);
@@ -257,65 +258,88 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
       .finally(() => setMembershipLoading(false));
   };
 
+  const closeSidebar = () => setSidebarOpen(false);
+
   return (
     <div className="animate-fadeIn bg-slate-50 min-h-screen flex flex-col">
-      <div className="container mx-auto px-4 flex-1 pb-16 pt-24">
-        <div className="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden flex flex-col lg:flex-row h-full min-h-[75vh] max-h-[calc(100vh-8rem)]">
-          {/* Sidebar – theme gradient, scrollable nav (frontend architecture) */}
-          <aside className={`relative w-72 flex-shrink-0 flex flex-col min-h-0 ${cardBg} text-white border-r border-white/10`}>
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 flex-1 pb-12 sm:pb-16 pt-20 sm:pt-24">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-lg border border-slate-200 overflow-hidden flex flex-col lg:flex-row h-full min-h-[60vh] sm:min-h-[70vh] lg:min-h-[75vh] max-h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-8rem)]">
+          {/* Backdrop for mobile/tablet drawer */}
+          {sidebarOpen && (
+            <button
+              type="button"
+              onClick={closeSidebar}
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              aria-label="Close menu"
+            />
+          )}
+          {/* Sidebar – theme gradient, drawer on mobile/tablet, inline on desktop */}
+          <aside
+            className={`fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto w-72 max-w-[85vw] flex-shrink-0 flex flex-col min-h-0 ${cardBg} text-white border-r border-white/10 transform transition-transform duration-300 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+          >
             {/* Decorative background */}
-            <div className={`absolute inset-0 w-72 ${cardBg} pointer-events-none`} aria-hidden />
-            {/* Profile header – fixed at top */}
-            <div className="relative flex-shrink-0 p-6 pb-2">
-              <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 ${themeConfig?.colors?.primary || 'bg-blue-600'} rounded-full flex items-center justify-center text-white text-xl font-bold`}>{sidebarInitials}</div>
+            <div className={`absolute inset-0 w-full ${cardBg} pointer-events-none`} aria-hidden />
+            {/* Profile header – fixed at top; close button on mobile/tablet */}
+            <div className="relative flex-shrink-0 p-4 sm:p-6 pb-2 flex items-start justify-between gap-2">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 ${themeConfig?.colors?.primary || 'bg-blue-600'} rounded-full flex items-center justify-center text-white text-lg sm:text-xl font-bold`}>{sidebarInitials}</div>
                 <div className="min-w-0">
-                  <div className="text-[11px] font-bold uppercase text-white/70">Member</div>
-                  <div className="font-extrabold truncate" title={sidebarDisplayName}>{sidebarDisplayName}</div>
+                  <div className="text-[10px] sm:text-[11px] font-bold uppercase text-white/70">Member</div>
+                  <div className="font-extrabold truncate text-sm sm:text-base" title={sidebarDisplayName}>{sidebarDisplayName}</div>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={closeSidebar}
+                className="lg:hidden p-2 -m-2 rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+                aria-label="Close menu"
+              >
+                <X size={20} />
+              </button>
             </div>
             {/* Nav list – scrollable when content overflows */}
             <nav
-              className="relative flex-1 min-h-0 overflow-y-auto px-6 pb-6 pt-2"
+              className="relative flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 pb-6 pt-2"
               style={{ scrollbarColor: 'rgba(255,255,255,0.3) #0f172a', scrollbarWidth: 'thin' }}
               aria-label="Member dashboard navigation"
             >
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <button
                   onClick={() => {
                     setActiveTab('overview');
                     refetchMembership(true);
+                    closeSidebar();
                   }}
-                  className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${
+                  className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border transition-all shadow-sm flex items-center gap-2 sm:gap-3 text-sm sm:text-base ${
                     activeTab === 'overview'
                       ? `${accent.sidebarActive} text-white`
                       : 'bg-white/5 border-white/10 hover:border-white/20 text-white/90'
                   }`}
                 >
-                  <LayoutDashboard size={18} /> Profile
+                  <LayoutDashboard size={18} className="flex-shrink-0" /> Profile
                 </button>
               
                 <button
                   onClick={() => {
                     setActiveTab('membership');
                     refetchMembership();
+                    closeSidebar();
                   }}
-                  className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${
+                  className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border transition-all shadow-sm flex items-center gap-2 sm:gap-3 text-sm sm:text-base ${
                     activeTab === 'membership'
                       ? `${accent.sidebarActive} text-white`
                       : 'bg-white/5 border-white/10 hover:border-white/20 text-white/90'
                   }`}
                 >
-                  <LayoutDashboard size={18} /> Membership
+                  <LayoutDashboard size={18} className="flex-shrink-0" /> Membership
                 </button>
 
                 {/* Class Schedule – coming soon */}
                 <div className="relative">
                   <button
                     type="button"
-                    onClick={() => setActiveTab('class-schedule')}
-                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between gap-2 ${
+                    onClick={() => { setActiveTab('class-schedule'); closeSidebar(); }}
+                    className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border transition-all shadow-sm flex items-center justify-between gap-2 text-sm sm:text-base ${
                       activeTab === 'class-schedule'
                         ? `${accent.sidebarActive} text-white`
                         : 'bg-white/5 border-white/10 hover:border-white/20 text-white/90'
@@ -340,13 +364,13 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                         setDiySection('kits');
                       }
                     }}
-                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between gap-2 ${
+                    className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border transition-all shadow-sm flex items-center justify-between gap-2 text-sm sm:text-base ${
                       activeTab === 'diy-offers'
                         ? `${accent.sidebarActive} text-white`
                         : 'bg-white/5 border-white/10 hover:border-white/20 text-white/90'
                     }`}
                   >
-                    <span className="flex items-center gap-3">
+                    <span className="flex items-center gap-2 sm:gap-3">
                       <Zap size={18} className={`flex-shrink-0 ${activeTab === 'diy-offers' ? accent.title : 'text-white/70'}`} />
                       <span>Offers</span>
                     </span>
@@ -356,10 +380,11 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                     <div className="pl-4 pr-2 py-2 space-y-1 border-l-2 border-white/20 ml-3">
                       <button
                         type="button"
-                        onClick={() => {
-                          setActiveTab('diy-offers');
-                          setDiySection('kits');
-                        }}
+                    onClick={() => {
+                      setActiveTab('diy-offers');
+                      setDiySection('kits');
+                      closeSidebar();
+                    }}
                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                           activeTab === 'diy-offers' && diySection === 'kits'
                             ? `${accent.sidebarActive} text-white`
@@ -373,6 +398,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                         onClick={() => {
                           setActiveTab('diy-offers');
                           setDiySection('tools');
+                          closeSidebar();
                         }}
                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                           activeTab === 'diy-offers' && diySection === 'tools'
@@ -387,6 +413,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                         onClick={() => {
                           setActiveTab('diy-offers');
                           setDiySection('workshops');
+                          closeSidebar();
                         }}
                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                           activeTab === 'diy-offers' && diySection === 'workshops'
@@ -411,13 +438,13 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                         setCareerSection('internships');
                       }
                     }}
-                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between gap-2 ${
+                    className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border transition-all shadow-sm flex items-center justify-between gap-2 text-sm sm:text-base ${
                       activeTab === 'career-growth'
                         ? `${accent.sidebarActive} text-white`
                         : 'bg-white/5 border-white/10 hover:border-white/20 text-white/90'
                     }`}
                   >
-                    <span className="flex items-center gap-3">
+                    <span className="flex items-center gap-2 sm:gap-3">
                       <Briefcase size={18} className={`flex-shrink-0 ${activeTab === 'career-growth' ? accent.title : 'text-white/70'}`} />
                       <span>Career Growth</span>
                     </span>
@@ -430,6 +457,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                         onClick={() => {
                           setActiveTab('career-growth');
                           setCareerSection('internships');
+                          closeSidebar();
                         }}
                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                           activeTab === 'career-growth' && careerSection === 'internships'
@@ -444,6 +472,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                         onClick={() => {
                           setActiveTab('career-growth');
                           setCareerSection('priority');
+                          closeSidebar();
                         }}
                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                           activeTab === 'career-growth' && careerSection === 'priority'
@@ -468,13 +497,13 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                         setDirectorySection('global');
                       }
                     }}
-                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between gap-2 ${
+                    className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border transition-all shadow-sm flex items-center justify-between gap-2 text-sm sm:text-base ${
                       activeTab === 'contact-directory'
                         ? `${accent.sidebarActive} text-white`
                         : 'bg-white/5 border-white/10 hover:border-white/20 text-white/90'
                     }`}
                   >
-                    <span className="flex items-center gap-3">
+                    <span className="flex items-center gap-2 sm:gap-3">
                       <Users size={18} className={`flex-shrink-0 ${activeTab === 'contact-directory' ? accent.title : 'text-white/70'}`} />
                       <span>Contact Directory</span>
                     </span>
@@ -487,6 +516,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                         onClick={() => {
                           setActiveTab('contact-directory');
                           setDirectorySection('global');
+                          closeSidebar();
                         }}
                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                           activeTab === 'contact-directory' && directorySection === 'global'
@@ -501,6 +531,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                         onClick={() => {
                           setActiveTab('contact-directory');
                           setDirectorySection('community');
+                          closeSidebar();
                         }}
                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                           activeTab === 'contact-directory' && directorySection === 'community'
@@ -525,13 +556,13 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                         setEventsSection('competitions');
                       }
                     }}
-                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center justify-between gap-2 ${
+                    className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border transition-all shadow-sm flex items-center justify-between gap-2 text-sm sm:text-base ${
                       activeTab === 'national-events'
                         ? `${accent.sidebarActive} text-white`
                         : 'bg-white/5 border-white/10 hover:border-white/20 text-white/90'
                     }`}
                   >
-                    <span className="flex items-center gap-3">
+                    <span className="flex items-center gap-2 sm:gap-3">
                       <Calendar size={18} className={`flex-shrink-0 ${activeTab === 'national-events' ? accent.title : 'text-white/70'}`} />
                       <span>National & Global Events</span>
                     </span>
@@ -544,6 +575,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                         onClick={() => {
                           setActiveTab('national-events');
                           setEventsSection('competitions');
+                          closeSidebar();
                         }}
                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                           activeTab === 'national-events' && eventsSection === 'competitions'
@@ -558,6 +590,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                         onClick={() => {
                           setActiveTab('national-events');
                           setEventsSection('conferences');
+                          closeSidebar();
                         }}
                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                           activeTab === 'national-events' && eventsSection === 'conferences'
@@ -575,40 +608,45 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
           </aside>
 
           {/* Main content */}
-          <main
-            className="flex-1 min-h-0 bg-white flex flex-col"
-          >
-            <div className="flex items-center justify-between px-8 pt-8 pb-6 border-b border-slate-100">
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900">
+          <main className="flex-1 min-h-0 bg-white flex flex-col min-w-0">
+            <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-6 md:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4 sm:pb-6 border-b border-slate-100 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden p-2 -ml-1 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors flex-shrink-0"
+                aria-label="Open menu"
+              >
+                <Menu size={24} />
+              </button>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 truncate">
                   {activeTab === 'overview' && 'Profile'}
                   {activeTab === 'membership' && 'Membership Card'}
                   {activeTab === 'class-schedule' && 'Make Your Bots'}
-                  {activeTab === 'diy-offers' && ' Offers'}
+                  {activeTab === 'diy-offers' && 'Offers'}
                   {activeTab === 'career-growth' && 'Career Growth'}
                   {activeTab === 'contact-directory' && 'Contact Directory'}
                   {activeTab === 'national-events' && 'National & Global Events'}
                 </h1>
-                {/* <div className="text-slate-500">Team: RoboTitans India | ID: W-IND-001</div> */}
               </div>
-              <div className="text-sm text-slate-500">Member Portal</div>
+              <div className="text-xs sm:text-sm text-slate-500 flex-shrink-0 hidden sm:block">Member Portal</div>
             </div>
 
             <div
-              className="flex-1 px-4 py-6 sm:p-8 lg:p-10 overflow-y-auto"
+              className="flex-1 px-3 py-4 sm:px-6 sm:py-6 md:p-8 lg:p-10 overflow-y-auto min-h-0"
               style={{ scrollbarColor: '#1d4ed8 #f8fafc', scrollbarWidth: 'thin' }}
             >
               {activeTab === 'overview' && (
-                <div className="space-y-8">
+                <div className="space-y-5 sm:space-y-8">
                   {/* Profile & Membership from GET /membership/my/get */}
                   {membershipLoading && (
-                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm text-sm text-slate-500">
+                    <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm text-sm text-slate-500">
                       Loading profile and membership…
                     </div>
                   )}
 
                   {membershipError && !membershipLoading && (
-                    <div className="bg-white p-6 rounded-xl border border-red-200 shadow-sm text-sm text-red-600 font-semibold">
+                    <div className="bg-white p-4 sm:p-6 rounded-xl border border-red-200 shadow-sm text-sm text-red-600 font-semibold">
                       {membershipError}
                     </div>
                   )}
@@ -617,23 +655,23 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                     <>
                       {/* Profile card – from API data.user */}
                       {membership?.user && (
-                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                          <h2 className="text-lg font-bold text-slate-900 mb-4">Profile</h2>
-                          <div className="flex flex-col sm:flex-row gap-6">
+                        <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm">
+                          <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4">Profile</h2>
+                          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                             <div className="flex-shrink-0">
                               {membership.user.logo ? (
                                 <img
                                   src={membership.user.logo}
                                   alt=""
-                                  className="w-20 h-20 rounded-full object-cover border-2 border-slate-200"
+                                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-slate-200"
                                 />
                               ) : (
-                                <div className={`w-20 h-20 rounded-full flex items-center justify-center text-xl font-bold text-white ${themeConfig?.colors?.primary || 'bg-blue-600'}`}>
+                                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-lg sm:text-xl font-bold text-white ${themeConfig?.colors?.primary || 'bg-blue-600'}`}>
                                   {getMemberInitials(membership.user, club)}
                                 </div>
                               )}
                             </div>
-                            <div className="flex-1 min-w-0 grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                            <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 text-sm">
                               <div>
                                 <dt className="text-slate-500">Full name</dt>
                                 <dd className="font-semibold text-slate-900">{membership.user.fullName || membership.user.email || '—'}</dd>
@@ -710,7 +748,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                   )}
 
                   {!membershipLoading && !membershipError && !membership?.user && !membership?.publicMembershipId && (
-                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm text-sm text-slate-500">
+                    <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm text-sm text-slate-500">
                       No profile or membership data found. Complete signup or contact support.
                     </div>
                   )}
@@ -722,9 +760,9 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
             
 
               {activeTab === 'membership' && (
-                <div className="space-y-6 flex flex-col items-center">
+                <div className="space-y-4 sm:space-y-6 flex flex-col items-center w-full">
                   {/* Membership card — reference: credit-card layout, aspect 1.586:1, gradient + glow + overlay */}
-                  <div className="w-full max-w-md flex flex-col items-center">
+                  <div className="w-full max-w-md flex flex-col items-center px-0 sm:px-2">
                     <div className="w-full flex justify-end mb-3">
                       {/* <button
                         type="button"
@@ -739,7 +777,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                     </div>
                     <section
                       ref={membershipCardRef}
-                      className="group relative w-full aspect-[1.5/1] overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-indigo-600 via-purple-700 to-slate-900 px-6 pt-6 pb-7 sm:px-8 sm:pt-8 sm:pb-9 shadow-2xl text-white transition-all duration-500 hover:scale-[1.02] hover:shadow-indigo-500/20"
+                      className="group relative w-full aspect-[1.5/1] overflow-hidden rounded-2xl sm:rounded-3xl border border-white/10 bg-gradient-to-br from-indigo-600 via-purple-700 to-slate-900 px-4 pt-4 pb-5 sm:px-6 sm:pt-6 sm:pb-7 md:px-8 md:pt-8 md:pb-9 shadow-2xl text-white transition-all duration-500 hover:scale-[1.02] hover:shadow-indigo-500/20"
                       aria-label="Membership card"
                     >
                       <div className="absolute inset-0 bg-white/5 backdrop-blur-[2px] pointer-events-none" aria-hidden />
@@ -844,12 +882,12 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
               )}
 
               {activeTab === 'class-schedule' && (
-                <div className={`rounded-2xl overflow-hidden ${cardBg} border border-white/10 shadow-xl min-h-[320px] flex flex-col items-center justify-center p-8 sm:p-12`}>
-                  <div className="flex flex-col items-center justify-center text-center max-w-sm">
-                    <div className={`w-16 h-16 rounded-2xl ${accent.iconBg} flex items-center justify-center mb-4`}>
-                      <CalendarClock size={32} className={accent.title} aria-hidden />
+                <div className={`rounded-xl sm:rounded-2xl overflow-hidden ${cardBg} border border-white/10 shadow-xl min-h-[240px] sm:min-h-[320px] flex flex-col items-center justify-center p-6 sm:p-8 md:p-12`}>
+                  <div className="flex flex-col items-center justify-center text-center max-w-sm w-full">
+                    <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl ${accent.iconBg} flex items-center justify-center mb-3 sm:mb-4`}>
+                      <CalendarClock size={28} className={accent.title} aria-hidden />
                     </div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mb-2">Make Your Bots</h2>
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-100 mb-2">Make Your Bots</h2>
                     <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
                     Classes will start on 1 March.
                     </p>
@@ -861,8 +899,8 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
               )}
 
               {activeTab === 'diy-offers' && (
-                <div className={`rounded-2xl overflow-hidden ${cardBg} border border-white/10 shadow-xl min-h-[400px]`}>
-                  <div className="p-6 sm:p-8 lg:p-10">
+                <div className={`rounded-xl sm:rounded-2xl overflow-hidden ${cardBg} border border-white/10 shadow-xl min-h-[300px] sm:min-h-[400px]`}>
+                  <div className="p-4 sm:p-6 md:p-8 lg:p-10">
                     <DiyOffers
                       activeSection={diySection}
                       membershipPlanName={membership?.planName}
@@ -873,8 +911,8 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
               )}
 
               {activeTab === 'career-growth' && (
-                <div className={`rounded-2xl overflow-hidden ${cardBg} border border-white/10 shadow-xl min-h-[400px]`}>
-                  <div className="p-6 sm:p-8 lg:p-10">
+                <div className={`rounded-xl sm:rounded-2xl overflow-hidden ${cardBg} border border-white/10 shadow-xl min-h-[300px] sm:min-h-[400px]`}>
+                  <div className="p-4 sm:p-6 md:p-8 lg:p-10">
                     <CareerGrowth
                       activeSection={careerSection}
                       membershipPlanName={membership?.planName}
@@ -885,8 +923,8 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
               )}
 
               {activeTab === 'contact-directory' && (
-                <div className={`rounded-2xl overflow-hidden ${cardBg} border border-white/10 shadow-xl min-h-[400px]`}>
-                  <div className="p-6 sm:p-8 lg:p-10">
+                <div className={`rounded-xl sm:rounded-2xl overflow-hidden ${cardBg} border border-white/10 shadow-xl min-h-[300px] sm:min-h-[400px]`}>
+                  <div className="p-4 sm:p-6 md:p-8 lg:p-10">
                     {directorySection === 'global' && (
                       <GlobalYoungInnovatorsDirectory
                         membershipPlanName={membership?.planName}
@@ -901,8 +939,8 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
               )}
 
               {activeTab === 'national-events' && (
-                <div className={`rounded-2xl overflow-hidden ${cardBg} border border-white/10 shadow-xl min-h-[400px]`}>
-                  <div className="p-6 sm:p-8 lg:p-10">
+                <div className={`rounded-xl sm:rounded-2xl overflow-hidden ${cardBg} border border-white/10 shadow-xl min-h-[300px] sm:min-h-[400px]`}>
+                  <div className="p-4 sm:p-6 md:p-8 lg:p-10">
                     {eventsSection === 'competitions' && (
                       <EventsPage themeAccent={accent} />
                     )}
