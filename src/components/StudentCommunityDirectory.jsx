@@ -12,26 +12,119 @@ const DEFAULT_ACCENT = {
 
 const PAGE_SIZE = 10;
 
-/**
- * Mask email: local part (before @) hidden as "xxxx", domain (paaki) visible.
- * e.g. sifattupul@gmail.com → xxxx@gmail.com
- */
-function maskEmail(email) {
-  if (!email || typeof email !== 'string') return '—';
-  const at = email.indexOf('@');
-  if (at === -1) return 'xxxx';
-  return `xxxx@${email.slice(at + 1)}`;
+/** Flag CDN base (flagcdn.com): use lowercase ISO 3166-1 alpha-2. */
+const FLAG_CDN = 'https://flagcdn.com';
+const FLAG_SIZE = 24;
+
+/** Country name → ISO 3166-1 alpha-2 (lowercase for CDN). Comprehensive map for reliable resolution. */
+const COUNTRY_TO_CODE = {
+  bangladesh: 'bd',
+  india: 'in',
+  pakistan: 'pk',
+  nepal: 'np',
+  'sri lanka': 'lk',
+  'united states': 'us',
+  'united states of america': 'us',
+  usa: 'us',
+  uk: 'gb',
+  'united kingdom': 'gb',
+  'great britain': 'gb',
+  canada: 'ca',
+  australia: 'au',
+  germany: 'de',
+  france: 'fr',
+  japan: 'jp',
+  china: 'cn',
+  singapore: 'sg',
+  malaysia: 'my',
+  uae: 'ae',
+  'united arab emirates': 'ae',
+  'saudi arabia': 'sa',
+  egypt: 'eg',
+  'south africa': 'za',
+  nigeria: 'ng',
+  kenya: 'ke',
+  brazil: 'br',
+  mexico: 'mx',
+  indonesia: 'id',
+  vietnam: 'vn',
+  thailand: 'th',
+  philippines: 'ph',
+  'south korea': 'kr',
+  'korea, republic of': 'kr',
+  'republic of korea': 'kr',
+  russia: 'ru',
+  turkey: 'tr',
+  italy: 'it',
+  spain: 'es',
+  netherlands: 'nl',
+  sweden: 'se',
+  poland: 'pl',
+  ukraine: 'ua',
+  argentina: 'ar',
+  colombia: 'co',
+  chile: 'cl',
+  peru: 'pe',
+  'hong kong': 'hk',
+  'new zealand': 'nz',
+  ireland: 'ie',
+  belgium: 'be',
+  austria: 'at',
+  switzerland: 'ch',
+  portugal: 'pt',
+  greece: 'gr',
+  israel: 'il',
+  qatar: 'qa',
+  kuwait: 'kw',
+  oman: 'om',
+  bahrain: 'bh',
+  jordan: 'jo',
+  lebanon: 'lb',
+  sydney: 'au',
+  'united kingdom of great britain and northern ireland': 'gb',
+};
+
+/** Resolve country string to ISO 3166-1 alpha-2 lowercase for flag CDN. */
+function getCountryCode(country) {
+  if (!country || typeof country !== 'string') return null;
+  const normalized = country.trim().toLowerCase();
+  if (normalized.length === 2 && /^[a-z]{2}$/.test(normalized)) return normalized;
+  return COUNTRY_TO_CODE[normalized] || null;
 }
 
-/**
- * Mask mobile: last 4 digits as "xxxx", rest visible.
- * e.g. 1811762188 → 181176xxxx
- */
-function maskMobile(mobile) {
-  if (!mobile || typeof mobile !== 'string') return '—';
-  const digits = mobile.replace(/\D/g, '');
-  if (digits.length <= 4) return 'xxxx';
-  return `${digits.slice(0, -4)}xxxx`;
+/** Renders country flag from CDN; fallback to placeholder if code missing or image fails. */
+function CountryFlag({ country, size = FLAG_SIZE, className = '' }) {
+  const code = getCountryCode(country);
+  const [error, setError] = React.useState(false);
+
+  if (!code || error) {
+    return (
+      <span
+        className={`inline-flex items-center justify-center rounded-sm bg-slate-600/50 text-slate-500 shrink-0 ${className}`}
+        style={{ width: size, height: size, fontSize: Math.round(size * 0.6) }}
+        title={country || 'Unknown'}
+        aria-hidden
+      >
+        —
+      </span>
+    );
+  }
+
+  const src = `${FLAG_CDN}/w80/${code}.png`;
+  return (
+    <img
+      src={src}
+      alt=""
+      width={size}
+      height={size}
+      loading="lazy"
+      decoding="async"
+      className={`rounded-sm object-cover shrink-0 ${className}`}
+      style={{ width: size, height: size }}
+      title={country}
+      onError={() => setError(true)}
+    />
+  );
 }
 
 /** Normalize API response: support { data: [] }, { data: { data: [] } }, or array */
@@ -171,8 +264,6 @@ export function StudentCommunityDirectory({ themeAccent }) {
                 <thead>
                   <tr className={`border-b border-slate-700/80 ${accent.badge}`}>
                     <th className="px-4 py-3 font-semibold">Name</th>
-                    <th className="px-4 py-3 font-semibold">Email</th>
-                    <th className="px-4 py-3 font-semibold">Mobile</th>
                     <th className="px-4 py-3 font-semibold">Institute</th>
                     <th className="px-4 py-3 font-semibold">Location</th>
                     <th className="px-4 py-3 font-semibold">Role</th>
@@ -181,40 +272,40 @@ export function StudentCommunityDirectory({ themeAccent }) {
                 <tbody>
                   {paginatedList.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
+                      <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
                         No members found.
                       </td>
                     </tr>
                   ) : (
-                    paginatedList.map((user) => (
-                      <tr
-                        key={user._id}
-                        className="border-b border-slate-800/80 hover:bg-white/5 transition-colors"
-                      >
-                        <td className="px-4 py-3 text-slate-200 font-medium">
-                          {user.fullName || '—'}
-                        </td>
-                        <td className="px-4 py-3 text-slate-400 font-mono">
-                          {maskEmail(user.email)}
-                        </td>
-                        <td className="px-4 py-3 text-slate-400 font-mono">
-                          {maskMobile(user.mobile)}
-                        </td>
-                        <td className="px-4 py-3 text-slate-300">
-                          {user.affiliation?.instituteName || '—'}
-                        </td>
-                        <td className="px-4 py-3 text-slate-400">
-                          {[user.personalAndShippingAddress?.city, user.personalAndShippingAddress?.state, user.personalAndShippingAddress?.country]
-                            .filter(Boolean)
-                            .join(', ') || '—'}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${accent.badge}`}>
-                            {user.role || '—'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
+                    paginatedList.map((user) => {
+                      const country = user.personalAndShippingAddress?.country;
+                      const locationParts = [user.personalAndShippingAddress?.city, user.personalAndShippingAddress?.state, country].filter(Boolean);
+                      const locationText = locationParts.length ? locationParts.join(', ') : '—';
+                      return (
+                        <tr
+                          key={user._id}
+                          className="border-b border-slate-800/80 hover:bg-white/5 transition-colors"
+                        >
+                          <td className="px-4 py-3 text-slate-200 font-medium">
+                            {user.fullName || '—'}
+                          </td>
+                          <td className="px-4 py-3 text-slate-300">
+                            {user.affiliation?.instituteName || '—'}
+                          </td>
+                          <td className="px-4 py-3 text-slate-400">
+                            <span className="inline-flex items-center gap-2 min-w-0">
+                              <CountryFlag country={country} size={FLAG_SIZE} className="flex-shrink-0" />
+                              <span className="truncate" title={locationText}>{locationText}</span>
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${accent.badge}`}>
+                              {user.role || '—'}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
