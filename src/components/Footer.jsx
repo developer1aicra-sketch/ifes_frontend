@@ -357,7 +357,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
           </div>
 
           <div className="text-xs text-slate-400 md:mx-auto">
-            © 2025 World Robotics Sports Organization. All Rights Reserved.
+            © 2026 World Robotics Sports Organization. All Rights Reserved.
           </div>
         </div>
       </div>
