@@ -92,11 +92,11 @@ function RoboticsKitCard({ kit }) {
         <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0_0,rgba(251,191,36,0.2),transparent_55%),radial-gradient(circle_at_100%_100%,rgba(96,165,250,0.18),transparent_55%)]" />
       </div>
       <OfferRibbon maxDiscount={kit.maxDiscount} />
-      <div className="relative p-4 space-y-2 pr-20">
+      {/* <div className="relative p-4 space-y-2 pr-20">
         <p className="text-[11px] uppercase tracking-[0.2em] text-amber-300/80">{kit.level}</p>
         <h3 className="text-sm font-semibold text-slate-50">{kit.title}</h3>
         <p className="text-xs text-slate-400 leading-relaxed line-clamp-3">{kit.description}</p>
-      </div>
+      </div> */}
 
       <div className="relative px-4 pb-4 mt-0 space-y-2">
         <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">

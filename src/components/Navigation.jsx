@@ -84,9 +84,9 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
           )}
          
           <Link to={path('/membership')}>Membership</Link>
-          {/* <Link to={path('/roboclub')} className="flex gap-2 items-center">
+          <Link to={path('/roboclub')} className="flex gap-2 items-center">
             <Star size={14} className={location.pathname.endsWith('/roboclub') ? 'text-yellow-400' : 'text-yellow-500'} /> roboclub
-          </Link> */}
+          </Link>
 
           <button onClick={() => setView('teams')} className="hover:text-white transition-colors">
             Teams / Players

@@ -41,7 +41,7 @@ import { getAuthToken, clearAuthToken } from './api/authToken';
 import { getMyMembership } from './app/membership/membershipApi';
 import { useLocationPrefix } from './hooks/useLocationPrefix';
 import { StoreView } from './views/StoreView';
-// import RoboClubView from './views/RoboClubView';
+import RoboClubView from './views/RoboClubView';
 
 const viewToPath = (view) => {
   if (!view) return '/';
@@ -320,7 +320,7 @@ const AppContent = ({
               <Route path="/" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
               <Route path="/teams" element={<TeamsView />} />
               <Route path="/technoxian" element={<TechnoxianView />} />
-              {/* <Route path="/roboclub" element={<RoboClubView />} /> */}
+              <Route path="/roboclub" element={<RoboClubView />} />
 
               <Route path="/about" element={<AboutLayout setView={setViewRespectingLocation} />} />
               <Route path="/governance" element={<AboutLayout setView={setViewRespectingLocation} />} />
