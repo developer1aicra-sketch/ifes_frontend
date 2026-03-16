@@ -29,8 +29,8 @@ const SimpleLoading = () => (
           <Loader2 className="w-8 h-8 text-blue-600 animate-pulse" />
         </div>
       </div>
-      <h3 className="mt-6 text-xl font-semibold text-black">Loading Membership Data</h3>
-      <p className="mt-2 text-gray-600">Please wait while we prepare your experience...</p>
+      <h3 className="mt-6 text-xl font-semibold text-black">Loading....</h3>
+     
     </div>
   </div>
 );

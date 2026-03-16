@@ -1,6 +1,6 @@
 /* ============================================
    FRONTEND ARCHITECTURE – Theme & Responsiveness
-   - Theme: Dark blue default. CSS vars (--theme-*) in :root; theme.js + ThemeContext apply per-route/partner.
+   - Theme: Dark blue system-wide. CSS vars (--theme-*) live in :root; theme.js + ThemeContext now always resolve to Blue.
    - Responsive: Mobile-first. Breakpoints (Tailwind CDN): sm 640px, md 768px, lg 1024px, xl 1280px, 2xl 1536px.
    - Containers: Use container mx-auto px-4 sm:px-6 with max-w-[1600px] for main content.
    - Touch: Use touch-manipulation on mobile nav buttons; min tap target 44px where possible.

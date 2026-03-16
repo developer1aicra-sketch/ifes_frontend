@@ -115,13 +115,12 @@ export const THEME_COLOR_MAP = {
 };
 
 /**
- * Gets theme configuration based on themeColor string
- * @param {string} themeColor - Theme color name (e.g., "Green", "Blue")
- * @returns {Object} Theme configuration object
+ * Gets theme configuration.
+ * The entire frontend is locked to the dark blue theme,
+ * so we always resolve to the "Blue" configuration.
  */
-export const getThemeConfig = (themeColor) => {
-  const normalizedColor = themeColor?.trim() || 'Blue';
-  return THEME_COLOR_MAP[normalizedColor] || THEME_COLOR_MAP['Blue'];
+export const getThemeConfig = (_themeColor) => {
+  return THEME_COLOR_MAP['Blue'];
 };
 
 /**
