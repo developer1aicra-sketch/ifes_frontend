@@ -347,7 +347,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                   >
                     <span className="flex items-center gap-3 min-w-0">
                       <CalendarClock size={18} className={`flex-shrink-0 ${activeTab === 'class-schedule' ? accent.title : 'text-white/70'}`} />
-                      <span className="truncate">Make Your Botss</span>
+                      <span className="truncate">Make Your Bot</span>
                     </span>
                    
                   </button>
@@ -511,21 +511,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                   </button>
                   {directoryOpen && (
                     <div className="pl-4 pr-2 py-2 space-y-1 border-l-2 border-white/20 ml-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveTab('contact-directory');
-                          setDirectorySection('global');
-                          closeSidebar();
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                          activeTab === 'contact-directory' && directorySection === 'global'
-                            ? `${accent.sidebarActive} text-white`
-                            : 'bg-white/5 text-white/80 hover:bg-white/10 border border-transparent'
-                        }`}
-                      >
-                        Global Young Innovators
-                      </button>
+                    
                       <button
                         type="button"
                         onClick={() => {
@@ -540,6 +526,21 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                         }`}
                       >
                         Student Community Directory
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('contact-directory');
+                          setDirectorySection('global');
+                          closeSidebar();
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                          activeTab === 'contact-directory' && directorySection === 'global'
+                            ? `${accent.sidebarActive} text-white`
+                            : 'bg-white/5 text-white/80 hover:bg-white/10 border border-transparent'
+                        }`}
+                      >
+                        Global Young Innovators
                       </button>
                     </div>
                   )}
@@ -622,7 +623,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                 <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 truncate">
                   {activeTab === 'overview' && 'Profile'}
                   {activeTab === 'membership' && 'Membership Card'}
-                  {activeTab === 'class-schedule' && 'Make Your Bots'}
+                  {activeTab === 'class-schedule' && 'Make Your Bot'}
                   {activeTab === 'diy-offers' && 'Offers'}
                   {activeTab === 'career-growth' && 'Career Growth'}
                   {activeTab === 'contact-directory' && 'Contact Directory'}
@@ -738,6 +739,101 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                                 {membership.user.role}
                               </span>
                             )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Academic & personal details – extended student profile fields */}
+                      {membership?.user && (
+                        <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm">
+                          <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4">
+                            Academic & Personal Details
+                          </h2>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 text-sm">
+                            <div>
+                              <dt className="text-slate-500">Stream</dt>
+                              <dd className="font-semibold text-slate-900">
+                                {membership.user.stream || membership.user.affiliation?.stream || '—'}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-slate-500">Current Education</dt>
+                              <dd className="font-semibold text-slate-900">
+                                {membership.user.currentEducation ||
+                                  membership.user.affiliation?.schoolOrCollege ||
+                                  '—'}
+                              </dd>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <dt className="text-slate-500">Subjects</dt>
+                              <dd className="font-semibold text-slate-900">
+                                {Array.isArray(membership.user.subjects)
+                                  ? membership.user.subjects.join(', ')
+                                  : membership.user.subjects || '—'}
+                              </dd>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <dt className="text-slate-500">Skills</dt>
+                              <dd className="font-semibold text-slate-900">
+                                {Array.isArray(membership.user.skills)
+                                  ? membership.user.skills.join(', ')
+                                  : membership.user.skills || '—'}
+                              </dd>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <dt className="text-slate-500">Hobbies / Interests</dt>
+                              <dd className="font-semibold text-slate-900">
+                                {Array.isArray(membership.user.hobbies)
+                                  ? membership.user.hobbies.join(', ')
+                                  : membership.user.hobbies || '—'}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-slate-500">Father&apos;s Name</dt>
+                              <dd className="font-semibold text-slate-900">
+                                {membership.user.fatherName || '—'}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-slate-500">Mother&apos;s Name</dt>
+                              <dd className="font-semibold text-slate-900">
+                                {membership.user.motherName || '—'}
+                              </dd>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <dt className="text-slate-500">Address</dt>
+                              <dd className="font-semibold text-slate-900">
+                                {(() => {
+                                  const addr = membership.user.personalAndShippingAddress || {};
+                                  const parts = [
+                                    addr.addressLine1,
+                                    addr.addressLine2,
+                                    addr.city,
+                                    addr.state,
+                                    addr.country,
+                                  ].filter(Boolean);
+                                  return parts.length ? parts.join(', ') : '—';
+                                })()}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-slate-500">Pincode / Zipcode</dt>
+                              <dd className="font-semibold text-slate-900">
+                                {membership.user.personalAndShippingAddress?.pincode || '—'}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-slate-500">Alternate Mobile</dt>
+                              <dd className="font-semibold text-slate-900">
+                                {formatMobileDisplay(membership.user.alternateMobile) || '—'}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-slate-500">Alternate Email ID</dt>
+                              <dd className="font-semibold text-slate-900 break-all">
+                                {membership.user.alternateEmail || '—'}
+                              </dd>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -887,7 +983,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                     <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl ${accent.iconBg} flex items-center justify-center mb-3 sm:mb-4`}>
                       <CalendarClock size={28} className={accent.title} aria-hidden />
                     </div>
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-100 mb-2">Make Your Bots</h2>
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-100 mb-2">Make Your Bot</h2>
                     <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
                     Classes will start on 1 March.
                     </p>

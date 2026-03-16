@@ -190,10 +190,23 @@ export function StudentCommunityDirectory({ themeAccent }) {
     return () => { isMounted = false; };
   }, []);
 
+  // Always keep users sorted alphabetically by full name on the frontend
+  const sortedUsers = useMemo(() => {
+    if (!Array.isArray(users)) return [];
+    return [...users].sort((a, b) => {
+      const nameA = (a.fullName || '').toLowerCase().trim();
+      const nameB = (b.fullName || '').toLowerCase().trim();
+      if (nameA && nameB) return nameA.localeCompare(nameB);
+      if (nameA && !nameB) return -1;
+      if (!nameA && nameB) return 1;
+      return 0;
+    });
+  }, [users]);
+
   const filteredUsers = useMemo(() => {
-    if (!searchQuery.trim()) return users;
-    return users.filter((u) => matchSearch(u, searchQuery));
-  }, [users, searchQuery]);
+    if (!searchQuery.trim()) return sortedUsers;
+    return sortedUsers.filter((u) => matchSearch(u, searchQuery));
+  }, [sortedUsers, searchQuery]);
 
   const totalFiltered = filteredUsers.length;
   const totalPagesComputed = Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE));
@@ -217,7 +230,7 @@ export function StudentCommunityDirectory({ themeAccent }) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className={`text-xl md:text-2xl font-bold ${accent.title}`}>
-            Student Community Directory
+            Worso Community Directory
           </h1>
           <p className="text-sm text-slate-400">
             Explore the wider Technoxian student community directory across schools, clubs, and regions.
