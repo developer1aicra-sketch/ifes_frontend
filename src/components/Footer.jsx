@@ -193,20 +193,20 @@ const Footer = ({ setView, switchSite, currentSite }) => {
               
               {/* Country routes: /TH, /VN, /AE, etc – opens /XX and applies partner themeColor */}
               <div className="flex items-center gap-3 mt-4">
-                <MapPin size={16} className="text-slate-500 flex-shrink-0" />
+                {/* <MapPin size={16} className="text-slate-500 flex-shrink-0" /> */}
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <LocationSwitcher
+                    {/* <LocationSwitcher
                       regionLabel="Country"
                       locationCodes={countryCodes}
                       locationThemeMap={locationThemeMap}
-                    />
-                    <span className="text-xs text-slate-300 border border-white/10 bg-white/5 px-2 py-1 rounded-md">
+                    /> */}
+                    {/* <span className="text-xs text-slate-300 border border-white/10 bg-white/5 px-2 py-1 rounded-md">
                       Active: <span className="font-bold text-white">{activeCountryCode || 'GLOBAL'}</span>
                       {activePartner?.themeColor ? (
                         <span className="ml-2 text-slate-300">Theme: <span className="font-semibold text-white">{activePartner.themeColor}</span></span>
                       ) : null}
-                    </span>
+                    </span> */}
                   </div>
                   {/* {footerAddress ? (
                     <div className="text-xs text-slate-400">

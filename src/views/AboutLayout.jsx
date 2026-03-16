@@ -9,6 +9,8 @@ import { ABOUT_PARTNER_STATIC } from '../data/aboutPartnerStatic';
 
 // Import Advisory Board images
 import ajBeleza from '../assets/advisoryBoard/AJ-Beleza.png';
+import agborClinton from '../assets/advisoryBoard/AgborClinton.jpg';
+import bansanThomasGeorge from '../assets/advisoryBoard/Bansan-homas-George.jpg';
 import davoudJafari from '../assets/advisoryBoard/Davoud-jafari.jpg';
 import maximTurushev from '../assets/advisoryBoard/Maxim-Turushev-russia.jpg';
 import mdHelalAnNahiyan from '../assets/advisoryBoard/Md-Helal-An-Nahiyan.jpg';
@@ -16,8 +18,46 @@ import mrDambudzoRoyNyathi from '../assets/advisoryBoard/Mr.Dambudzo-Roy-Nyathi.
 import ninaDrakulic from '../assets/advisoryBoard/Nina-Drakulic-Montenegro.jpg';
 import orlandoAnach from '../assets/advisoryBoard/Orlando-anach.png';
 import rahmanRasulzada from '../assets/advisoryBoard/Rahman-Rasulzada-Azer.jpg';
+import rodnieMarange from '../assets/advisoryBoard/Rodnie-Marange.jpg';
 import salahEissa from '../assets/advisoryBoard/salah-eissa.jpg';
+import valentineMasichaWafula from '../assets/advisoryBoard/Valentine-Masicha-Wafula.jpg';
+import venezuela from '../assets/advisoryBoard/venezuela.png';
+import versha from '../assets/advisoryBoard/versha.jpg';
 import waelAbbasKadhim from '../assets/advisoryBoard/WaelAbbasKadhim.jpg';
+
+// Import Executive Committee images (from assets/executiveCommittee)
+import ecAjayPratapSingh from '../assets/executiveCommittee/AjayPratapSingh.webp';
+import ecHoma from '../assets/executiveCommittee/homa.webp';
+import ecNavin from '../assets/executiveCommittee/navin.webp';
+import ecRahul from '../assets/executiveCommittee/rahul.webp';
+import ecRajkumar from '../assets/executiveCommittee/rajkumar.webp';
+
+// Static Advisory Board members (from assets/advisoryBoard)
+const ADVISORY_BOARD_STATIC = [
+  { id: '1', name: 'AJ Beleza', role: 'Advisory Board Member', image: ajBeleza },
+
+  
+  { id: '4', name: 'Davoud Jafari', role: 'Advisory Board Member', image: davoudJafari },
+  { id: '5', name: 'Maxim Turushev', role: 'Advisory Board Member · Russia', image: maximTurushev },
+  { id: '6', name: 'Md Helal An Nahiyan', role: 'Advisory Board Member', image: mdHelalAnNahiyan },
+  { id: '7', name: 'Mr. Dambudzo Roy Nyathi', role: 'Advisory Board Member', image: mrDambudzoRoyNyathi },
+  { id: '8', name: 'Nina Drakulić', role: 'Advisory Board Member · Montenegro', image: ninaDrakulic },
+  { id: '9', name: 'Orlando Anach', role: 'Advisory Board Member', image: orlandoAnach },
+  { id: '10', name: 'Rahman Rasulzada', role: 'Advisory Board Member · Azerbaijan', image: rahmanRasulzada },
+
+  { id: '12', name: 'Salah Eissa', role: 'Advisory Board Member', image: salahEissa },
+  { id: '15', name: 'Wael Abbas Kadhim', role: 'Advisory Board Member', image: waelAbbasKadhim },
+
+];
+
+// Static Executive Committee members (from assets/executiveCommittee)
+const EXECUTIVE_COMMITTEE_STATIC = [
+  { id: 'ec-1', name: 'Raj Kumar Sharma', role: 'President', image: ecRajkumar },
+  { id: 'ec-2', name: 'Ajay Pratap Singh', role: 'Member, Executive Committee', image: ecAjayPratapSingh },
+  { id: 'ec-3', name: 'Homa', role: 'Member, Executive Committee', image: ecHoma },
+  { id: 'ec-4', name: 'Navin', role: 'Member, Executive Committee', image: ecNavin },
+  { id: 'ec-5', name: 'Rahul', role: 'Member, Executive Committee', image: ecRahul },
+];
 
 const AboutLayout = ({ setView }) => {
   const navigate = useNavigate();
@@ -43,7 +83,7 @@ const AboutLayout = ({ setView }) => {
   const [advisoryLoading, setAdvisoryLoading] = useState(false);
   const [advisoryError, setAdvisoryError] = useState(null);
 
-  // Board of Directors state
+  // Executive Committee state
   const [boardMembers, setBoardMembers] = useState([]);
   const [boardLoading, setBoardLoading] = useState(false);
   const [boardError, setBoardError] = useState(null);
@@ -110,7 +150,7 @@ const AboutLayout = ({ setView }) => {
     fetchAdvisoryBoard();
   }, [activeSection, advisoryMembers.length, advisoryLoading]);
   
-  // Fetch Board of Directors when board tab is active
+  // Fetch Executive Committee when board tab is active
   useEffect(() => {
     if (activeSection !== 'board' || boardMembers.length > 0 || boardLoading) {
       return;
@@ -133,7 +173,7 @@ const AboutLayout = ({ setView }) => {
         setBoardMembers(sorted);
       } catch (error) {
         console.error('Failed to load board of directors members', error);
-        setBoardError('Unable to load Board of Directors at the moment.');
+        setBoardError('Unable to load Executive Committee at the moment.');
       } finally {
         setBoardLoading(false);
       }
@@ -157,7 +197,7 @@ const AboutLayout = ({ setView }) => {
     { id: 'strategy', label: 'Strategy' },
     { id: 'president', label: "President's Message" },
     { id: 'advisory', label: 'Advisory Board' },
-    { id: 'board', label: 'Board of Directors' },
+    { id: 'board', label: 'Executive Committee' },
     { id: 'federation-services', label: 'Federation Services' },
     { id: 'associates', label: 'Associates & Partners' },
     { id: 'tech-for-good', label: 'Tech for Good' },
@@ -645,7 +685,7 @@ const AboutLayout = ({ setView }) => {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Users className="text-blue-600" />
-                <h2 className="text-3xl font-bold text-slate-900">Board of Directors</h2>
+                <h2 className="text-3xl font-bold text-slate-900">Executive Committee</h2>
               </div>
               <p className="text-lg text-slate-600 leading-relaxed">
                 The Executive Committee of the World Robotics Sports Organization (WORSO) is composed of esteemed leaders in the esports industry, tasked with guiding the federation's strategic vision and policies. They oversee global initiatives, drive the growth of competitive gaming, and ensure fair, inclusive practices. By fostering collaboration with national organizations, governments, and stakeholders, the committee plays a pivotal role in shaping the future of esports worldwide and ensuring its sustainable development.
@@ -653,67 +693,37 @@ const AboutLayout = ({ setView }) => {
             </div>
 
             {/* Board Members */}
-            {boardLoading && (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="bg-white rounded-2xl border border-slate-200 p-8 flex flex-col items-center text-center shadow-sm animate-pulse"
-                  >
-                    <div className="w-32 h-32 rounded-full bg-slate-100 mb-4" />
-                    <div className="h-4 bg-slate-200 rounded w-3/4 mb-2" />
-                    <div className="h-3 bg-slate-100 rounded w-1/2" />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {!boardLoading && boardError && (
-              <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-                {boardError}
-              </div>
-            )}
-
-            {!boardLoading && !boardError && boardMembers.length === 0 && (
-              <p className="text-slate-500 text-sm">Board of Directors will be announced soon.</p>
-            )}
-
-            {!boardLoading && boardMembers.length > 0 && (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {boardMembers.map((member) => (
-                  <div
-                    key={member._id}
-                    className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 p-8 flex flex-col items-center text-center hover:border-blue-200"
-                  >
-                    {/* Circular Image Container */}
-                    <div className="relative w-40 h-40 mb-6">
-                      <div className="absolute inset-0 rounded-full overflow-hidden border-4 border-white shadow-lg group-hover:border-blue-100 transition-colors duration-300">
-                        <img
-                          src={member.photo_url}
-                          alt={member.full_name}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src =
-                              'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLiUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+';
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Member Info */}
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">
-                        {member.full_name}
-                      </h3>
-                      <p className="text-sm text-slate-600 leading-relaxed">
-                        {member.role}
-                      </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {EXECUTIVE_COMMITTEE_STATIC.map((member) => (
+                <div
+                  key={member.id}
+                  className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 p-8 flex flex-col items-center text-center hover:border-blue-200"
+                >
+                  <div className="relative w-40 h-40 mb-6">
+                    <div className="absolute inset-0 rounded-lg overflow-hidden border-4 border-white shadow-lg group-hover:border-blue-100 transition-colors duration-300">
+                      <img
+                        src={member.image}
+                        alt={member.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src =
+                            'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLiUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+';
+                        }}
+                      />
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">
+                      {member.name}
+                    </h3>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      {member.role}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
 
             {/* Additional Info Section */}
             <div className="mt-12 pt-8 border-t border-slate-200">
@@ -725,7 +735,7 @@ const AboutLayout = ({ setView }) => {
                     <h3 className="text-xl font-bold text-slate-900">Board Meetings</h3>
                   </div>
                   <p className="text-slate-600 mb-4">
-                    The Board of Directors convenes quarterly to review progress, set strategic direction, and make key decisions for WORSO's global operations.
+                    The Executive Committee convenes quarterly to review progress, set strategic direction, and make key decisions for WORSO's global operations.
                   </p>
                   <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
                     <Calendar size={16} />
@@ -854,6 +864,7 @@ const AboutLayout = ({ setView }) => {
         );
 
       case 'advisory':
+        const displayAdvisoryMembers =  ADVISORY_BOARD_STATIC;
         return (
           <div>
             <h2 className="text-3xl font-bold text-slate-900 mb-4">Advisory Board</h2>
@@ -862,73 +873,59 @@ const AboutLayout = ({ setView }) => {
             </p>
 
             {advisoryLoading && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm animate-pulse"
-                  >
-                    <div className="relative pt-[100%] bg-slate-100" />
-                    <div className="p-4 space-y-2">
-                      <div className="h-4 bg-slate-200 rounded w-3/4" />
-                      <div className="h-3 bg-slate-200 rounded w-1/2" />
-                      <div className="h-3 bg-slate-100 rounded w-full mt-3" />
-                    </div>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="bg-white rounded-2xl border border-slate-200 p-8 flex flex-col items-center animate-pulse">
+                    <div className="w-40 h-40 rounded-lg bg-slate-200 mb-6" />
+                    <div className="h-5 bg-slate-200 rounded w-3/4 mb-2" />
+                    <div className="h-3 bg-slate-100 rounded w-1/2" />
                   </div>
                 ))}
               </div>
             )}
 
             {!advisoryLoading && advisoryError && (
-              <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-                {advisoryError}
+              <div className="mb-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+                {advisoryError} Showing static advisory board.
               </div>
             )}
 
-            {!advisoryLoading && !advisoryError && advisoryMembers.length === 0 && (
-              <p className="text-slate-500 text-sm">Advisory Board will be announced soon.</p>
-            )}
-
-            {!advisoryLoading && advisoryMembers.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {advisoryMembers.map((member) => (
+            {!advisoryLoading && displayAdvisoryMembers.length > 0 && (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {displayAdvisoryMembers.map((member) => (
                   <div
-                    key={member._id}
-                    className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col"
+                    key={member.id}
+                    className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 p-8 flex flex-col items-center text-center hover:border-blue-200"
                   >
-                    <div className="relative pt-[100%] bg-slate-100">
-                      <img
-                        src={member.photo_url}
-                        alt={member.full_name}
-                        className="absolute top-0 left-0 w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src =
-                            'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLiUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+';
-                        }}
-                      />
+                    <div className="relative w-40 h-40 mb-6">
+                      <div className="absolute inset-0 rounded-lg overflow-hidden border-4 border-white shadow-lg group-hover:border-blue-100 transition-colors duration-300">
+                        <img
+                          src={member.image}
+                          alt={member.name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src =
+                              'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLiUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+';
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="p-4 flex-1 flex flex-col">
-                      <h3 className="font-bold text-slate-900 text-lg">{member.full_name}</h3>
-                      <p className="text-sm text-slate-600 mt-1">{member.role}</p>
-                      {member.bio && (
-                        <p className="text-xs text-slate-500 mt-3 line-clamp-3">{member.bio}</p>
-                      )}
-                      {member.linkedin_url && (
-                        <a
-                          href={member.linkedin_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
-                        >
-                          <Linkedin size={14} />
-                          <span>View LinkedIn</span>
-                        </a>
-                      )}
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">
+                        {member.name}
+                      </h3>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        {member.role}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
+            )}
+
+            {!advisoryLoading && displayAdvisoryMembers.length === 0 && (
+              <p className="text-slate-500 text-sm">Advisory Board members will be announced soon.</p>
             )}
           </div>
         );
@@ -1362,7 +1359,7 @@ const AboutLayout = ({ setView }) => {
 
   return (
     <div className="animate-fadeIn bg-gradient-to-b from-slate-50 via-white to-slate-50 min-h-screen">
-      <div className="bg-white border-b border-slate-200 shadow-sm sticky top-[56px] z-30">
+      <div className="bg-white border-b border-slate-200 shadow-sm  z-30">
         <div className="container mx-auto px-4 flex items-center gap-2">
           {/* Left Arrow */}
           <button

@@ -521,7 +521,7 @@ const TechnoxianView = () => {
 
   return (
     <div className="animate-fadeIn bg-slate-50 min-h-screen">
-      <div className="bg-white border-b border-slate-200 sticky top-[56px] z-30 shadow-sm">
+      <div className="bg-white border-b border-slate-200 sticky  z-30 shadow-sm">
         <div className="container mx-auto px-4 flex gap-8 overflow-x-auto">
           {tabs.map(
             (tab) => (

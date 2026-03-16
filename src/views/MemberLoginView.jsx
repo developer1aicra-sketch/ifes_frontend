@@ -81,7 +81,7 @@ const MemberLoginView = ({ setView, setUser, siteConfig, user }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="flex-1 p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                className="flex-1 p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black"
               />
             </div>
           </div>
@@ -98,7 +98,7 @@ const MemberLoginView = ({ setView, setUser, siteConfig, user }) => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 autoComplete="current-password"
-                className="flex-1 p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                className="flex-1 p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black"
               />
               <button
                 type="button"

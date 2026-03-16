@@ -343,7 +343,7 @@ export const DEFAULT_SITES = {
     id: 'global',
     name: 'WORSO Global',
     logo_text: 'WORSO',
-    sub_text: 'WORLD ROBOTICS SOCIETY',
+    sub_text: 'World Robotics Sports Organization',
     theme: 'blue',
     colors: {
       primary: 'bg-blue-600',
