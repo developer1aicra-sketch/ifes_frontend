@@ -646,7 +646,7 @@ export default function MySquadView({
         <div className="min-w-0">
           <h2 className="text-xl font-bold text-white">My Squad</h2>
           <p className="text-slate-400 text-sm mt-0.5">
-            View and manage your registered squads for this club.
+            View and manage your registered squads for this cldddub.
           </p>
         </div>
         {showSearchInHeader && (

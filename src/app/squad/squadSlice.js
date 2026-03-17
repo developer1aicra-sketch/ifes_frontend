@@ -327,14 +327,17 @@ export const {
 export default squadSlice.reducer;
 
 // ===== Selectors =====
-export const selectClubs = (state) => state.squad.clubs;
-export const selectSelectedClub = (state) => state.squad.selectedClub;
-export const selectActiveClubId = (state) => state.squad.activeClubId;
-export const selectTeams = (state) => state.squad.teams;
-export const selectSelectedTeam = (state) => state.squad.selectedTeam;
-export const selectSquadLoading = (state) => state.squad.loading;
-export const selectSquadError = (state) => state.squad.error;
-export const selectSquadSuccess = (state) => state.squad.success;
-export const selectIsSquadLoading = (state) => state.squad.loading === 1;
+const selectSquadSlice = (state) => state?.squad;
+
+export const selectClubs = (state) => selectSquadSlice(state)?.clubs ?? [];
+export const selectSelectedClub = (state) => selectSquadSlice(state)?.selectedClub ?? null;
+export const selectActiveClubId = (state) => selectSquadSlice(state)?.activeClubId ?? null;
+export const selectTeams = (state) => selectSquadSlice(state)?.teams ?? [];
+export const selectSelectedTeam = (state) => selectSquadSlice(state)?.selectedTeam ?? null;
+export const selectSquadLoading = (state) => selectSquadSlice(state)?.loading ?? 0;
+export const selectSquadError = (state) => selectSquadSlice(state)?.error ?? null;
+export const selectSquadSuccess = (state) => selectSquadSlice(state)?.success ?? null;
+export const selectIsSquadLoading = (state) => (selectSquadSlice(state)?.loading ?? 0) === 1;
 export const selectHasSquadLoaded = (state) =>
-  state.squad.loading === 2 && !state.squad.error;
+  (selectSquadSlice(state)?.loading ?? 0) === 2 && !selectSquadSlice(state)?.error;
+

@@ -687,7 +687,7 @@ export default function MySquadView({
             )}
           </div>
         )}
-        {/* {clubs.length > 1 && (
+        {clubs.length > 1 && (
           <div className="relative">
             <button
               type="button"
@@ -735,7 +735,7 @@ export default function MySquadView({
               </>
             )}
           </div>
-        )} */}
+        )}
       </div>
 
       {!effectiveClubId && clubs.length === 0 && (

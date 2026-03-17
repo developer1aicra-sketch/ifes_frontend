@@ -2123,8 +2123,8 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
                   )}
                 </div>
                 <div className="bg-slate-800 border border-slate-600 rounded-xl p-4 text-center min-w-[120px]">
-              <p className="text-xs text-slate-500 uppercase mb-1">Entry Fee</p>
-              <p className="text-xl font-mono font-bold text-white">$42</p>
+              {/* <p className="text-xs text-slate-500 uppercase mb-1">Entry Fee</p>
+              <p className="text-xl font-mono font-bold text-white">$42</p> */}
             </div>
               </div>
 

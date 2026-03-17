@@ -69,21 +69,23 @@ export const {
 export default competitionSlice.reducer;
 
 // ===== Selectors =====
-export const selectCompetitions = (state) => state.competition.list || [];
-export const selectEventList = (state) => state.competition.eventList.data;
+const selectCompetitionSlice = (state) => state?.competition;
+
+export const selectCompetitions = (state) => selectCompetitionSlice(state)?.list ?? [];
+export const selectEventList = (state) => selectCompetitionSlice(state)?.eventList?.data ?? [];
 
 // Single competition selector
-export const selectSingleCompetition = (state) => state.competition.single;
+export const selectSingleCompetition = (state) => selectCompetitionSlice(state)?.single ?? null;
 
 // Loading & error
 export const selectCompetitionsLoading = (state) =>
-    state.competition.loading;
+    selectCompetitionSlice(state)?.loading ?? 0;
 
 export const selectCompetitionsError = (state) =>
-    state.competition.error;
+    selectCompetitionSlice(state)?.error ?? null;
 
 export const selectIsCompetitionsLoading = (state) =>
-    state.competition.loading === 1;
+    (selectCompetitionSlice(state)?.loading ?? 0) === 1;
 
 export const selectHasCompetitionsLoaded = (state) =>
-    state.competition.loading === 2 && !state.competition.error;
+    (selectCompetitionSlice(state)?.loading ?? 0) === 2 && !selectCompetitionSlice(state)?.error;
