@@ -44,6 +44,9 @@ const endpoints = {
   event: {
     list: '/event/list'
   },
+  bot: {
+    list: '/bot/list',
+  },
   club: {
     add: `/club/add`,
     myGet: `/club/my/get`,
