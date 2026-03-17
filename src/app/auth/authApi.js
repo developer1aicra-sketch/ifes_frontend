@@ -69,6 +69,9 @@ export const loginVerifyOtp = (data) =>
 export const initiateMembership = (data) =>
   axiosInstance.post(endpoints.membership.initiate, data);
 
+export const login = (payload) =>
+  axiosInstance.post(endpoints.loginAuth.login, payload);
+
 /**
  * Get user's membership details
  * 

@@ -1,5 +1,5 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
-import { signUpSendOtp, signUpVerifyOtp, signUp, loginSendOtp, loginVerifyOtp } from './authApi';
+import { signUpSendOtp, signUpVerifyOtp, signUp, loginSendOtp, loginVerifyOtp, login } from './authApi';
 import { setAuthToken } from '../../api/authToken';
 import {
   signUpSendOtpRequest,
@@ -17,6 +17,9 @@ import {
   loginVerifyOtpRequest,
   loginVerifyOtpSuccess,
   loginVerifyOtpFailure,
+  loginRequest,
+  loginSuccess,
+  loginFailure,
 } from './authSlice';
 
 /** Extract token from verify OTP / signup response (handles data.data.token, data.token, etc.) */
@@ -116,11 +119,42 @@ function* handleSignUp({ payload }) {
     yield put(signUpFailure(errorMessage));
   }
 }
+function* handleLogin({ payload }) {
+  try {
+    // POST /auth/login with { email, password }
+    const response = yield call(login, payload);
 
+    if (response && response.data) {
+      const responseData = response.data?.data ?? response.data;
+
+      const token =
+        responseData?.token ??
+        responseData?.accessToken ??
+        response.data?.token ??
+        response.data?.accessToken;
+
+      if (token) {
+        setAuthToken(token);
+      } else {
+        console.warn('No token in login response:', responseData);
+      }
+
+      yield put(loginSuccess(responseData));
+    } else {
+      yield put(loginFailure('No data in login response'));
+    }
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message ?? error.message ?? 'Login failed. Please try again.';
+    yield put(loginFailure(errorMessage));
+  }
+}
 export default function* authSaga() {
   yield takeLatest(signUpSendOtpRequest.type, handleSignUpSendOtp);
   yield takeLatest(signUpVerifyOtpRequest.type, handleSignUpVerifyOtp);
   yield takeLatest(signUpRequest.type, handleSignUp);
   yield takeLatest(loginSendOtpRequest.type, handleLoginSendOtp);
   yield takeLatest(loginVerifyOtpRequest.type, handleLoginVerifyOtp);
+  yield takeLatest(loginRequest.type, handleLogin);
+
 }

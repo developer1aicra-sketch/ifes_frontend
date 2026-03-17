@@ -59,7 +59,22 @@ const authSlice = createSlice({
       state.loading = 2;
       state.error = action.payload;
     },
-
+    loginRequest: (state) => {
+      state.loading = 1;
+      state.error = null;
+      state.loginVerified = false;
+    },
+    loginSuccess: (state, action) => {
+      state.loading = 2;
+      state.single = action.payload;
+      state.loginVerified = true;
+      state.error = null;
+    },
+    loginFailure: (state, action) => {
+      state.loading = 2;
+      state.error = action.payload;
+      state.loginVerified = false;
+    },
     loginVerifyOtpRequest: (state) => {
       state.loading = 1;
       state.error = null;
@@ -122,6 +137,9 @@ export const {
   loginVerifyOtpSuccess,
   loginVerifyOtpFailure,
   clearLoginVerified,
+  loginRequest,
+  loginSuccess,
+  loginFailure,
 } = authSlice.actions;
 
 export default authSlice.reducer;

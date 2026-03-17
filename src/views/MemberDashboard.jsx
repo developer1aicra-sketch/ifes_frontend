@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
-import { Award, Download, LayoutDashboard, Zap, ChevronDown, ChevronUp, Briefcase, Users, Calendar, CalendarClock, Menu, X } from 'lucide-react';
+import { Award, Download, LayoutDashboard, Zap, ChevronDown, ChevronUp, Briefcase, Users, Calendar, CalendarClock, Menu, X, Pencil } from 'lucide-react';
 import { getMyClub } from '../app/club/clubApi';
 import { getMyMembership } from '../app/membership/membershipApi';
+import axiosInstance from '../api/axiosInstance';
+import endpoints from '../api/endpoints';
+import { updateProfile as updateProfileApi } from '../api/profileApi';
 import { useTheme } from '../contexts/ThemeContext';
 import { DiyOffers } from '../components/DiyOffers';
 import { CareerGrowth } from '../components/CareerGrowth';
@@ -130,6 +133,34 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
   const [membershipError, setMembershipError] = useState('');
   const [cardDownloading, setCardDownloading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [classSchedule, setClassSchedule] = useState(null);
+  const [classLoading, setClassLoading] = useState(false);
+  const [classError, setClassError] = useState('');
+  const [registeringClassId, setRegisteringClassId] = useState(null);
+  const [registerSuccessId, setRegisterSuccessId] = useState(null);
+  const [registerError, setRegisterError] = useState('');
+  const [profileForm, setProfileForm] = useState({
+    fullName: '',
+    mobile: '',
+    dob: '',
+    gender: '',
+    fullShipingAddress: '',
+    city: '',
+    state: '',
+    pincode: '',
+    alternateEmail: '',
+    country: '',
+    schoolOrCollege: '',
+    classOrGrade: '',
+    fatherName: '',
+    motherName: '',
+    skills: '',
+    hobbies: '',
+  });
+  const [updatingProfile, setUpdatingProfile] = useState(false);
+  const [updateProfileError, setUpdateProfileError] = useState('');
+  const [updateProfileSuccess, setUpdateProfileSuccess] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const membershipCardRef = useRef(null);
 
   const memberName = getMemberDisplayName(user, club);
@@ -237,6 +268,42 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
     };
   }, []);
 
+  // Initialize profile form from membership user data when available
+  useEffect(() => {
+    const u = membership?.user;
+    if (!u) return;
+    const addr = u.personalAndShippingAddress || {};
+    const personal = u.personal || {};
+    const additional = u.additional || {};
+    setProfileForm((prev) => ({
+      ...prev,
+      fullName: u.fullName || '',
+      mobile: u.mobile || '',
+      dob: addr.dob || '',
+      gender: addr.gender || '',
+      fullShipingAddress: addr.fullShipingAddress || addr.addressLine1 || '',
+      city: addr.city || '',
+      state: addr.state || '',
+      pincode: addr.pincode || '',
+      alternateEmail: addr.alternateEmail || u.alternateEmail || '',
+      country: addr.country || '',
+      schoolOrCollege: u.affiliation?.schoolOrCollege || '',
+      classOrGrade: u.affiliation?.classOrGrade || '',
+      fatherName: u.fatherName || personal.fatherName || '',
+      motherName: u.motherName || personal.motherName || '',
+      skills: Array.isArray(u.skills)
+        ? u.skills.join(', ')
+        : Array.isArray(additional.skills)
+          ? additional.skills.join(', ')
+          : u.skills || '',
+      hobbies: Array.isArray(u.hobbies)
+        ? u.hobbies.join(', ')
+        : Array.isArray(additional.hobbies)
+          ? additional.hobbies.join(', ')
+          : u.hobbies || '',
+    }));
+  }, [membership]);
+
   // Refetch membership when user opens Membership or Overview tab (e.g. after login or for fresh data)
   const refetchMembership = (force = false) => {
     if (membershipLoading && !force) return;
@@ -256,6 +323,127 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
         );
       })
       .finally(() => setMembershipLoading(false));
+  };
+
+  const fetchClassSchedule = async () => {
+    if (classLoading) return;
+    setClassError('');
+    setRegisterSuccessId(null);
+    setRegisterError('');
+    setClassLoading(true);
+    try {
+      const res = await axiosInstance.get(endpoints.classes.schedule);
+      const data = res?.data;
+      // Expected shape:
+      // { success, todayClasses: [], upcomingClasses: [], dayWise: { ... } }
+      setClassSchedule(data || null);
+    } catch (err) {
+      setClassError(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Unable to load class schedule'
+      );
+      setClassSchedule(null);
+    } finally {
+      setClassLoading(false);
+    }
+  };
+
+  const handleProfileInputChange = (e) => {
+    const { name, value } = e.target;
+    setProfileForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    if (updateProfileError || updateProfileSuccess) {
+      setUpdateProfileError('');
+      setUpdateProfileSuccess(false);
+    }
+  };
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    if (updatingProfile) return;
+    setUpdatingProfile(true);
+    setUpdateProfileError('');
+    setUpdateProfileSuccess(false);
+
+    const toArray = (value) =>
+      value
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+    const payload = {
+      fullName: profileForm.fullName || undefined,
+      mobile: profileForm.mobile || undefined,
+      personalAndShippingAddress: {
+        dob: profileForm.dob || undefined,
+        gender: profileForm.gender || undefined,
+        fullShipingAddress: profileForm.fullShipingAddress || undefined,
+        city: profileForm.city || undefined,
+        state: profileForm.state || undefined,
+        pincode: profileForm.pincode || undefined,
+        alternateEmail: profileForm.alternateEmail || undefined,
+        country: profileForm.country || undefined,
+      },
+      affiliation: {
+        schoolOrCollege: profileForm.schoolOrCollege || undefined,
+        classOrGrade: profileForm.classOrGrade || undefined,
+      },
+      personal: {
+        fatherName: profileForm.fatherName || undefined,
+        motherName: profileForm.motherName || undefined,
+      },
+      additional: {
+        skills: toArray(profileForm.skills || ''),
+        hobbies: toArray(profileForm.hobbies || ''),
+      },
+    };
+
+    try {
+      await updateProfileApi(payload);
+      setUpdateProfileSuccess(true);
+      // Refresh membership/user data so UI reflects latest profile
+      refetchMembership(true);
+    } catch (err) {
+      setUpdateProfileError(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Unable to update profile'
+      );
+    } finally {
+      setUpdatingProfile(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'class-schedule' && !classSchedule && !classLoading) {
+      fetchClassSchedule();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  const handleRegisterClass = async (classId) => {
+    if (!classId || registeringClassId) return;
+    setRegisterSuccessId(null);
+    setRegisterError('');
+    const resolvedClassId = classId;
+    setRegisteringClassId(resolvedClassId);
+    try {
+      await axiosInstance.post(endpoints.classes.register, {
+        class_id: resolvedClassId,
+      });
+      setRegisterSuccessId(resolvedClassId);
+    } catch (err) {
+      setRegisterError(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Unable to register for this class'
+      );
+    } finally {
+      setRegisteringClassId(null);
+    }
   };
 
   const closeSidebar = () => setSidebarOpen(false);
@@ -657,7 +845,23 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                       {/* Profile card – from API data.user */}
                       {membership?.user && (
                         <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm">
-                          <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4">Profile</h2>
+                          <div className="mb-3 sm:mb-4 flex items-center justify-between gap-3">
+                            <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                              Profile
+                            </h2>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsEditingProfile((prev) => !prev);
+                                setUpdateProfileError('');
+                                setUpdateProfileSuccess(false);
+                              }}
+                              className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                            >
+                              <Pencil className="w-3 h-3" />
+                              <span>{isEditingProfile ? 'Cancel' : 'Edit'}</span>
+                            </button>
+                          </div>
                           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                             <div className="flex-shrink-0">
                               {membership.user.logo ? (
@@ -740,6 +944,237 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                               </span>
                             )}
                           </div>
+
+                          {/* Editable profile form */}
+                          {isEditingProfile && (
+                            <form
+                              onSubmit={handleProfileSubmit}
+                              className="mt-6 border-t border-slate-200 pt-4 space-y-4"
+                            >
+                              <h3 className="text-sm font-semibold text-slate-900">
+                                Update Profile
+                              </h3>
+                              {updateProfileError && (
+                                <p className="text-xs text-red-600 font-medium">
+                                  {updateProfileError}
+                                </p>
+                              )}
+                              {updateProfileSuccess && (
+                                <p className="text-xs text-emerald-600 font-medium">
+                                  Profile updated successfully.
+                                </p>
+                              )}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  Full Name
+                                </label>
+                                <input
+                                  type="text"
+                                  name="fullName"
+                                  value={profileForm.fullName}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  Mobile
+                                </label>
+                                <input
+                                  type="tel"
+                                  name="mobile"
+                                  value={profileForm.mobile}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  Date of Birth
+                                </label>
+                                <input
+                                  type="date"
+                                  name="dob"
+                                  value={profileForm.dob}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  Gender
+                                </label>
+                                <select
+                                  name="gender"
+                                  value={profileForm.gender}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-white text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                                >
+                                  <option value="">Select</option>
+                                  <option value="Male">Male</option>
+                                  <option value="Female">Female</option>
+                                  <option value="Other">Other</option>
+                                </select>
+                              </div>
+                              <div className="sm:col-span-2">
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  Full Shipping Address
+                                </label>
+                                <textarea
+                                  name="fullShipingAddress"
+                                  value={profileForm.fullShipingAddress}
+                                  onChange={handleProfileInputChange}
+                                  rows={2}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  City
+                                </label>
+                                <input
+                                  type="text"
+                                  name="city"
+                                  value={profileForm.city}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  State
+                                </label>
+                                <input
+                                  type="text"
+                                  name="state"
+                                  value={profileForm.state}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  Country
+                                </label>
+                                <input
+                                  type="text"
+                                  name="country"
+                                  value={profileForm.country}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  Pincode
+                                </label>
+                                <input
+                                  type="text"
+                                  name="pincode"
+                                  value={profileForm.pincode}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  Alternate Email
+                                </label>
+                                <input
+                                  type="email"
+                                  name="alternateEmail"
+                                  value={profileForm.alternateEmail}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  School / College
+                                </label>
+                                <input
+                                  type="text"
+                                  name="schoolOrCollege"
+                                  value={profileForm.schoolOrCollege}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  Class / Grade
+                                </label>
+                                <input
+                                  type="text"
+                                  name="classOrGrade"
+                                  value={profileForm.classOrGrade}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  Father&apos;s Name
+                                </label>
+                                <input
+                                  type="text"
+                                  name="fatherName"
+                                  value={profileForm.fatherName}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  Mother&apos;s Name
+                                </label>
+                                <input
+                                  type="text"
+                                  name="motherName"
+                                  value={profileForm.motherName}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                              </div>
+                              <div className="sm:col-span-2">
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  Skills (comma separated)
+                                </label>
+                                <input
+                                  type="text"
+                                  name="skills"
+                                  value={profileForm.skills}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                  placeholder="e.g. Coding, NodeJS, MongoDB"
+                                />
+                              </div>
+                              <div className="sm:col-span-2">
+                                <label className="block text-xs font-medium text-slate-600 mb-1">
+                                  Hobbies (comma separated)
+                                </label>
+                                <input
+                                  type="text"
+                                  name="hobbies"
+                                  value={profileForm.hobbies}
+                                  onChange={handleProfileInputChange}
+                                  className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                  placeholder="e.g. Gaming, Cricket, Reading"
+                                />
+                              </div>
+                              <div className="flex justify-end pt-2 sm:col-span-2">
+                                <button
+                                  type="submit"
+                                  disabled={updatingProfile}
+                                  className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                  {updatingProfile ? 'Saving...' : 'Save Changes'}
+                                </button>
+                              </div>
+                            </div>
+                            </form>
+                          )}
                         </div>
                       )}
 
@@ -753,7 +1188,9 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                             <div>
                               <dt className="text-slate-500">Stream</dt>
                               <dd className="font-semibold text-slate-900">
-                                {membership.user.stream || membership.user.affiliation?.stream || '—'}
+                                {membership.user.stream ||
+                                  membership.user.affiliation?.stream ||
+                                  'Not added'}
                               </dd>
                             </div>
                             <div>
@@ -769,15 +1206,17 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                               <dd className="font-semibold text-slate-900">
                                 {Array.isArray(membership.user.subjects)
                                   ? membership.user.subjects.join(', ')
-                                  : membership.user.subjects || '—'}
-                              </dd>
+                                  : membership.user.subjects || 'Not added'}
+                             </dd>
                             </div>
                             <div className="sm:col-span-2">
                               <dt className="text-slate-500">Skills</dt>
                               <dd className="font-semibold text-slate-900">
                                 {Array.isArray(membership.user.skills)
                                   ? membership.user.skills.join(', ')
-                                  : membership.user.skills || '—'}
+                                  : Array.isArray(membership.user.additional?.skills)
+                                    ? membership.user.additional.skills.join(', ')
+                                    : (profileForm.skills || 'Not added')}
                               </dd>
                             </div>
                             <div className="sm:col-span-2">
@@ -785,19 +1224,27 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                               <dd className="font-semibold text-slate-900">
                                 {Array.isArray(membership.user.hobbies)
                                   ? membership.user.hobbies.join(', ')
-                                  : membership.user.hobbies || '—'}
+                                  : Array.isArray(membership.user.additional?.hobbies)
+                                    ? membership.user.additional.hobbies.join(', ')
+                                    : (profileForm.hobbies || 'Not added')}
                               </dd>
                             </div>
                             <div>
                               <dt className="text-slate-500">Father&apos;s Name</dt>
                               <dd className="font-semibold text-slate-900">
-                                {membership.user.fatherName || '—'}
+                                {membership.user.fatherName ||
+                                  membership.user.personal?.fatherName ||
+                                  profileForm.fatherName ||
+                                  'Not added'}
                               </dd>
                             </div>
                             <div>
                               <dt className="text-slate-500">Mother&apos;s Name</dt>
                               <dd className="font-semibold text-slate-900">
-                                {membership.user.motherName || '—'}
+                                {membership.user.motherName ||
+                                  membership.user.personal?.motherName ||
+                                  profileForm.motherName ||
+                                  'Not added'}
                               </dd>
                             </div>
                             <div className="sm:col-span-2">
@@ -812,26 +1259,26 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                                     addr.state,
                                     addr.country,
                                   ].filter(Boolean);
-                                  return parts.length ? parts.join(', ') : '—';
+                                  return parts.length ? parts.join(', ') : 'Not added';
                                 })()}
                               </dd>
                             </div>
                             <div>
                               <dt className="text-slate-500">Pincode / Zipcode</dt>
                               <dd className="font-semibold text-slate-900">
-                                {membership.user.personalAndShippingAddress?.pincode || '—'}
+                                {membership.user.personalAndShippingAddress?.pincode || 'Not added'}
                               </dd>
                             </div>
                             <div>
                               <dt className="text-slate-500">Alternate Mobile</dt>
                               <dd className="font-semibold text-slate-900">
-                                {formatMobileDisplay(membership.user.alternateMobile) || '—'}
+                                {formatMobileDisplay(membership.user.alternateMobile) || 'Not added'}
                               </dd>
                             </div>
                             <div>
                               <dt className="text-slate-500">Alternate Email ID</dt>
                               <dd className="font-semibold text-slate-900 break-all">
-                                {membership.user.alternateEmail || '—'}
+                                {membership.user.alternateEmail || 'Not added'}
                               </dd>
                             </div>
                           </div>
@@ -941,7 +1388,7 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                                     {' · '}
                                     <a href={`tel:${telDigits}`} className="font-mono hover:text-indigo-200 underline focus:outline-none focus:ring-2 focus:ring-white/50 rounded">
                                       {display}
-                                    </a>
+                                    </a>x
                                   </span>
                                 ) : null;
                               })()}
@@ -978,19 +1425,142 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
               )}
 
               {activeTab === 'class-schedule' && (
-                <div className={`rounded-xl sm:rounded-2xl overflow-hidden ${cardBg} border border-white/10 shadow-xl min-h-[240px] sm:min-h-[320px] flex flex-col items-center justify-center p-6 sm:p-8 md:p-12`}>
-                  <div className="flex flex-col items-center justify-center text-center max-w-sm w-full">
-                    <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl ${accent.iconBg} flex items-center justify-center mb-3 sm:mb-4`}>
-                      <CalendarClock size={28} className={accent.title} aria-hidden />
-                    </div>
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-100 mb-2">Make Your Bot</h2>
-                    <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-                    Classes will start on 1 March.
+                <div className={`rounded-xl sm:rounded-2xl overflow-hidden ${cardBg} border border-white/10 shadow-xl min-h-[260px] sm:min-h-[340px] flex flex-col items-stretch justify-start p-6 sm:p-8 md:p-10`}>
+                  {classLoading && (
+                    <p className="text-slate-300 text-sm sm:text-base leading-relaxed text-center">
+                      Loading class schedule...
                     </p>
-                    {/* <span className="mt-5 inline-flex items-center rounded-full bg-white/10 border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300">
-                      Coming soon
-                    </span> */}
-                  </div>
+                  )}
+
+                  {!classLoading && classError && (
+                    <p className="text-red-300 text-sm sm:text-base leading-relaxed text-center">
+                      {classError}
+                    </p>
+                  )}
+
+                  {!classLoading && !classError && classSchedule && (
+                    <div className="mt-6 w-full space-y-6">
+                      {Array.isArray(classSchedule.todayClasses) && classSchedule.todayClasses.length > 0 && (
+                        <div className="overflow-x-auto">
+                          <h3 className="text-sm sm:text-base font-semibold text-slate-100 mb-2 text-left">
+                            Today&apos;s Classes
+                          </h3>
+                          <table className="min-w-full divide-y divide-white/10 text-left text-xs sm:text-sm text-slate-100">
+                            <thead className="bg-white/5">
+                              <tr>
+                                <th className="px-3 py-2 font-semibold">Topic</th>
+                                <th className="px-3 py-2 font-semibold">Batch</th>
+                                <th className="px-3 py-2 font-semibold whitespace-nowrap">Time</th>
+                                <th className="px-3 py-2 font-semibold">Status</th>
+                                <th className="px-3 py-2 font-semibold text-right">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                              {classSchedule.todayClasses.map((cls) => (
+                                <tr key={cls._id} className="bg-white/5 hover:bg-white/10">
+                                  <td className="px-3 py-2">{cls.topic}</td>
+                                  <td className="px-3 py-2">{cls.batchName}</td>
+                                  <td className="px-3 py-2 whitespace-nowrap">
+                                    {cls.startTime} – {cls.endTime}
+                                  </td>
+                                  <td className="px-3 py-2 capitalize">
+                                    {cls.isJoined ? 'joined' : (cls.status || 'scheduled')}
+                                  </td>
+                                  <td className="px-3 py-2 text-right space-x-2 whitespace-nowrap">
+                                    { (cls.isJoined || registerSuccessId === cls._id) && cls.zoomLink && (
+                                      <a
+                                        href={cls.zoomLink}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center justify-center rounded-full bg-white/10 text-slate-50 px-3 py-1.5 text-[11px] sm:text-xs font-semibold border border-white/40 hover:bg-white/20 transition-colors"
+                                      >
+                                        Join via Zoom
+                                      </a>
+                                    )}
+                                    {!cls.isJoined && registerSuccessId !== cls._id && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRegisterClass(cls._id)}
+                                        disabled={registeringClassId === cls._id}
+                                        className="inline-flex items-center justify-center rounded-full bg-white text-slate-900 px-3 py-1.5 text-[11px] sm:text-xs font-semibold shadow-md hover:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                                      >
+                                        {registeringClassId === cls._id ? 'Registering...' : 'Register'}
+                                      </button>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+
+                      {Array.isArray(classSchedule.upcomingClasses) && classSchedule.upcomingClasses.length > 0 && (
+                        <div className="overflow-x-auto">
+                          <h3 className="text-sm sm:text-base font-semibold text-slate-100 mb-2 text-left">
+                            Upcoming Classes
+                          </h3>
+                          <table className="min-w-full divide-y divide-white/10 text-left text-xs sm:text-sm text-slate-100">
+                            <thead className="bg-white/5">
+                              <tr>
+                                <th className="px-3 py-2 font-semibold">Topic</th>
+                                <th className="px-3 py-2 font-semibold">Batch</th>
+                                <th className="px-3 py-2 font-semibold">Date</th>
+                                <th className="px-3 py-2 font-semibold whitespace-nowrap">Time</th>
+                                <th className="px-3 py-2 font-semibold">Status</th>
+                                <th className="px-3 py-2 font-semibold text-right">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                              {classSchedule.upcomingClasses.map((cls) => (
+                                <tr key={cls._id} className="bg-white/5 hover:bg-white/10">
+                                  <td className="px-3 py-2">{cls.topic}</td>
+                                  <td className="px-3 py-2">{cls.batchName}</td>
+                                  <td className="px-3 py-2">
+                                    {cls.date ? new Date(cls.date).toLocaleDateString() : ''}
+                                  </td>
+                                  <td className="px-3 py-2 whitespace-nowrap">
+                                    {cls.startTime} – {cls.endTime}
+                                  </td>
+                                  <td className="px-3 py-2 capitalize">
+                                    {cls.isJoined ? 'joined' : (cls.status || 'scheduled')}
+                                  </td>
+                                  <td className="px-3 py-2 text-right space-x-2 whitespace-nowrap">
+                                    { (cls.isJoined || registerSuccessId === cls._id) && cls.zoomLink && (
+                                      <a
+                                        href={cls.zoomLink}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center justify-center rounded-full bg-white/10 text-slate-50 px-3 py-1.5 text-[11px] sm:text-xs font-semibold border border-white/40 hover:bg-white/20 transition-colors"
+                                      >
+                                        Join via Zoom
+                                      </a>
+                                    )}
+                                    {!cls.isJoined && registerSuccessId !== cls._id && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRegisterClass(cls._id)}
+                                        disabled={registeringClassId === cls._id}
+                                        className="inline-flex items-center justify-center rounded-full bg-white text-slate-900 px-3 py-1.5 text-[11px] sm:text-xs font-semibold shadow-md hover:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                                      >
+                                        {registeringClassId === cls._id ? 'Registering...' : 'Register'}
+                                      </button>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {!classLoading && !classError && registerError && (
+                    <div className="mt-4 text-center text-red-300 text-xs sm:text-sm">
+                      {registerError}
+                    </div>
+                  )}
                 </div>
               )}
 

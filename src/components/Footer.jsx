@@ -196,33 +196,33 @@ const Footer = ({ setView, switchSite, currentSite }) => {
                 {/* <MapPin size={16} className="text-slate-500 flex-shrink-0" /> */}
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-3 flex-wrap">
-                    {/* <LocationSwitcher
+                    <LocationSwitcher
                       regionLabel="Country"
                       locationCodes={countryCodes}
                       locationThemeMap={locationThemeMap}
-                    /> */}
-                    {/* <span className="text-xs text-slate-300 border border-white/10 bg-white/5 px-2 py-1 rounded-md">
+                    />
+                    <span className="text-xs text-slate-300 border border-white/10 bg-white/5 px-2 py-1 rounded-md">
                       Active: <span className="font-bold text-white">{activeCountryCode || 'GLOBAL'}</span>
                       {activePartner?.themeColor ? (
                         <span className="ml-2 text-slate-300">Theme: <span className="font-semibold text-white">{activePartner.themeColor}</span></span>
                       ) : null}
-                    </span> */}
+                    </span>
                   </div>
-                  {/* {footerAddress ? (
+                  {footerAddress ? (
                     <div className="text-xs text-slate-400">
                       {footerAddress}
                     </div>
-                  ) : null} */}
-                  {/* {error ? (
+                  ) : null}
+                  {error ? (
                     <div className="text-xs text-red-300">
                       {error}
                     </div>
-                  ) : null} */}
-                  {/* {loading ? (
+                  ) : null}
+                  {loading ? (
                     <div className="text-xs text-slate-500">
                       Loading partners…
                     </div>
-                  ) : null} */}
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -326,12 +326,12 @@ const Footer = ({ setView, switchSite, currentSite }) => {
       <div className="pt-6 md:pt-8 border-t border-slate-800">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
           <div className="flex items-center gap-4 flex-wrap">
-            {/* <button
+            <button
               onClick={() => setView("staff-login")}
               className="text-[10px] text-slate-700 hover:text-white font-bold uppercase transition-colors"
             >
               Staff Access
-            </button> */}
+            </button>
 
             <div className="h-4 w-px bg-slate-800"></div>
 

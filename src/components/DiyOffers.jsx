@@ -1,5 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { Zap, Gift, Wrench, Lock, Copy, Check } from 'lucide-react';
+import RacingBotImg from '../assets/roboticskits/Bots Builder Racing Bot DIY.png';
+import LineFollowerImg from '../assets/roboticskits/Bots Builder Fastest Line Follower DIY.png';
+import SumoHockeyImg from '../assets/roboticskits/Sumo Soccer Racing & Hockey 4in1.png';
+import SoccerBotImg from '../assets/roboticskits/Bots Builder Soccer Bot DIY.png';
+import MazeSolverImg from '../assets/roboticskits/Bots Builder Maze Solver DIY.png';
 
 const ROBOTICS_KITS = [
   {
@@ -10,6 +15,7 @@ const ROBOTICS_KITS = [
     couponCode: 'TX-STARTER-10',
     discountLabel: 'Flat 10% OFF',
     maxDiscount: 10,
+    image: LineFollowerImg,
   },
   {
     id: 'advance',
@@ -19,6 +25,7 @@ const ROBOTICS_KITS = [
     couponCode: 'TX-ROBO-15',
     discountLabel: 'Up to 15% OFF',
     maxDiscount: 15,
+    image: RacingBotImg,
   },
   {
     id: 'ai',
@@ -28,6 +35,27 @@ const ROBOTICS_KITS = [
     couponCode: 'TX-AI-20',
     discountLabel: 'Premium Member Offer',
     maxDiscount: 25,
+    image: SumoHockeyImg,
+  },
+  {
+    id: 'maze-solver',
+    title: 'Maze Solver Robotics Kit',
+    level: 'Intermediate • Grades 8–10',
+    description: 'Line and maze solving robot kit to practice path planning and sensor-based navigation.',
+    couponCode: 'TX-MAZE-12',
+    discountLabel: 'Flat 12% OFF',
+    maxDiscount: 12,
+    image: MazeSolverImg,
+  },
+  {
+    id: 'soccer-bot',
+    title: 'Soccer Bot Robotics Kit',
+    level: 'Beginner–Intermediate • Grades 7–9',
+    description: 'Build a nimble soccer-playing bot and experiment with team strategies and control logic.',
+    couponCode: 'TX-SOCCER-18',
+    discountLabel: 'Up to 18% OFF',
+    maxDiscount: 18,
+    image: SoccerBotImg,
   },
 ];
 
@@ -87,18 +115,30 @@ function RoboticsKitCard({ kit }) {
   };
 
   return (
-    <div className="relative overflow-visible rounded-2xl border border-slate-700/80 flex flex-col justify-between min-h-[200px]">
-      <div className="absolute inset-0 rounded-2xl overflow-hidden bg-slate-900/80">
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0_0,rgba(251,191,36,0.2),transparent_55%),radial-gradient(circle_at_100%_100%,rgba(96,165,250,0.18),transparent_55%)]" />
-      </div>
+    <article className="relative overflow-hidden rounded-2xl border border-slate-700/80 flex flex-col bg-slate-950/80">
+      <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_0_0,rgba(251,191,36,0.2),transparent_55%),radial-gradient(circle_at_100%_100%,rgba(96,165,250,0.18),transparent_55%)]" />
       <OfferRibbon maxDiscount={kit.maxDiscount} />
-      {/* <div className="relative p-4 space-y-2 pr-20">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-amber-300/80">{kit.level}</p>
-        <h3 className="text-sm font-semibold text-slate-50">{kit.title}</h3>
-        <p className="text-xs text-slate-400 leading-relaxed line-clamp-3">{kit.description}</p>
-      </div> */}
 
-      <div className="relative px-4 pb-4 mt-0 space-y-2">
+      {/* Visual kit card header - acts like the "frontend" for each kit */}
+      <div className="relative z-10">
+        {kit.image && (
+          <div className="overflow-hidden rounded-t-2xl bg-slate-900/80">
+            <img
+              src={kit.image}
+              alt={kit.title}
+              className="w-full h-40 object-cover transition-transform duration-300 hover:scale-[1.03]"
+            />
+          </div>
+        )}
+        <div className="p-4 space-y-2">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-amber-300/80">{kit.level}</p>
+          <h3 className="text-sm font-semibold text-slate-50">{kit.title}</h3>
+          <p className="text-xs text-slate-400 leading-relaxed line-clamp-3">{kit.description}</p>
+        </div>
+      </div>
+
+      {/* Action / coupon "footer" */}
+      <div className="relative z-10 px-4 pb-4 pt-1 mt-auto space-y-2 border-t border-slate-700/70 bg-slate-950/90">
         <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">
           Coupon code available
         </p>
@@ -126,7 +166,7 @@ function RoboticsKitCard({ kit }) {
           </span>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Zap, CheckCircle, Hexagon, Cpu, ChevronRight } from 'lucide-react';
 import { FloatingElement, TiltCard } from './AnimationComponents';
-import InvitationModal from '../../modals/InvitationModal';
+import ClubRegistrationModal from '../modals/ClubRegistrationModal';
 
 const HeroSection = ({setPage}) => {
   const [showInvitationModal, setShowInvitationModal] = useState(false);
@@ -172,10 +172,10 @@ const HeroSection = ({setPage}) => {
         </div>
       </div>
 
-      {/* Invitation Modal */}
-      <InvitationModal 
-        showInvitationModal={showInvitationModal}
-        setShowInvitationModal={setShowInvitationModal}
+      {/* Club Registration Modal (email → OTP → club form → /club/add) */}
+      <ClubRegistrationModal
+        showModal={showInvitationModal}
+        setShowModal={setShowInvitationModal}
         onSuccess={handleInvitationSuccess}
       />
     </section>

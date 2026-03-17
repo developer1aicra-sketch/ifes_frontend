@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
-import { CMS_DATA_PRODUCT } from '../../constants/data';
+import { CMS_DATA_PRODUCT } from '../../constants/cmsData';
 import { NavLink } from 'react-router-dom';
 
 const PRODUCTS = [

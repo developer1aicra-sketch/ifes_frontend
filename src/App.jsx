@@ -5,7 +5,7 @@ import { ToastProvider } from './contexts/ToastContext';
 import { ToastContainer } from './components/Toast';
 import './App.css';
 
-import LiveTicker from './components/LiveTicker';
+import { LiveTicker } from './components/LiveTicker';
 import Navigation from './components/Navigation';
 import AIReferee from './components/AIReferee';
 import Footer from './components/Footer';
@@ -41,7 +41,8 @@ import { getAuthToken, clearAuthToken } from './api/authToken';
 import { getMyMembership } from './app/membership/membershipApi';
 import { useLocationPrefix } from './hooks/useLocationPrefix';
 import { StoreView } from './views/StoreView';
-import RoboClubView from './views/RoboClubView';
+import RoboClubAuth from './views/RoboClubAuth';
+import RoboClubDashboard from './views/RoboClub';
 
 const viewToPath = (view) => {
   if (!view) return '/';
@@ -263,6 +264,11 @@ const AppContent = ({
 }) => {
   const { themeConfig } = useTheme();
   const { locationPrefix } = useLocationPrefix();
+  const hideGlobalChrome = useMemo(() => {
+    const path = (location?.pathname || '').toLowerCase();
+    // RoboClub pages have their own layout; keep global nav/footer hidden there.
+    return path.includes('roboclub');
+  }, [location?.pathname]);
   const setViewRespectingLocation = useCallback(
     (view, options) => (locationPrefix ? setViewWithPrefix(view, locationPrefix, options) : setView(view, options)),
     [locationPrefix, setViewWithPrefix, setView]
@@ -296,15 +302,17 @@ const AppContent = ({
         <PartnerWebsiteRedirect />
       <LocationRouteHandler />
       <LiveTicker tickerText={tickerText} siteConfig={currentSite} />
-      <Navigation
-        setView={setViewRespectingLocation}
-        locationPrefix={locationPrefix}
-        toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        isMobileMenuOpen={isMobileMenuOpen}
-        siteConfig={currentSite}
-        user={user}
-        setUser={setUser}
-      />
+      {!hideGlobalChrome && (
+        <Navigation
+          setView={setViewRespectingLocation}
+          locationPrefix={locationPrefix}
+          toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          isMobileMenuOpen={isMobileMenuOpen}
+          siteConfig={currentSite}
+          user={user}
+          setUser={setUser}
+        />
+      )}
 
       <main className="flex-grow w-full overflow-x-hidden">
         <AnimatePresence mode="wait">
@@ -320,7 +328,9 @@ const AppContent = ({
               <Route path="/" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
               <Route path="/teams" element={<TeamsView />} />
               <Route path="/technoxian" element={<TechnoxianView />} />
-              <Route path="/roboclub" element={<RoboClubView />} />
+              <Route path="/roboclub" element={<RoboClubDashboard />} />
+              <Route path="/roboclub-login" element={<RoboClubAuth />} />
+              <Route path="/roboclub-dashboard" element={<RoboClubDashboard mode="dashboard" />} />
 
               <Route path="/about" element={<AboutLayout setView={setViewRespectingLocation} />} />
               <Route path="/governance" element={<AboutLayout setView={setViewRespectingLocation} />} />
@@ -354,6 +364,7 @@ const AppContent = ({
               <Route path="/:locationCode/teams" element={<TeamsView />} />
               <Route path="/:locationCode/technoxian" element={<TechnoxianView />} />
               {/* <Route path="/:locationCode/roboclub" element={<RoboClubView />} /> */}
+              <Route path="/:locationCode/roboclub-dashboard" element={<RoboClubDashboard mode="dashboard" />} />
               <Route path="/:locationCode/about" element={<AboutLayout setView={setViewRespectingLocation} />} />
               <Route path="/:locationCode/governance" element={<AboutLayout setView={setViewRespectingLocation} />} />
               <Route path="/:locationCode/associates/join-worso" element={<JoinWorsoView />} />
@@ -383,7 +394,14 @@ const AppContent = ({
       </main>
 
       <AIReferee siteConfig={currentSite} />
-      <Footer setView={setViewRespectingLocation} locationPrefix={locationPrefix} switchSite={switchSite} currentSite={currentSite} />
+      {!hideGlobalChrome && (
+        <Footer
+          setView={setViewRespectingLocation}
+          locationPrefix={locationPrefix}
+          switchSite={switchSite}
+          currentSite={currentSite}
+        />
+      )}
       </div>
     </ToastProvider>
   );

@@ -1,22 +1,30 @@
-import { useThemeClasses } from '../hooks/useThemeClasses';
+export const LiveTicker = ({ news, tickerText }) => {
+  const items = Array.isArray(news) ? news : tickerText ? [tickerText] : [];
 
-const LiveTicker = ({ tickerText, siteConfig }) => {
-  const theme = useThemeClasses();
-  
+  if (items.length === 0) return null;
+
   return (
-  <div className={`${theme.bgGradient || 'bg-[#0a0f1a]'} text-white text-[10px] font-bold py-2 overflow-hidden relative z-50 border-b border-white/5`}>
-    <div className="container mx-auto px-4 sm:px-6 max-w-[1600px] flex items-center">
-      {/* <span className={`px-2 py-0.5 rounded text-white text-[9px] font-bold mr-4 uppercase tracking-wider ${siteConfig.is_partner ? 'bg-emerald-600' : 'bg-red-600'} animate-pulse`}>
-        {siteConfig.is_partner ? 'UAE CHAPTER' : 'LIVE'}
-      </span> */}
-      <div className="whitespace-nowrap overflow-hidden flex-1 relative h-4">
-        <div className="absolute top-0 left-0 whitespace-nowrap animate-marquee">
-          {tickerText}
+    <marquee className="bg-black text-white text-xs  font-mono py-2 overflow-hidden border-b border-gray-800 sticky top-0 z-50">
+      <div className="relative flex overflow-hidden">
+        <div className="flex whitespace-nowrap animate-marquee">
+          {items.map((item, i) => (
+            <span key={i} className="flex items-center mx-6">
+              <span className="text-red-500 mr-2">&gt;&gt;</span>
+              {item}
+            </span>
+          ))}
+        </div>
+
+        {/* Duplicate content for seamless loop */}
+        <div className="flex whitespace-nowrap animate-marquee">
+          {items.map((item, i) => (
+            <span key={`dup-${i}`} className="flex items-center mx-6">
+              <span className="text-red-500 mr-2">&gt;&gt;</span>
+              {item}
+            </span>
+          ))}
         </div>
       </div>
-    </div>
-  </div>
+    </marquee>
   );
 };
-
-export default LiveTicker;

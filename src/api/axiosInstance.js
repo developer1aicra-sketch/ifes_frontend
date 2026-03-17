@@ -52,6 +52,10 @@ const protectedEndpoints = [
   '/club/my/get',
   '/membership/my/get',
   '/membership/bulk',
+  '/profile/update',
+  // Squad/Team flows (require auth)
+  '/squad',
+  '/team',
 ];
 
 // Add request interceptor: attach Bearer token from authToken (set after verify OTP)
