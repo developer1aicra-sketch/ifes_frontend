@@ -24,6 +24,7 @@ import { useThemeClasses } from '../hooks/useThemeClasses';
 import { fetchPartnerHome } from '../utils/api';
 import { useLocationPrefix } from '../hooks/useLocationPrefix';
 import { PARTNER_HOME_STATIC } from '../data/partnerHomeStatic';
+import TrophyVideo from '../assets/Trophy-1.m4v';
 
 const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError, locationCode: locationCodeProp }) => {
   const theme = useThemeClasses();
@@ -36,6 +37,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
   const [latestNewsIndex, setLatestNewsIndex] = useState(0);
   const [mostReadIndex, setMostReadIndex] = useState(0);
   const [selectedMembership, setSelectedMembership] = useState(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   /** ✅ FIX: parent-controlled open state (Zoom-style) */
   const [openRows, setOpenRows] = useState({});
@@ -69,6 +71,20 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
 
     loadPartnerHome();
   }, [locationCode]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onChange = () => setPrefersReducedMotion(Boolean(media.matches));
+    onChange();
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', onChange);
+      return () => media.removeEventListener('change', onChange);
+    }
+    // Safari < 14
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
+  }, []);
 
 
   // Use partner home news if available, otherwise use props newsItems
@@ -152,6 +168,24 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
   return (
     <div className="animate-fadeIn bg-slate-50">
       <div className={`relative min-h-[600px] flex items-center ${theme.bgGradient || siteConfig.colors.gradient} text-white overflow-hidden`}>
+        {/* Banner background video */}
+        <div className="absolute inset-0 z-0">
+          <video
+            className="h-full w-full object-cover opacity-40"
+            src={TrophyVideo}
+            poster={partnerHomeData?.home?.bannerImage || undefined}
+            autoPlay={!prefersReducedMotion}
+            muted
+            loop={!prefersReducedMotion}
+            playsInline
+            preload="metadata"
+            aria-hidden="true"
+            tabIndex={-1}
+            disablePictureInPicture
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/30" />
+        </div>
+
         <div className={`absolute top-0 right-0 w-[500px] h-[500px] ${theme.bgPrimary || 'bg-blue-500'}/10 rounded-full blur-3xl`}></div>
         <div className="container mx-auto px-4 relative z-10 py-20">
           <div className="grid md:grid-cols-12 gap-12 items-center">
@@ -161,16 +195,6 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
                   <Shield size={12} /> Global Regulatory Body
                 </div>
               )}
-              {/* Banner Image */}
-              {/* {partnerHomeData?.home?.bannerImage && (
-                <div className="absolute inset-0 z-0">
-                  <img 
-                    src={partnerHomeData.home.bannerImage} 
-                    alt={partnerHomeData.home.title || 'Banner'} 
-                    className="w-full h-full object-cover opacity-20"
-                  />
-                </div>
-              )} */}
               
               <h1 className="text-6xl md:text-7xl font-bold leading-tight tracking-tight">
                 {partnerHomeData?.home?.title || (siteConfig.is_partner ? 'The governing body ' : 'The governing body')} <br />
@@ -301,8 +325,8 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
       {!partnerHomeData?.stats && (
         <div className="bg-white border-b border-slate-200 py-10">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center place-items-center divide-x divide-slate-100">
-              {[{ label: 'Challenges', val: '15+' },{ label: 'Member', val: '50k+' }, { label: 'Registered Teams', val: '3k+' }, { label: 'Viewership', val: '100M+' }, ].map((stat, i) => (
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center place-items-center divide-x divide-slate-100">
+              {[ { label: 'Challenges', val: '15+' },{ label: ' Teams', val: '3k+' },{ label: 'Club', val: '3.2k+' },{ label: 'Member', val: '10.2M+' }, { label: 'Viewership', val: '150M+' }, ].map((stat, i) => (
                 <div key={i}>
                   <div className={`text-4xl font-extrabold ${theme.textPrimary || (siteConfig.is_partner ? 'text-emerald-600' : 'text-blue-600')}`}>{stat.val}</div>
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">{stat.label}</div>
@@ -334,8 +358,8 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
               </div>
               <div className="bg-slate-100 p-6 rounded-2xl">
                 <Building className="text-slate-400 mb-4" size={32} />
-                <div className="font-bold text-slate-900">5+ Cities</div>
-                <div className="text-sm text-slate-500">Zonal Events</div>
+                <div className="font-bold text-slate-900">82+ Cities</div>
+                <div className="text-sm text-slate-500">National/Zonal Events</div>
               </div>
             </div>
           </div>
