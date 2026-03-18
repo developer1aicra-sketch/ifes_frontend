@@ -8,16 +8,34 @@ const logos = Object.entries(logoModules)
   .map(([, url]) => url)
   .filter(Boolean);
 
-const LogoTicker = ({ title = "Supporting Organizations & Think Tanks" }) => {
-  if (logos.length === 0) return null;
+const SIZE_CLASSES = {
+  md: "h-16 md:h-24",
+  lg: "h-20 md:h-28",
+};
+
+const LogoTicker = ({
+  title = "Supporting Organizations & Think Tanks",
+  size = "md",
+  className = "",
+  logos: logosProp,
+}) => {
+  const sourceLogos = Array.isArray(logosProp) && logosProp.length > 0 ? logosProp : logos;
+  if (sourceLogos.length === 0) return null;
 
   // Repeat for smooth marquee loop
-  const loop = [...logos, ...logos, ...logos];
+  const loop = [...sourceLogos, ...sourceLogos, ...sourceLogos];
+  const sizeClass = SIZE_CLASSES[size] ?? SIZE_CLASSES.md;
 
   return (
-    <div className="bg-slate-50 border-t border-slate-200 py-8 overflow-hidden">
+    <section
+      aria-label={title}
+      className={[
+        "bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-8 overflow-hidden  bg-[black]",
+        className,
+      ].join(" ")}
+    >
       <div className="container mx-auto px-4 mb-6 text-center">
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{title}</span>
+        <span className="text-xs font-bold text-slate-500 dark:text-slate-300 uppercase tracking-widest">{title}</span>
       </div>
       <div className="flex gap-14 md:gap-16 animate-marquee whitespace-nowrap items-center w-[200%]">
         {loop.map((logo, i) => (
@@ -25,12 +43,12 @@ const LogoTicker = ({ title = "Supporting Organizations & Think Tanks" }) => {
             key={i}
             src={logo}
             alt="Partner logo"
-            className="h-14 w-auto md:h-20    transition-all duration-300 object-contain"
+            className={`${sizeClass} w-auto transition-all duration-300 object-contain`}
             loading="lazy"
           />
         ))}
       </div>
-    </div>
+    </section>
   );
 };
 
