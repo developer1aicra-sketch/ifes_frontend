@@ -26,8 +26,8 @@ import { Dashboard } from '../components/Dashboard';
 import { CommunityForum } from '../components/CommunityForum';
 import { AdminConsole } from '../components/AdminConsole';
 import MemberShipDetails from '../components/MemberShipDetails';
-// import MySquads from '../components/MySquads';
-// import StudentIdCard from '../components/StudentIdCard';
+import MySquads from '../components/MySquads.jsx';
+import StudentIdCard from '../components/StudentIdCard';
 import GlobalYoungInnovatorsDirectory from '../components/GlobalYoungInnovatorsDirectory';
 import StudentCommunityDirectory from '../components/StudentCommunityDirectory';
 import DiyOffers from '../components/DiyOffers';
@@ -45,6 +45,8 @@ export default function TechnoXianApp({ mode = 'public' }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [pendingEditSquad, setPendingEditSquad] = useState(null);
+  const [pendingCompetitionId, setPendingCompetitionId] = useState(null);
+  const [pendingEventType, setPendingEventType] = useState(null);
   const [sidebarDisplayName, setSidebarDisplayName] = useState(INITIAL_DB.currentUser.full_name);
   const [sidebarSecondaryId, setSidebarSecondaryId] = useState(INITIAL_DB.currentUser.tx_id);
   const [clubProfile, setClubProfile] = useState(null);
@@ -65,10 +67,35 @@ export default function TechnoXianApp({ mode = 'public' }) {
     const editSquad = location.state?.editSquad;
     if (editSquad?.clubId && editSquad?.teamId) {
       setPendingEditSquad(editSquad);
+      setPendingCompetitionId(null);
+      setPendingEventType(null);
       setPage('squad_manager');
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state?.editSquad?.clubId, location.state?.editSquad?.teamId]);
+
+  // From EventsPage: open Apply Championship with selected competition and/or event type.
+  // Consume both in one effect to avoid them clobbering each other.
+  useEffect(() => {
+    const registerCompetitionId = location.state?.registerCompetitionId;
+    const registerEventType = location.state?.registerEventType;
+    if (!registerCompetitionId && !registerEventType) return;
+
+    setPendingEditSquad(null);
+    if (registerCompetitionId) {
+      setPendingCompetitionId(registerCompetitionId);
+    }
+    if (registerEventType) {
+      setPendingEventType(String(registerEventType).toUpperCase());
+    }
+    // If only eventType is provided, ensure competitionId is cleared.
+    if (!registerCompetitionId && registerEventType) {
+      setPendingCompetitionId(null);
+    }
+
+    setPage('squad_manager');
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [location.state?.registerCompetitionId, location.state?.registerEventType]);
 
   useEffect(() => {
     if (isDashboardMode && !isAuthenticated) {
@@ -175,16 +202,16 @@ export default function TechnoXianApp({ mode = 'public' }) {
   const menuItems = useMemo(() => {
     const items = [
       { id: 'dashboard', icon: Activity, label: 'Dashboard' },
+      { id: 'national_global_events', icon: Calendar, label: 'Events & Games', isSection: true },
       { id: 'Add Members', icon: Award, label: 'Add Members' },
+      { id: 'squad_manager', icon: Users, label: 'Squad Manager' },
       // { id: 'student_id', icon: QrCode, label: 'Student Card' },
-      // { id: 'diy_offers', icon: Zap, label: 'DIY Offers', isSection: true },
-      // { id: 'career_growth', icon: Briefcase, label: 'Career Growth', isSection: true },
-      // { id: 'contact_directory', icon: Globe, label: 'Contact Directory', isSection: true },
+      { id: 'diy_offers', icon: Zap, label: 'Offers', isSection: true },
+      { id: 'career_growth', icon: Briefcase, label: 'Career Growth', isSection: true },
+      { id: 'contact_directory', icon: Globe, label: 'Contact Directory', isSection: true },
       // { id: 'my_squads', icon: Users, label: 'My Squads' },
       // { id: 'class_schedule', icon: Calendar, label: 'Class Schedule' },
-      { id: 'national_global_events', icon: Calendar, label: 'Events & Games', isSection: true },
-      { id: 'squad_manager', icon: Users, label: 'Squad Manager' },
-      { id: 'user', icon: UserCheck, label: 'User', action: () => setPage('user') },
+      { id: 'user', icon: UserCheck, label: 'Club Profile', action: () => setPage('user') },
       // { id: 'community', icon: MessageSquare, label: 'Community' },
     ];
     if (viewMode === 'admin') {
@@ -609,24 +636,28 @@ export default function TechnoXianApp({ mode = 'public' }) {
               user={INITIAL_DB.currentUser}
               initialEditSquad={pendingEditSquad || location.state?.editSquad}
               onInitialEditSquadConsumed={() => setPendingEditSquad(null)}
+              initialCompetitionId={pendingCompetitionId}
+              onInitialCompetitionConsumed={() => setPendingCompetitionId(null)}
+              initialEventType={pendingEventType}
+              onInitialEventTypeConsumed={() => setPendingEventType(null)}
             />
           )}
           {activePage === 'user' && <StudentPassport setPage={setPage} />}
           {activePage === 'Add Members' && <MemberShipDetails setPage={setPage}/>}
-          {/* {activePage === 'student_id' && <StudentIdCard />} */}
-          {/* {activePage === 'diy_offers' && (
+          {activePage === 'student_id' && <StudentIdCard />}
+          {activePage === 'diy_offers' && (
             <DiyOffers
               activeSection={diyOffersSection}
               membershipPlanName={membershipPlanName}
             />
-          )} */}
+          )}
           {activePage === 'career_growth' && (
             <CareerGrowth
               activeSection={careerGrowthSection}
               membershipPlanName={membershipPlanName}
             />
           )}
-          {/* {activePage === 'my_squads' && <MySquads />} */}
+          {activePage === 'my_squads' && <MySquads />}
           {activePage === 'global_young_innovators' && (
             <GlobalYoungInnovatorsDirectory membershipPlanName={membershipPlanName} />
           )}

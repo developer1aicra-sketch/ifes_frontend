@@ -1021,7 +1021,8 @@ const MemberShipDetails = ({ setPage, setpage }) => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [bulkPaymentModalOpen, setBulkPaymentModalOpen] = useState(false)
   const [selectedMemberForPayment, setSelectedMemberForPayment] = useState(null)
-  const [selectedMembers, setSelectedMembers] = useState([])
+  // Keep selection as IDs so it stays in-sync with latest member edits (category/plan changes).
+  const [selectedMemberIds, setSelectedMemberIds] = useState([]) // string[]
   const [memberPaymentAmount, setMemberPaymentAmount] = useState(10) // Default payment amount per member in USD
   const [editingMember, setEditingMember] = useState(null)
   const [editFormData, setEditFormData] = useState(INITIAL_FORM)
@@ -1597,6 +1598,12 @@ const MemberShipDetails = ({ setPage, setpage }) => {
     return map
   }, [plans])
 
+  const selectedMembers = useMemo(() => {
+    if (!selectedMemberIds.length) return []
+    const idSet = new Set(selectedMemberIds.map(String))
+    return members.filter((m) => idSet.has(String(m?._id ?? m?.id)))
+  }, [members, selectedMemberIds])
+
   const payableMembers = selectedMembers.length > 0 ? selectedMembers : filteredMembers
 
   const pricingSummary = useMemo(() => {
@@ -1646,28 +1653,31 @@ const MemberShipDetails = ({ setPage, setpage }) => {
 
   // Member selection handlers
   const handleMemberSelect = useCallback((member) => {
-    setSelectedMembers(prev => {
-      const isSelected = prev.some(m => m.id === member.id)
-      if (isSelected) {
-        return prev.filter(m => m.id !== member.id)
-      } else {
-        return [...prev, member]
-      }
+    const memberId = member?._id ?? member?.id
+    if (!memberId) return
+    setSelectedMemberIds((prev) => {
+      const id = String(memberId)
+      const set = new Set(prev.map(String))
+      if (set.has(id)) set.delete(id)
+      else set.add(id)
+      return Array.from(set)
     })
   }, [])
 
   const handleSelectAll = useCallback(() => {
-    if (selectedMembers.length === filteredMembers.length) {
-      // Deselect all
-      setSelectedMembers([])
-    } else {
-      // Select all filtered members
-      setSelectedMembers([...filteredMembers])
-    }
-  }, [selectedMembers.length, filteredMembers])
+    const filteredIds = filteredMembers
+      .map((m) => String(m?._id ?? m?.id))
+      .filter(Boolean)
+
+    setSelectedMemberIds((prev) => {
+      const prevSet = new Set(prev.map(String))
+      const allSelected = filteredIds.length > 0 && filteredIds.every((id) => prevSet.has(id))
+      return allSelected ? [] : filteredIds
+    })
+  }, [filteredMembers])
 
   const handleCreateBulkMembership = useCallback(async () => {
-    if (selectedMembers.length === 0) {
+    if (selectedMemberIds.length === 0) {
       toast.warning('Select one or more members using the checkboxes, then assign category and plan to each.', {
         position: 'top-right',
         autoClose: 4000,
@@ -1676,7 +1686,11 @@ const MemberShipDetails = ({ setPage, setpage }) => {
       return
     }
 
-    const membersPayload = selectedMembers
+    // IMPORTANT: Build payload from the latest members state (not stale selected objects).
+    const idSet = new Set(selectedMemberIds.map(String))
+    const currentSelectedMembers = members.filter((m) => idSet.has(String(m?._id ?? m?.id)))
+
+    const membersPayload = currentSelectedMembers
       .filter((m) => {
         const userId = m.user_id?._id || m.user_id
         const categoryId = m.categoryId || m.category_id
@@ -1763,7 +1777,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
           theme: 'dark',
         }
       )
-      setSelectedMembers([])
+      setSelectedMemberIds([])
       if (clubId) {
         const membersResponse = await getClubMembers(clubId)
         const membersData = membersResponse?.data?.data || membersResponse?.data || []
@@ -1827,10 +1841,27 @@ const MemberShipDetails = ({ setPage, setpage }) => {
     } finally {
       setIsSubmittingBulkMembership(false)
     }
-  }, [selectedMembers, clubId])
+  }, [selectedMemberIds, members, clubId])
 
-  const isAllSelected = filteredMembers.length > 0 && selectedMembers.length === filteredMembers.length
-  const isIndeterminate = selectedMembers.length > 0 && selectedMembers.length < filteredMembers.length
+  const isAllSelected = useMemo(() => {
+    if (filteredMembers.length === 0) return false
+    const filteredIds = filteredMembers
+      .map((m) => String(m?._id ?? m?.id))
+      .filter(Boolean)
+    if (filteredIds.length === 0) return false
+    const set = new Set(selectedMemberIds.map(String))
+    return filteredIds.every((id) => set.has(id))
+  }, [filteredMembers, selectedMemberIds])
+
+  const isIndeterminate = useMemo(() => {
+    const filteredIds = filteredMembers
+      .map((m) => String(m?._id ?? m?.id))
+      .filter(Boolean)
+    if (filteredIds.length === 0) return false
+    const set = new Set(selectedMemberIds.map(String))
+    const selectedInFilter = filteredIds.filter((id) => set.has(id)).length
+    return selectedInFilter > 0 && selectedInFilter < filteredIds.length
+  }, [filteredMembers, selectedMemberIds])
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredMembers.length / MEMBERS_PER_PAGE)
@@ -1984,17 +2015,25 @@ const MemberShipDetails = ({ setPage, setpage }) => {
                 <motion.button
                   onClick={handleCreateBulkMembership}
                   disabled={
-                    selectedMembers.length === 0 ||
+                    selectedMemberIds.length === 0 ||
                     isSubmittingBulkMembership ||
-                    selectedMembers.filter(
-                      (m) =>
-                        (m.user_id?._id || m.user_id) &&
-                        (m.categoryId || m.category_id) &&
-                        (m.planId || m.plan_id)
-                    ).length === 0
+                    (() => {
+                      const idSet = new Set(selectedMemberIds.map(String))
+                      const currentSelectedMembers = members.filter((m) =>
+                        idSet.has(String(m?._id ?? m?.id))
+                      )
+                      return (
+                        currentSelectedMembers.filter(
+                          (m) =>
+                            (m.user_id?._id || m.user_id) &&
+                            (m.categoryId || m.category_id) &&
+                            (m.planId || m.plan_id)
+                        ).length === 0
+                      )
+                    })()
                   }
-                  whileHover={{ scale: selectedMembers.length === 0 || isSubmittingBulkMembership ? 1 : 1.02 }}
-                  whileTap={{ scale: selectedMembers.length === 0 || isSubmittingBulkMembership ? 1 : 0.98 }}
+                  whileHover={{ scale: selectedMemberIds.length === 0 || isSubmittingBulkMembership ? 1 : 1.02 }}
+                  whileTap={{ scale: selectedMemberIds.length === 0 || isSubmittingBulkMembership ? 1 : 0.98 }}
                   className="inline-flex items-center gap-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white font-semibold py-2 px-4 rounded-lg transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap"
                 >
                   {isSubmittingBulkMembership ? (
@@ -2006,9 +2045,9 @@ const MemberShipDetails = ({ setPage, setpage }) => {
                     <>
                       <UserPlus size={16} />
                       Create membership
-                      {selectedMembers.length > 0 && (
+                      {selectedMemberIds.length > 0 && (
                         <span className="bg-slate-600 text-slate-200 text-xs font-medium px-2 py-0.5 rounded">
-                          {selectedMembers.length}
+                          {selectedMemberIds.length}
                         </span>
                       )}
                     </>
@@ -2077,7 +2116,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
         isOpen={bulkPaymentModalOpen}
         onClose={() => {
           setBulkPaymentModalOpen(false)
-          setSelectedMembers([])
+          setSelectedMemberIds([])
         }}
         selectedMembers={selectedMembers}
         amountPerMember={memberPaymentAmount}
@@ -2133,7 +2172,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
                       ...member,
                     }))
                     setMembers(transformedMembers)
-                    setSelectedMembers([]) // Clear selection after payment
+                    setSelectedMemberIds([]) // Clear selection after payment
                   }
                 } catch (error) {
                   console.warn('Error refetching members after bulk payment:', error)

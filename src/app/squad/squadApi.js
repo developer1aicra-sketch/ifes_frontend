@@ -266,6 +266,9 @@ export const createTeam = async (clubId, teamData) => {
           teamName: String(teamData.teamName ?? teamData.name ?? ''),
           event_id: String(teamData.event_id ?? ''),
           competition_id: String(teamData.competition_id ?? ''),
+          // Keep captain_id at top-level for compatibility with older validations.
+          // Keep lineup.captain_id too because squad endpoints use lineup shape.
+          captain_id: String(teamData.captain_id ?? teamData.lineup?.captain_id ?? ''),
           lineup: {
             bot_id: String(teamData.lineup?.bot_id ?? ''),
             captain_id: String(teamData.lineup?.captain_id ?? teamData.captain_id ?? ''),
@@ -289,7 +292,7 @@ export const createTeam = async (clubId, teamData) => {
     if (!clubIdVal) throw new Error('club_id is required');
     if (!captainIdStr) throw new Error('captain_id is required');
 
-    console.log('📤 Calling POST /team/add with payload (club_id, teamName, captain_id required):', payload);
+    console.log('📤 Calling POST /squad/add with payload:', payload);
     const response = await createTeamApi(payload);
     const raw = response?.data?.data ?? response?.data ?? response;
 

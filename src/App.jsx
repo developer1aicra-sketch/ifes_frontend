@@ -197,7 +197,7 @@ const App = () => {
         }
       } catch {
         if (mounted) {
-          setNewsError('Unable to load latest Technoxian news right now.');
+          // setNewsError('Unable to load latest Technoxian news right now.');
         }
       } finally {
         if (mounted) {

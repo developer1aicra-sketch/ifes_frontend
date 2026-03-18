@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import axiosInstance from '../api/axiosInstance';
-import endpoints from '../api/endpoints';
+import { getCommunityDirectoryUsers } from '../api/directoryApi';
 
 const DEFAULT_ACCENT = {
   title: 'text-white',
@@ -127,14 +126,18 @@ function CountryFlag({ country, size = FLAG_SIZE, className = '' }) {
   );
 }
 
-/** Normalize API response: support { data: [] }, { data: { data: [] } }, or array */
+/** Normalize API response for /all-users-data?page&limit&search */
 function normalizeUsersResponse(response) {
   const res = response?.data ?? response;
-  if (Array.isArray(res)) return res;
+  // Expected: { success, page, limit, total, totalPages, data: [...] }
   const data = res?.data;
-  if (Array.isArray(data)) return data;
-  if (data && typeof data === 'object' && Array.isArray(data.data)) return data.data;
-  return [];
+  return {
+    users: Array.isArray(data) ? data : [],
+    page: Number(res?.page) || 1,
+    limit: Number(res?.limit) || PAGE_SIZE,
+    total: Number(res?.total) || 0,
+    totalPages: Number(res?.totalPages) || 1,
+  };
 }
 
 /** Match search query against user fields (fullName, institute, city, state, country, role) */
@@ -164,6 +167,8 @@ export function StudentCommunityDirectory({ themeAccent }) {
   const accent = themeAccent || DEFAULT_ACCENT;
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -172,25 +177,33 @@ export function StudentCommunityDirectory({ themeAccent }) {
     let isMounted = true;
     setLoading(true);
     setError('');
-    axiosInstance
-      .get(endpoints.directory.allUsers)
+    const p = Math.max(1, Number(page) || 1);
+    const search = searchQuery.trim();
+
+    getCommunityDirectoryUsers({ page: p, limit: PAGE_SIZE, search })
       .then((response) => {
         if (!isMounted) return;
-        const list = normalizeUsersResponse(response);
-        setUsers(Array.isArray(list) ? list : []);
+        const normalized = normalizeUsersResponse(response);
+        setUsers(Array.isArray(normalized.users) ? normalized.users : []);
+        setTotal(normalized.total || 0);
+        setTotalPages(Math.max(1, normalized.totalPages || 1));
+        // Keep local page aligned with backend's returned page (safety).
+        setPage(Math.max(1, normalized.page || p));
       })
       .catch((err) => {
         if (!isMounted) return;
         setError(err?.response?.data?.message || err?.message || 'Failed to load community directory');
         setUsers([]);
+        setTotal(0);
+        setTotalPages(1);
       })
       .finally(() => {
         if (isMounted) setLoading(false);
       });
     return () => { isMounted = false; };
-  }, []);
+  }, [page, searchQuery]);
 
-  // Always keep users sorted alphabetically by full name on the frontend
+  // Sort within current page for stable UX.
   const sortedUsers = useMemo(() => {
     if (!Array.isArray(users)) return [];
     return [...users].sort((a, b) => {
@@ -203,26 +216,11 @@ export function StudentCommunityDirectory({ themeAccent }) {
     });
   }, [users]);
 
-  const filteredUsers = useMemo(() => {
-    if (!searchQuery.trim()) return sortedUsers;
-    return sortedUsers.filter((u) => matchSearch(u, searchQuery));
-  }, [sortedUsers, searchQuery]);
-
-  const totalFiltered = filteredUsers.length;
-  const totalPagesComputed = Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE));
-  const currentPage = Math.min(Math.max(1, page), totalPagesComputed);
-  const start = (currentPage - 1) * PAGE_SIZE;
-  const paginatedList = useMemo(
-    () => filteredUsers.slice(start, start + PAGE_SIZE),
-    [filteredUsers, start]
-  );
-
-  useEffect(() => {
-    if (page > totalPagesComputed && totalPagesComputed >= 1) setPage(totalPagesComputed);
-  }, [totalPagesComputed, page]);
+  const currentPage = Math.min(Math.max(1, page), Math.max(1, totalPages));
+  const paginatedList = sortedUsers;
 
   const goToPage = (p) => {
-    setPage(Math.max(1, Math.min(p, totalPagesComputed)));
+    setPage(Math.max(1, Math.min(p, totalPages)));
   };
 
   return (
@@ -324,10 +322,10 @@ export function StudentCommunityDirectory({ themeAccent }) {
               </table>
             </div>
 
-            {totalPagesComputed > 1 && (
+            {totalPages > 1 && (
               <div className={`flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-slate-700/80 bg-white/5 ${accent.borderLeft} border-l-4`}>
                 <p className="text-xs text-slate-500">
-                  Showing {((currentPage - 1) * PAGE_SIZE) + 1}–{Math.min(currentPage * PAGE_SIZE, totalFiltered)} of {totalFiltered}
+                  Showing {((currentPage - 1) * PAGE_SIZE) + 1}–{Math.min(((currentPage - 1) * PAGE_SIZE) + paginatedList.length, total)} of {total}
                 </p>
                 <div className="flex items-center gap-2">
                   <button
@@ -340,12 +338,12 @@ export function StudentCommunityDirectory({ themeAccent }) {
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                   <span className={`text-sm ${accent.title} opacity-90`}>
-                    Page {currentPage} of {totalPagesComputed}
+                    Page {currentPage} of {totalPages}
                   </span>
                   <button
                     type="button"
                     onClick={() => goToPage(currentPage + 1)}
-                    disabled={currentPage >= totalPagesComputed}
+                    disabled={currentPage >= totalPages}
                     className={`p-2 rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${accent.badge} hover:opacity-90 disabled:hover:opacity-50`}
                     aria-label="Next page"
                   >

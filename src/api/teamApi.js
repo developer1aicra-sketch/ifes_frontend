@@ -24,11 +24,13 @@ import endpoints from './endpoints';
  * })
  */
 export const createTeam = (teamData) => {
-  console.log('🌐 Making API call to:', endpoints.team.add);
+  // NOTE: Frontend architecture: creating a "team" for competition is done via squad registration API.
+  // This replaces POST /team/add with POST /squad/add.
+  console.log('🌐 Making API call to:', endpoints.squad.add);
   console.log('📦 Request payload:', teamData);
   console.log('🔐 Token will be automatically added from localStorage');
   
-  return axiosInstance.post(endpoints.team.add, teamData);
+  return axiosInstance.post(endpoints.squad.add, teamData);
 };
 
 /**

@@ -134,7 +134,7 @@ function* handleCreateTeam({ payload }) {
       throw new Error('Team data is required in payload');
     }
 
-    console.log('📋 Calling squadApi.createTeam -> POST /team/add...');
+    console.log('📋 Calling squadApi.createTeam -> POST /squad/add...');
     const response = yield call(createTeam, clubId ?? null, teamData);
 
     const raw = response?.data ?? response;

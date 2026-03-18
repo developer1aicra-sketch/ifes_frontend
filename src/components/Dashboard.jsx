@@ -63,7 +63,7 @@ export const Dashboard = ({ setPage, clubProfile }) => {
           <p className="text-2xl font-mono text-white">0</p>
         </div>
         <div className="bg-slate-800 p-4 rounded-lg text-center">
-          <p className="text-slate-500 text-xs uppercase font-bold">Active Bots</p>
+          <p className="text-slate-500 text-xs uppercase font-bold">Total Competition,s</p>
           <p className="text-2xl font-mono text-white">0</p>
         </div>
         <div className="bg-slate-800 p-4 rounded-lg text-center">

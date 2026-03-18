@@ -249,10 +249,10 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
                     {!partnerHomeData?.event && (
                       <>
                         <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
-                          <MapPin size={12} /> Dubai, UAE
+                          <MapPin size={12} /> TBD
                         </div>
                         <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
-                          <Calendar size={12} /> Oct 12-15
+                          <Calendar size={12} /> OCT 2026
                         </div>
                       </>
                     )}
@@ -279,7 +279,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
       {partnerHomeData?.stats && (
         <div className="bg-white border-b border-slate-200 py-10">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-slate-100">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center place-items-center divide-x divide-slate-100">
               {[
                 { label: 'Students', val: partnerHomeData.stats.studentsCount || 0 },
                 { label: 'Performance Score', val: partnerHomeData.stats.performanceScore || 0 },
@@ -301,8 +301,8 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
       {!partnerHomeData?.stats && (
         <div className="bg-white border-b border-slate-200 py-10">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-slate-100">
-              {[{ label: 'Member Nations', val: '0+' }, { label: 'Registered Teams', val: '0k+' }, { label: 'Global Spectators', val: '0M' }, { label: 'Prize Pool', val: '$0k' }].map((stat, i) => (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center place-items-center divide-x divide-slate-100">
+              {[{ label: 'Challenges', val: '15+' },{ label: 'Member', val: '50k+' }, { label: 'Registered Teams', val: '3k+' }, { label: 'Viewership', val: '100M+' }, ].map((stat, i) => (
                 <div key={i}>
                   <div className={`text-4xl font-extrabold ${theme.textPrimary || (siteConfig.is_partner ? 'text-emerald-600' : 'text-blue-600')}`}>{stat.val}</div>
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">{stat.label}</div>
@@ -322,19 +322,19 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
               <p className="text-slate-600 text-lg leading-relaxed mb-6">
                 WORSO operates through a federated network of national partners who host local chapters of the TechnoXian World Cup.
               </p>
-              <button onClick={() => setView('partners')} className="text-blue-600 font-bold flex items-center gap-2 hover:underline">
+              {/* <button onClick={() => setView('partners')} className="text-blue-600 font-bold flex items-center gap-2 hover:underline">
                 Explore Partner Directory <ArrowRight size={16} />
-              </button>
+              </button> */}
             </div>
             <div className="flex-1 grid grid-cols-2 gap-4">
               <div className="bg-slate-100 p-6 rounded-2xl">
                 <Globe className="text-slate-400 mb-4" size={32} />
-                <div className="font-bold text-slate-900">95+ Nations</div>
-                <div className="text-sm text-slate-500">Active Chapters</div>
+                <div className="font-bold text-slate-900">25+ National</div>
+                <div className="text-sm text-slate-500">Partner</div>
               </div>
               <div className="bg-slate-100 p-6 rounded-2xl">
                 <Building className="text-slate-400 mb-4" size={32} />
-                <div className="font-bold text-slate-900">300+ Cities</div>
+                <div className="font-bold text-slate-900">5+ Cities</div>
                 <div className="text-sm text-slate-500">Zonal Events</div>
               </div>
             </div>

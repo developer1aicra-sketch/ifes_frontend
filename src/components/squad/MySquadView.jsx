@@ -644,9 +644,9 @@ export default function MySquadView({
       {/* Header: title + search in one line */}
       <div className="flex flex-row flex-wrap items-center justify-between gap-4 mb-6">
         <div className="min-w-0">
-          <h2 className="text-xl font-bold text-white">My Squad</h2>
+          <h2 className="text-xl font-bold text-white">All Championship list</h2>
           <p className="text-slate-400 text-sm mt-0.5">
-            View and manage your registered squads for this cldddub.
+            View and manage your registered team for this club.
           </p>
         </div>
         {showSearchInHeader && (
@@ -763,7 +763,7 @@ export default function MySquadView({
             <div className="flex flex-col items-center justify-center py-16 px-4 bg-slate-900/50 border border-slate-700 rounded-xl">
               <Users className="text-slate-500 mb-3" size={48} />
               <p className="text-slate-300 text-center">
-                No squads yet for this club. Create a team in Manage to get started.
+                No team yet for this club. Create a team in Manage to get started.
               </p>
             </div>
           )}

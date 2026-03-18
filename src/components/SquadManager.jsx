@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { INITIAL_DB } from "../constants/userData";
 import { Cpu, Users, Copy, Check, UserPlus, Key, Share2, Link as LinkIcon, Building2, Plus, X, Trophy, ChevronRight, Edit2, Trash2, Send, Mail, Gamepad2, ToggleLeft, ToggleRight, Loader2, Shield, Crown, Search, LayoutGrid } from "lucide-react";
@@ -27,12 +27,22 @@ import MySquadView from "./squad/MySquadView";
 import { selectReceivedOtp as selectUser } from "../app/auth/authSlice";
 import { getActiveClubIdFromStorage, setActiveClubIdToStorage } from "../utils/squadStorage";
 import { selectCompetitions, fetchCompetitionsRequest, selectIsCompetitionsLoading } from "../app/competition/competitionSlice";
+import axiosInstance from "../api/axiosInstance";
 import { getClubMembers } from "../api/clubApi";
 import { getBotsList } from "../api/botApi";
 import { getTeamList } from "../api/teamApi";
 import { deleteSquad } from "../api/squadApi";
 
-export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInitialEditSquadConsumed }) => {
+export const SquadManager = ({
+  setPage,
+  user: propUser,
+  initialEditSquad,
+  onInitialEditSquadConsumed,
+  initialCompetitionId,
+  onInitialCompetitionConsumed,
+  initialEventType,
+  onInitialEventTypeConsumed,
+}) => {
   const dispatch = useDispatch();
   const reduxUser = useSelector(selectUser);
   const clubs = useSelector(selectClubs);
@@ -43,6 +53,10 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
   const reduxSuccess = useSelector(selectSquadSuccess);
   const competitions = useSelector(selectCompetitions) || [];
   const competitionsLoading = useSelector(selectIsCompetitionsLoading);
+  const initialCompetitionAppliedRef = useRef(false);
+  const initialEventTypeAppliedRef = useRef(false);
+  const [seasonEventTypes, setSeasonEventTypes] = useState([]);
+  const normalizeEventType = (t) => String(t || "").toUpperCase().trim();
 
   // Use prop user or Redux user
   const user = propUser || reduxUser;
@@ -171,21 +185,62 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
     dispatch(fetchCompetitionsRequest());
   }, [dispatch]);
 
+  // Fetch season event types (NRC/WRC etc.) so "Teams by Event" can show them even if competitions API omits them.
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchSeason = async () => {
+      try {
+        const seasonId = "69ba3843c5a9ae9038c7630b";
+        const res = await axiosInstance.get(`/season/get/${seasonId}`);
+        const season = res?.data?.data ?? res?.data ?? {};
+        const events = Array.isArray(season?.events) ? season.events : [];
+        const types = events
+          .map((e) => String(e?.type ?? "").toUpperCase())
+          .filter(Boolean);
+        if (!cancelled) setSeasonEventTypes([...new Set(types)].sort());
+      } catch {
+        if (!cancelled) setSeasonEventTypes([]);
+      }
+    };
+
+    fetchSeason();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Unique event types from competition API (group competitions by event.type)
   const uniqueEventTypes = useMemo(() => {
     if (!competitions?.length) return [];
     const eventTypes = competitions
-      .map((c) => c.event?.type)
+      .map((c) => normalizeEventType(c.event?.type))
       .filter(Boolean);
     return [...new Set(eventTypes)].sort();
   }, [competitions]);
+
+  const mergedEventTypes = useMemo(() => {
+    const PRIORITY = ["PRC", "ZRC", "NRC", "WRC"];
+    const set = new Set([...(uniqueEventTypes || []), ...(seasonEventTypes || [])]);
+    const all = Array.from(set).map((t) => String(t || "").toUpperCase()).filter(Boolean);
+    const priorityIndex = (t) => {
+      const idx = PRIORITY.indexOf(t);
+      return idx === -1 ? Number.POSITIVE_INFINITY : idx;
+    };
+    return all.sort((a, b) => {
+      const ai = priorityIndex(a);
+      const bi = priorityIndex(b);
+      if (ai !== bi) return ai - bi;
+      return a.localeCompare(b);
+    });
+  }, [seasonEventTypes, uniqueEventTypes]);
 
   // Group competitions by event.type
   const competitionsByEventType = useMemo(() => {
     if (!competitions?.length) return {};
     const grouped = {};
     competitions.forEach((comp) => {
-      const eventType = comp.event?.type;
+      const eventType = normalizeEventType(comp.event?.type);
       if (eventType) {
         if (!grouped[eventType]) {
           grouped[eventType] = [];
@@ -199,9 +254,9 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
   // Set initial event type and competition when competitions are loaded
   useEffect(() => {
     if (competitions && competitions.length > 0) {
-      // If no event type selected, select the first unique event type
-      if (!selectedEventType && uniqueEventTypes.length > 0) {
-        const firstEventType = uniqueEventTypes[0];
+      // If no event type selected, select the first available (prefer competitions, else season)
+      if (!selectedEventType && (uniqueEventTypes.length > 0 || seasonEventTypes.length > 0)) {
+        const firstEventType = uniqueEventTypes[0] || seasonEventTypes[0];
         setSelectedEventType(firstEventType);
 
         // Set competition to first competition of the selected event type
@@ -211,7 +266,47 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
         }
       }
     }
-  }, [competitions, uniqueEventTypes, competitionsByEventType, selectedEventType]);
+  }, [competitions, uniqueEventTypes, seasonEventTypes, competitionsByEventType, selectedEventType]);
+
+  // Apply initialCompetitionId (from EventsPage click) once.
+  useEffect(() => {
+    if (!initialCompetitionId) return;
+    if (initialCompetitionAppliedRef.current) return;
+    if (!competitions?.length) return;
+
+    const match = competitions.find(
+      (c) => String(c?._id || c?.id || "") === String(initialCompetitionId)
+    );
+    if (!match) return;
+
+    initialCompetitionAppliedRef.current = true;
+    setSquadTab("manage");
+    if (match?.event?.type) setSelectedEventType(normalizeEventType(match.event.type));
+    if (match?.name) setCompetitionType(match.name);
+    onInitialCompetitionConsumed?.();
+  }, [competitions, initialCompetitionId, onInitialCompetitionConsumed]);
+
+  // Apply initialEventType (NRC/WRC) once.
+  useEffect(() => {
+    const type = String(initialEventType || "").toUpperCase();
+    if (!type) return;
+    // If we also have a competitionId to apply, let that win.
+    if (initialCompetitionId) return;
+    if (initialEventTypeAppliedRef.current) return;
+    if (!mergedEventTypes.includes(type)) return;
+
+    initialEventTypeAppliedRef.current = true;
+    setSquadTab("manage");
+    setSelectedEventType(type);
+    const firstCompetition = competitionsByEventType?.[type]?.[0];
+    if (firstCompetition?.name) setCompetitionType(firstCompetition.name);
+    onInitialEventTypeConsumed?.();
+  }, [
+    competitionsByEventType,
+    initialEventType,
+    mergedEventTypes,
+    onInitialEventTypeConsumed,
+  ]);
 
   // Update competition when event type changes
   useEffect(() => {
@@ -219,7 +314,7 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
       const firstCompetition = competitionsByEventType[selectedEventType][0];
       // Only update if current competition is not from this event type
       const currentComp = competitions.find(c => c.name === competitionType);
-      if (!currentComp || currentComp.event?.type !== selectedEventType) {
+      if (!currentComp || normalizeEventType(currentComp.event?.type) !== normalizeEventType(selectedEventType)) {
         setCompetitionType(firstCompetition.name);
       }
     }
@@ -665,7 +760,7 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
       );
 
       if (competition?.event?.type) {
-        const eventType = competition.event.type;
+        const eventType = normalizeEventType(competition.event.type);
         if (!grouped[eventType]) {
           grouped[eventType] = [];
         }
@@ -943,7 +1038,7 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
     const userId = user?.uid || user?.id || user?.userId;
     const userName = user?.name || user?.full_name || user?.fullName || 'Unknown';
 
-    // Competition ID optional for /team/add; include when available
+    // Competition ID optional for /squad/add; include when available
     const competitionId = getCompetitionId(competitionType);
     if (!competitionId) {
       console.warn('Competition not found for:', competitionType, '- sending team create without competition_id');
@@ -1011,6 +1106,8 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
       teamName: teamNameTrimmed,
       event_id,
       competition_id: String(competitionId ?? ''),
+      // We keep captain_id at top-level for compatibility with older validations.
+      captain_id: String(captainIdFromClubMember),
       lineup: {
         bot_id,
         captain_id: String(captainIdFromClubMember),
@@ -1537,7 +1634,7 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
           }`}
         >
           <Users size={18} />
-          My Squad
+          Championship
         </button>
         <button
           type="button"
@@ -1549,7 +1646,7 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
           }`}
         >
           <LayoutGrid size={18} />
-          Create Squad
+          Apply Championship
         </button>
       </div>
 
@@ -1900,8 +1997,8 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
             <div className="text-right">
               <p className="text-slate-400 text-sm">
                 <span className="text-white font-bold">
-                  {uniqueEventTypes.length}
-                </span> / {uniqueEventTypes.length} event type{uniqueEventTypes.length !== 1 ? 's' : ''} available
+                  {mergedEventTypes.length}
+                </span> / {mergedEventTypes.length} event type{mergedEventTypes.length !== 1 ? 's' : ''} available
               </p>
             </div>
           </div>
@@ -1909,7 +2006,7 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
          
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {uniqueEventTypes.map((eventType) => {
+            {mergedEventTypes.map((eventType) => {
               const eventTypeTeams = getTeamsForEventType(eventType);
               const eventTypeCompetitions = competitionsByEventType[eventType] || [];
               const firstCompetition = eventTypeCompetitions[0];
@@ -2122,10 +2219,7 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
                     </div>
                   )}
                 </div>
-                <div className="bg-slate-800 border border-slate-600 rounded-xl p-4 text-center min-w-[120px]">
-              {/* <p className="text-xs text-slate-500 uppercase mb-1">Entry Fee</p>
-              <p className="text-xl font-mono font-bold text-white">$42</p> */}
-            </div>
+            
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-end gap-4 mb-3">
@@ -2143,7 +2237,7 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
                         // Update selected event type based on selected competition
                         const selectedComp = competitions.find(c => c.name === selectedCompName);
                         if (selectedComp?.event?.type) {
-                          const newEventType = selectedComp.event.type;
+                          const newEventType = normalizeEventType(selectedComp.event.type);
                           setSelectedEventType(newEventType);
                           // Reset ZRC region if switching away from ZRC
                           if (newEventType.toUpperCase() !== 'ZRC') {
@@ -2170,7 +2264,7 @@ export const SquadManager = ({ setPage, user: propUser, initialEditSquad, onInit
                       ) : competitions && competitions.length > 0 ? (
                         // Filter competitions by selected event type
                         competitions
-                          .filter((comp) => comp.event?.type === selectedEventType)
+                          .filter((comp) => normalizeEventType(comp.event?.type) === normalizeEventType(selectedEventType))
                           .map((comp) => {
                             const compTeams = teamsByCompetition[comp.name] || [];
                             const teamCount = compTeams.length;

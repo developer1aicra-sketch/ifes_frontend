@@ -195,7 +195,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
               <div className="flex items-center gap-3 mt-4">
                 {/* <MapPin size={16} className="text-slate-500 flex-shrink-0" /> */}
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-3 flex-wrap">
+                  {/* <div className="flex items-center gap-3 flex-wrap">
                     <LocationSwitcher
                       regionLabel="Country"
                       locationCodes={countryCodes}
@@ -207,13 +207,13 @@ const Footer = ({ setView, switchSite, currentSite }) => {
                         <span className="ml-2 text-slate-300">Theme: <span className="font-semibold text-white">{activePartner.themeColor}</span></span>
                       ) : null}
                     </span>
-                  </div>
-                  {footerAddress ? (
+                  </div> */}
+                  {/* {footerAddress ? (
                     <div className="text-xs text-slate-400">
                       {footerAddress}
                     </div>
-                  ) : null}
-                  {error ? (
+                  ) : null} */}
+                  {/* {error ? (
                     <div className="text-xs text-red-300">
                       {error}
                     </div>
@@ -222,7 +222,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
                     <div className="text-xs text-slate-500">
                       Loading partners…
                     </div>
-                  ) : null}
+                  ) : null} */}
                 </div>
               </div>
             </div>
@@ -326,12 +326,12 @@ const Footer = ({ setView, switchSite, currentSite }) => {
       <div className="pt-6 md:pt-8 border-t border-slate-800">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
           <div className="flex items-center gap-4 flex-wrap">
-            <button
+            {/* <button
               onClick={() => setView("staff-login")}
               className="text-[10px] text-slate-700 hover:text-white font-bold uppercase transition-colors"
             >
               Staff Access
-            </button>
+            </button> */}
 
             <div className="h-4 w-px bg-slate-800"></div>
 

@@ -16,6 +16,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { getMyClubs, updateClub } from "../api/clubApi";
+import { updateProfile as updateProfileApi } from "../api/profileApi";
 import { INITIAL_DB } from "../constants/userData";
 
 const AUTH_TOKEN_KEY = "token";
@@ -108,6 +109,14 @@ export const StudentPassport = ({ setPage }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [displayClubName, setDisplayClubName] = useState("");
+  const [profileForm, setProfileForm] = useState({
+    city: "",
+    state: "",
+    country: "",
+    email: "",
+    mobile: "",
+    instituteName: "",
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
 
@@ -125,11 +134,25 @@ export const StudentPassport = ({ setPage }) => {
     if (primaryClub) {
       setDisplayName(primaryClub.name || "");
       setDisplayClubName(primaryClub.clubName || "");
+      setProfileForm((prev) => ({
+        ...prev,
+        city: primaryClub?.city || primaryClub?.address?.city || prev.city,
+        state: primaryClub?.state || primaryClub?.address?.state || prev.state,
+        country: primaryClub?.country || primaryClub?.address?.country || prev.country,
+        mobile: primaryClub?.mobile || primaryClub?.phone || prev.mobile,
+        email: primaryClub?.alternateEmail || primaryClub?.email || prev.email,
+        instituteName: primaryClub?.instituteName || primaryClub?.schoolOrCollege || prev.instituteName,
+      }));
     } else if (!loading && !error) {
       setDisplayName(INITIAL_DB.currentUser.full_name || "");
       setDisplayClubName(INITIAL_DB.club?.name ?? "");
     }
   }, [primaryClub, loading, error]);
+
+  const handleProfileField = (key) => (e) => {
+    const value = e?.target?.value ?? "";
+    setProfileForm((prev) => ({ ...prev, [key]: value }));
+  };
 
   const handleSaveProfile = async () => {
     if (!primaryClub?._id) {
@@ -151,12 +174,41 @@ export const StudentPassport = ({ setPage }) => {
         updateData.clubName = displayClubName;
       }
 
-      // Only make API call if there are changes
-      if (Object.keys(updateData).length > 0) {
-        await updateClub(primaryClub._id, updateData);
-        // Refresh clubs list to get updated data
-        await refetch();
+      const email = profileForm.email.trim();
+      const mobile = profileForm.mobile.trim();
+      const isValidEmail = !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (!isValidEmail) {
+        setSaveError("Please enter a valid email address.");
+        return;
       }
+      if (mobile && /[^\d+\s-]/.test(mobile)) {
+        setSaveError("Mobile number contains invalid characters.");
+        return;
+      }
+
+      const profilePayload = {
+        mobile: mobile || undefined,
+        personalAndShippingAddress: {
+          city: profileForm.city.trim() || undefined,
+          state: profileForm.state.trim() || undefined,
+          country: profileForm.country.trim() || undefined,
+          alternateEmail: email || undefined,
+        },
+        affiliation: {
+          schoolOrCollege: profileForm.instituteName.trim() || undefined,
+        },
+      };
+
+      const tasks = [];
+      if (Object.keys(updateData).length > 0) {
+        tasks.push(updateClub(primaryClub._id, updateData));
+      }
+      // Update profile even if club didn't change; backend can ignore undefineds.
+      tasks.push(updateProfileApi(profilePayload));
+      await Promise.all(tasks);
+
+      // Refresh clubs list to get updated data
+      await refetch();
 
       setIsEditing(false);
     } catch (err) {
@@ -290,6 +342,14 @@ export const StudentPassport = ({ setPage }) => {
                   onClick={() => {
                     setDisplayName(primaryClub?.name ?? "");
                     setDisplayClubName(primaryClub?.clubName ?? "");
+                    setProfileForm({
+                      city: primaryClub?.city || primaryClub?.address?.city || "",
+                      state: primaryClub?.state || primaryClub?.address?.state || "",
+                      country: primaryClub?.country || primaryClub?.address?.country || "",
+                      email: primaryClub?.alternateEmail || primaryClub?.email || "",
+                      mobile: primaryClub?.mobile || primaryClub?.phone || "",
+                      instituteName: primaryClub?.instituteName || primaryClub?.schoolOrCollege || "",
+                    });
                     setIsEditing(false);
                     setSaveError(null);
                   }}
@@ -314,6 +374,95 @@ export const StudentPassport = ({ setPage }) => {
                 <p className="text-red-400 text-sm">{saveError}</p>
               </div>
             )}
+          </div>
+
+          {/* Editable profile fields */}
+          <div className="px-6 md:px-8 py-6 border-t border-slate-800">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-slate-800/40 border border-slate-700 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2 text-slate-300">
+                  <Phone size={16} className="text-slate-500" />
+                  <span className="text-sm font-semibold">Mobile</span>
+                </div>
+                {isEditing ? (
+                  <input
+                    value={profileForm.mobile}
+                    onChange={handleProfileField("mobile")}
+                    placeholder="Enter mobile number"
+                    className="w-full bg-slate-800 text-white border border-slate-600 rounded px-3 py-2 outline-none focus:border-cyan-500"
+                  />
+                ) : (
+                  <p className="text-sm text-white">{profileForm.mobile || "—"}</p>
+                )}
+              </div>
+
+              <div className="bg-slate-800/40 border border-slate-700 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2 text-slate-300">
+                  <Mail size={16} className="text-slate-500" />
+                  <span className="text-sm font-semibold">Email</span>
+                </div>
+                {isEditing ? (
+                  <input
+                    value={profileForm.email}
+                    onChange={handleProfileField("email")}
+                    placeholder="Enter email"
+                    className="w-full bg-slate-800 text-white border border-slate-600 rounded px-3 py-2 outline-none focus:border-cyan-500"
+                  />
+                ) : (
+                  <p className="text-sm text-white">{profileForm.email || displayEmail || "—"}</p>
+                )}
+              </div>
+
+              <div className="bg-slate-800/40 border border-slate-700 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2 text-slate-300">
+                  <Building2 size={16} className="text-slate-500" />
+                  <span className="text-sm font-semibold">Institute Name</span>
+                </div>
+                {isEditing ? (
+                  <input
+                    value={profileForm.instituteName}
+                    onChange={handleProfileField("instituteName")}
+                    placeholder="Enter institute name"
+                    className="w-full bg-slate-800 text-white border border-slate-600 rounded px-3 py-2 outline-none focus:border-cyan-500"
+                  />
+                ) : (
+                  <p className="text-sm text-white">{profileForm.instituteName || "—"}</p>
+                )}
+              </div>
+
+              <div className="bg-slate-800/40 border border-slate-700 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2 text-slate-300">
+                  <MapPin size={16} className="text-slate-500" />
+                  <span className="text-sm font-semibold">Location</span>
+                </div>
+                {isEditing ? (
+                  <div className="grid grid-cols-1 gap-2">
+                    <input
+                      value={profileForm.city}
+                      onChange={handleProfileField("city")}
+                      placeholder="City"
+                      className="w-full bg-slate-800 text-white border border-slate-600 rounded px-3 py-2 outline-none focus:border-cyan-500"
+                    />
+                    <input
+                      value={profileForm.state}
+                      onChange={handleProfileField("state")}
+                      placeholder="State"
+                      className="w-full bg-slate-800 text-white border border-slate-600 rounded px-3 py-2 outline-none focus:border-cyan-500"
+                    />
+                    <input
+                      value={profileForm.country}
+                      onChange={handleProfileField("country")}
+                      placeholder="Country"
+                      className="w-full bg-slate-800 text-white border border-slate-600 rounded px-3 py-2 outline-none focus:border-cyan-500"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-sm text-white">
+                    {[profileForm.city, profileForm.state, profileForm.country].filter(Boolean).join(", ") || "—"}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Statistics */}
