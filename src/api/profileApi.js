@@ -5,7 +5,7 @@ import endpoints from './endpoints';
  * Update logged-in member profile.
  * Maps directly to PUT /api/profile/update.
  *
- * @param {Object} payload - Profile update payload
+ * @param {Object|FormData} payload - Profile update payload. Prefer FormData (supports logo upload + nested JSON).
  * @returns {Promise} Axios response
  */
 export const updateProfile = (payload) =>
