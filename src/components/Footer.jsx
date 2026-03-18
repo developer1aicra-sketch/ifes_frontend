@@ -326,12 +326,12 @@ const Footer = ({ setView, switchSite, currentSite }) => {
       <div className="pt-6 md:pt-8 border-t border-slate-800">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
           <div className="flex items-center gap-4 flex-wrap">
-            {/* <button
+            <button
               onClick={() => setView("staff-login")}
               className="text-[10px] text-slate-700 hover:text-white font-bold uppercase transition-colors"
             >
               Staff Access
-            </button> */}
+            </button>
 
             <div className="h-4 w-px bg-slate-800"></div>
 

@@ -65,6 +65,31 @@ function getEmailFromToken(token) {
   }
 }
 
+function getRoleFromToken(token) {
+  if (!token || typeof token !== "string") return null;
+  const raw = token.startsWith("Bearer ") ? token.slice("Bearer ".length) : token;
+  const parts = raw.split(".");
+  if (parts.length < 2) return null;
+
+  try {
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+    const json = atob(padded);
+    const payload = JSON.parse(json);
+
+    return (
+      payload?.role ??
+      payload?.user?.role ??
+      payload?.data?.role ??
+      payload?.userRole ??
+      null
+    );
+  } catch {
+    return null;
+  }
+}
+
 function useMyClubs(enabled) {
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -213,11 +238,27 @@ export const StudentPassport = ({ setPage }) => {
 
   const primaryClub = clubs?.[0];
   const tokenEmail = useMemo(() => getEmailFromToken(token), [token]);
+  const tokenRole = useMemo(() => getRoleFromToken(token), [token]);
+  const stripRole = tokenRole === "CLUBOWNER" ? "OWNER" : tokenRole === "MEMBER" ? "MEMBER" : null;
+
+  const effectiveUser = useMemo(() => {
+    const owner = primaryClub?.owner ?? null;
+    const memberUser = primaryClub?.member?.user ?? primaryClub?.member?.user_id ?? null;
+
+    // Architecture rule:
+    // - If logged-in role is CLUBOWNER => show owner only
+    // - If logged-in role is MEMBER => show member only
+    if (tokenRole === "CLUBOWNER") return owner;
+    if (tokenRole === "MEMBER") return memberUser;
+
+    // Fallback if token doesn't contain role (best-effort)
+    return memberUser ?? owner ?? null;
+  }, [primaryClub, tokenRole]);
+
   const displayEmail =
+    effectiveUser?.email ||
     primaryClub?.email ||
     primaryClub?.emailId ||
-    primaryClub?.user?.email ||
-    primaryClub?.user_id?.email ||
     tokenEmail ||
     "—";
 
@@ -285,51 +326,51 @@ export const StudentPassport = ({ setPage }) => {
 
   useEffect(() => {
     if (primaryClub) {
-      const owner = primaryClub?.owner ?? null;
-      const ownerPersonalAndShippingAddress = safeJsonParse(owner?.personalAndShippingAddress, {});
-      const ownerAffiliation = safeJsonParse(owner?.affiliation, {});
-      const ownerPersonal = safeJsonParse(owner?.personal, {});
-      const ownerAdditional = safeJsonParse(owner?.additional, {});
-      const ownerSocialMedia = safeJsonParse(owner?.socialMedia, {});
+      const user = effectiveUser ?? null;
+      const userPersonalAndShippingAddress = safeJsonParse(user?.personalAndShippingAddress, {});
+      const userAffiliation = safeJsonParse(user?.affiliation, {});
+      const userPersonal = safeJsonParse(user?.personal, {});
+      const userAdditional = safeJsonParse(user?.additional, {});
+      const userSocialMedia = safeJsonParse(user?.socialMedia, {});
 
-      setDisplayName(primaryClub.name || "");
+      setDisplayName(user?.fullName || user?.fullname || primaryClub.name || "");
       setDisplayClubName(primaryClub.clubName || "");
       setProfileForm((prev) => ({
         ...prev,
-        // Owner profile (from /club/my/get => owner.* JSON strings)
-        dob: ownerPersonalAndShippingAddress?.dob ?? prev.dob,
-        gender: ownerPersonalAndShippingAddress?.gender ?? prev.gender,
-        fullShipingAddress: ownerPersonalAndShippingAddress?.fullShipingAddress ?? prev.fullShipingAddress,
-        pincode: ownerPersonalAndShippingAddress?.pincode ?? prev.pincode,
-        classOrGrade: ownerAffiliation?.classOrGrade ?? prev.classOrGrade,
-        fatherName: ownerPersonal?.fatherName ?? prev.fatherName,
-        motherName: ownerPersonal?.motherName ?? prev.motherName,
-        skillsText: Array.isArray(ownerAdditional?.skills) ? ownerAdditional.skills.join(", ") : prev.skillsText,
-        hobbiesText: Array.isArray(ownerAdditional?.hobbies) ? ownerAdditional.hobbies.join(", ") : prev.hobbiesText,
-        facebook: ownerSocialMedia?.facebook ?? prev.facebook,
-        instagram: ownerSocialMedia?.instagram ?? prev.instagram,
-        linkedin: ownerSocialMedia?.linkedin ?? prev.linkedin,
-        youtube: ownerSocialMedia?.youtube ?? prev.youtube,
-        twitter: ownerSocialMedia?.twitter ?? prev.twitter,
-        logoUrl: owner?.logo ?? prev.logoUrl,
+        // User profile (prefer member.user, fallback owner). Backend may send nested objects or JSON strings.
+        dob: userPersonalAndShippingAddress?.dob ?? prev.dob,
+        gender: userPersonalAndShippingAddress?.gender ?? prev.gender,
+        fullShipingAddress: userPersonalAndShippingAddress?.fullShipingAddress ?? prev.fullShipingAddress,
+        pincode: userPersonalAndShippingAddress?.pincode ?? prev.pincode,
+        classOrGrade: userAffiliation?.classOrGrade ?? prev.classOrGrade,
+        fatherName: userPersonal?.fatherName ?? prev.fatherName,
+        motherName: userPersonal?.motherName ?? prev.motherName,
+        skillsText: Array.isArray(userAdditional?.skills) ? userAdditional.skills.join(", ") : prev.skillsText,
+        hobbiesText: Array.isArray(userAdditional?.hobbies) ? userAdditional.hobbies.join(", ") : prev.hobbiesText,
+        facebook: userSocialMedia?.facebook ?? prev.facebook,
+        instagram: userSocialMedia?.instagram ?? prev.instagram,
+        linkedin: userSocialMedia?.linkedin ?? prev.linkedin,
+        youtube: userSocialMedia?.youtube ?? prev.youtube,
+        twitter: userSocialMedia?.twitter ?? prev.twitter,
+        logoUrl: user?.logo ?? prev.logoUrl,
 
         // Club fields (top-level club)
         city: primaryClub?.city || primaryClub?.address?.city || prev.city,
         state: primaryClub?.state || primaryClub?.address?.state || prev.state,
         country: primaryClub?.country || primaryClub?.address?.country || prev.country,
-        mobile: primaryClub?.mobile || primaryClub?.phone || prev.mobile,
-        email: primaryClub?.alternateEmail || primaryClub?.email || prev.email,
+        mobile: user?.mobile || user?.mobileNo || primaryClub?.mobile || primaryClub?.phone || prev.mobile,
+        email: userPersonalAndShippingAddress?.alternateEmail || user?.email || primaryClub?.alternateEmail || primaryClub?.email || prev.email,
         instituteName:
           primaryClub?.instituteName ||
           primaryClub?.schoolOrCollege ||
-          ownerAffiliation?.schoolOrCollege ||
+          userAffiliation?.schoolOrCollege ||
           prev.instituteName,
       }));
     } else if (!loading && !error) {
       setDisplayName(INITIAL_DB.currentUser.full_name || "");
       setDisplayClubName(INITIAL_DB.club?.name ?? "");
     }
-  }, [primaryClub, loading, error]);
+  }, [primaryClub, effectiveUser, loading, error]);
 
   const handleProfileField = (key) => (e) => {
     const value = e?.target?.value ?? "";
@@ -584,6 +625,18 @@ export const StudentPassport = ({ setPage }) => {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+              {stripRole && (
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wider border self-start ${
+                    stripRole === "OWNER"
+                      ? "bg-amber-500/15 text-amber-300 border-amber-600/40"
+                      : "bg-emerald-500/15 text-emerald-300 border-emerald-600/40"
+                  }`}
+                  title={stripRole}
+                >
+                  {stripRole}
+                </span>
+              )}
               <button
                 onClick={isEditing ? handleSaveProfile : () => setIsEditing(true)}
                 disabled={isSaving}

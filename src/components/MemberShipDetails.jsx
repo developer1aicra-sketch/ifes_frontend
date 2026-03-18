@@ -50,6 +50,43 @@ const PAYMENT_STATUS = Object.freeze({
   FAILED: 'FAILED',
 })
 
+function resolveMemberId(member) {
+  return member?._id ?? member?.id ?? null
+}
+
+function resolveUserId(member) {
+  return (
+    member?.user_id?._id ||
+    member?.user_id?.id ||
+    member?.user_id ||
+    member?.user?._id ||
+    member?.user?.id ||
+    member?.userId ||
+    member?.userID ||
+    null
+  )
+}
+
+function resolveCategoryId(member) {
+  return (
+    member?.categoryId?._id ||
+    member?.category_id?._id ||
+    member?.categoryId ||
+    member?.category_id ||
+    null
+  )
+}
+
+function resolvePlanId(member) {
+  return (
+    member?.planId?._id ||
+    member?.plan_id?._id ||
+    member?.planId ||
+    member?.plan_id ||
+    null
+  )
+}
+
 function normalizePaymentStatus(rawStatus) {
   if (rawStatus == null) return PAYMENT_STATUS.PENDING
 
@@ -474,7 +511,7 @@ function MembersList({
                     <td className="px-4 py-3">
                       <input
                         type="checkbox"
-                        checked={selectedMembers.some(m => m.id === member.id)}
+                        checked={selectedMembers.some((m) => String(resolveMemberId(m)) === String(resolveMemberId(member)))}
                         onChange={() => onMemberSelect && onMemberSelect(member)}
                         className="rounded bg-slate-700 border-slate-600 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
                         onClick={(e) => e.stopPropagation()}
@@ -1326,9 +1363,8 @@ const MemberShipDetails = ({ setPage, setpage }) => {
       setMembers((prev) =>
         prev.filter((m) => m.id !== memberId && m._id !== memberId)
       )
-      setSelectedMembers((prev) =>
-        prev.filter((m) => m.id !== memberId && m._id !== memberId)
-      )
+      // Selection is tracked as IDs (selectedMemberIds), so remove deleted member ID from the selection.
+      setSelectedMemberIds((prev) => prev.filter((id) => String(id) !== String(memberId)))
 
       toast.success('Member deleted successfully!', {
         position: "top-right",
@@ -1601,7 +1637,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
   const selectedMembers = useMemo(() => {
     if (!selectedMemberIds.length) return []
     const idSet = new Set(selectedMemberIds.map(String))
-    return members.filter((m) => idSet.has(String(m?._id ?? m?.id)))
+    return members.filter((m) => idSet.has(String(resolveMemberId(m))))
   }, [members, selectedMemberIds])
 
   const payableMembers = selectedMembers.length > 0 ? selectedMembers : filteredMembers
@@ -1653,7 +1689,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
 
   // Member selection handlers
   const handleMemberSelect = useCallback((member) => {
-    const memberId = member?._id ?? member?.id
+    const memberId = resolveMemberId(member)
     if (!memberId) return
     setSelectedMemberIds((prev) => {
       const id = String(memberId)
@@ -1666,7 +1702,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
 
   const handleSelectAll = useCallback(() => {
     const filteredIds = filteredMembers
-      .map((m) => String(m?._id ?? m?.id))
+      .map((m) => String(resolveMemberId(m)))
       .filter(Boolean)
 
     setSelectedMemberIds((prev) => {
@@ -1688,19 +1724,19 @@ const MemberShipDetails = ({ setPage, setpage }) => {
 
     // IMPORTANT: Build payload from the latest members state (not stale selected objects).
     const idSet = new Set(selectedMemberIds.map(String))
-    const currentSelectedMembers = members.filter((m) => idSet.has(String(m?._id ?? m?.id)))
+    const currentSelectedMembers = members.filter((m) => idSet.has(String(resolveMemberId(m))))
 
     const membersPayload = currentSelectedMembers
       .filter((m) => {
-        const userId = m.user_id?._id || m.user_id
-        const categoryId = m.categoryId || m.category_id
-        const planId = m.planId || m.plan_id
+        const userId = resolveUserId(m)
+        const categoryId = resolveCategoryId(m)
+        const planId = resolvePlanId(m)
         return userId && categoryId && planId
       })
       .map((m) => ({
-        user_id: m.user_id?._id || m.user_id,
-        category_id: m.categoryId || m.category_id,
-        plan_id: m.planId || m.plan_id,
+        user_id: resolveUserId(m),
+        category_id: resolveCategoryId(m),
+        plan_id: resolvePlanId(m),
       }))
 
     if (membersPayload.length === 0) {
@@ -1728,21 +1764,41 @@ const MemberShipDetails = ({ setPage, setpage }) => {
       const createdMemberships = Array.isArray(createdRaw) ? createdRaw : []
       const failedUsers = Array.isArray(failedRaw) ? failedRaw : []
 
-      // Build a single list for payment creation:
-      // - createdMemberships[] has: _id + plan_id (string)
-      // - failedUsers[].membership has: _id + plan_id (object with _id)
+      // Build memberships list for payment for THIS selection.
+      // Backend may return memberships under:
+      // - createdMemberships (newly created)
+      // - failedUsers[].membership (already existed; e.g. pending/active)
+      // We accept both, but we must normalize IDs and enrich missing plan/category from request payload.
       const membershipsForPayment = (() => {
         const out = []
         const seen = new Set()
+        const requestedUserIds = new Set(membersPayload.map((m) => String(m.user_id)))
+        const payloadByUserId = new Map(membersPayload.map((m) => [String(m.user_id), m]))
 
         const pushIfValid = (m) => {
           if (!m) return
           const membershipId = m._id ?? m.id
-          const planId =
+          const rawPlanId =
             typeof m.plan_id === 'object'
               ? (m.plan_id?._id ?? m.plan_id?.id)
-              : m.plan_id
-          if (!membershipId || !planId) return
+              : (m.plan_id ?? m.planId)
+          const rawCategoryId =
+            typeof m.category_id === 'object'
+              ? (m.category_id?._id ?? m.category_id?.id)
+              : (m.category_id ?? m.categoryId)
+          const userId =
+            (typeof m.user_id === 'object' ? (m.user_id?._id ?? m.user_id?.id) : m.user_id) ??
+            (typeof m.user === 'object' ? (m.user?._id ?? m.user?.id) : null) ??
+            m.userId ??
+            null
+
+          if (userId && !requestedUserIds.has(String(userId))) return
+
+          const payloadForUser = userId != null ? payloadByUserId.get(String(userId)) : undefined
+          const planId = rawPlanId ?? payloadForUser?.plan_id ?? null
+          const categoryId = rawCategoryId ?? payloadForUser?.category_id ?? null
+
+          if (!membershipId || !planId || !categoryId) return
           const key = String(membershipId)
           if (seen.has(key)) return
           seen.add(key)
@@ -1750,6 +1806,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
             ...m,
             _id: membershipId,
             plan_id: planId,
+            category_id: categoryId,
           })
         }
 
@@ -1758,6 +1815,13 @@ const MemberShipDetails = ({ setPage, setpage }) => {
 
         return out
       })()
+
+      if (membershipsForPayment.length !== membersPayload.length) {
+        toast.warning(
+          `Prepared ${membershipsForPayment.length} of ${membersPayload.length} membership(s) for payment. Only prepared memberships will be charged.`,
+          { position: 'top-right', autoClose: 4500, theme: 'dark' }
+        )
+      }
 
       if (createdMemberships.length === 0) {
         toast.warning('Memberships were created but none returned for payment. Please contact support.', {
@@ -1846,7 +1910,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
   const isAllSelected = useMemo(() => {
     if (filteredMembers.length === 0) return false
     const filteredIds = filteredMembers
-      .map((m) => String(m?._id ?? m?.id))
+      .map((m) => String(resolveMemberId(m)))
       .filter(Boolean)
     if (filteredIds.length === 0) return false
     const set = new Set(selectedMemberIds.map(String))
@@ -1855,7 +1919,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
 
   const isIndeterminate = useMemo(() => {
     const filteredIds = filteredMembers
-      .map((m) => String(m?._id ?? m?.id))
+      .map((m) => String(resolveMemberId(m)))
       .filter(Boolean)
     if (filteredIds.length === 0) return false
     const set = new Set(selectedMemberIds.map(String))
@@ -2020,14 +2084,14 @@ const MemberShipDetails = ({ setPage, setpage }) => {
                     (() => {
                       const idSet = new Set(selectedMemberIds.map(String))
                       const currentSelectedMembers = members.filter((m) =>
-                        idSet.has(String(m?._id ?? m?.id))
+                        idSet.has(String(resolveMemberId(m)))
                       )
                       return (
                         currentSelectedMembers.filter(
                           (m) =>
-                            (m.user_id?._id || m.user_id) &&
-                            (m.categoryId || m.category_id) &&
-                            (m.planId || m.plan_id)
+                            resolveUserId(m) &&
+                            resolveCategoryId(m) &&
+                            resolvePlanId(m)
                         ).length === 0
                       )
                     })()

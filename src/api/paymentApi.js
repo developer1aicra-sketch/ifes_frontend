@@ -36,12 +36,20 @@ export const createPayment = (payload) => {
 export const createMembershipPayment = (createdMemberships = []) => {
   const list = Array.isArray(createdMemberships) ? createdMemberships : [];
   const items = list
-    .map((m) => ({
-      membership_id: m?._id,
-      plan_id: m?.plan_id,
-      category_id: m?.category_id,
-    }))
-    .filter((it) => it.membership_id);
+    .map((m) => {
+      const membership_id = m?._id ?? m?.id ?? m?.membership_id ?? null;
+      const plan_id =
+        typeof m?.plan_id === 'object'
+          ? (m?.plan_id?._id ?? m?.plan_id?.id)
+          : (m?.plan_id ?? m?.planId);
+      const category_id =
+        typeof m?.category_id === 'object'
+          ? (m?.category_id?._id ?? m?.category_id?.id)
+          : (m?.category_id ?? m?.categoryId);
+      return { membership_id, plan_id, category_id };
+    })
+    // enforce exact contract for /payment/create
+    .filter((it) => it.membership_id && it.plan_id && it.category_id);
 
   const idempotencyKey = `pay_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
   const payload = {

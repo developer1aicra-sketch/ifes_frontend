@@ -22,6 +22,7 @@ const MembershipPaymentModal = ({
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [paymentData, setPaymentData] = useState(null)
   const [razorpayInstance, setRazorpayInstance] = useState(null)
+  const [orderInitError, setOrderInitError] = useState(null)
 
   useEffect(() => {
     if (!isOpen || razorpayLoaded) return
@@ -62,6 +63,7 @@ const MembershipPaymentModal = ({
     if (!isOpen) {
       setIsProcessing(false)
       setPaymentData(null)
+      setOrderInitError(null)
       setTermsAccepted(false)
       setRazorpayInstance(null)
     }
@@ -73,6 +75,48 @@ const MembershipPaymentModal = ({
   }
   const displayAmount = paymentData?.amount != null ? formatAmount(paymentData.amount) : (paymentData?.totalAmountRupees != null ? Number(paymentData.totalAmountRupees).toFixed(2) : '—')
   const displayCurrency = paymentData?.currency || currency
+
+  const initPaymentOrder = async () => {
+    if (!createdMemberships?.length) return
+    if (!razorpayLoaded) return
+    if (paymentData) return
+
+    setOrderInitError(null)
+    setIsProcessing(true)
+    try {
+      const response = await createMembershipPayment(createdMemberships)
+      const rawData = response.data?.success ? response.data.data : (response.data?.data || response.data)
+      const data = normalizePaymentCreateResponse(rawData)
+
+      if (!data.razorpayKey || !data.orderId) {
+        throw new Error('Invalid payment response from server')
+      }
+      if (!data.amount || data.amount <= 0) {
+        throw new Error('Invalid payment amount')
+      }
+
+      setPaymentData(data)
+      return data
+    } catch (error) {
+      const msg =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Failed to initialize payment.'
+      setOrderInitError(msg)
+      toast.error(msg, { position: 'top-right', autoClose: 4000, theme: 'dark' })
+      return undefined
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // Auto-create the payment order once memberships are created (after /membership/bulk),
+  // so the subsequent "Proceed to Payment" opens Razorpay immediately.
+  useEffect(() => {
+    if (!isOpen) return
+    initPaymentOrder()
+  }, [isOpen, razorpayLoaded, createdMemberships, paymentData])
 
   const handlePayment = async () => {
     if (!createdMemberships?.length) {
@@ -100,11 +144,14 @@ const MembershipPaymentModal = ({
       return
     }
 
-    setIsProcessing(true)
     try {
-      const response = await createMembershipPayment(createdMemberships)
-      const rawData = response.data?.success ? response.data.data : (response.data?.data || response.data)
-      const data = normalizePaymentCreateResponse(rawData)
+      let data = paymentData
+      if (!data) {
+        data = await initPaymentOrder()
+      }
+      if (!data) {
+        throw new Error(orderInitError || 'Payment order could not be created. Please try again.')
+      }
 
       if (!data.razorpayKey || !data.orderId) {
         throw new Error('Invalid payment response from server')
@@ -112,8 +159,6 @@ const MembershipPaymentModal = ({
       if (!data.amount || data.amount <= 0) {
         throw new Error('Invalid payment amount')
       }
-
-      setPaymentData(data)
 
       const options = {
         key: data.razorpayKey,
@@ -139,14 +184,12 @@ const MembershipPaymentModal = ({
         modal: {
           ondismiss: () => {
             setIsProcessing(false)
-            setPaymentData(null)
             setRazorpayInstance(null)
             toast.info('Payment cancelled', { position: 'top-right', autoClose: 2000, theme: 'dark' })
           },
         },
         handler_error: (error) => {
           setIsProcessing(false)
-          setPaymentData(null)
           setRazorpayInstance(null)
           const msg = error.error?.description || error.error?.reason || error.error?.code || 'Payment failed.'
           toast.error(`Payment failed: ${msg}`, { position: 'top-right', autoClose: 4000, theme: 'dark' })
@@ -162,7 +205,6 @@ const MembershipPaymentModal = ({
       }
     } catch (error) {
       setIsProcessing(false)
-      setPaymentData(null)
       const msg =
         error.response?.data?.message ||
         error.response?.data?.error ||
@@ -330,7 +372,7 @@ const MembershipPaymentModal = ({
 
                 <motion.button
                   onClick={handlePayment}
-                  disabled={isProcessing || !termsAccepted || !razorpayLoaded || createdMemberships.length === 0}
+                  disabled={isProcessing || !termsAccepted || !razorpayLoaded || createdMemberships.length === 0 || !paymentData}
                   whileHover={{ scale: isProcessing || !termsAccepted ? 1 : 1.02 }}
                   whileTap={{ scale: isProcessing || !termsAccepted ? 1 : 0.98 }}
                   className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3.5 rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -358,6 +400,18 @@ const MembershipPaymentModal = ({
                   <div className="flex items-center gap-2 text-yellow-400 text-sm">
                     <Loader2 size={16} className="animate-spin" />
                     Loading payment gateway...
+                  </div>
+                )}
+                {razorpayLoaded && createdMemberships.length > 0 && !paymentData && (
+                  <div className="flex items-center gap-2 text-slate-400 text-sm">
+                    <Loader2 size={16} className="animate-spin" />
+                    Preparing payment order...
+                  </div>
+                )}
+                {!!orderInitError && (
+                  <div className="flex items-center gap-2 text-red-300 text-sm p-3 bg-red-500/10 rounded-lg border border-red-600/30">
+                    <AlertCircle size={16} />
+                    {orderInitError}
                   </div>
                 )}
                 {createdMemberships.length === 0 && (
