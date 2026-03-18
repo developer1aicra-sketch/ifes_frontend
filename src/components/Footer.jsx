@@ -146,7 +146,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
     : DEFAULT_FOOTER.social;
 
   return (
-    <footer className={`${themeConfig?.colors?.gradient || 'bg-[#0a0f1a]'} text-slate-400 py-10 sm:py-12 md:py-16`}>
+    <footer className={`${themeConfig?.colors?.gradient || 'bg-[#0a0f1a]'} text-slate-400 py-10  `}>
     <div className="container mx-auto px-4 sm:px-6 max-w-[1600px]">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 mb-10 md:mb-12">
 
@@ -326,15 +326,15 @@ const Footer = ({ setView, switchSite, currentSite }) => {
       <div className="pt-6 md:pt-8 border-t border-slate-800">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
           <div className="flex items-center gap-4 flex-wrap">
-            <button
+            {/* <button
               onClick={() => setView("staff-login")}
               className="text-[10px] text-slate-700 hover:text-white font-bold uppercase transition-colors"
             >
               Staff Access
-            </button>
+            </button> */}
 
-            <div className="h-4 w-px bg-slate-800"></div>
-
+            <div className="h-4 w-px bg-slate-800 hidden"></div>
+{/* 
             <span className="text-[10px] font-bold text-slate-400 uppercase">
               View As:
             </span>
@@ -353,7 +353,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
                 }`}
             >
               UAE
-            </button>
+            </button> */}
           </div>
 
           <div className="text-xs text-slate-400 md:mx-auto">
