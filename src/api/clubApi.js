@@ -2,18 +2,33 @@ import axiosInstance from './axiosInstance';
 import endpoints from './endpoints';
 
 /**
- * Register a new club (RoboClub registration form).
+ * Add RoboClub — POST /club/add
+ * Requires: Authorization Bearer token (from /auth/signup/verify/otp).
  * Payload: { name, clubName, instituteName, countryCode, country, state, city, mobile, email, password }
  */
 export const addClub = (data) =>
   axiosInstance.post(endpoints.club.add, data);
 
 /**
- * Get current user's clubs. Requires Authorization Bearer token.
+ * Get current user's clubs — GET /club/my/get
+ * Requires: Authorization Bearer token.
  * Response: { success, data: Club[] }
  */
 export const getMyClubs = () =>
   axiosInstance.get(endpoints.club.myGet);
+
+/** Alias for getMyClubs (same endpoint). */
+export const getMyClub = getMyClubs;
+
+/**
+ * Get clubs by partner — GET /club/get?website=worso&partnerCode=XX
+ * Used for My RoboClubs in admin dashboard.
+ * Response: { success, data: Club[] }
+ */
+export const getClubsByPartner = (partnerCode) =>
+  axiosInstance.get(endpoints.club.get, {
+    params: { website: 'worso', partnerCode: partnerCode || '' },
+  });
 
 /**
  * Get club details by club ID.

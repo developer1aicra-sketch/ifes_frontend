@@ -55,7 +55,12 @@ export const memberLogin = async (email, password) => {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const message = data?.message || data?.error || `Login failed (${response.status})`;
+    const message =
+      data?.message ||
+      data?.error ||
+      data?.data?.message ||
+      data?.data?.error ||
+      `Login failed (${response.status})`;
     throw new Error(message);
   }
 
@@ -533,6 +538,29 @@ export const listEvents = async () => {
   const response = await apiFetch(`${API_BASE_URL}${apiRoutes.event.list}`, {
     method: 'GET',
   });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Failed to list events (${response.status})`);
+  }
+  return data;
+};
+
+/**
+ * List events by website (event/get?website=EG).
+ * website from partner route (e.g. /EG/admin-dashboard) or user.partner.partnerCode.
+ * @param {string} website - Website code (e.g. 'EG', 'TH')
+ * @returns {Promise<{ success?: boolean, data?: Array, events?: Array }>}
+ */
+export const listEventsGetByWebsite = async (website) => {
+  const code = (website || '').toString().trim();
+  if (!code) {
+    return { success: true, data: [], events: [] };
+  }
+  const params = new URLSearchParams({ website: code });
+  const response = await apiFetch(
+    `${API_BASE_URL}${apiRoutes.eventGetByWebsite}?${params.toString()}`,
+    { method: 'GET' }
+  );
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(data?.message || data?.error || `Failed to list events (${response.status})`);

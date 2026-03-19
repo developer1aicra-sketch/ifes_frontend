@@ -45,8 +45,8 @@ const LocationRouteHandler = () => {
       
       // Known routes that should NOT trigger theme change
       const knownRoutes = ['teams', 'technoxian', 'roboclub', 'about', 'governance', 
-                          'associates', 'careers', 'partners', 'membership', 'login', 
-                          'staff-login', 'login-partner-admin', 'member-dashboard', 
+                          'associates', 'careers', 'partners', 'membership', 'login', 'member',
+                          'partner', 'portal', 'staff-login', 'login-partner-admin', 'member-dashboard', 
                           'admin-dashboard', 'privacy-policy', 'terms-of-use', 'news'];
       
       // Check if it's a valid 2-letter location code and not a known route

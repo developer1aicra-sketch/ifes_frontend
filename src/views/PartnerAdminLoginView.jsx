@@ -10,10 +10,10 @@ const PartnerAdminLoginView = ({ setView, setUser, siteConfig, user }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // If already logged in, redirect to admin dashboard
+  // If already logged in as partner, redirect to partner portal
   useEffect(() => {
-    if (user) {
-      setView('admin-dashboard');
+    if (user?.role === 'partner') {
+      setView('partner-dashboard');
     }
   }, [user, setView]);
 
@@ -60,7 +60,7 @@ const PartnerAdminLoginView = ({ setView, setUser, siteConfig, user }) => {
         setAuthToken(token);
       }
       setUser(userPayload);
-      setView('admin-dashboard');
+      setView('partner-dashboard');
     } catch (err) {
       setError(err?.message || 'Invalid OTP. Please try again.');
     } finally {

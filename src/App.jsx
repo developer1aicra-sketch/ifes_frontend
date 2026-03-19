@@ -87,15 +87,18 @@ const viewToPath = (view) => {
     case 'partners':
       return '/partners';
     case 'login':
-      return '/login';
+    case 'member-login':
+      return '/member/login';
     case 'staff-login':
       return '/staff-login';
     case 'login-partner-admin':
-      return '/login-partner-admin';
+    case 'partner-login':
+      return '/partner/login';
     case 'member-dashboard':
-      return '/member-dashboard';
+      return '/member/portal';
     case 'admin-dashboard':
-      return '/admin-dashboard';
+    case 'partner-dashboard':
+      return '/partner/portal';
     case 'privacy-policy':
       return '/privacy-policy';
     case 'terms-of-use':
@@ -110,6 +113,60 @@ const viewToPath = (view) => {
 const NewsArticleRoute = (props) => {
   const { id } = useParams();
   return <NewsArticleView articleId={id} {...props} />;
+};
+
+const getPartnerSession = () => {
+  const stored = getPartnerAuth();
+  if (!stored?.token || !stored?.partner) return null;
+  return stored;
+};
+const isPartnerAuthenticated = () => Boolean(getPartnerSession());
+/** Member portal: only when token exists AND no active partner session (partner uses same token key) */
+const isMemberAuthenticated = () => {
+  if (!getAuthToken()) return false;
+  if (getPartnerSession()) return false; // Partner logged in → not a member
+  return true;
+};
+
+const MemberLoginRoute = ({ user, setView, setUser, currentSite, locationPrefix }) => {
+  const portalPath = pathWithLocationPrefix(locationPrefix || '', '/member/portal');
+  return isMemberAuthenticated()
+    ? <Navigate to={portalPath} replace />
+    : <MemberLoginView setView={setView} setUser={setUser} siteConfig={currentSite} user={user} />;
+};
+
+const PartnerLoginRoute = ({ user, setView, setUser, currentSite, locationPrefix }) => {
+  const portalPath = pathWithLocationPrefix(locationPrefix || '', '/partner/portal');
+  return isPartnerAuthenticated()
+    ? <Navigate to={portalPath} replace />
+    : <PartnerAdminLoginView setView={setView} setUser={setUser} siteConfig={currentSite} user={user} />;
+};
+
+const MemberPortalRoute = ({ user, currentSite, setView, setUser, locationPrefix }) => {
+  if (!isMemberAuthenticated()) {
+    const loginPath = pathWithLocationPrefix(locationPrefix || '', '/member/login');
+    return <Navigate to={loginPath} replace />;
+  }
+  const memberUser = user?.type === 'member' ? user : { type: 'member', email: user?.email };
+  return <MemberDashboard user={memberUser} currentSite={currentSite} setView={setView} setUser={setUser} />;
+};
+
+const PartnerPortalRoute = ({ user, setSites, sites, setView, setUser, locationPrefix }) => {
+  const session = getPartnerSession();
+  if (!session) {
+    const loginPath = pathWithLocationPrefix(locationPrefix || '', '/partner/login');
+    return <Navigate to={loginPath} replace />;
+  }
+  const partnerUser = user?.role === 'partner'
+    ? user
+    : {
+        type: 'admin',
+        role: 'partner',
+        email: session.partner.contactEmail ?? session.email,
+        token: session.token,
+        partner: session.partner,
+      };
+  return <AdminView setSites={setSites} sites={sites} setView={setView} defaultMode={partnerUser?.role} user={partnerUser} setUser={setUser} />;
 };
 
 const App = () => {
@@ -152,9 +209,6 @@ const App = () => {
     return () => { mounted = false; };
   }, []);
 
-  const [tickerText] = useState(
-    'BREAKING: Zonal Round registrations for Asia Pacific are now OPEN!'
-  );
   const [newsItems, setNewsItems] = useState(NEWS_ITEMS);
   const [newsLoading, setNewsLoading] = useState(false);
   const [newsError, setNewsError] = useState('');
@@ -241,7 +295,6 @@ const App = () => {
         setUser={setUser}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
-        tickerText={tickerText}
         newsProps={newsProps}
         location={location}
         sites={sites}
@@ -260,7 +313,6 @@ const AppContent = ({
   setUser,
   isMobileMenuOpen,
   setIsMobileMenuOpen,
-  tickerText,
   newsProps,
   location,
   sites,
@@ -347,12 +399,16 @@ const AppContent = ({
 
               <Route path="/membership" element={<MembershipView setView={setViewRespectingLocation} />} /> {/* ✅ NEW */}
 
-              <Route path="/login" element={user?.type === 'member' ? <Navigate to={pathWithLocationPrefix(locationPrefix, '/member-dashboard')} replace /> : <MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
+              <Route path="/member/login" element={<MemberLoginRoute user={user} setView={setViewRespectingLocation} setUser={setUser} currentSite={currentSite} locationPrefix={locationPrefix} />} />
+              <Route path="/login" element={<Navigate to="/member/login" replace />} />
               <Route path="/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} user={user} />} />
-              <Route path="/login-partner-admin" element={<PartnerAdminLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
+              <Route path="/partner/login" element={<PartnerLoginRoute user={user} setView={setViewRespectingLocation} setUser={setUser} currentSite={currentSite} locationPrefix={locationPrefix} />} />
+              <Route path="/login-partner-admin" element={<Navigate to="/partner/login" replace />} />
 
-              <Route path="/member-dashboard" element={<MemberDashboard user={user} currentSite={currentSite} setView={setViewRespectingLocation} />} />
-              <Route path="/admin-dashboard" element={<AdminView setSites={setSites} sites={sites} setView={setViewRespectingLocation} defaultMode={user?.role} user={user} setUser={setUser} />} />
+              <Route path="/member/portal" element={<MemberPortalRoute user={user} currentSite={currentSite} setView={setViewRespectingLocation} setUser={setUser} locationPrefix={locationPrefix} />} />
+              <Route path="/member-dashboard" element={<Navigate to="/member/portal" replace />} />
+              <Route path="/partner/portal" element={<PartnerPortalRoute user={user} setSites={setSites} sites={sites} setView={setViewRespectingLocation} setUser={setUser} locationPrefix={locationPrefix} />} />
+              <Route path="/admin-dashboard" element={<Navigate to="/partner/portal" replace />} />
 
               <Route path="/privacy-policy" element={<PrivacyPolicyView />} />
               <Route path="/terms-of-use" element={<TermsOfUseView />} />
@@ -375,11 +431,15 @@ const AppContent = ({
               <Route path="/:locationCode/associates/list" element={<AssociationsListView />} />
               {/* <Route path="/:locationCode/careers" element={<CareersView />} /> */}
               <Route path="/:locationCode/partners" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
-              <Route path="/:locationCode/login" element={user?.type === 'member' ? <Navigate to={pathWithLocationPrefix(locationPrefix, '/member-dashboard')} replace /> : <MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
+              <Route path="/:locationCode/member/login" element={<MemberLoginRoute user={user} setView={setViewRespectingLocation} setUser={setUser} currentSite={currentSite} locationPrefix={locationPrefix} />} />
+              <Route path="/:locationCode/login" element={<Navigate to={pathWithLocationPrefix(locationPrefix, '/member/login')} replace />} />
               <Route path="/:locationCode/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} user={user} />} />
-              <Route path="/:locationCode/login-partner-admin" element={<PartnerAdminLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
-              <Route path="/:locationCode/member-dashboard" element={<MemberDashboard user={user} currentSite={currentSite} setView={setViewRespectingLocation} />} />
-              <Route path="/:locationCode/admin-dashboard" element={<AdminView setSites={setSites} sites={sites} setView={setViewRespectingLocation} defaultMode={user?.role} user={user} setUser={setUser} />} />
+              <Route path="/:locationCode/partner/login" element={<PartnerLoginRoute user={user} setView={setViewRespectingLocation} setUser={setUser} currentSite={currentSite} locationPrefix={locationPrefix} />} />
+              <Route path="/:locationCode/login-partner-admin" element={<Navigate to={pathWithLocationPrefix(locationPrefix, '/partner/login')} replace />} />
+              <Route path="/:locationCode/member/portal" element={<MemberPortalRoute user={user} currentSite={currentSite} setView={setViewRespectingLocation} setUser={setUser} />} />
+              <Route path="/:locationCode/member-dashboard" element={<Navigate to={pathWithLocationPrefix(locationPrefix, '/member/portal')} replace />} />
+              <Route path="/:locationCode/partner/portal" element={<PartnerPortalRoute user={user} setSites={setSites} sites={sites} setView={setViewRespectingLocation} setUser={setUser} locationPrefix={locationPrefix} />} />
+              <Route path="/:locationCode/admin-dashboard" element={<Navigate to={pathWithLocationPrefix(locationPrefix, '/partner/portal')} replace />} />
               <Route path="/:locationCode/privacy-policy" element={<PrivacyPolicyView />} />
               <Route path="/:locationCode/terms-of-use" element={<TermsOfUseView />} />
               <Route path="/:locationCode/news" element={<NewsListView type="latest" {...newsPropsWithPrefix} />} />

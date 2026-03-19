@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Mail, KeyRound, User, Eye, EyeOff } from 'lucide-react';
-import { memberLogin } from '../utils/api';
+import { login } from '../app/auth/authApi';
 import { setAuthToken } from '../api/authToken';
+import { clearPartnerAuth } from '../utils/api';
+import { getLocationPrefix, pathWithLocationPrefix } from '../utils/locationRoutes';
 
 const MemberLoginView = ({ setView, setUser, siteConfig, user }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -38,11 +43,22 @@ const MemberLoginView = ({ setView, setUser, siteConfig, user }) => {
 
     setLoading(true);
     try {
-      const data = await memberLogin(email, password);
+      const res = await login({ email, password });
+      const data = res?.data?.data ?? res?.data ?? {};
 
-      // Store token so /membership/my/get and other protected APIs get Authorization header
-      if (data?.token) {
-        setAuthToken(data.token);
+      // Store token - backend may return in data.token, data.data.token, or data.accessToken
+      const token =
+        data?.token ??
+        data?.accessToken ??
+        res?.data?.token ??
+        res?.data?.accessToken;
+      if (token) {
+        setAuthToken(token);
+        clearPartnerAuth(); // Ensure member-only mode; partner session would block isMemberAuthenticated()
+      } else {
+        setError('Login succeeded but no token received. Please contact support.');
+        setLoading(false);
+        return;
       }
 
       setUser({
@@ -51,9 +67,17 @@ const MemberLoginView = ({ setView, setUser, siteConfig, user }) => {
         ...data,
       });
 
-      setView('member-dashboard', { replace: true });
+      // Navigate directly to portal (avoids stale closure in setView callback)
+      const prefix = getLocationPrefix(location.pathname);
+      const portalPath = pathWithLocationPrefix(prefix || '', '/member/portal');
+      navigate(portalPath, { replace: true });
     } catch (err) {
-      setError(err?.message || 'Login failed. Please try again.');
+      const msg =
+        err?.response?.data?.message ??
+        err?.response?.data?.error ??
+        err?.message ??
+        'Login failed. Please try again.';
+      setError(msg);
     } finally {
       setLoading(false);
     }

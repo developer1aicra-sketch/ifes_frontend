@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 import { Shield } from 'lucide-react';
 
 const AdminLoginView = ({ setView, user }) => {
-  // If already logged in (partner or staff), redirect to admin dashboard
+  // If already logged in as partner, redirect to partner portal
   useEffect(() => {
-    if (user) {
-      setView('admin-dashboard');
+    if (user?.role === 'partner') {
+      setView('partner-dashboard');
     }
   }, [user, setView]);
 
@@ -18,7 +18,7 @@ const AdminLoginView = ({ setView, user }) => {
       <h2 className="text-2xl font-bold text-center text-slate-900 mb-2">Staff Portal</h2>
       <p className="text-center text-slate-500 text-sm mb-8">Authorized Personnel Only</p>
       <button
-        onClick={() => setView('login-partner-admin')}
+        onClick={() => setView('partner-login')}
 
 
 

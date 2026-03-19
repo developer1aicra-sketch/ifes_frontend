@@ -370,7 +370,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
       
       {/* Quick Links Section */}
       {partnerHomeData?.quickLinks && partnerHomeData.quickLinks.length > 0 && (
-        <section className="py-16 bg-white border-t border-slate-100">
+        <section className="py-16 bg-white border-t border-slate-100 hidden">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">Quick Links</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">

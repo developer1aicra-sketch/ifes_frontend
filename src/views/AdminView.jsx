@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone, UserCircle, Trophy, Trash2, Pencil, CreditCard, Shield, ArrowRight, User, Building2, GraduationCap, MapPin } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone, UserCircle, Trophy, Trash2, Pencil, CreditCard, Shield, ArrowRight, User, Building2, GraduationCap, MapPin, Upload, Image as ImageIcon } from 'lucide-react';
 import ForumView from '../components/ForumView';
 import CompetitionFormModal from '../components/CompetitionFormModal';
 import { DEFAULT_SITES } from '../constants/data';
 import { callGemini } from '../utils/gemini';
-import { getMyMembership, signUpSendOtp, signUpVerifyOtp } from '../app/auth/authApi';
-import { addClub, getMyClub } from '../app/club/clubApi';
-import { setAuthToken, getAuthToken } from '../api/authToken';
+import { getMyMembership } from '../app/auth/authApi';
+import { addClub, getClubsByPartner } from '../api/clubApi';
+import { useLogout } from '../hooks/useLogout';
 import {
   fetchPartnerById,
   updatePartner,
@@ -14,6 +15,9 @@ import {
   getPartnerAuth,
   listSeasons,
   listEvents,
+  listSeasonsGet,
+  listEventsGetByWebsite,
+  listCompetitionsGet,
   listCompetitions,
   addSeason,
   updateSeason,
@@ -25,10 +29,15 @@ import {
   updateCompetition,
   deleteCompetition,
 } from '../utils/api';
+import { getLocationCodeFromPath } from '../utils/locationRoutes';
 
 const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => {
+  const location = useLocation();
   const [isAdminMode] = useState(defaultMode || user?.role || 'super');
   const partner = user?.partner ?? null;
+  const { logout } = useLogout({ setUser, setView, type: 'partner' });
+  // Partner code from user.partner or route (e.g. /TH/admin-dashboard → TH)
+  const partnerCode = (partner?.partnerCode || getLocationCodeFromPath(location?.pathname || '') || '').toString().trim().toUpperCase();
   const [activeTab, setActiveTab] = useState('overview');
   // Partner profile edit (for partner role): form state and save status
   const [partnerEdit, setPartnerEdit] = useState({
@@ -158,6 +167,68 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     };
 
     reader.readAsDataURL(file);
+  };
+
+  const handleNewsImageChange = (index, event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      window.alert('Please select an image file (JPEG, PNG, GIF, WebP).');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      window.alert('Image must be smaller than 5MB.');
+      return;
+    }
+    setPartnerHomeData((prev) => {
+      if (!prev) return prev;
+      const news = [...(prev.news || [])];
+      const item = news[index] || {};
+      news[index] = { ...item, _imageFile: file };
+      return { ...prev, news };
+    });
+    event.target.value = '';
+  };
+
+  const handleNewsImageRemove = (index) => {
+    setPartnerHomeData((prev) => {
+      if (!prev) return prev;
+      const news = [...(prev.news || [])];
+      const item = news[index] || {};
+      news[index] = { ...item, image: '', _imageFile: null };
+      return { ...prev, news };
+    });
+  };
+
+  const handleSupporterLogoChange = (index, event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      window.alert('Please select an image file (JPEG, PNG, GIF, WebP).');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      window.alert('Logo must be smaller than 2MB.');
+      return;
+    }
+    setPartnerHomeData((prev) => {
+      if (!prev) return prev;
+      const supporters = [...(prev.supporters || [])];
+      const item = supporters[index] || {};
+      supporters[index] = { ...item, _logoFile: file };
+      return { ...prev, supporters };
+    });
+    event.target.value = '';
+  };
+
+  const handleSupporterLogoRemove = (index) => {
+    setPartnerHomeData((prev) => {
+      if (!prev) return prev;
+      const supporters = [...(prev.supporters || [])];
+      const item = supporters[index] || {};
+      supporters[index] = { ...item, logo: '', _logoFile: null };
+      return { ...prev, supporters };
+    });
   };
 
   // Fetch partner home content
@@ -378,6 +449,9 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
   const [editingCompetition, setEditingCompetition] = useState(null);
 
   // Fetch seasons and events list when My Events tab is active
+  // Uses partner-specific APIs when partnerCode is available:
+  // - seasons/get?website=worso&partnerCode={partnerCode}
+  // - event/get?website={partnerCode} (e.g. website=EG)
   useEffect(() => {
     if (activeTab !== 'events') return;
     let cancelled = false;
@@ -385,7 +459,9 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     setSeasonsError('');
     setEventsLoading(true);
     setEventsListError('');
-    Promise.allSettled([listSeasons(), listEvents()]).then(([seasonsResult, eventsResult]) => {
+    const fetchSeasons = partnerCode ? () => listSeasonsGet(partnerCode) : listSeasons;
+    const fetchEvents = partnerCode ? () => listEventsGetByWebsite(partnerCode) : listEvents;
+    Promise.allSettled([fetchSeasons(), fetchEvents()]).then(([seasonsResult, eventsResult]) => {
       if (cancelled) return;
       if (seasonsResult.status === 'fulfilled') {
         const list = seasonsResult.value?.data ?? seasonsResult.value?.seasons ?? (Array.isArray(seasonsResult.value) ? seasonsResult.value : []);
@@ -408,15 +484,17 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       }
     });
     return () => { cancelled = true; };
-  }, [activeTab]);
+  }, [activeTab, partnerCode]);
 
   // Fetch competitions list when Competitions sub-tab is active
+  // Uses competitions/get?partnerCode={partnerCode} when partnerCode is available
   useEffect(() => {
     if (activeTab !== 'events' || eventsSubTab !== 'competitions') return;
     let cancelled = false;
     setCompetitionsLoading(true);
     setCompetitionsListError('');
-    listCompetitions()
+    const fetchCompetitions = partnerCode ? () => listCompetitionsGet(partnerCode) : listCompetitions;
+    fetchCompetitions()
       .then((res) => {
         if (cancelled) return;
         const list = res?.data ?? (Array.isArray(res) ? res : []);
@@ -432,7 +510,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
         if (!cancelled) setCompetitionsLoading(false);
       });
     return () => { cancelled = true; };
-  }, [activeTab, eventsSubTab]);
+  }, [activeTab, eventsSubTab, partnerCode]);
 
   // Membership related states
   const [membershipData, setMembershipData] = useState(null);
@@ -473,7 +551,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     setMyClubsLoading(true);
     setMyClubsError('');
     try {
-      const res = await getMyClub();
+      const res = await getClubsByPartner(partnerCode);
       const payload = res?.data;
       const clubs = Array.isArray(payload?.data)
         ? payload.data
@@ -489,9 +567,9 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     } finally {
       setMyClubsLoading(false);
     }
-  }, []);
+  }, [partnerCode]);
 
-  // Fetch club data when RoboClub tab is active
+  // Fetch club data when RoboClub tab is active (GET /club/get?website=worso&partnerCode=XX)
   useEffect(() => {
     if (activeTab !== 'roboclub') return;
     let cancelled = false;
@@ -499,7 +577,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       setMyClubsLoading(true);
       setMyClubsError('');
       try {
-        const res = await getMyClub();
+        const res = await getClubsByPartner(partnerCode);
         if (cancelled) return;
         const payload = res?.data;
         const clubs = Array.isArray(payload?.data)
@@ -517,33 +595,22 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       }
     })();
     return () => { cancelled = true; };
-  }, [activeTab]);
+  }, [activeTab, partnerCode]);
 
-  // RoboClub Registration states
-  const [roboClubStep, setRoboClubStep] = useState('email'); // 'email', 'otp', 'register'
-  const [email, setEmail] = useState('');
-  const [verifiedEmail, setVerifiedEmail] = useState('');
-  const [otp, setOtp] = useState('');
+  // RoboClub Registration states (direct registration, no OTP)
   const [roboClubError, setRoboClubError] = useState('');
   const [roboClubLoading, setRoboClubLoading] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
   const [roboClubForm, setRoboClubForm] = useState({
     name: '',
+    email: '',
     clubName: '',
     instituteName: '',
     countryCode: 'IN',
     state: '',
     city: '',
     mobile: '',
+    password: '',
   });
-
-  // Resend OTP cooldown timer
-  useEffect(() => {
-    if (resendCooldown > 0) {
-      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendCooldown]);
 
   // Country options for club registration
   const COUNTRY_OPTIONS = [
@@ -569,154 +636,67 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     { code: 'ZA', name: 'South Africa' },
   ];
 
-  // Handle send OTP
-  const handleSendOtp = async () => {
-    const normalizedEmail = String(email || '').trim().toLowerCase();
-    if (!normalizedEmail || !normalizedEmail.includes('@')) {
-      setRoboClubError('Please enter a valid email address');
-      return;
-    }
-    setRoboClubLoading(true);
-    setRoboClubError('');
-    try {
-      setEmail(normalizedEmail);
-      const response = await signUpSendOtp({ email: normalizedEmail });
-      if (response?.data?.success || response?.status === 200) {
-        setRoboClubStep('otp');
-        setResendCooldown(60); // 60 second cooldown
-      } else {
-        setRoboClubError(response?.data?.message || 'Failed to send OTP');
-      }
-    } catch (err) {
-      setRoboClubError(err?.response?.data?.message || err?.message || 'Failed to send OTP. Please try again.');
-    } finally {
-      setRoboClubLoading(false);
-    }
-  };
-
-  // Handle verify OTP
-  const handleVerifyOtp = async () => {
-    if (!otp || otp.replace(/\D/g, '').length !== 6) {
-      setRoboClubError('Please enter a valid 6-digit OTP');
-      return;
-    }
-    setRoboClubLoading(true);
-    setRoboClubError('');
-    try {
-      const normalizedEmail = String(email || '').trim().toLowerCase();
-      const response = await signUpVerifyOtp({ email: normalizedEmail, otp });
-      const token = response?.data?.token || response?.data?.data?.token;
-      if (token) {
-        setAuthToken(token);
-        setEmail(normalizedEmail);
-        setVerifiedEmail(normalizedEmail);
-        setRoboClubStep('register');
-      } else {
-        setRoboClubError('Invalid OTP or verification failed');
-      }
-    } catch (err) {
-      setRoboClubError(err?.response?.data?.message || err?.message || 'Invalid OTP. Please try again.');
-    } finally {
-      setRoboClubLoading(false);
-    }
-  };
-
   // Handle club registration form update
   const updateRoboClubForm = (field, value) => {
     setRoboClubForm((prev) => ({ ...prev, [field]: value }));
     setRoboClubError('');
   };
 
-  const handleRoboClubEmailChange = (value) => {
-    const nextEmail = value;
-    const normalizedNext = String(nextEmail || '').trim().toLowerCase();
-    const normalizedVerified = String(verifiedEmail || '').trim().toLowerCase();
-    setEmail(nextEmail);
-    setRoboClubError('');
-
-    // If email changes after verification, invalidate the verified session.
-    if (normalizedVerified && normalizedNext !== normalizedVerified) {
-      setVerifiedEmail('');
-      setOtp('');
-      setAuthToken(null);
-      setRoboClubStep('email');
-    }
-  };
-
-  // Handle submit club registration
+  // Handle submit club registration (direct, no OTP)
   const handleSubmitClub = async () => {
-    // Validate required form fields
-    if (!roboClubForm.name || !roboClubForm.clubName || !roboClubForm.instituteName) {
-      setRoboClubError('Please fill in all required fields');
+    if (!roboClubForm.name?.trim() || !roboClubForm.clubName?.trim() || !roboClubForm.instituteName?.trim()) {
+      setRoboClubError('Please fill in Name, Club name, and Institute name');
       return;
     }
 
-    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const pwd = String(roboClubForm.password || '').trim();
+    if (!pwd || pwd.length < 8) {
+      setRoboClubError('Password must be at least 8 characters');
+      return;
+    }
+
+    const normalizedEmail = String(roboClubForm.email || '').trim().toLowerCase();
     if (!normalizedEmail || !normalizedEmail.includes('@')) {
       setRoboClubError('Please enter a valid email address');
-      return;
-    }
-
-    if (!verifiedEmail || normalizedEmail !== String(verifiedEmail).trim().toLowerCase()) {
-      setRoboClubError('Please verify this email via OTP before registering your RoboClub.');
-      setRoboClubStep('email');
-      return;
-    }
-
-    // Validate Authorization Bearer Token exists before submission
-    const authToken = getAuthToken();
-    if (!authToken) {
-      setRoboClubError('Authentication token is missing. Please verify your email OTP again.');
-      setRoboClubStep('email');
       return;
     }
 
     setRoboClubLoading(true);
     setRoboClubError('');
     try {
-      // The axiosInstance interceptor automatically adds Authorization: Bearer <token> header
-      // Token is retrieved from localStorage via getAuthToken() in the interceptor
+      const countryObj = COUNTRY_OPTIONS.find((c) => c.code === roboClubForm.countryCode);
       const response = await addClub({
-        name: roboClubForm.name,
-        clubName: roboClubForm.clubName,
-        instituteName: roboClubForm.instituteName,
+        name: roboClubForm.name.trim(),
+        clubName: roboClubForm.clubName.trim(),
+        instituteName: roboClubForm.instituteName.trim(),
         countryCode: roboClubForm.countryCode,
-        state: roboClubForm.state,
-        city: roboClubForm.city,
-        mobile: roboClubForm.mobile,
+        country: countryObj?.name ?? '',
+        state: roboClubForm.state?.trim() ?? '',
+        city: roboClubForm.city?.trim() ?? '',
+        mobile: roboClubForm.mobile?.trim() ?? '',
         email: normalizedEmail,
+        password: pwd,
       });
-      
+
       if (response?.data?.success || response?.status === 200 || response?.status === 201) {
         alert('RoboClub registered successfully!');
         refreshMyClubs();
-        // Reset form
-        setRoboClubStep('email');
-        setEmail('');
-        setVerifiedEmail('');
-        setOtp('');
         setRoboClubForm({
           name: '',
+          email: '',
           clubName: '',
           instituteName: '',
           countryCode: 'IN',
           state: '',
           city: '',
           mobile: '',
+          password: '',
         });
       } else {
         setRoboClubError(response?.data?.message || 'Failed to register club');
       }
     } catch (err) {
-      // Handle authentication errors (401/403)
-      if (err?.response?.status === 401 || err?.response?.status === 403) {
-        setRoboClubError('Authentication failed. Please verify your email OTP again.');
-        setRoboClubStep('email');
-        setAuthToken(null); // Clear invalid token
-        setVerifiedEmail('');
-      } else {
-        setRoboClubError(err?.response?.data?.message || err?.message || 'Failed to register club. Please try again.');
-      }
+      setRoboClubError(err?.response?.data?.message || err?.message || 'Failed to register club. Please try again.');
     } finally {
       setRoboClubLoading(false);
     }
@@ -1096,7 +1076,8 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       }
       setShowCompetitionModal(false);
       setEditingCompetition(null);
-      const res = await listCompetitions();
+      const fetchCompetitions = partnerCode ? () => listCompetitionsGet(partnerCode) : listCompetitions;
+      const res = await fetchCompetitions();
       const list = res?.data ?? (Array.isArray(res) ? res : []);
       setCompetitionList(Array.isArray(list) ? list : []);
     } catch (err) {
@@ -1148,13 +1129,54 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     }
   };
 
+  const fileToBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
   const savePartnerHome = async () => {
     if (!partner?._id || !partnerHomeData) return;
     setPartnerHomeError('');
     setPartnerHomeSuccess(false);
     setPartnerHomeSaving(true);
     try {
-      const payload = buildHomeContentPayload(partnerHomeData);
+      let dataToSave = { ...partnerHomeData };
+      if (dataToSave.news) {
+        dataToSave = {
+          ...dataToSave,
+          news: await Promise.all(
+            dataToSave.news.map(async (item) => {
+              if (item._imageFile) {
+                const base64 = await fileToBase64(item._imageFile);
+                const { _imageFile, ...rest } = item;
+                return { ...rest, image: base64 };
+              }
+              const { _imageFile, ...rest } = item;
+              return rest;
+            })
+          ),
+        };
+      }
+      if (dataToSave.supporters) {
+        dataToSave = {
+          ...dataToSave,
+          supporters: await Promise.all(
+            dataToSave.supporters.map(async (item) => {
+              if (item._logoFile) {
+                const base64 = await fileToBase64(item._logoFile);
+                const { _logoFile, ...rest } = item;
+                return { ...rest, logo: base64 };
+              }
+              const { _logoFile, ...rest } = item;
+              return rest;
+            })
+          ),
+        };
+      }
+      const payload = buildHomeContentPayload(dataToSave);
       const data = await updatePartner(partner._id, user?.token, payload);
       const updatedPartner = data?.partner ?? data;
       if (updatedPartner) {
@@ -1203,7 +1225,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
                 {partner && (
                   <>
-                    <button
+                    {/* <button
                       onClick={() => setActiveTab('partner-profile')}
                       className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${activeTab === 'partner-profile'
                           ? 'bg-white/15 border-blue-400 text-white'
@@ -1211,7 +1233,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         }`}
                     >
                       <UserCircle size={18} /> Partner Profile
-                    </button>
+                    </button> */}
                     <button
                       onClick={() => setActiveTab('partner-home')}
                       className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 ${activeTab === 'partner-home'
@@ -1265,7 +1287,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                       )}
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => setActiveTab('membership')}
                       className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${activeTab === 'membership'
                           ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
@@ -1280,6 +1302,24 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       </div>
                       <span className="font-medium">My Membership</span>
                       {activeTab === 'membership' && (
+                        <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                      )}
+                    </button> */}
+                    <button
+                      onClick={() => setActiveTab('roboclub')}
+                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${activeTab === 'roboclub'
+                          ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
+                          : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-300/50 text-blue-100 hover:text-white'
+                        }`}
+                    >
+                      <div className={`p-1.5 rounded-lg ${activeTab === 'roboclub'
+                          ? 'bg-blue-500/20'
+                          : 'bg-white/5 group-hover:bg-blue-500/20'
+                        }`}>
+                        <Building2 size={16} className="text-blue-300" />
+                      </div>
+                      <span className="font-medium">RoboClub Registration</span>
+                      {activeTab === 'roboclub' && (
                         <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                       )}
                     </button>
@@ -1364,31 +1404,14 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       )}
                     </button>
 
-                    <button
-                      onClick={() => {
-                        setActiveTab('roboclub');
-                        setRoboClubStep('email');
-                      }}
-                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${activeTab === 'roboclub'
-                          ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
-                          : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-300/50 text-blue-100 hover:text-white'
-                        }`}
-                    >
-                      <div className={`p-1.5 rounded-lg ${activeTab === 'roboclub'
-                          ? 'bg-blue-500/20'
-                          : 'bg-white/5 group-hover:bg-blue-500/20'
-                        }`}>
-                        <Building2 size={16} className="text-blue-300" />
-                      </div>
-                      <span className="font-medium">RoboClub Registration</span>
-                      {activeTab === 'roboclub' && (
-                        <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-                      )}
-                    </button>
+                    
 
                       
                   </div>
                 )}
+
+                {/* Logout - visible for both partner and super admin */}
+             
               </div>
             </div>
           </div>
@@ -1398,21 +1421,30 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                 <div>
                   <div className="text-xs font-bold uppercase text-blue-600 mb-1">Admin Console</div>
                   <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
-                    {activeTab === 'overview' && 'Dashboard Overview'}
+                    {activeTab === 'overview' && 'Profile'}
                     {activeTab === 'partner-profile' && 'Edit Partner Profile'}
                     {activeTab === 'partner-home' && 'Partner Home Content'}
                     {activeTab === 'partners' && 'Partner Management'}
                     {activeTab === 'events' && (isAdminMode === 'super' ? 'Event Manager' : 'My Events')}
                     {activeTab === 'roboclub' && 'RoboClub Registration'}
-                    {activeTab === 'membership' && 'My Membership'}
+                    {/* {activeTab === 'membership' && 'My Membership'} */}
 
                     {activeTab === 'courses' && 'Course Management'}
                     {activeTab === 'academia' && 'Academia Portal'}
                     {activeTab === 'forum' && 'Community Forum'}
                   </h1>
                 </div>
-                <div className="px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-semibold border border-slate-200">
-                  {isAdminMode === 'super' ? 'Global Control Panel' : (partner?.academyName ?? sites?.uae?.name ?? 'Partner Portal')}
+                <div className="flex items-center gap-2">
+                  <div className="px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-semibold border border-slate-200">
+                    {isAdminMode === 'super' ? 'Global Control Panel' : (partner?.academyName ?? sites?.uae?.name ?? 'Partner Portal')}
+                  </div>
+                  <button
+                    onClick={logout}
+                    className="p-2 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-all"
+                    title="Logout"
+                  >
+                    <LogOut size={18} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -1511,7 +1543,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         className="w-full p-3 border text-[black] border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-bold text-slate-700 mb-1">Theme</label>
                       <select
                         value={partnerEdit.themeColor}
@@ -1525,7 +1557,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         <option value="Red">Red</option>
                         <option value="Dark">Dark</option>
                       </select>
-                    </div>
+                    </div> */}
                     <div>
                       <label className="block text-sm font-bold text-slate-700 mb-1">Contact email</label>
                       <div className="flex items-center gap-2">
@@ -1581,7 +1613,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                     <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
                       <div className="text-center py-8">
                         <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                        <p className="mt-4 text-slate-600">Loading partner home content...</p>
+                        <p className="mt-4 text-black">Loading partner home content...</p>
                       </div>
                     </div>
                   ) : partnerHomeError && !partnerHomeData ? (
@@ -1590,14 +1622,14 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                     </div>
                   ) : partnerHomeData ? (
                     <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm space-y-8">
-                      <div className="text-xs font-bold text-slate-500 uppercase mb-4">Partner Home Content Editor</div>
+                      <div className="text-xs font-bold text-black uppercase mb-4">Partner Home Content Editor</div>
                       
                       {/* Home Section */}
                       <div className="border-b border-slate-200 pb-6">
-                        <h3 className="text-lg font-bold text-slate-900 mb-4">Home Section</h3>
+                        <h3 className="text-lg font-bold text-black mb-4">Home Section</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Title</label>
+                            <label className="block text-sm font-bold text-black mb-1">Title</label>
                             <input
                               type="text"
                               value={partnerHomeData.home?.title || ''}
@@ -1605,12 +1637,12 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 ...partnerHomeData,
                                 home: { ...partnerHomeData.home, title: e.target.value }
                               })}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 text-[black] focus:ring-blue-500 outline-none"
                               placeholder="Enter home title"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Subtitle</label>
+                            <label className="block text-sm font-bold text-black mb-1">Subtitle</label>
                             <input
                               type="text"
                               value={partnerHomeData.home?.subtitle || ''}
@@ -1618,7 +1650,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 ...partnerHomeData,
                                 home: { ...partnerHomeData.home, subtitle: e.target.value }
                               })}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                               placeholder="Enter subtitle"
                             />
                           </div>
@@ -1627,10 +1659,10 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
                       {/* Social Links */}
                       <div className="border-b border-slate-200 pb-6">
-                        <h3 className="text-lg font-bold text-slate-900 mb-4">Social Links</h3>
+                        <h3 className="text-lg font-bold text-black mb-4">Social Links</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Facebook</label>
+                            <label className="block text-sm font-bold text-black mb-1">Facebook</label>
                             <input
                               type="url"
                               value={partnerHomeData.socialLinks?.facebook || ''}
@@ -1638,12 +1670,12 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 ...partnerHomeData,
                                 socialLinks: { ...partnerHomeData.socialLinks, facebook: e.target.value }
                               })}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                               placeholder="https://facebook.com/..."
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Instagram</label>
+                            <label className="block text-sm font-bold text-black mb-1">Instagram</label>
                             <input
                               type="url"
                               value={partnerHomeData.socialLinks?.instagram || ''}
@@ -1651,12 +1683,12 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 ...partnerHomeData,
                                 socialLinks: { ...partnerHomeData.socialLinks, instagram: e.target.value }
                               })}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                               placeholder="https://instagram.com/..."
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">LinkedIn</label>
+                            <label className="block text-sm font-bold text-black mb-1">LinkedIn</label>
                             <input
                               type="url"
                               value={partnerHomeData.socialLinks?.linkedin || ''}
@@ -1664,12 +1696,12 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 ...partnerHomeData,
                                 socialLinks: { ...partnerHomeData.socialLinks, linkedin: e.target.value }
                               })}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                               placeholder="https://linkedin.com/company/..."
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">YouTube</label>
+                            <label className="block text-sm font-bold text-black mb-1">YouTube</label>
                             <input
                               type="url"
                               value={partnerHomeData.socialLinks?.youtube || ''}
@@ -1677,7 +1709,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 ...partnerHomeData,
                                 socialLinks: { ...partnerHomeData.socialLinks, youtube: e.target.value }
                               })}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                               placeholder="https://youtube.com/..."
                             />
                           </div>
@@ -1686,10 +1718,10 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
                       {/* Footer */}
                       <div className="border-b border-slate-200 pb-6">
-                        <h3 className="text-lg font-bold text-slate-900 mb-4">Footer Information</h3>
+                        <h3 className="text-lg font-bold text-black mb-4">Footer Information</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Email</label>
+                            <label className="block text-sm font-bold text-black mb-1">Email</label>
                             <input
                               type="email"
                               value={partnerHomeData.footer?.email || ''}
@@ -1697,12 +1729,12 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 ...partnerHomeData,
                                 footer: { ...partnerHomeData.footer, email: e.target.value }
                               })}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                               placeholder="info@example.com"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Phone</label>
+                            <label className="block text-sm font-bold text-black mb-1">Phone</label>
                             <input
                               type="tel"
                               value={partnerHomeData.footer?.phone || ''}
@@ -1710,12 +1742,12 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 ...partnerHomeData,
                                 footer: { ...partnerHomeData.footer, phone: e.target.value }
                               })}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                               placeholder="+1 234 567 8900"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Address</label>
+                            <label className="block text-sm font-bold text-black mb-1">Address</label>
                             <input
                               type="text"
                               value={partnerHomeData.footer?.address || ''}
@@ -1723,7 +1755,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 ...partnerHomeData,
                                 footer: { ...partnerHomeData.footer, address: e.target.value }
                               })}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                               placeholder="City, Country"
                             />
                           </div>
@@ -1732,7 +1764,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
                       {/* Videos */}
                       <div className="border-b border-slate-200 pb-6">
-                        <h3 className="text-lg font-bold text-slate-900 mb-4">Videos</h3>
+                        <h3 className="text-lg font-bold text-black mb-4">Videos</h3>
                         <div className="space-y-3">
                           {partnerHomeData.videos?.map((video, index) => (
                             <div key={video._id || index} className="border border-slate-200 rounded-lg p-4 space-y-3">
@@ -1746,7 +1778,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                     setPartnerHomeData({ ...partnerHomeData, videos: newVideos });
                                   }}
                                   placeholder="Video title"
-                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                                 />
                                 <input
                                   type="url"
@@ -1766,11 +1798,11 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                     <img
                                       src={video.thumbnail}
                                       alt={video.title || 'Video thumbnail'}
-                                      className="w-16 h-16 rounded object-cover border border-slate-200"
+                                      className="w-16 h-16 rounded object-cover border border-slate-200 text-[black]"
                                     />
                                   )}
                                   <div>
-                                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                                    <label className="block text-xs font-bold text-black mb-1">
                                       Thumbnail image
                                     </label>
                                     <button
@@ -1781,7 +1813,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                           input.click();
                                         }
                                       }}
-                                      className="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:border-blue-500 hover:text-blue-600"
+                                      className="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:border-blue-500 hover:text-blue-600 text-[black]"
                                     >
                                       {video.thumbnail ? 'Change image' : 'Upload image'}
                                     </button>
@@ -1805,14 +1837,14 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                     }}
                                     className="w-4 h-4"
                                   />
-                                  <span className="text-sm text-slate-700">Active</span>
+                                  <span className="text-sm text-black">Active</span>
                                 </label>
                                 <button
                                   onClick={() => {
                                     const newVideos = partnerHomeData.videos.filter((_, i) => i !== index);
                                     setPartnerHomeData({ ...partnerHomeData, videos: newVideos });
                                   }}
-                                  className="p-3 text-red-600 hover:bg-red-50 rounded-lg"
+                                  className="p-3 text-red-600 hover:bg-red-50 rounded-lg "
                                 >
                                   <Trash2 size={18} />
                                 </button>
@@ -1824,7 +1856,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                               const newVideos = [...(partnerHomeData.videos || []), { title: '', youtubeUrl: '', thumbnail: '', isActive: true, _id: `temp-${Date.now()}` }];
                               setPartnerHomeData({ ...partnerHomeData, videos: newVideos });
                             }}
-                            className="w-full py-2 px-4 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-blue-500 hover:text-blue-600 font-medium"
+                            className="w-full py-2 px-4 border-2 border-dashed border-slate-300 rounded-lg text-black hover:border-blue-500 hover:text-blue-600 font-medium text-[black]"
                           >
                             + Add Video
                           </button>
@@ -1833,7 +1865,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
                       {/* News */}
                       <div className="border-b border-slate-200 pb-6">
-                        <h3 className="text-lg font-bold text-slate-900 mb-4">News</h3>
+                        <h3 className="text-lg font-bold text-black mb-4">News</h3>
                         <div className="space-y-3">
                           {partnerHomeData.news?.map((item, index) => (
                             <div key={item._id || index} className="border border-slate-200 rounded-lg p-4 space-y-3">
@@ -1846,7 +1878,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                   setPartnerHomeData({ ...partnerHomeData, news: newNews });
                                 }}
                                 placeholder="News title"
-                                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                               />
                               <textarea
                                 value={item.description || ''}
@@ -1857,20 +1889,40 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 }}
                                 placeholder="News description"
                                 rows={3}
-                                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                               />
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <input
-                                  type="url"
-                                  value={item.image || ''}
-                                  onChange={(e) => {
-                                    const newNews = [...partnerHomeData.news];
-                                    newNews[index] = { ...newNews[index], image: e.target.value };
-                                    setPartnerHomeData({ ...partnerHomeData, news: newNews });
-                                  }}
-                                  placeholder="Image URL"
-                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
+                                <div>
+                                  <label className="block text-xs font-medium text-slate-600 mb-1">Image</label>
+                                  {(item._imageFile || item.image) ? (
+                                    <div className="relative group">
+                                      <div className="w-full h-24 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 flex items-center justify-center">
+                                        <img
+                                          src={item._imageFile ? URL.createObjectURL(item._imageFile) : (item.image || '')}
+                                          alt=""
+                                          className="max-h-full max-w-full object-contain"
+                                          onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/120x80?text=Image'; }}
+                                        />
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                          <label className="cursor-pointer p-2 bg-white rounded-lg shadow">
+                                            <Upload className="w-4 h-4 text-slate-700" />
+                                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleNewsImageChange(index, e)} />
+                                          </label>
+                                          <button type="button" onClick={() => handleNewsImageRemove(index)} className="p-2 bg-white rounded-lg shadow">
+                                            <X className="w-4 h-4 text-slate-700" />
+                                          </button>
+                                        </div>
+                                      </div>
+                                      {item._imageFile && <p className="mt-1 text-xs text-slate-500">{item._imageFile.name}</p>}
+                                    </div>
+                                  ) : (
+                                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-slate-50/50 transition-colors">
+                                      <ImageIcon className="w-6 h-6 text-slate-400 mb-1" />
+                                      <span className="text-xs text-slate-500">Upload image</span>
+                                      <input type="file" className="hidden" accept="image/*" onChange={(e) => handleNewsImageChange(index, e)} />
+                                    </label>
+                                  )}
+                                </div>
                                 <select
                                   value={item.type || 'GENERAL'}
                                   onChange={(e) => {
@@ -1878,7 +1930,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                     newNews[index] = { ...newNews[index], type: e.target.value };
                                     setPartnerHomeData({ ...partnerHomeData, news: newNews });
                                   }}
-                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 text-[black] focus:ring-blue-500 outline-none"
                                 >
                                   <option value="GENERAL">General</option>
                                   <option value="EVENT">Event</option>
@@ -1897,7 +1949,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                     }}
                                     className="w-4 h-4"
                                   />
-                                  <span className="text-sm text-slate-700">Active</span>
+                                  <span className="text-sm text-black">Active</span>
                                 </label>
                                 <button
                                   onClick={() => {
@@ -1913,10 +1965,10 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                           ))}
                           <button
                             onClick={() => {
-                              const newNews = [...(partnerHomeData.news || []), { title: '', description: '', image: '', type: 'GENERAL', isActive: true, _id: `temp-${Date.now()}` }];
+                              const newNews = [...(partnerHomeData.news || []), { title: '', description: '', image: '', type: 'GENERAL', isActive: true, _id: `temp-${Date.now()}`, _imageFile: null }];
                               setPartnerHomeData({ ...partnerHomeData, news: newNews });
                             }}
-                            className="w-full py-2 px-4 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-blue-500 hover:text-blue-600 font-medium"
+                            className="w-full py-2 px-4 border-2 border-dashed border-slate-300 rounded-lg text-black hover:border-blue-500 hover:text-blue-600 font-medium"
                           >
                             + Add News Item
                           </button>
@@ -1925,7 +1977,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
                       {/* Supporters */}
                       <div className="pb-6">
-                        <h3 className="text-lg font-bold text-slate-900 mb-4">Supporters</h3>
+                        <h3 className="text-lg font-bold text-black mb-4">Supporters</h3>
                         <div className="space-y-3">
                           {partnerHomeData.supporters?.map((supporter, index) => (
                             <div key={supporter._id || index} className="border border-slate-200 rounded-lg p-4">
@@ -1939,19 +1991,39 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                     setPartnerHomeData({ ...partnerHomeData, supporters: newSupporters });
                                   }}
                                   placeholder="Supporter name"
-                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                  className="p-3 border text-[black] border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
-                                <input
-                                  type="url"
-                                  value={supporter.logo || ''}
-                                  onChange={(e) => {
-                                    const newSupporters = [...partnerHomeData.supporters];
-                                    newSupporters[index] = { ...newSupporters[index], logo: e.target.value };
-                                    setPartnerHomeData({ ...partnerHomeData, supporters: newSupporters });
-                                  }}
-                                  placeholder="Logo URL"
-                                  className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
+                                <div>
+                                  <label className="block text-xs font-medium text-slate-600 mb-1">Logo</label>
+                                  {(supporter._logoFile || supporter.logo) ? (
+                                    <div className="relative group">
+                                      <div className="w-full h-16 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 flex items-center justify-center">
+                                        <img
+                                          src={supporter._logoFile ? URL.createObjectURL(supporter._logoFile) : (supporter.logo || '')}
+                                          alt=""
+                                          className="max-h-full max-w-full object-contain"
+                                          onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/80x40?text=Logo'; }}
+                                        />
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                          <label className="cursor-pointer p-2 bg-white rounded-lg shadow">
+                                            <Upload className="w-4 h-4 text-slate-700" />
+                                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleSupporterLogoChange(index, e)} />
+                                          </label>
+                                          <button type="button" onClick={() => handleSupporterLogoRemove(index)} className="p-2 bg-white rounded-lg shadow">
+                                            <X className="w-4 h-4 text-slate-700" />
+                                          </button>
+                                        </div>
+                                      </div>
+                                      {supporter._logoFile && <p className="mt-1 text-xs text-slate-500">{supporter._logoFile.name}</p>}
+                                    </div>
+                                  ) : (
+                                    <label className="flex flex-col items-center justify-center w-full h-16 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-slate-50/50 transition-colors">
+                                      <ImageIcon className="w-5 h-5 text-slate-400 mb-1" />
+                                      <span className="text-xs text-slate-500">Upload logo</span>
+                                      <input type="file" className="hidden" accept="image/*" onChange={(e) => handleSupporterLogoChange(index, e)} />
+                                    </label>
+                                  )}
+                                </div>
                                 <div className="flex items-center gap-3">
                                   <input
                                     type="url"
@@ -1962,7 +2034,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                       setPartnerHomeData({ ...partnerHomeData, supporters: newSupporters });
                                     }}
                                     placeholder="Website URL"
-                                    className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                                   />
                                   <label className="flex items-center gap-2">
                                     <input
@@ -1975,7 +2047,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                       }}
                                       className="w-4 h-4"
                                     />
-                                    <span className="text-sm text-slate-700">Active</span>
+                                    <span className="text-sm text-black">Active</span>
                                   </label>
                                   <button
                                     onClick={() => {
@@ -1992,10 +2064,10 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                           ))}
                           <button
                             onClick={() => {
-                              const newSupporters = [...(partnerHomeData.supporters || []), { name: '', logo: '', website: '', isActive: true, _id: `temp-${Date.now()}` }];
+                              const newSupporters = [...(partnerHomeData.supporters || []), { name: '', logo: '', website: '', isActive: true, _id: `temp-${Date.now()}`, _logoFile: null }];
                               setPartnerHomeData({ ...partnerHomeData, supporters: newSupporters });
                             }}
-                            className="w-full py-2 px-4 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-blue-500 hover:text-blue-600 font-medium"
+                            className="w-full py-2 px-4 border-2 border-dashed border-slate-300 rounded-lg text-black hover:border-blue-500 hover:text-blue-600 font-medium"
                           >
                             + Add Supporter
                           </button>
@@ -2370,7 +2442,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                       {seasonName && <p className="text-xs text-slate-500 mb-2">Season: {seasonName}</p>}
                                       {competitions.length > 0 && (
                                         <div className="mt-2 pt-2 border-t border-slate-100">
-                                          <p className="text-xs font-semibold text-slate-600 mb-1">Competitions ({competitions.length})</p>
+                                          <p className="text-xs text-black font-semibold text-slate-600 mb-1">Competitions ({competitions.length})</p>
                                           <ul className="flex flex-wrap gap-1">
                                             {competitions.map((c) => (
                                               <li key={c._id} className="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700">{c.name}</li>
@@ -2827,13 +2899,10 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
               {activeTab === 'roboclub' && (
                 <div className="max-w-2xl mx-auto space-y-6">
                   <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8">
-                 
-
-                  
-                      <div className="space-y-5">
+                    <div className="space-y-5">
                         <div className="text-center border-b border-slate-200 pb-4">
                           <h3 className="text-xl font-bold text-slate-900">Register for RoboClub</h3>
-                          <p className="text-slate-600 text-sm">Fill in your club and institute details. Your verified session is used to complete registration.</p>
+                          <p className="text-slate-600 text-sm">Fill in your club and institute details to register.</p>
                         </div>
 
                         {roboClubError && (
@@ -2864,15 +2933,14 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                               <input
                                 type="email"
-                                value={email}
-                                onChange={(e) => handleRoboClubEmailChange(e.target.value)}
+                                value={roboClubForm.email}
+                                onChange={(e) => updateRoboClubForm('email', e.target.value)}
                                 placeholder="your@email.com"
                                 className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                               />
                             </div>
                             <p className="text-slate-500 text-xs mt-1">
-                              If you change this email, you’ll need to verify it again via OTP before registration.
-                            </p>
+                              Used for your RoboClub captain account’ </p>
                           </div>
 
                           <div>
@@ -2959,6 +3027,23 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                               />
                             </div>
                           </div>
+
+                          <div className="sm:col-span-2">
+                            <label className="block text-slate-700 text-sm font-medium mb-1">Password</label>
+                            <div className="relative">
+                              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                              <input
+                                type="password"
+                                value={roboClubForm.password}
+                                onChange={(e) => updateRoboClubForm('password', e.target.value)}
+                                placeholder="Min 8 characters"
+                                className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                              />
+                            </div>
+                            <p className="text-slate-500 text-xs mt-1">
+                              Used to sign in to your RoboClub captain account.
+                            </p>
+                          </div>
                         </div>
 
                         <button
@@ -2979,7 +3064,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                           )}
                         </button>
                       </div>
-                   
+
                   </div>
 
                   {/* My RoboClubs (GET /club/my/get) */}
@@ -3148,43 +3233,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                           </div>
                         </div>
 
-                        {/* Additional Information Card */}
-                        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-                          <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                            <Calendar className="text-blue-600" size={20} />
-                            Membership Information
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {membershipData.createdAt && (
-                              <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
-                                <span className="text-sm font-semibold text-slate-600 block mb-1">Created At</span>
-                                <span className="text-base font-semibold text-slate-900">
-                                  {new Date(membershipData.createdAt).toLocaleDateString('en-US', { 
-                                    year: 'numeric', 
-                                    month: 'long', 
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                  })}
-                                </span>
-                              </div>
-                            )}
-                            {membershipData.category && (
-                              <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
-                                <span className="text-sm font-semibold text-slate-600 block mb-1">Category Type</span>
-                                <span className="text-base font-semibold text-slate-900 capitalize">{membershipData.category}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Raw Data Card (for debugging) */}
-                        <div className="bg-slate-50 rounded-xl border border-slate-200 p-6">
-                          <h3 className="text-lg font-semibold text-slate-800 mb-4">Raw Response Data</h3>
-                          <pre className="bg-white p-4 rounded-lg border border-slate-200 overflow-x-auto text-xs text-slate-700 max-h-96 overflow-y-auto">
-                            {JSON.stringify(membershipData, null, 2)}
-                          </pre>
-                        </div>
+                    
                       </div>
                     ) : (
                       <div className="text-center py-12">

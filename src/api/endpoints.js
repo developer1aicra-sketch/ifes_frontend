@@ -50,6 +50,10 @@ const endpoints = {
   club: {
     add: `/club/add`,
     myGet: `/club/my/get`,
+    /** GET clubs by website + partnerCode. Query: ?website=worso&partnerCode=XX */
+    get: `/club/get`,
+    /** Get club by id. Requires Bearer token. */
+    getById: (id) => `/club/get/${id}`,
     /** Update club by id (captain name / clubName etc). Requires Bearer token. */
     update: (id) => `/club/update/${id}`,
     /** Club members: list by club id. */

@@ -1,34 +1,51 @@
-import { useState } from 'react';
-import { Trophy, Menu, X, User, Home, LogOut, Star } from 'lucide-react';
+import { Trophy, Menu, X, User, LogOut, Star } from 'lucide-react';
 import logo from '../assets/logo.png';
 import { Link, useLocation } from 'react-router-dom';
 import { useThemeClasses } from '../hooks/useThemeClasses';
 import { pathWithLocationPrefix } from '../utils/locationRoutes';
-import { partnerLogout, clearPartnerAuth } from '../utils/api';
-import { clearAuthToken } from '../api/authToken';
+import { partnerLogout, clearPartnerAuth, getPartnerAuth } from '../utils/api';
+import { clearAuthToken, getAuthToken } from '../api/authToken';
 
 const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user, setUser, locationPrefix = '' }) => {
   const theme = useThemeClasses();
   const location = useLocation();
-  const [isDashMenuOpen, setIsDashMenuOpen] = useState(false);
   const path = (p) => pathWithLocationPrefix(locationPrefix, p);
-  const handleDashboardClick = () => {
-    if (!user) {
-      setView('login');
+  const partnerSession = getPartnerAuth();
+  const isPartnerAuthenticated = Boolean(partnerSession?.token && partnerSession?.partner);
+  /** Member portal: only when token exists AND no active partner session (partner uses same token key) */
+  const isMemberAuthenticated = Boolean(getAuthToken()) && !isPartnerAuthenticated;
+  const isMemberPortalActive =
+    location.pathname === '/member/portal' || location.pathname.endsWith('/member/portal');
+  const isPartnerPortalActive =
+    location.pathname === '/partner/portal' || location.pathname.endsWith('/partner/portal');
+  const activePortalButtonClass = 'bg-blue-600 ring-2 ring-blue-300/80 border-blue-300/70';
+
+  const openMemberPortal = () => {
+    if (!isMemberAuthenticated) {
+      setView('member-login');
       return;
     }
-    setIsDashMenuOpen((prev) => !prev);
+    setUser?.((prev) => (prev?.type === 'member' ? prev : { type: 'member', email: prev?.email }));
+    setView('member-dashboard');
   };
 
-  const goHome = () => {
-    setIsDashMenuOpen(false);
-    setView(user?.type === 'admin' ? 'admin-dashboard' : 'member-dashboard');
+  const openPartnerPortal = () => {
+    if (!isPartnerAuthenticated) {
+      setView('partner-login');
+      return;
+    }
+    setUser?.({
+      type: 'admin',
+      role: 'partner',
+      email: partnerSession.partner.contactEmail ?? partnerSession.email,
+      token: partnerSession.token,
+      partner: partnerSession.partner,
+    });
+    setView('partner-dashboard');
   };
 
   const logout = async () => {
-    setIsDashMenuOpen(false);
-    const isMember = user?.type === 'member';
-    const token = user?.token;
+    const token = partnerSession?.token || user?.token;
     try {
       if (token) {
         await partnerLogout(token);
@@ -36,12 +53,8 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
     } catch {
       // still clear local session on logout API failure
     } finally {
-      if (isMember) {
-        clearAuthToken();
-      }
-      if (token) {
-        clearPartnerAuth();
-      }
+      clearAuthToken();
+      clearPartnerAuth();
       setUser?.(null);
       setView('home');
     }
@@ -102,31 +115,30 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
             </button>
           )} */}
 
-          <div className="relative">
+          <div className="flex items-center gap-3">
             <button
-              onClick={handleDashboardClick}
-              className={`${theme.bgPrimary || siteConfig.colors.primary} text-white px-5 py-2.5 rounded-full font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 normal-case tracking-normal text-sm hover:-translate-y-0.5`}
+              onClick={openMemberPortal}
+              className={`text-white px-5 py-2.5 rounded-full font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 normal-case tracking-normal text-sm hover:-translate-y-0.5 border ${
+                isMemberPortalActive
+                  ? activePortalButtonClass
+                  : `${theme.bgPrimary || siteConfig.colors.primary}`
+              }`}
             >
               <User size={14} />
-              {user ? 'My Dashboard' : 'Member Login'}
+              {isMemberAuthenticated ? 'Member Portal' : 'Member Login'}
             </button>
-            {user && isDashMenuOpen && (
-              <div className="absolute right-0 mt-3 w-48 bg-slate-900/95 backdrop-blur border border-slate-700 rounded-2xl shadow-2xl p-3 text-slate-200 overflow-hidden">
-                <div className={`text-[11px] uppercase font-bold ${theme.textLight || 'text-blue-200'} mb-2 px-1`}>Quick Actions</div>
-                <button
-                  onClick={goHome}
-                  className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-white/5 flex items-center gap-2 transition-colors"
-                >
-                  <Home size={14} /> Home
-                </button>
-                <button
-                  onClick={logout}
-                  className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-red-600/15 flex items-center gap-2 text-red-400 transition-colors"
-                >
-                  <LogOut size={14} /> Logout
-                </button>
-              </div>
-            )}
+            <button
+              onClick={openPartnerPortal}
+              className={`text-white px-5 py-2.5 rounded-full font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 normal-case tracking-normal text-sm hover:-translate-y-0.5 border ${
+                isPartnerPortalActive
+                  ? activePortalButtonClass
+                  : 'bg-slate-700/70 border-slate-500/50'
+              }`}
+            >
+              <User size={14} />
+              {isPartnerAuthenticated ? 'Partner Portal' : 'Partner Login'}
+            </button>
+           
           </div>
         </div>
 
@@ -166,17 +178,29 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
               </Link>
               <div className="mt-4 pt-4 border-t border-white/10 px-6">
                 <button
-                  onClick={closeAnd(user ? goHome : () => setView('login'))}
-                  className={`${theme.bgPrimary || siteConfig.colors.primary} text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2`}
+                  onClick={closeAnd(openMemberPortal)}
+                  className={`text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 ${
+                    isMemberPortalActive
+                      ? activePortalButtonClass
+                      : `${theme.bgPrimary || siteConfig.colors.primary}`
+                  }`}
                 >
                   <User size={16} />
-                  {user ? 'My Dashboard' : 'Member Login'}
+                  {isMemberAuthenticated ? 'Member Portal' : 'Member Login'}
                 </button>
-                {user && (
+                <button
+                  onClick={closeAnd(openPartnerPortal)}
+                  className={`text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 mt-3 border ${
+                    isPartnerPortalActive
+                      ? activePortalButtonClass
+                      : 'bg-slate-700/70 border-slate-500/50'
+                  }`}
+                >
+                  <User size={16} />
+                  {isPartnerAuthenticated ? 'Partner Portal' : 'Partner Login'}
+                </button>
+                {(isMemberAuthenticated || isPartnerAuthenticated) && (
                   <div className="mt-3 space-y-1">
-                    <button onClick={closeAnd(goHome)} className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-white/5 text-slate-300 flex items-center gap-2 text-sm">
-                      <Home size={14} /> Dashboard Home
-                    </button>
                     <button onClick={closeAnd(logout)} className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-red-600/15 text-red-400 flex items-center gap-2 text-sm">
                       <LogOut size={14} /> Logout
                     </button>

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
-import { Award, Download, LayoutDashboard, Zap, ChevronDown, ChevronUp, Briefcase, Users, Calendar, CalendarClock, Menu, X, Pencil } from 'lucide-react';
-import { getMyClub } from '../app/club/clubApi';
+import { Award, Download, LayoutDashboard, Zap, ChevronDown, ChevronUp, Briefcase, Users, Calendar, CalendarClock, Menu, X, Pencil, LogOut } from 'lucide-react';
+import { getMyClub } from '../api/clubApi';
 import { getMyMembership } from '../app/membership/membershipApi';
 import axiosInstance from '../api/axiosInstance';
 import endpoints from '../api/endpoints';
@@ -13,6 +13,7 @@ import { GlobalYoungInnovatorsDirectory } from '../components/GlobalYoungInnovat
 import { StudentCommunityDirectory } from '../components/StudentCommunityDirectory';
 import { EventsPage } from '../components/EventsPage';
 import { TechConferences } from '../components/TechConferences';
+import { useLogout } from '../hooks/useLogout';
 
 // Theme-based accent classes for membership card (matches app theme)
 const THEME_ACCENT = {
@@ -111,8 +112,9 @@ const formatMobileDisplay = (mobile) => {
   return digits.slice(-10);
 };
 
-const MemberDashboard = ({ user, currentSite, setView }) => {
+const MemberDashboard = ({ user, currentSite, setView, setUser }) => {
   const { themeConfig } = useTheme();
+  const { logout } = useLogout({ setUser, setView, type: 'member', redirectView: 'home' });
   const themeKey = themeConfig?.theme || 'blue';
   const accent = THEME_ACCENT[themeKey] || THEME_ACCENT.blue;
   const cardBg = themeConfig?.colors?.gradient || accent.cardBg;
@@ -791,6 +793,18 @@ const MemberDashboard = ({ user, currentSite, setView }) => {
                       </button>
                     </div>
                   )}
+                </div>
+
+                {/* Logout */}
+                <div className="mt-4 pt-4 border-t border-white/20">
+                  <button
+                    type="button"
+                    onClick={() => { logout(); closeSidebar(); }}
+                    className="w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-white/10 hover:border-red-400/50 hover:bg-red-500/10 text-red-300 hover:text-red-200 transition-all flex items-center gap-2 sm:gap-3 text-sm sm:text-base"
+                  >
+                    <LogOut size={18} className="flex-shrink-0" />
+                    <span>Logout</span>
+                  </button>
                 </div>
               </div>
             </nav>

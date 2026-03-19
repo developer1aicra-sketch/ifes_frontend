@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaYoutube } from "react-icons/fa";
 import { Mail, Phone, MapPin } from "lucide-react";
 import logo from '../assets/logo.png';
 import { fetchPartners, getCurrentSubdomain, findPartnerBySubdomain, getPrimaryPartnerByLocation } from '../utils/api';
-import { getLocationCodeFromPath } from '../utils/locationRoutes';
+import { getLocationCodeFromPath, pathWithLocationPrefix } from '../utils/locationRoutes';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLocationPrefix } from '../hooks/useLocationPrefix';
 import LocationSwitcher, { DEFAULT_LOCATION_CODES } from './LocationSwitcher';
 
 // Default footer contact & social when NOT on a partner route (/XX or /XX/...)
@@ -21,12 +22,22 @@ const DEFAULT_FOOTER = {
   },
 };
 
+const ABOUT_SECTION_LINKS = [
+  { id: 'advisory', label: 'ADVISORY BOARD' },
+  { id: 'board', label: 'EXECUTIVE COMMITTEE' },
+  { id: 'federation-services', label: 'FEDERATION SERVICES' },
+  { id: 'tech-for-good', label: 'TECH FOR GOOD' },
+  { id: 'working-at-worso', label: 'WORKING AT WORSO' },
+];
+
 const Footer = ({ setView, switchSite, currentSite }) => {
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { updateTheme, themeConfig, selectedLocation } = useTheme();
   const routerLocation = useLocation();
+  const navigate = useNavigate();
+  const { locationPrefix } = useLocationPrefix();
 
   // Route countryCode (e.g. /TH, /AE). If present, LocationRouteHandler owns theme switching.
   const routeCountryCode = useMemo(() => {
@@ -132,6 +143,22 @@ const Footer = ({ setView, switchSite, currentSite }) => {
     }
   }, [partners, routeCountryCode, selectedLocation, updateTheme]);
 
+  const isOnAboutPage = useMemo(() => {
+    const p = routerLocation.pathname || '';
+    return p.endsWith('/about') || p.endsWith('/governance') || p === '/about' || p === '/governance';
+  }, [routerLocation.pathname]);
+
+  const activeAboutSection = useMemo(() => {
+    const hash = (routerLocation.hash || '').replace('#', '');
+    return ABOUT_SECTION_LINKS.some((l) => l.id === hash) ? hash : null;
+  }, [routerLocation.hash]);
+
+  const handleAboutSectionClick = (sectionId) => {
+    const basePath = pathWithLocationPrefix(locationPrefix || '', '/about');
+    navigate(`${basePath}#${sectionId}`, { replace: true });
+    window.scrollTo(0, 0);
+  };
+
   const footerEmail = isOnPartnerRoute && activePartner
     ? (activePartner?.footerInfo?.email || activePartner?.contactEmail || DEFAULT_FOOTER.email)
     : DEFAULT_FOOTER.email;
@@ -146,223 +173,144 @@ const Footer = ({ setView, switchSite, currentSite }) => {
     : DEFAULT_FOOTER.social;
 
   return (
-    <footer className={`${themeConfig?.colors?.gradient || 'bg-[#0a0f1a]'} text-slate-400 py-10  `}>
-    <div className="container mx-auto px-4 sm:px-6 max-w-[1600px]">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 mb-10 md:mb-12">
-
-        {/* LOGO + CONTACT INFO + SOCIAL - LEFT SIDE */}
-        <div className="md:col-span-3">
+    <footer className={`${themeConfig?.colors?.gradient || 'bg-[#0a0f1a]'} text-slate-400 pt-10`}>
+      <div className="container mx-auto px-4 sm:px-6 max-w-[1600px]">
+        {/* Three-column layout */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 lg:gap-16 mb-10 md:mb-12">
+          {/* Column 1: Logo, description, contact, country, social */}
           <div className="flex flex-col">
-            <div className="mb-6 md:mb-8">
-              <div className="flex items-center gap-3 mb-4 md:mb-6">
-                <img
-                  src={logo}
-                  alt="WORSO Logo"
-                  className="h-10 w-auto object-contain sm:h-12"
-                />
-                <span className="text-white font-bold text-xl tracking-tight">
-                  {currentSite.is_partner ? "TECHNOXIAN" : "WORSO"}
-                </span>
-              </div>
-
-              {/* Contact Info - Email & Phone */}
-              <div className="mb-6 space-y-4">
-                <p className="max-w-md mb-8 leading-relaxed text-sm">
-                  {currentSite.is_partner
-                    ? "The official regional chapter of the World Robotics Championship."
-                    : "The World Robotics Sports Organization is the global regulatory body for robotics competitions and esports."}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Mail size={16} className="text-slate-500" />
-                <a
-                  href={`mailto:${footerEmail}`}
-                  className="text-sm hover:text-white transition-colors"
-                >
-                  {footerEmail}
-                </a>
-              </div>
-              <div className="flex items-center gap-3">
-                <Phone size={16} className="text-slate-500" />
-                <a
-                  href={`tel:${footerPhone}`}
-                  className="text-sm hover:text-white transition-colors"
-                >
-                  {footerPhone}</a>
-              </div>
-              
-              {/* Country routes: /TH, /VN, /AE, etc – opens /XX and applies partner themeColor */}
-              <div className="flex items-center gap-3 mt-4">
-                {/* <MapPin size={16} className="text-slate-500 flex-shrink-0" /> */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <LocationSwitcher
-                      regionLabel="Country"
-                      locationCodes={countryCodes}
-                      locationThemeMap={locationThemeMap}
-                    />
-                    {/* <span className="text-xs text-slate-300 border border-white/10 bg-white/5 px-2 py-1 rounded-md">
-                      Active: <span className="font-bold text-white">{activeCountryCode || 'GLOBAL'}</span>
-                      {activePartner?.themeColor ? (
-                        <span className="ml-2 text-slate-300">Theme: <span className="font-semibold text-white">{activePartner.themeColor}</span></span>
-                      ) : null}
-                    </span> */}
-                  </div>
-                  {footerAddress ? (
-                    <div className="text-xs text-slate-400">
-                      {footerAddress}
-                    </div>
-                  ) : null}
-                  {error ? (
-                    <div className="text-xs text-red-300">
-                      {error}
-                    </div>
-                  ) : null}
-                  {loading ? (
-                    <div className="text-xs text-slate-500">
-                      Loading partners…
-                    </div>
-                  ) : null}
-                </div>
-              </div>
+            <div className="flex items-center gap-3 mb-4">
+              <img
+                src={logo}
+                alt="WORSO Logo"
+                className="h-10 w-auto object-contain sm:h-12"
+              />
+              <span className="text-white font-bold text-xl tracking-tight">
+                {currentSite.is_partner ? "TECHNOXIAN" : "WORSO"}
+              </span>
             </div>
-
-
-            {/* SOCIAL ICONS */}
-         
+            <p className="max-w-md mb-6 leading-relaxed text-sm text-slate-400">
+              {currentSite.is_partner
+                ? "The official regional chapter of the World Robotics Championship."
+                : "The World Robotics Sports Organization is the global regulatory body for robotics competitions and esports."}
+            </p>
+            <div className="space-y-3 mb-4">
+              <a
+                href={`mailto:${footerEmail}`}
+                className="flex items-center gap-3 text-sm hover:text-white transition-colors"
+              >
+                <Mail size={16} className="text-slate-500 flex-shrink-0" />
+                {footerEmail}
+              </a>
+              <a
+                href={`tel:${footerPhone}`}
+                className="flex items-center gap-3 text-sm hover:text-white transition-colors"
+              >
+                <Phone size={16} className="text-slate-500 flex-shrink-0" />
+                {footerPhone}
+              </a>
+            </div>
+            <div className="flex flex-col gap-2 mb-6">
+              <div className="flex items-center gap-3 flex-wrap">
+                <LocationSwitcher
+                  regionLabel="Country"
+                  locationCodes={countryCodes}
+                  locationThemeMap={locationThemeMap}
+                />
+              </div>
+              {footerAddress ? (
+                <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <MapPin size={14} className="flex-shrink-0" />
+                  {footerAddress}
+                </div>
+              ) : null}
+              {error ? <div className="text-xs text-red-300">{error}</div> : null}
+              {loading ? <div className="text-xs text-slate-500">Loading partners…</div> : null}
+            </div>
             <div>
-              <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">Follow Us</h4>
-              <div className="flex gap-4 text-xl">
-                <a
-                  href={social.facebook || "https://www.facebook.com/WORSOcommunity"}
-                  className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
-                  aria-label="Facebook"
-                >
-                  <FaFacebookF />
-                </a>
-                <a
-                  href={social.instagram || "https://www.instagram.com/worsoassociation"}
-                  className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
-                  aria-label="Instagram"
-                >
-                  <FaInstagram />
-                </a>
-                <a
-                  href={social.linkedin || "https://in.linkedin.com/company/worso"}
-                  className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
-                  aria-label="LinkedIn"
-                >
-                  <FaLinkedinIn />
-                </a>
-                <a
-                  href={social.youtube || "https://www.youtube.com/@WORSOassociation"}
-                  className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
-                  aria-label="YouTube"
-                >
-                  <FaYoutube />
-                </a>
+              <h4 className="text-white font-bold mb-3 text-sm uppercase tracking-wider">Follow Us</h4>
+              <div className="flex gap-3 text-lg">
+                <a href={social.facebook || "https://www.facebook.com/WORSOcommunity"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="Facebook"><FaFacebookF /></a>
+                <a href={social.instagram || "https://www.instagram.com/worsoassociation"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="Instagram"><FaInstagram /></a>
+                <a href={social.linkedin || "https://in.linkedin.com/company/worso"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="LinkedIn"><FaLinkedinIn /></a>
+                <a href={social.youtube || "https://www.youtube.com/@WORSOassociation"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="YouTube"><FaYoutube /></a>
               </div>
             </div>
           </div>
+
+          {/* Column 2: Quick Links */}
+          <div className="flex flex-col">
+            <h4 className="text-white font-bold mb-6 text-sm uppercase tracking-wider">Quick Links</h4>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <button onClick={() => setView("technoxian")} className="text-sm hover:text-white transition-colors text-left w-full py-1">
+                  Challenges
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setView("teams")} className="text-sm hover:text-white transition-colors text-left w-full py-1">
+                  Teams & Rankings
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setView("news")} className="hover:text-white transition-colors text-left w-full py-1">
+                  News
+                </button>
+              </li>
+              <li className="">
+                <button onClick={() => setView("privacy-policy")} className="text-sm hover:text-white transition-colors text-left w-full py-1">
+                  Privacy Policy
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setView("terms-of-use")} className="hover:text-white transition-colors text-left w-full py-1">
+                  Terms of Use
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 3: Organizational links (About sections) */}
+          <nav className="flex flex-col">
+            <h4 className="text-white font-bold mb-6 text-sm uppercase tracking-wider">Governance</h4>
+            <ul className="space-y-3 text-sm">
+              {ABOUT_SECTION_LINKS.map((link) => {
+                const isActive = isOnAboutPage && activeAboutSection === link.id;
+                return (
+                  <li key={link.id}>
+                    <button
+                      onClick={() => handleAboutSectionClick(link.id)}
+                      className={`text-sm capitalize hover:text-white transition-colors text-left w-full py-1 ${
+                        isActive
+                          ? `${themeConfig?.colors?.textLight || 'text-blue-400'}`
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {link.label}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
         </div>
 
-        {/* QUICK LINKS - RIGHT SIDE */}
-        <div className="md:col-span-1">
-          <h4 className="text-white font-bold mb-6 text-lg">Quick Links</h4>
-          <ul className="space-y-3 text-sm">
-            <li>
-              <button
-                onClick={() => setView("technoxian")}
-                className="hover:text-white transition-colors text-left w-full py-1"
-              >
-                 Challenges
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => setView("teams")}
-                className="hover:text-white transition-colors text-left w-full py-1"
-              >
-                Teams & Rankings
-              </button>
-            </li>
-            <li>
-              {/* <button
-                onClick={() => setView("careers")}
-                className="hover:text-white transition-colors text-left w-full py-1"
-              >
-                Careers
-              </button> */}
-            </li>
-            <li>
-              <button
-                onClick={() => setView("news")}
-                className="hover:text-white transition-colors text-left w-full py-1"
-              >
-                News
-              </button>
-            </li>
-            <li className="pt-4 mt-4 border-t border-slate-800">
-              <button
-                onClick={() => setView("privacy-policy")}
-                className="hover:text-white transition-colors text-left w-full py-1"
-              >
-                Privacy Policy
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => setView("terms-of-use")}
-                className="hover:text-white transition-colors text-left w-full py-1"
-              >
-                Terms of Use
-              </button>
-            </li>
-          </ul>
-        </div>
-
-      </div>
-
-      <div className="pt-6 md:pt-8 border-t border-slate-800">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-4 flex-wrap">
-            <button
+        {/* Bottom bar */}
+        <div className="py4 md:py-4 border-t border-slate-700/50 flex justify-center">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center">
+            {/* <button
               onClick={() => setView("staff-login")}
-              className="text-[10px] text-slate-700 hover:text-white font-bold uppercase transition-colors"
+              className="text-[10px] text-slate-500 hover:text-white font-bold uppercase transition-colors order-2 sm:order-1"
             >
               Staff Access
-            </button>
-
-            <div className="h-4 w-px bg-slate-800 hidden"></div>
-{/* 
-            <span className="text-[10px] font-bold text-slate-400 uppercase">
-              View As:
-            </span>
-
-            <button
-              onClick={() => switchSite("global")}
-              className={`text-[10px] font-bold transition-colors ${currentSite.id === "global" ? `${themeConfig?.colors?.textLight || 'text-blue-500'}` : "text-slate-400 hover:text-white"
-                }`}
-            >
-              Global
-            </button>
-
-            <button
-              onClick={() => switchSite("uae")}
-              className={`text-[10px] font-bold transition-colors ${currentSite.id === "uae" ? `${themeConfig?.colors?.textLight || 'text-emerald-500'}` : "text-slate-400 hover:text-white"
-                }`}
-            >
-              UAE
             </button> */}
-          </div>
-
-          <div className="text-xs text-slate-400 md:mx-auto">
-            © 2026 World Robotics Sports Organization. All Rights Reserved.
+            <div className="text-xs text-slate-500 text-center order-1 sm:order-2 flex-1 sm:flex-initial">
+              © 2026 World Robotics Sports Organization. All Rights Reserved.
+            </div>
+            <div className="hidden sm:block w-20 flex-shrink-0" aria-hidden="true" />
           </div>
         </div>
       </div>
-
-    </div>
     </footer>
   );
 };

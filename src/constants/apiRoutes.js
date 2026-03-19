@@ -19,6 +19,8 @@ export const apiRoutes = {
     get: (_id) => `/event/get/${_id}`,
     delete: (_id) => `/event/delete/${_id}`,
   },
+  /** GET /event/get?website=EG - list events by website (from route) */
+  eventGetByWebsite: '/event/get',
   /** GET /event/get?website=worso&partnerCode=XX - list events by partner (from route) */
   eventGetByPartner: '/event/get',
   competition: {
