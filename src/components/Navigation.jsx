@@ -33,7 +33,7 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
       if (token) {
         await partnerLogout(token);
       }
-    } catch (_) {
+    } catch {
       // still clear local session on logout API failure
     } finally {
       if (isMember) {
@@ -92,10 +92,10 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
             Teams / Players
           </button>
           
-          <button onClick={() => setView('technoxian')} className="hover:text-white transition-colors flex items-center gap-1">
+          <Link to={path('/challenges')} className="hover:text-white transition-colors flex items-center gap-1">
             <Trophy className="w-3 h-3 text-yellow-500" />
-            {siteConfig.is_partner ? 'Local Events' : 'WRC Challenges'}
-          </button>
+            {siteConfig.is_partner ? 'Local Events' : 'Challenges'}
+          </Link>
           {/* {!siteConfig.is_partner && (
             <button onClick={() => setView('partners')} className="hover:text-white transition-colors">
               Partners
@@ -156,10 +156,14 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
               <button onClick={closeAnd(() => setView('teams'))} className="text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
                 Teams / Players
               </button>
-              <button onClick={closeAnd(() => setView('technoxian'))} className="text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2">
+              <Link
+                to={path('/challenges')}
+                onClick={closeAnd()}
+                className="text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2"
+              >
                 <Trophy className="w-3 h-3 text-yellow-500 flex-shrink-0" />
                 {siteConfig.is_partner ? 'Local Events' : 'WRC Challenges'}
-              </button>
+              </Link>
               <div className="mt-4 pt-4 border-t border-white/10 px-6">
                 <button
                   onClick={closeAnd(user ? goHome : () => setView('login'))}

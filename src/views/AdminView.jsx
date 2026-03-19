@@ -1403,12 +1403,12 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                     {activeTab === 'partner-home' && 'Partner Home Content'}
                     {activeTab === 'partners' && 'Partner Management'}
                     {activeTab === 'events' && (isAdminMode === 'super' ? 'Event Manager' : 'My Events')}
+                    {activeTab === 'roboclub' && 'RoboClub Registration'}
                     {activeTab === 'membership' && 'My Membership'}
 
                     {activeTab === 'courses' && 'Course Management'}
                     {activeTab === 'academia' && 'Academia Portal'}
                     {activeTab === 'forum' && 'Community Forum'}
-                    {activeTab === 'roboclub' && 'RoboClub Registration'}
                   </h1>
                 </div>
                 <div className="px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-semibold border border-slate-200">
@@ -1478,7 +1478,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       </div>
                     </div>
                   )}
-                  <div className="grid grid-cols-3 gap-6">
+                  <div className="grid grid-cols-3 gap-6 hidden">
                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                       <div className="text-xs font-bold text-slate-500 uppercase mb-1">Revenue</div>
                       <div className="text-3xl font-bold text-slate-900">{isAdminMode === 'super' ? '$2.4M' : (partner ? `₹${Number(partner.totalRevenue ?? partner.revenue ?? 0).toLocaleString()}` : '$45,000')}</div>
@@ -1508,7 +1508,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         value={partnerEdit.academyName}
                         onChange={(e) => setPartnerEdit((p) => ({ ...p, academyName: e.target.value }))}
                         placeholder="Academy name"
-                        className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full p-3 border text-[black] border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
@@ -1516,7 +1516,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       <select
                         value={partnerEdit.themeColor}
                         onChange={(e) => setPartnerEdit((p) => ({ ...p, themeColor: e.target.value }))}
-                        className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none  text-[black] "
                       >
                         <option value="Green">Green</option>
                         <option value="Blue">Blue</option>
@@ -1537,7 +1537,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                           value={partnerEdit.contactEmail}
                           onChange={(e) => setPartnerEdit((p) => ({ ...p, contactEmail: e.target.value }))}
                           placeholder="contact@academy.com"
-                          className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                          className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none  text-[black]"
                         />
                       </div>
                     </div>
@@ -1552,7 +1552,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                           value={partnerEdit.phoneNumber}
                           onChange={(e) => setPartnerEdit((p) => ({ ...p, phoneNumber: e.target.value }))}
                           placeholder="+1 234 567 8900"
-                          className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                          className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none  text-[black]"
                         />
                       </div>
                     </div>

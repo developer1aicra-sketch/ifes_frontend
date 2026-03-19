@@ -18,7 +18,7 @@ import JoinWorsoView from './views/JoinWorsoView';
 import AssociationsListView from './views/AssociationsListView';
 import AboutLayout from './views/AboutLayout';
 import TeamsView from './views/TeamsView';
-import CareersView from './views/CareersView';
+// import CareersView from './views/CareersView';
 import MemberLoginView from './views/MemberLoginView';
 import PartnerAdminLoginView from './views/PartnerAdminLoginView';
 import MemberDashboard from './views/MemberDashboard';
@@ -64,8 +64,12 @@ const viewToPath = (view) => {
       return '/';
     case 'teams':
       return '/teams';
+    // Canonical route for the Technoxian/Challenges page.
+    // Some UI parts still use the legacy "technoxian" view key.
+    case 'challenges':
+      return '/challenges';
     case 'technoxian':
-      return '/technoxian';
+      return '/challenges';
     case 'about':
       return '/about';
     case 'governance':
@@ -301,7 +305,7 @@ const AppContent = ({
         <ToastContainer />
         <PartnerWebsiteRedirect />
       <LocationRouteHandler />
-      <LiveTicker tickerText={tickerText} siteConfig={currentSite} />
+      {/* <LiveTicker tickerText={tickerText} siteConfig={currentSite} /> */}
       {!hideGlobalChrome && (
         <Navigation
           setView={setViewRespectingLocation}
@@ -327,7 +331,7 @@ const AppContent = ({
             <Routes location={location}>
               <Route path="/" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
               <Route path="/teams" element={<TeamsView />} />
-              <Route path="/technoxian" element={<TechnoxianView />} />
+              <Route path="/challenges" element={<TechnoxianView />} />
               <Route path="/roboclub" element={<RoboClubDashboard />} />
               <Route path="/roboclub-login" element={<RoboClubAuth />} />
               <Route path="/roboclub-dashboard" element={<RoboClubDashboard mode="dashboard" />} />
@@ -336,7 +340,7 @@ const AppContent = ({
               <Route path="/governance" element={<AboutLayout setView={setViewRespectingLocation} />} />
               <Route path="/associates/join-worso" element={<JoinWorsoView />} />
               <Route path="/associates/list" element={<AssociationsListView />} />
-              <Route path="/careers" element={<CareersView />} />
+              {/* <Route path="/careers" element={<CareersView />} /> */}
               <Route path="/partners" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
         {/* <Route path="/shop" element={<StoreView />} /> */}
         
@@ -362,14 +366,14 @@ const AppContent = ({
               {/* Location-prefixed routes: /AE/membership, /AE/teams, etc. - more specific first */}
               <Route path="/:locationCode/membership" element={<MembershipView setView={setViewRespectingLocation} />} />
               <Route path="/:locationCode/teams" element={<TeamsView />} />
-              <Route path="/:locationCode/technoxian" element={<TechnoxianView />} />
+              <Route path="/:locationCode/challenges" element={<TechnoxianView />} />
               {/* <Route path="/:locationCode/roboclub" element={<RoboClubView />} /> */}
               <Route path="/:locationCode/roboclub-dashboard" element={<RoboClubDashboard mode="dashboard" />} />
               <Route path="/:locationCode/about" element={<AboutLayout setView={setViewRespectingLocation} />} />
               <Route path="/:locationCode/governance" element={<AboutLayout setView={setViewRespectingLocation} />} />
               <Route path="/:locationCode/associates/join-worso" element={<JoinWorsoView />} />
               <Route path="/:locationCode/associates/list" element={<AssociationsListView />} />
-              <Route path="/:locationCode/careers" element={<CareersView />} />
+              {/* <Route path="/:locationCode/careers" element={<CareersView />} /> */}
               <Route path="/:locationCode/partners" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
               <Route path="/:locationCode/login" element={user?.type === 'member' ? <Navigate to={pathWithLocationPrefix(locationPrefix, '/member-dashboard')} replace /> : <MemberLoginView setView={setViewRespectingLocation} setUser={setUser} siteConfig={currentSite} user={user} />} />
               <Route path="/:locationCode/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} user={user} />} />

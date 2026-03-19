@@ -30,7 +30,7 @@ const LogoTicker = ({
     <section
       aria-label={title}
       className={[
-        "bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-8 overflow-hidden  bg-[black]",
+        "bg-[black] border-t border-slate-200 dark:border-slate-800 py-8 overflow-hidden  ",
         className,
       ].join(" ")}
     >

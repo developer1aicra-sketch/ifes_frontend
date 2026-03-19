@@ -201,12 +201,12 @@ const Footer = ({ setView, switchSite, currentSite }) => {
                       locationCodes={countryCodes}
                       locationThemeMap={locationThemeMap}
                     />
-                    <span className="text-xs text-slate-300 border border-white/10 bg-white/5 px-2 py-1 rounded-md">
+                    {/* <span className="text-xs text-slate-300 border border-white/10 bg-white/5 px-2 py-1 rounded-md">
                       Active: <span className="font-bold text-white">{activeCountryCode || 'GLOBAL'}</span>
                       {activePartner?.themeColor ? (
                         <span className="ml-2 text-slate-300">Theme: <span className="font-semibold text-white">{activePartner.themeColor}</span></span>
                       ) : null}
-                    </span>
+                    </span> */}
                   </div>
                   {footerAddress ? (
                     <div className="text-xs text-slate-400">
@@ -275,7 +275,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
                 onClick={() => setView("technoxian")}
                 className="hover:text-white transition-colors text-left w-full py-1"
               >
-                WRC Challenges
+                 Challenges
               </button>
             </li>
             <li>
@@ -287,12 +287,12 @@ const Footer = ({ setView, switchSite, currentSite }) => {
               </button>
             </li>
             <li>
-              <button
+              {/* <button
                 onClick={() => setView("careers")}
                 className="hover:text-white transition-colors text-left w-full py-1"
               >
                 Careers
-              </button>
+              </button> */}
             </li>
             <li>
               <button

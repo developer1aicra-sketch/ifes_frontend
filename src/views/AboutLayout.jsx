@@ -199,7 +199,7 @@ const AboutLayout = ({ setView }) => {
     { id: 'advisory', label: 'Advisory Board' },
     { id: 'board', label: 'Executive Committee' },
     { id: 'federation-services', label: 'Federation Services' },
-    { id: 'associates', label: 'Associates & Partners' },
+    // { id: 'associates', label: 'Associates & Partners' },
     { id: 'tech-for-good', label: 'Tech for Good' },
     { id: 'working-at-worso', label: 'Working at WORSO' },
     { id: 'referees', label: 'Referees' },
@@ -781,7 +781,7 @@ const AboutLayout = ({ setView }) => {
               <div className="md:w-1/4 space-y-4">
                 <div className="bg-slate-100 rounded-xl overflow-hidden aspect-[3/4] max-w-[280px] mx-auto">
                   <img
-                    src="https://worso.org/images/executive-committee/rajkumar.png"
+                    src={ecRajkumar}
                     alt="Raj Kumar Sharma, President of International Federation of Esports"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -1086,7 +1086,7 @@ const AboutLayout = ({ setView }) => {
 
       case 'associates':
         return (
-          <div className="space-y-8">
+          <div className="space-y-8 hidden">
             {/* Associates Header */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
