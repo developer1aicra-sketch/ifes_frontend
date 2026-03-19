@@ -91,7 +91,7 @@ const PartnerAdminLoginView = ({ setView, setUser, siteConfig, user }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="flex-1 p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="flex-1 p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                 />
               </div>
             </div>
@@ -115,7 +115,7 @@ const PartnerAdminLoginView = ({ setView, setUser, siteConfig, user }) => {
                   value={otpInput}
                   onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
                   placeholder="Enter 6-digit OTP"
-                  className="flex-1 p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none tracking-widest"
+                  className="flex-1 p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none tracking-widest text-[black]"
                 />
               </div>
             </div>
