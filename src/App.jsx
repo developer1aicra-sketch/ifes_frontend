@@ -31,6 +31,7 @@ import PrivacyPolicyView from './views/PrivacyPolicyView';
 import TermsOfUseView from './views/TermsOfUseView';
 import MembershipView from './views/MembershipView'; // ✅ NEW
 import LocationView from './views/LocationView';
+import BecomePartnerView from './views/BecomePartnerView';
 
 import { DEFAULT_SITES, NEWS_ITEMS } from './constants/data';
 import { styles } from './styles/inlineStyles';
@@ -86,6 +87,8 @@ const viewToPath = (view) => {
       return '/news';
     case 'partners':
       return '/partners';
+    case 'become-partner':
+      return '/become-partner';
     case 'login':
     case 'member-login':
       return '/member/login';
@@ -394,6 +397,7 @@ const AppContent = ({
               <Route path="/associates/list" element={<AssociationsListView />} />
               {/* <Route path="/careers" element={<CareersView />} /> */}
               <Route path="/partners" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
+              <Route path="/become-partner" element={<BecomePartnerView />} />
         {/* <Route path="/shop" element={<StoreView />} /> */}
         
 
@@ -431,6 +435,7 @@ const AppContent = ({
               <Route path="/:locationCode/associates/list" element={<AssociationsListView />} />
               {/* <Route path="/:locationCode/careers" element={<CareersView />} /> */}
               <Route path="/:locationCode/partners" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
+              <Route path="/:locationCode/become-partner" element={<BecomePartnerView />} />
               <Route path="/:locationCode/member/login" element={<MemberLoginRoute user={user} setView={setViewRespectingLocation} setUser={setUser} currentSite={currentSite} locationPrefix={locationPrefix} />} />
               <Route path="/:locationCode/login" element={<Navigate to={pathWithLocationPrefix(locationPrefix, '/member/login')} replace />} />
               <Route path="/:locationCode/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} user={user} />} />

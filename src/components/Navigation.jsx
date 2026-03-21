@@ -101,13 +101,16 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
             <Star size={14} className={location.pathname.endsWith('/roboclub') ? 'text-yellow-400' : 'text-yellow-500'} /> roboclub
           </Link>
 
-          <button onClick={() => setView('teams')} className="hover:text-white transition-colors">
+          {/* <button onClick={() => setView('teams')} className="hover:text-white transition-colors">
             Teams / Players
-          </button>
+          </button> */}
           
           <Link to={path('/challenges')} className="hover:text-white transition-colors flex items-center gap-1">
             <Trophy className="w-3 h-3 text-yellow-500" />
             {siteConfig.is_partner ? 'Local Events' : 'Challenges'}
+          </Link>
+          <Link to={path('/become-partner')} className="hover:text-white transition-colors">
+            Become a Partner
           </Link>
           {/* {!siteConfig.is_partner && (
             <button onClick={() => setView('partners')} className="hover:text-white transition-colors">
@@ -115,30 +118,29 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
             </button>
           )} */}
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={openMemberPortal}
-              className={`text-white px-5 py-2.5 rounded-full font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 normal-case tracking-normal text-sm hover:-translate-y-0.5 border ${
+              className={`flex items-center gap-1.5 text-[10px] py-2 px-2.5 rounded transition-colors hover:text-white ${
                 isMemberPortalActive
-                  ? activePortalButtonClass
-                  : `${theme.bgPrimary || siteConfig.colors.primary}`
+                  ? `text-white ${activePortalButtonClass}`
+                  : 'text-slate-300'
               }`}
             >
-              <User size={14} />
+              <User size={12} />
               {isMemberAuthenticated ? 'Member Portal' : 'Member Login'}
             </button>
             <button
               onClick={openPartnerPortal}
-              className={`text-white px-5 py-2.5 rounded-full font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 normal-case tracking-normal text-sm hover:-translate-y-0.5 border ${
+              className={`flex items-center gap-1.5 text-[10px] py-2 px-2.5 rounded transition-colors hover:text-white ${
                 isPartnerPortalActive
-                  ? activePortalButtonClass
-                  : 'bg-slate-700/70 border-slate-500/50'
+                  ? `text-white ${activePortalButtonClass}`
+                  : 'text-slate-300'
               }`}
             >
-              <User size={14} />
+              <User size={12} />
               {isPartnerAuthenticated ? 'Partner Portal' : 'Partner Login'}
             </button>
-           
           </div>
         </div>
 
@@ -175,6 +177,9 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
               >
                 <Trophy className="w-3 h-3 text-yellow-500 flex-shrink-0" />
                 {siteConfig.is_partner ? 'Local Events' : 'WRC Challenges'}
+              </Link>
+              <Link to={path('/become-partner')} onClick={closeAnd()} className="px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
+                Become a Partner
               </Link>
               <div className="mt-4 pt-4 border-t border-white/10 px-6">
                 <button

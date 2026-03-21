@@ -1,9 +1,16 @@
 /**
  * Cascading location data: Country → State → City.
  * Used for shipping/address form in order: select Country first, then State, then City.
+ * COUNTRIES: extended list; ALL_COUNTRIES used when full list needed (from countryDialCodes).
  */
 
-export const COUNTRIES = [
+import { COUNTRY_DIAL_CODES } from './countryDialCodes';
+
+/** Countries for Region/Country dropdown - comprehensive list from dial codes */
+export const COUNTRIES = COUNTRY_DIAL_CODES.map((c) => ({ id: c.code, name: c.name }));
+
+/** Legacy short list for forms that need fewer options */
+export const COUNTRIES_SHORT = [
   { id: 'IN', name: 'India' },
   { id: 'CN', name: 'China' },
   { id: 'US', name: 'United States' },

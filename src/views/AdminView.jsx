@@ -1421,7 +1421,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                 <div>
                   <div className="text-xs font-bold uppercase text-blue-600 mb-1">Admin Console</div>
                   <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
-                    {activeTab === 'overview' && 'Profile'}
+                    {activeTab === 'overview' && 'Overview'}
                     {activeTab === 'partner-profile' && 'Edit Partner Profile'}
                     {activeTab === 'partner-home' && 'Partner Home Content'}
                     {activeTab === 'partners' && 'Partner Management'}
@@ -1475,10 +1475,10 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                           <span className="text-slate-500 block">Theme</span>
                           <span className="font-semibold text-slate-900">{partner.themeColor ?? '—'}</span>
                         </div>
-                        <div>
+                        {/* <div>
                           <span className="text-slate-500 block">Location</span>
                           <span className="font-semibold text-slate-900">{partner.location ?? '—'}</span>
-                        </div>
+                        </div> */}
                         <div>
                           <span className="text-slate-500 block">Contact email</span>
                           <span className="font-semibold text-slate-900">{partner.contactEmail ?? '—'}</span>
@@ -1487,18 +1487,18 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                           <span className="text-slate-500 block">Phone</span>
                           <span className="font-semibold text-slate-900">{partner.phoneNumber ?? '—'}</span>
                         </div>
-                        <div>
+                        {/* <div>
                           <span className="text-slate-500 block">Commission</span>
                           <span className="font-semibold text-slate-900">{partner.commissionRate != null ? `${partner.commissionRate}%` : '—'}</span>
-                        </div>
-                        <div>
+                        </div> */}
+                        {/* <div>
                           <span className="text-slate-500 block">Revenue</span>
                           <span className="font-semibold text-slate-900">{partner.totalRevenue != null ? `₹${Number(partner.totalRevenue).toLocaleString()}` : (partner.revenue != null ? `₹${Number(partner.revenue).toLocaleString()}` : '—')}</span>
-                        </div>
-                        <div>
+                        </div> */}
+                        {/* <div>
                           <span className="text-slate-500 block">Students</span>
                           <span className="font-semibold text-slate-900">{partner.studentsCount ?? 0}</span>
-                        </div>
+                        </div> */}
                         {/* <div>
                           <span className="text-slate-500 block">Subdomain</span>
                           <span className="font-semibold text-slate-900 break-all">{partner.subdomain ?? '—'}</span>
