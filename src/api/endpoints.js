@@ -103,7 +103,9 @@ const endpoints = {
   },
   partners: {
     home: (countryCode) => `/partners/home/${countryCode}`,
-    update: (id) => `/partners/${id}`
+    update: (id) => `/partners/${id}`,
+    /** POST - create partner enquiry */
+    createEnquiry: `/partner/create/enquiry`,
   },
   about: {
     people: (category) => `/about-worso/people?category=${encodeURIComponent(category)}`,

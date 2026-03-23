@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { User, Building2, Mail, Globe, MapPin, Send, CheckCircle2, ChevronDown } from 'lucide-react';
 import { COUNTRIES, getStatesByCountry, getCitiesByState } from '../constants/locationData';
 import { COUNTRY_DIAL_CODES } from '../constants/countryDialCodes';
+import { createPartnerEnquiry } from '../api/partnerApi';
 import marketingPromotionImg from '../assets/becomepartner/marketing-promotion.webp';
 import pointOfSaleImg from '../assets/becomepartner/Point-of-Sale.webp';
 import stemlabLogoImg from '../assets/becomepartner/stemlab-logo.webp';
@@ -12,8 +13,8 @@ import txLogoImg from '../assets/becomepartner/txlogo.webp';
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 const PARTNERSHIP_TYPES = [
-  { id: 'district', label: 'District Franchise (India)' },
-  { id: 'national', label: 'National Partner (International)' },
+  { id: 'district', label: 'District Franchise (India)', apiValue: 'DISTRICT_FRANCHISE' },
+  { id: 'international', label: 'National Partner (International)', apiValue: 'INTERNATIONAL' },
 ];
 
 const WHO_CAN_PARTNER = [
@@ -148,8 +149,11 @@ const BecomePartnerView = () => {
     city: '',
     cityText: '',
     partnershipType: '',
+    remarks: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
   const [errors, setErrors] = useState({});
   const formSectionRef = useRef(null);
 
@@ -162,7 +166,7 @@ const BecomePartnerView = () => {
     setFormData((prev) => {
       const next = { ...prev, [name]: value };
       if (name === 'mobile') {
-        next.mobile = value.replace(/\D/g, '');
+        next.mobile = value.replace(/\D/g, '').slice(0, 10);
       } else if (name === 'regionCountry') {
         next.state = '';
         next.stateText = '';
@@ -202,25 +206,44 @@ const BecomePartnerView = () => {
     return Object.keys(next).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  const buildEnquiryPayload = () => {
     const stateVal = hasPredefinedStates
       ? statesForCountry.find((s) => s.id === formData.state)?.name || formData.state
       : formData.stateText;
     const cityVal = hasPredefinedStates
       ? citiesForState.find((c) => c.id === formData.city)?.name || formData.city
       : formData.cityText;
-    const payload = {
-      ...formData,
-      state: stateVal,
-      city: cityVal,
-      phone: `+${formData.phoneCountryCode}${formData.mobile}`,
+    const countryName = COUNTRIES.find((c) => c.id === formData.regionCountry)?.name || formData.regionCountry;
+    const partnershipTypeEntry = PARTNERSHIP_TYPES.find((t) => t.id === formData.partnershipType);
+    return {
+      name: formData.name.trim(),
+      organisationName: formData.organisationName.trim(),
+      email: formData.email.trim(),
+      mobile: formData.mobile.trim(),
+      country: countryName,
+      state: stateVal || formData.stateText,
+      city: cityVal || formData.cityText || '',
+      partnershipType: partnershipTypeEntry?.apiValue || formData.partnershipType,
+      remarks: formData.remarks?.trim() || '',
     };
-    delete payload.stateText;
-    delete payload.cityText;
-    console.log('Partner form submitted:', payload);
-    setSubmitted(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitError(null);
+    if (!validateForm()) return;
+
+    setSubmitting(true);
+    try {
+      const payload = buildEnquiryPayload();
+      await createPartnerEnquiry(payload);
+      setSubmitted(true);
+    } catch (err) {
+      const message = err.response?.data?.message || err.message || 'Failed to submit enquiry. Please try again.';
+      setSubmitError(message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -487,14 +510,15 @@ const BecomePartnerView = () => {
                       <input
                         type="tel"
                         inputMode="numeric"
-                        pattern="[0-9]*"
+                        pattern="[0-9]{10}"
+                        maxLength={10}
                         name="mobile"
                         value={formData.mobile}
                         onChange={handleChange}
                         className={`flex-1 px-4 py-3 bg-white border rounded-lg text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                           errors.mobile ? 'border-red-500' : 'border-slate-300'
                         }`}
-                        placeholder="Enter mobile number"
+                        placeholder="10 digit mobile number"
                       />
                     </div>
                     {errors.mobile && (
@@ -641,13 +665,41 @@ const BecomePartnerView = () => {
                   )}
                 </div>
 
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-slate-700">
+                    Remarks <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="remarks"
+                    value={formData.remarks}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    placeholder="Any additional information or questions"
+                  />
+                </div>
+
+                {submitError && (
+                  <p className="text-red-500 text-sm bg-red-50 px-4 py-2 rounded-lg">{submitError}</p>
+                )}
+
                 <div className="pt-4">
                   <button
                     type="submit"
-                    className="w-full md:w-auto px-8 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center justify-center gap-2 transition-colors"
+                    disabled={submitting}
+                    className="w-full md:w-auto px-8 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold flex items-center justify-center gap-2 transition-colors"
                   >
-                    <Send className="w-4 h-4" />
-                    Submit
+                    {submitting ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Submit
+                      </>
+                    )}
                   </button>
                 </div>
               </form>

@@ -597,6 +597,8 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     return () => { cancelled = true; };
   }, [activeTab, partnerCode]);
 
+  // RoboClub: show add form (false = list only, true = form visible)
+  const [showRoboClubForm, setShowRoboClubForm] = useState(false);
   // RoboClub Registration states (direct registration, no OTP)
   const [roboClubError, setRoboClubError] = useState('');
   const [roboClubLoading, setRoboClubLoading] = useState(false);
@@ -681,6 +683,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       if (response?.data?.success || response?.status === 200 || response?.status === 201) {
         alert('RoboClub registered successfully!');
         refreshMyClubs();
+        setShowRoboClubForm(false);
         setRoboClubForm({
           name: '',
           email: '',
@@ -2898,11 +2901,23 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
               )}
               {activeTab === 'roboclub' && (
                 <div className="max-w-2xl mx-auto space-y-6">
+                  {/* Add RoboClub form – shown when Add RoboClub is clicked */}
+                  {showRoboClubForm && (
                   <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8">
                     <div className="space-y-5">
-                        <div className="text-center border-b border-slate-200 pb-4">
-                          <h3 className="text-xl font-bold text-slate-900">Register for RoboClub</h3>
-                          <p className="text-slate-600 text-sm">Fill in your club and institute details to register.</p>
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+                          <div className="text-center flex-1">
+                            <h3 className="text-xl font-bold text-slate-900">Register for RoboClub</h3>
+                            <p className="text-slate-600 text-sm">Fill in your club and institute details to register.</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setShowRoboClubForm(false)}
+                            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all"
+                            aria-label="Close form"
+                          >
+                            <X size={20} />
+                          </button>
                         </div>
 
                         {roboClubError && (
@@ -3066,22 +3081,33 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       </div>
 
                   </div>
+                  )}
 
-                  {/* My RoboClubs (GET /club/my/get) */}
+                  {/* My RoboClubs – shown first */}
                   <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <h3 className="text-lg font-bold text-slate-900">My RoboClubs</h3>
                         <p className="text-slate-600 text-sm">Your registered clubs linked to this account</p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={refreshMyClubs}
-                        disabled={myClubsLoading}
-                        className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
-                      >
-                        Refresh
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowRoboClubForm(true)}
+                          className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all text-sm font-semibold flex items-center gap-2"
+                        >
+                          <Plus size={18} />
+                          Add RoboClub
+                        </button>
+                        <button
+                          type="button"
+                          onClick={refreshMyClubs}
+                          disabled={myClubsLoading}
+                          className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
+                        >
+                          Refresh
+                        </button>
+                      </div>
                     </div>
 
                     {myClubsLoading ? (
@@ -3153,7 +3179,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       <div className="text-center py-10">
                         <Building2 className="mx-auto mb-3 text-slate-300" size={42} />
                         <h4 className="text-base font-bold text-slate-700 mb-1">No clubs found</h4>
-                        <p className="text-slate-500 text-sm">Register your RoboClub above to see it here.</p>
+                        <p className="text-slate-500 text-sm">Click &quot;Add RoboClub&quot; above to register your first club.</p>
                       </div>
                     )}
                   </div>

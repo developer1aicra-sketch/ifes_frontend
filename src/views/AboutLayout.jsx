@@ -6,58 +6,8 @@ import axiosInstance from '../api/axiosInstance';
 import endpoints from '../api/endpoints';
 import { getLocationPrefix } from '../utils/locationRoutes';
 import { ABOUT_PARTNER_STATIC } from '../data/aboutPartnerStatic';
-
-// Import Advisory Board images
-import ajBeleza from '../assets/advisoryBoard/AJ-Beleza.png';
-import agborClinton from '../assets/advisoryBoard/AgborClinton.jpg';
-import bansanThomasGeorge from '../assets/advisoryBoard/Bansan-homas-George.jpg';
-import davoudJafari from '../assets/advisoryBoard/Davoud-jafari.jpg';
-import maximTurushev from '../assets/advisoryBoard/Maxim-Turushev-russia.jpg';
-import mdHelalAnNahiyan from '../assets/advisoryBoard/Md-Helal-An-Nahiyan.jpg';
-import mrDambudzoRoyNyathi from '../assets/advisoryBoard/Mr.Dambudzo-Roy-Nyathi.jpg';
-import ninaDrakulic from '../assets/advisoryBoard/Nina-Drakulic-Montenegro.jpg';
-import orlandoAnach from '../assets/advisoryBoard/Orlando-anach.png';
-import rahmanRasulzada from '../assets/advisoryBoard/Rahman-Rasulzada-Azer.jpg';
-import rodnieMarange from '../assets/advisoryBoard/Rodnie-Marange.jpg';
-import salahEissa from '../assets/advisoryBoard/salah-eissa.jpg';
-import valentineMasichaWafula from '../assets/advisoryBoard/Valentine-Masicha-Wafula.jpg';
-import venezuela from '../assets/advisoryBoard/venezuela.png';
-import versha from '../assets/advisoryBoard/versha.jpg';
-import waelAbbasKadhim from '../assets/advisoryBoard/WaelAbbasKadhim.jpg';
-
-// Import Executive Committee images (from assets/executiveCommittee)
-import ecAjayPratapSingh from '../assets/executiveCommittee/AjayPratapSingh.webp';
-import ecHoma from '../assets/executiveCommittee/homa.webp';
-import ecNavin from '../assets/executiveCommittee/navin.webp';
-import ecRahul from '../assets/executiveCommittee/rahul.webp';
-import ecRajkumar from '../assets/executiveCommittee/rajkumar.webp';
-
-// Static Advisory Board members (from assets/advisoryBoard)
-const ADVISORY_BOARD_STATIC = [
-  { id: '1', name: 'AJ Beleza', role: 'Advisory Board Member', image: ajBeleza },
-
-  
-  { id: '4', name: 'Davoud Jafari', role: 'Advisory Board Member', image: davoudJafari },
-  { id: '5', name: 'Maxim Turushev', role: 'Advisory Board Member · Russia', image: maximTurushev },
-  { id: '6', name: 'Md Helal An Nahiyan', role: 'Advisory Board Member', image: mdHelalAnNahiyan },
-  { id: '7', name: 'Mr. Dambudzo Roy Nyathi', role: 'Advisory Board Member', image: mrDambudzoRoyNyathi },
-  { id: '8', name: 'Nina Drakulić', role: 'Advisory Board Member · Montenegro', image: ninaDrakulic },
-  { id: '9', name: 'Orlando Anach', role: 'Advisory Board Member', image: orlandoAnach },
-  { id: '10', name: 'Rahman Rasulzada', role: 'Advisory Board Member · Azerbaijan', image: rahmanRasulzada },
-
-  { id: '12', name: 'Salah Eissa', role: 'Advisory Board Member', image: salahEissa },
-  { id: '15', name: 'Wael Abbas Kadhim', role: 'Advisory Board Member', image: waelAbbasKadhim },
-
-];
-
-// Static Executive Committee members (from assets/executiveCommittee)
-const EXECUTIVE_COMMITTEE_STATIC = [
-  { id: 'ec-1', name: 'Raj Kumar Sharma', role: 'President', image: ecRajkumar },
-  { id: 'ec-2', name: 'Ajay Pratap Singh', role: 'Member, Executive Committee', image: ecAjayPratapSingh },
-  { id: 'ec-3', name: 'Homa', role: 'Member, Executive Committee', image: ecHoma },
-  { id: 'ec-4', name: 'Navin', role: 'Member, Executive Committee', image: ecNavin },
-  { id: 'ec-5', name: 'Rahul', role: 'Member, Executive Committee', image: ecRahul },
-];
+import { EXECUTIVE_MEMBERS, ADVISORY_BOARD, REFEREES } from '../data/aboutPeople';
+import PersonCard from '../components/partner/PersonCard';
 
 const AboutLayout = ({ setView }) => {
   const navigate = useNavigate();
@@ -277,6 +227,72 @@ const AboutLayout = ({ setView }) => {
                     <p className="text-slate-600">Participate in events, become a member, or get in touch to learn how you can be part of our community.</p>
                   </div>
                 </div>
+
+                {/* Advisory Board */}
+                <div className="pt-10 border-t border-slate-100 space-y-6">
+                  <div className="flex items-center gap-3">
+                    <Award className="text-blue-600 flex-shrink-0" size={20} />
+                    <h2 className="text-xl font-bold text-slate-900">Advisory Board</h2>
+                  </div>
+                  <p className="text-slate-600 leading-relaxed">
+                    Global leaders and experts guiding WORSO&apos;s mission, governance, and long-term strategy.
+                  </p>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {ADVISORY_BOARD.map((person) => (
+                      <PersonCard
+                        key={person.id}
+                        id={person.id}
+                        name={person.name}
+                        designation={person.designation}
+                        image={person.image}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Executive Committee */}
+                <div className="pt-10 border-t border-slate-100 space-y-6">
+                  <div className="flex items-center gap-3">
+                    <Users className="text-blue-600 flex-shrink-0" size={20} />
+                    <h2 className="text-xl font-bold text-slate-900">Executive Committee</h2>
+                  </div>
+                  <p className="text-slate-600 leading-relaxed">
+                    The Executive Committee guides WORSO&apos;s strategic vision and policies, overseeing global initiatives and ensuring fair, inclusive practices.
+                  </p>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {EXECUTIVE_MEMBERS.map((person) => (
+                      <PersonCard
+                        key={person.id}
+                        id={person.id}
+                        name={person.name}
+                        designation={person.designation}
+                        image={person.image}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Referees & Judges */}
+                <div className="pt-10 border-t border-slate-100 space-y-6">
+                  <div className="flex items-center gap-3">
+                    <ClipboardList className="text-blue-600 flex-shrink-0" size={20} />
+                    <h2 className="text-xl font-bold text-slate-900">Official Referees & Judges</h2>
+                  </div>
+                  <p className="text-slate-600 leading-relaxed">
+                    Certified referees and judges appointed by WORSO to ensure fair play and professional evaluation across all robotics competitions.
+                  </p>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {REFEREES.map((person) => (
+                      <PersonCard
+                        key={person.id}
+                        id={person.id}
+                        name={person.name}
+                        designation={person.designation}
+                        image={person.image}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -284,24 +300,6 @@ const AboutLayout = ({ setView }) => {
       </div>
     );
   }
-
-  /* ------------------ REFEREE DATA ------------------ */
-  const referees = [
-    { name: 'Group Captain Rajiv Kumar Narang', role: 'Referee', game: 'Drone Rescue' },
-    { name: 'Lt. Luv Ravi', role: 'Judge', game: 'RC Electric Car Racing' },
-    { name: 'Dharmendra Sahu', role: 'Referee', game: 'Robo Soccer' },
-    { name: 'Rakesh Arya', role: 'Referee', game: 'Robo Race' },
-    { name: 'Mahabir Rawat', role: 'Judge', game: 'Drone Soccer' },
-    { name: 'Prashanta Bag', role: 'Referee', game: 'Robo Soccer' },
-    { name: 'Colonel Laxmi Kant Yadav', role: 'Referee', game: 'RC Craft' },
-    { name: 'Ganesh Pandit Suryawanshi', role: 'Referee', game: 'Bots Combat' },
-    { name: 'Satyajit Pangaonkar', role: 'Referee', game: 'Maze Solve' },
-    { name: 'Ashish Kumar', role: 'Referee', game: 'Water Rocket' },
-    { name: 'Dr. Munish Jindal', role: 'Referee', game: 'RC Electric Car Racing' },
-    { name: 'Sonu', role: 'Referee', game: 'Robo Hockey' },
-    { name: 'Sameer Sharma', role: 'Judge', game: 'Bots Combat' },
-    { name: 'Prashant Teke', role: 'Judge', game: 'Water Rocket' },
-  ];
 
   const renderContent = () => {
     switch (activeSection) {
@@ -646,33 +644,14 @@ const AboutLayout = ({ setView }) => {
 
             {/* Referees Grid */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {referees.map((ref, index) => (
-                <div
-                  key={index}
-                  className="group bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-sm hover:shadow-xl transition-all duration-300"
-                >
-                  {/* Image */}
-                  <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-slate-100 shadow">
-                    <img
-                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(ref.name)}&background=0f172a&color=fff&size=256`}
-                      alt={ref.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
-                  {/* Info */}
-                  <h3 className="text-xl font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors">
-                    {ref.name}
-                  </h3>
-
-                  <p className="text-sm font-semibold text-blue-600">
-                    {ref.role}
-                  </p>
-
-                  <div className="mt-4 inline-block bg-slate-100 px-4 py-2 rounded-full text-sm text-slate-700 font-medium">
-                    Expertise: <span className="font-bold">{ref.game}</span>
-                  </div>
-                </div>
+              {REFEREES.map((person) => (
+                <PersonCard
+                  key={person.id}
+                  id={person.id}
+                  name={person.name}
+                  designation={person.designation}
+                  image={person.image}
+                />
               ))}
             </div>
           </div>
@@ -694,34 +673,14 @@ const AboutLayout = ({ setView }) => {
 
             {/* Board Members */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {EXECUTIVE_COMMITTEE_STATIC.map((member) => (
-                <div
-                  key={member.id}
-                  className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 p-8 flex flex-col items-center text-center hover:border-blue-200"
-                >
-                  <div className="relative w-40 h-40 mb-6">
-                    <div className="absolute inset-0 rounded-lg overflow-hidden border-4 border-white shadow-lg group-hover:border-blue-100 transition-colors duration-300">
-                      <img
-                        src={member.image}
-                        alt={member.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src =
-                            'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLiUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+';
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">
-                      {member.name}
-                    </h3>
-                    <p className="text-sm text-slate-600 leading-relaxed">
-                      {member.role}
-                    </p>
-                  </div>
-                </div>
+              {EXECUTIVE_MEMBERS.map((person) => (
+                <PersonCard
+                  key={person.id}
+                  id={person.id}
+                  name={person.name}
+                  designation={person.designation}
+                  image={person.image}
+                />
               ))}
             </div>
 
@@ -781,7 +740,7 @@ const AboutLayout = ({ setView }) => {
               <div className="md:w-1/4 space-y-4">
                 <div className="bg-slate-100 rounded-xl overflow-hidden aspect-[3/4] max-w-[280px] mx-auto">
                   <img
-                    src={ecRajkumar}
+                    src={EXECUTIVE_MEMBERS[0]?.image}
                     alt="Raj Kumar Sharma, President of International Federation of Esports"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -863,8 +822,15 @@ const AboutLayout = ({ setView }) => {
           </div>
         );
 
-      case 'advisory':
-        const displayAdvisoryMembers =  ADVISORY_BOARD_STATIC;
+      case 'advisory': {
+        const displayAdvisoryMembers = advisoryMembers.length > 0
+          ? advisoryMembers.map((m) => ({
+              id: m._id || m.id,
+              name: m.name,
+              designation: m.role || m.designation || 'Advisory Board Member',
+              image: m.image || m.avatar,
+            }))
+          : ADVISORY_BOARD;
         return (
           <div>
             <h2 className="text-3xl font-bold text-slate-900 mb-4">Advisory Board</h2>
@@ -892,34 +858,14 @@ const AboutLayout = ({ setView }) => {
 
             {!advisoryLoading && displayAdvisoryMembers.length > 0 && (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {displayAdvisoryMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 p-8 flex flex-col items-center text-center hover:border-blue-200"
-                  >
-                    <div className="relative w-40 h-40 mb-6">
-                      <div className="absolute inset-0 rounded-lg overflow-hidden border-4 border-white shadow-lg group-hover:border-blue-100 transition-colors duration-300">
-                        <img
-                          src={member.image}
-                          alt={member.name}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src =
-                              'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxYzVjYiIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTE1Ljc1IDZhLjc1Ljc1IDAgMTEtMS41IDAgLjc1Ljc1IDAgMDExLjUgMHpNNC41IDguNWE2LjM3NiA2LjM3NiAwIDAxMS41LS4xNzdjLjg2MiAwIDEuNjg5LjEyNCAyLjQ1Ny4zNWEuNS41IDAgMTEtLjI4Ni45NjMgNC44NzggNC44NzggMCAwMC0yLjk5LS4xMDhBLiUuNSAwIDAxNC41IDguNXpNOCAyNGE4LjAwMSA4LjAwMSAwIDAwOC04YzAtMS4xNjgtLjI0NS0yLjI3Ni0uNjg0LTMuTC4yODJhLjUwMS41MDEgMCAwMS42Ni0uNjYxYy42MjguMjQyIDEuMjk2LjM5MyAyLjAyNC40M0ExNC42NiAxNC42NiAwIDAwMjIuNSAxNGMwIDguMDA4LTYuMjY4IDExLjc1LTExLjM2OCA5LjcyOWEuNDc4LjQ3OCAwIDAwLS4yNjQgMEM1Ljc2OCAyNS43NSAyLjUgMjIuMDA4IDIuNSAxNGMwLTQuMTQyIDEuNjY1LTcuOTExIDQuNDM5LTEwLjU2MWEuNS41IDAgMDEuNzA4LjcwNUM1LjEwOSA2Ljk3OSAzLjUgMTAuMzc2IDMuNSAxNGMwIDcuNTIxIDMuNDc1IDEwLjYyNSA4LjQzIDExLjgxOUE2LjQ1IDYuNDUgMCAwMTggMjR6Ii8+PC9zdmc+';
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">
-                        {member.name}
-                      </h3>
-                      <p className="text-sm text-slate-600 leading-relaxed">
-                        {member.role}
-                      </p>
-                    </div>
-                  </div>
+                {displayAdvisoryMembers.map((person) => (
+                  <PersonCard
+                    key={person.id}
+                    id={person.id}
+                    name={person.name}
+                    designation={person.designation}
+                    image={person.image}
+                  />
                 ))}
               </div>
             )}
@@ -929,6 +875,7 @@ const AboutLayout = ({ setView }) => {
             )}
           </div>
         );
+      }
 
       case 'federation-services':
         return (
