@@ -765,8 +765,12 @@ export const buildCompetitionFormData = (competition) => {
   form.append('globalRankingeUrl', competition.globalRankingeUrl ?? '');
   form.append('hasBots', competition.hasBots !== undefined ? String(competition.hasBots) : 'false');
   form.append('isActive', competition.isActive !== undefined ? String(competition.isActive) : 'true');
-  form.append('event_id', competition.event_id ?? competition.eventId ?? '');
+  const eventId = competition.event_id ?? competition.eventId ?? '';
+  form.append('event_id', eventId);
   form.append('season_id', competition.season_id ?? competition.seasonId ?? '');
+  // Backend requires 'events' (array of event IDs)
+  const eventsArr = eventId ? [eventId] : [];
+  form.append('events', JSON.stringify(eventsArr));
 
   const bannerImage = competition.bannerImage;
   if (bannerImage instanceof File) {

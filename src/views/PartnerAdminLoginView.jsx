@@ -1,21 +1,25 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, KeyRound, Shield } from 'lucide-react';
 import { partnerLoginSendOtp, partnerLoginVerifyOtp, setPartnerAuth } from '../utils/api';
 import { setAuthToken } from '../api/authToken';
+import { getPartnerPortalPath } from '../utils/locationRoutes';
 
 const PartnerAdminLoginView = ({ setView, setUser, siteConfig, user }) => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpInput, setOtpInput] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // If already logged in as partner, redirect to partner portal
+  // If already logged in as partner, redirect to partner portal at /:partnerCode/partner/portal
   useEffect(() => {
-    if (user?.role === 'partner') {
-      setView('partner-dashboard');
+    if (user?.role === 'partner' && user?.partner?.partnerCode) {
+      const path = getPartnerPortalPath(user.partner.partnerCode);
+      if (path) navigate(path, { replace: true });
     }
-  }, [user, setView]);
+  }, [user, navigate]);
 
   const validateEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
 
@@ -60,7 +64,12 @@ const PartnerAdminLoginView = ({ setView, setUser, siteConfig, user }) => {
         setAuthToken(token);
       }
       setUser(userPayload);
-      setView('partner-dashboard');
+      const path = getPartnerPortalPath(partner?.partnerCode);
+      if (path) {
+        navigate(path, { replace: true });
+      } else {
+        setView('partner-dashboard');
+      }
     } catch (err) {
       setError(err?.message || 'Invalid OTP. Please try again.');
     } finally {

@@ -36,7 +36,7 @@ import BecomePartnerView from './views/BecomePartnerView';
 import { DEFAULT_SITES, NEWS_ITEMS } from './constants/data';
 import { styles } from './styles/inlineStyles';
 import { fetchTechnoxianFeed } from './utils/rss';
-import { pathWithLocationPrefix } from './utils/locationRoutes';
+import { pathWithLocationPrefix, getPartnerPortalPath } from './utils/locationRoutes';
 import { getPartnerAuth } from './utils/api';
 import { getAuthToken, clearAuthToken } from './api/authToken';
 import { getMyMembership } from './app/membership/membershipApi';
@@ -139,10 +139,23 @@ const MemberLoginRoute = ({ user, setView, setUser, currentSite, locationPrefix 
 };
 
 const PartnerLoginRoute = ({ user, setView, setUser, currentSite, locationPrefix }) => {
-  const portalPath = pathWithLocationPrefix(locationPrefix || '', '/partner/portal');
+  const session = getPartnerSession();
+  const portalPath = session?.partner?.partnerCode
+    ? getPartnerPortalPath(session.partner.partnerCode)
+    : pathWithLocationPrefix(locationPrefix || '', '/partner/portal');
   return isPartnerAuthenticated()
     ? <Navigate to={portalPath} replace />
     : <PartnerAdminLoginView setView={setView} setUser={setUser} siteConfig={currentSite} user={user} />;
+};
+
+/** Bare /partner/portal: redirect to /:partnerCode/partner/portal when authenticated, else /partner/login */
+const PartnerPortalBareRoute = () => {
+  const session = getPartnerSession();
+  const partnerCode = session?.partner?.partnerCode;
+  if (partnerCode) {
+    return <Navigate to={getPartnerPortalPath(partnerCode)} replace />;
+  }
+  return <Navigate to="/partner/login" replace />;
 };
 
 const MemberPortalRoute = ({ user, currentSite, setView, setUser, locationPrefix }) => {
@@ -233,7 +246,10 @@ const App = () => {
   };
 
   const setView = (view, options) => {
-    const path = viewToPath(view);
+    let path = viewToPath(view);
+    if ((view === 'admin-dashboard' || view === 'partner-dashboard') && user?.partner?.partnerCode) {
+      path = getPartnerPortalPath(user.partner.partnerCode) || path;
+    }
     navigate(path, options);
     window.scrollTo(0, 0);
   };
@@ -411,7 +427,8 @@ const AppContent = ({
 
               <Route path="/member/portal" element={<MemberPortalRoute user={user} currentSite={currentSite} setView={setViewRespectingLocation} setUser={setUser} locationPrefix={locationPrefix} />} />
               <Route path="/member-dashboard" element={<Navigate to="/member/portal" replace />} />
-              <Route path="/partner/portal" element={<PartnerPortalRoute user={user} setSites={setSites} sites={sites} setView={setViewRespectingLocation} setUser={setUser} locationPrefix={locationPrefix} />} />
+              {/* Partner portal: bare /partner/portal redirects; canonical route is /:partnerCode/partner/portal */}
+              <Route path="/partner/portal" element={<PartnerPortalBareRoute />} />
               <Route path="/admin-dashboard" element={<Navigate to="/partner/portal" replace />} />
 
               <Route path="/privacy-policy" element={<PrivacyPolicyView />} />
@@ -443,6 +460,7 @@ const AppContent = ({
               <Route path="/:locationCode/login-partner-admin" element={<Navigate to={pathWithLocationPrefix(locationPrefix, '/partner/login')} replace />} />
               <Route path="/:locationCode/member/portal" element={<MemberPortalRoute user={user} currentSite={currentSite} setView={setViewRespectingLocation} setUser={setUser} />} />
               <Route path="/:locationCode/member-dashboard" element={<Navigate to={pathWithLocationPrefix(locationPrefix, '/member/portal')} replace />} />
+              {/* Canonical partner portal: /:partnerCode/partner/portal (partnerCode = locationCode) */}
               <Route path="/:locationCode/partner/portal" element={<PartnerPortalRoute user={user} setSites={setSites} sites={sites} setView={setViewRespectingLocation} setUser={setUser} locationPrefix={locationPrefix} />} />
               <Route path="/:locationCode/admin-dashboard" element={<Navigate to={pathWithLocationPrefix(locationPrefix, '/partner/portal')} replace />} />
               <Route path="/:locationCode/privacy-policy" element={<PrivacyPolicyView />} />

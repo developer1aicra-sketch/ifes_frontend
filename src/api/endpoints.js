@@ -42,7 +42,9 @@ const endpoints = {
     details: (id) => `/competition/get/${id}`
   },
   event: {
-    list: '/event/list'
+    list: '/event/list',
+    /** GET events by partner. Query: ?website=worso&partnerCode=EG */
+    get: '/event/get',
   },
   bot: {
     list: '/bot/list',

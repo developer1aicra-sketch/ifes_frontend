@@ -42,6 +42,13 @@ export const getLocationCodeFromPath = (pathname) => {
 };
 
 /**
+ * Canonical partner portal route: /:partnerCode/partner/portal
+ * e.g. getPartnerPortalPath('TH') => '/TH/partner/portal'
+ */
+export const getPartnerPortalPath = (partnerCode) =>
+  partnerCode ? `/${String(partnerCode).trim().toUpperCase()}/partner/portal` : null;
+
+/**
  * Build path with location prefix when applicable.
  * pathWithLocationPrefix("/AE", "/membership") => "/AE/membership"
  * pathWithLocationPrefix("", "/membership") => "/membership"

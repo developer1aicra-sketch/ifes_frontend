@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone, UserCircle, Trophy, Trash2, Pencil, CreditCard, Shield, ArrowRight, User, Building2, GraduationCap, MapPin, Upload, Image as ImageIcon } from 'lucide-react';
 import ForumView from '../components/ForumView';
-import CompetitionFormModal from '../components/CompetitionFormModal';
 import { DEFAULT_SITES } from '../constants/data';
+import { COMPETITION_CATEGORIES } from '../constants/competition';
+import { COUNTRY_DIAL_CODES } from '../constants/countryDialCodes';
 import { callGemini } from '../utils/gemini';
 import { getMyMembership } from '../app/auth/authApi';
 import { addClub, getClubsByPartner } from '../api/clubApi';
@@ -14,9 +15,7 @@ import {
   setPartnerAuth,
   getPartnerAuth,
   listSeasons,
-  listEvents,
   listSeasonsGet,
-  listEventsGetByWebsite,
   listCompetitionsGet,
   listCompetitions,
   addSeason,
@@ -29,6 +28,7 @@ import {
   updateCompetition,
   deleteCompetition,
 } from '../utils/api';
+import { getEventsList, getEventsByWebsite } from '../api/eventApi';
 import { getLocationCodeFromPath } from '../utils/locationRoutes';
 
 const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => {
@@ -420,6 +420,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
   const [seasonError, setSeasonError] = useState('');
   const [editingSeasonId, setEditingSeasonId] = useState(null);
   const [editSeasonForm, setEditSeasonForm] = useState({ name: '', year: new Date().getFullYear(), isActive: true });
+  const [showAddSeasonForm, setShowAddSeasonForm] = useState(false);
   const [eventForm, setEventForm] = useState({
     season_id: '',
     name: '',
@@ -445,8 +446,21 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     name: '', type: 'PRC', start_date: '', end_date: '', country: '', state: '', city: '', venue: '', registration_fee: 0, status: 'upcoming',
   });
   const [competitionDeletingId, setCompetitionDeletingId] = useState(null);
-  const [showCompetitionModal, setShowCompetitionModal] = useState(false);
+  const [showAddCompetitionForm, setShowAddCompetitionForm] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState(null);
+  const [showAddEventForm, setShowAddEventForm] = useState(false);
+  const [competitionForm, setCompetitionForm] = useState({
+    name: '', category: '', description: '', prizePool: 0,
+    teamRequirements: { minMembers: 1, maxMembers: 4 },
+    duration: { value: 1, unit: 'day' },
+    downloadTitles: [],
+    rulesAndRegulations: '', trainingResourseUrl: '', pastWinnerUrl: '', globalRankingeUrl: '',
+    bannerImage: '', hasBots: false, isActive: true, event_id: '', season_id: '',
+  });
+  const [competitionFormErrors, setCompetitionFormErrors] = useState({});
+  const [competitionDownloadTitle, setCompetitionDownloadTitle] = useState('');
+  const [competitionBannerImageFile, setCompetitionBannerImageFile] = useState(null);
+  const [competitionBannerImagePreview, setCompetitionBannerImagePreview] = useState('');
 
   // Fetch seasons and events list when My Events tab is active
   // Uses partner-specific APIs when partnerCode is available:
@@ -460,7 +474,9 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     setEventsLoading(true);
     setEventsListError('');
     const fetchSeasons = partnerCode ? () => listSeasonsGet(partnerCode) : listSeasons;
-    const fetchEvents = partnerCode ? () => listEventsGetByWebsite(partnerCode) : listEvents;
+    const fetchEvents = partnerCode
+      ? () => getEventsByWebsite(partnerCode)
+      : () => getEventsList();
     Promise.allSettled([fetchSeasons(), fetchEvents()]).then(([seasonsResult, eventsResult]) => {
       if (cancelled) return;
       if (seasonsResult.status === 'fulfilled') {
@@ -471,10 +487,11 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
         setSeasons([]);
       }
       if (eventsResult.status === 'fulfilled') {
-        const eventData = eventsResult.value?.data ?? (Array.isArray(eventsResult.value) ? eventsResult.value : []);
+        const res = eventsResult.value?.data ?? eventsResult.value;
+        const eventData = res?.data ?? res?.events ?? res?.data?.events ?? (Array.isArray(res) ? res : []);
         setEventList(Array.isArray(eventData) ? eventData : []);
       } else {
-        setEventsListError(eventsResult.reason?.message ?? 'Failed to load events');
+        setEventsListError(eventsResult.reason?.response?.data?.message ?? eventsResult.reason?.message ?? 'Failed to load events');
         setEventList([]);
       }
     }).finally(() => {
@@ -486,29 +503,40 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     return () => { cancelled = true; };
   }, [activeTab, partnerCode]);
 
-  // Fetch competitions list when Competitions sub-tab is active
-  // Uses competitions/get?partnerCode={partnerCode} when partnerCode is available
+  // Fetch competitions and events when Competitions sub-tab is active
+  // Ensures event dropdown has data when Add Competition form is shown
   useEffect(() => {
     if (activeTab !== 'events' || eventsSubTab !== 'competitions') return;
     let cancelled = false;
     setCompetitionsLoading(true);
     setCompetitionsListError('');
+    setEventsLoading(true);
+    setEventsListError('');
     const fetchCompetitions = partnerCode ? () => listCompetitionsGet(partnerCode) : listCompetitions;
-    fetchCompetitions()
-      .then((res) => {
-        if (cancelled) return;
-        const list = res?.data ?? (Array.isArray(res) ? res : []);
+    const fetchEvents = partnerCode ? () => getEventsByWebsite(partnerCode) : () => getEventsList();
+    Promise.allSettled([fetchCompetitions(), fetchEvents()]).then(([compResult, eventsResult]) => {
+      if (cancelled) return;
+      if (compResult.status === 'fulfilled') {
+        const list = compResult.value?.data ?? (Array.isArray(compResult.value) ? compResult.value : []);
         setCompetitionList(Array.isArray(list) ? list : []);
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setCompetitionsListError(err?.message ?? 'Failed to load competitions');
-          setCompetitionList([]);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setCompetitionsLoading(false);
-      });
+      } else {
+        setCompetitionsListError(compResult.reason?.message ?? 'Failed to load competitions');
+        setCompetitionList([]);
+      }
+      if (eventsResult.status === 'fulfilled') {
+        const res = eventsResult.value?.data ?? eventsResult.value;
+        const eventData = res?.data ?? res?.events ?? res?.data?.events ?? (Array.isArray(res) ? res : []);
+        setEventList(Array.isArray(eventData) ? eventData : []);
+      } else {
+        setEventsListError(eventsResult.reason?.response?.data?.message ?? eventsResult.reason?.message ?? 'Failed to load events');
+        setEventList([]);
+      }
+    }).finally(() => {
+      if (!cancelled) {
+        setCompetitionsLoading(false);
+        setEventsLoading(false);
+      }
+    });
     return () => { cancelled = true; };
   }, [activeTab, eventsSubTab, partnerCode]);
 
@@ -907,6 +935,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       if (created?._id) setSeasons((prev) => [...prev, created]);
       else setSeasons((prev) => [...prev, { _id: res?.id ?? Date.now(), ...seasonForm }]);
       setSeasonForm({ name: '', year: new Date().getFullYear(), isActive: true });
+      setShowAddSeasonForm(false);
     } catch (err) {
       setSeasonError(err?.message ?? 'Failed to add season');
     } finally {
@@ -970,6 +999,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
         venue: '',
         registration_fee: 1000,
       });
+      setShowAddEventForm(false);
     } catch (err) {
       setEventError(err?.message ?? 'Failed to add event');
     } finally {
@@ -1067,17 +1097,180 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     return out;
   };
 
-  const handleCompetitionModalSave = async (competitionData) => {
+  useEffect(() => {
+    if (editingCompetition) {
+      let downloadTitles = [];
+      if (editingCompetition.downloadTitles && Array.isArray(editingCompetition.downloadTitles)) {
+        downloadTitles = editingCompetition.downloadTitles;
+      } else if (editingCompetition.downloads && Array.isArray(editingCompetition.downloads)) {
+        downloadTitles = editingCompetition.downloads.map((d) => (typeof d === 'string' ? d : d.title || ''));
+      }
+      setCompetitionForm({
+        name: editingCompetition.name || '',
+        category: editingCompetition.category || '',
+        description: editingCompetition.description || '',
+        prizePool: editingCompetition.prizePool || 0,
+        teamRequirements: editingCompetition.teamRequirements || { minMembers: 1, maxMembers: 4 },
+        duration: editingCompetition.duration || { value: 1, unit: 'day' },
+        downloadTitles,
+        rulesAndRegulations: editingCompetition.rulesAndRegulations || '',
+        trainingResourseUrl: editingCompetition.trainingResourseUrl || '',
+        pastWinnerUrl: editingCompetition.pastWinnerUrl || '',
+        globalRankingeUrl: editingCompetition.globalRankingeUrl || '',
+        bannerImage: editingCompetition.bannerImage || '',
+        hasBots: editingCompetition.hasBots !== undefined ? editingCompetition.hasBots : false,
+        isActive: editingCompetition.isActive !== undefined ? editingCompetition.isActive : true,
+        event_id: editingCompetition.event_id || editingCompetition.eventId || (editingCompetition.event && (editingCompetition.event._id || editingCompetition.event.id)) || '',
+        season_id: editingCompetition.season_id || editingCompetition.seasonId || (editingCompetition.season && (editingCompetition.season._id || editingCompetition.season.id)) || '',
+      });
+      setCompetitionBannerImagePreview(editingCompetition.bannerImage || '');
+      setCompetitionBannerImageFile(null);
+    } else if (showAddCompetitionForm) {
+      setCompetitionForm({
+        name: '', category: '', description: '', prizePool: 0,
+        teamRequirements: { minMembers: 1, maxMembers: 4 },
+        duration: { value: 1, unit: 'day' },
+        downloadTitles: [],
+        rulesAndRegulations: '', trainingResourseUrl: '', pastWinnerUrl: '', globalRankingeUrl: '',
+        bannerImage: '', hasBots: false, isActive: true, event_id: '', season_id: '',
+      });
+      setCompetitionBannerImagePreview('');
+      setCompetitionBannerImageFile(null);
+    }
+  }, [editingCompetition, showAddCompetitionForm]);
+
+  const handleCompetitionFormChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    if (name === 'teamRequirements.minMembers' || name === 'teamRequirements.maxMembers') {
+      const field = name.split('.')[1];
+      const num = parseInt(value, 10) || (field === 'minMembers' ? 1 : 4);
+      setCompetitionForm((prev) => {
+        const next = { ...prev.teamRequirements, [field]: num };
+        if (field === 'minMembers' && next.minMembers > (next.maxMembers ?? 4)) next.maxMembers = next.minMembers;
+        if (field === 'maxMembers' && next.maxMembers < (next.minMembers ?? 1)) next.minMembers = next.maxMembers;
+        return { ...prev, teamRequirements: next };
+      });
+    } else if (name === 'duration.value' || name === 'duration.unit') {
+      const field = name.split('.')[1];
+      setCompetitionForm((prev) => ({
+        ...prev,
+        duration: {
+          ...prev.duration,
+          [field]: field === 'value' ? Math.max(1, parseInt(value, 10) || 1) : value,
+        },
+      }));
+    } else {
+      setCompetitionForm((prev) => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : type === 'number' ? parseFloat(value) || 0 : value,
+      }));
+    }
+    if (competitionFormErrors[name]) setCompetitionFormErrors((prev) => ({ ...prev, [name]: '' }));
+  };
+
+  const handleAddCompetitionDownload = () => {
+    if (competitionDownloadTitle.trim()) {
+      setCompetitionForm((prev) => ({ ...prev, downloadTitles: [...prev.downloadTitles, competitionDownloadTitle.trim()] }));
+      setCompetitionDownloadTitle('');
+    }
+  };
+
+  const handleRemoveCompetitionDownload = (index) => {
+    setCompetitionForm((prev) => ({ ...prev, downloadTitles: prev.downloadTitles.filter((_, i) => i !== index) }));
+  };
+
+  const handleCompetitionBannerImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        setCompetitionFormErrors((prev) => ({ ...prev, bannerImage: 'Please upload a valid image (JPEG, PNG, GIF, or WebP)' }));
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        setCompetitionFormErrors((prev) => ({ ...prev, bannerImage: 'Image must be smaller than 10MB' }));
+        return;
+      }
+      setCompetitionBannerImageFile(file);
+      setCompetitionFormErrors((prev) => ({ ...prev, bannerImage: '' }));
+      const reader = new FileReader();
+      reader.onload = () => setCompetitionBannerImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveCompetitionBannerImage = () => {
+    setCompetitionBannerImageFile(null);
+    setCompetitionBannerImagePreview('');
+    setCompetitionForm((prev) => ({ ...prev, bannerImage: '' }));
+  };
+
+  const validateCompetitionForm = () => {
+    const newErrors = {};
+    if (!competitionForm.name.trim()) newErrors.name = 'Competition name is required';
+    if (!competitionForm.category) newErrors.category = 'Category is required';
+    if (!competitionForm.season_id) newErrors.season_id = 'Season is required';
+    if (!competitionForm.event_id) newErrors.event_id = 'Event is required';
+    if (!competitionBannerImageFile && (!competitionForm.bannerImage || !String(competitionForm.bannerImage).trim()) && !editingCompetition) {
+      newErrors.bannerImage = 'Banner image is required for new competition';
+    }
+    const minM = competitionForm.teamRequirements?.minMembers ?? 1;
+    const maxM = competitionForm.teamRequirements?.maxMembers ?? 4;
+    if (minM < 1) newErrors.minMembers = 'Minimum members must be at least 1';
+    if (maxM < minM) newErrors.maxMembers = 'Maximum members must be ≥ minimum members';
+    if ((competitionForm.duration?.value ?? 1) < 1) newErrors.duration = 'Duration must be at least 1';
+    return newErrors;
+  };
+
+  const buildCompetitionPayload = () => {
+    const minMembers = Math.max(1, parseInt(competitionForm.teamRequirements?.minMembers, 10) || 1);
+    let maxMembers = Math.max(1, parseInt(competitionForm.teamRequirements?.maxMembers, 10) || 4);
+    if (minMembers > maxMembers) maxMembers = minMembers;
+    const durationValue = Math.max(1, parseInt(competitionForm.duration?.value, 10) || 1);
+    const durationUnit = competitionForm.duration?.unit || 'day';
+    const titles = competitionForm.downloadTitles || [];
+    const competitionData = {
+      name: competitionForm.name.trim(),
+      category: competitionForm.category || '',
+      description: (competitionForm.description || '').trim(),
+      prizePool: parseFloat(competitionForm.prizePool) || 0,
+      'duration[value]': durationValue,
+      'duration[unit]': durationUnit,
+      'teamRequirements[minMembers]': minMembers,
+      'teamRequirements[maxMembers]': maxMembers,
+      rulesAndRegulations: (competitionForm.rulesAndRegulations || '').trim(),
+      trainingResourseUrl: (competitionForm.trainingResourseUrl || '').trim() || '',
+      pastWinnerUrl: (competitionForm.pastWinnerUrl || '').trim() || '',
+      globalRankingeUrl: (competitionForm.globalRankingeUrl || '').trim() || '',
+      bannerImage: competitionBannerImageFile || competitionForm.bannerImage || '',
+      hasBots: !!competitionForm.hasBots,
+      isActive: !!competitionForm.isActive,
+      event_id: competitionForm.event_id || '',
+      season_id: competitionForm.season_id || '',
+    };
+    titles.forEach((title, index) => {
+      competitionData[`downloadTitles[${index}]`] = title;
+    });
+    return competitionData;
+  };
+
+  const handleSaveCompetition = async () => {
+    const formErrors = validateCompetitionForm();
+    if (Object.keys(formErrors).length > 0) {
+      setCompetitionFormErrors(formErrors);
+      return;
+    }
     setCompetitionError('');
     setCompetitionSaving(true);
     try {
+      const competitionData = buildCompetitionPayload();
       const payload = normalizeCompetitionPayload(competitionData);
       if (editingCompetition?._id) {
         await updateCompetition(editingCompetition._id, payload);
       } else {
         await addCompetition(payload);
       }
-      setShowCompetitionModal(false);
+      setShowAddCompetitionForm(false);
       setEditingCompetition(null);
       const fetchCompetitions = partnerCode ? () => listCompetitionsGet(partnerCode) : listCompetitions;
       const res = await fetchCompetitions();
@@ -1090,10 +1283,11 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     }
   };
 
-  const handleCompetitionModalCancel = () => {
-    setShowCompetitionModal(false);
+  const handleCancelCompetitionForm = () => {
+    setShowAddCompetitionForm(false);
     setEditingCompetition(null);
     setCompetitionError('');
+    setCompetitionFormErrors({});
   };
 
   const generatePressRelease = async (event) => {
@@ -1223,7 +1417,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
                     }`}
                 >
-                  <Layout size={18} /> Overview
+                  <Layout size={18} /> Profile
                 </button>
 
                 {partner && (
@@ -1326,7 +1520,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                       )}
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => {
                         setActiveTab('courses');
                         if (courses.length > 0 && !selectedCourse) {
@@ -1348,8 +1542,25 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       {activeTab === 'courses' && (
                         <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                       )}
+                    </button> */}
+  <button
+                      onClick={() => setActiveTab('academia')}
+                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${activeTab === 'academia'
+                          ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
+                          : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-300/50 text-blue-100 hover:text-white'
+                        }`}
+                    >
+                      <div className={`p-1.5 rounded-lg ${activeTab === 'academia'
+                          ? 'bg-blue-500/20'
+                          : 'bg-white/5 group-hover:bg-blue-500/20'
+                        }`}>
+                        <BookOpen size={16} className="text-blue-300" />
+                      </div>
+                      <span className="font-medium">Club Member</span>
+                      {activeTab === 'academia' && (
+                        <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                      )}
                     </button>
-
                     <button
                       onClick={() => setActiveTab('team')}
                       className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${activeTab === 'team'
@@ -1363,32 +1574,15 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         }`}>
                         <Users size={16} className="text-blue-300" />
                       </div>
-                      <span className="font-medium">Team Members</span>
+                      <span className="font-medium">Members</span>
                       {activeTab === 'team' && (
                         <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                       )}
                     </button>
 
-                    <button
-                      onClick={() => setActiveTab('academia')}
-                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${activeTab === 'academia'
-                          ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
-                          : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-300/50 text-blue-100 hover:text-white'
-                        }`}
-                    >
-                      <div className={`p-1.5 rounded-lg ${activeTab === 'academia'
-                          ? 'bg-blue-500/20'
-                          : 'bg-white/5 group-hover:bg-blue-500/20'
-                        }`}>
-                        <BookOpen size={16} className="text-blue-300" />
-                      </div>
-                      <span className="font-medium">Academia</span>
-                      {activeTab === 'academia' && (
-                        <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-                      )}
-                    </button>
+                  
 
-                    <button
+                    {/* <button
                       onClick={() => setActiveTab('forum')}
                       className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${activeTab === 'forum'
                           ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
@@ -1405,7 +1599,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       {activeTab === 'forum' && (
                         <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                       )}
-                    </button>
+                    </button> */}
 
                     
 
@@ -1422,9 +1616,9 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
             <div className="px-8 py-5 border-b border-slate-100 bg-gradient-to-r from-white to-slate-50 backdrop-blur-sm shadow-sm">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <div className="text-xs font-bold uppercase text-blue-600 mb-1">Admin Console</div>
+                  {/* <div className="text-xs font-bold uppercase text-blue-600 mb-1">Admin Console</div> */}
                   <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
-                    {activeTab === 'overview' && 'Overview'}
+                    {activeTab === 'overview' && 'Profile'}
                     {activeTab === 'partner-profile' && 'Edit Partner Profile'}
                     {activeTab === 'partner-home' && 'Partner Home Content'}
                     {activeTab === 'partners' && 'Partner Management'}
@@ -1460,7 +1654,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                 <div className="space-y-6">
                   {partner && (
                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                      <div className="text-xs font-bold text-slate-500 uppercase mb-3">Partner profile (from login)</div>
+                      <div className="text-xs font-bold text-slate-500 uppercase mb-3">Partner profile</div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
                           <span className="text-slate-500 block">Academy</span>
@@ -1477,6 +1671,12 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         <div>
                           <span className="text-slate-500 block">Theme</span>
                           <span className="font-semibold text-slate-900">{partner.themeColor ?? '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Country</span>
+                          <span className="font-semibold text-slate-900">
+                            {partner.country ?? (partner.countryCode ? (COUNTRY_DIAL_CODES.find((c) => c.code === (partner.countryCode || '').toUpperCase())?.name) : null) ?? '—'}
+                          </span>
                         </div>
                         {/* <div>
                           <span className="text-slate-500 block">Location</span>
@@ -2135,7 +2335,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
               )}
 
               {activeTab === 'events' && (
-                <div className="space-y-6">
+                <div className="space-y-6 text-black">
                   <div className="flex gap-2 border-b border-slate-200 pb-2">
                     <button
                       onClick={() => setEventsSubTab('seasons')}
@@ -2160,54 +2360,77 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                   {eventsSubTab === 'seasons' && (
                     <div className="space-y-6">
                       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                          <Calendar size={20} /> Add Season
-                        </h3>
-                        {seasonsError && <p className="text-sm text-red-600 mb-3">{seasonsError}</p>}
-                        {seasonError && <p className="text-sm text-red-600 mb-3">{seasonError}</p>}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                          <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Name</label>
-                            <input
-                              type="text"
-                              value={seasonForm.name}
-                              onChange={(e) => setSeasonForm((f) => ({ ...f, name: e.target.value }))}
-                              placeholder="e.g. Technoxian World Cup 16"
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Year</label>
-                            <input
-                              type="number"
-                              value={seasonForm.year}
-                              onChange={(e) => setSeasonForm((f) => ({ ...f, year: Number(e.target.value) || new Date().getFullYear() }))}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                          </div>
-                          <div className="flex items-end">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={seasonForm.isActive}
-                                onChange={(e) => setSeasonForm((f) => ({ ...f, isActive: e.target.checked }))}
-                                className="rounded border-slate-300"
-                              />
-                              <span className="text-sm font-medium text-slate-700">Active</span>
-                            </label>
-                          </div>
-                          <div className="flex items-end">
-                            <button onClick={handleAddSeason} disabled={seasonSaving} className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50">
-                              {seasonSaving ? 'Adding…' : 'Add Season'}
+                        <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+                          <h4 className="font-semibold text-slate-800">Seasons list</h4>
+                          {!showAddSeasonForm ? (
+                            <button
+                              onClick={() => setShowAddSeasonForm(true)}
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              <Plus size={18} /> Add Season
                             </button>
-                          </div>
+                          ) : null}
                         </div>
+                        {showAddSeasonForm && (
+                          <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="font-bold text-lg flex items-center gap-2">
+                                <Calendar size={20} /> Add Season
+                              </h3>
+                              <button
+                                onClick={() => { setShowAddSeasonForm(false); setSeasonError(''); }}
+                                className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded"
+                                title="Close"
+                              >
+                                <X size={18} />
+                              </button>
+                            </div>
+                            {seasonsError && <p className="text-sm text-red-600 mb-3">{seasonsError}</p>}
+                            {seasonError && <p className="text-sm text-red-600 mb-3">{seasonError}</p>}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Name</label>
+                                <input
+                                  type="text"
+                                  value={seasonForm.name}
+                                  onChange={(e) => setSeasonForm((f) => ({ ...f, name: e.target.value }))}
+                                  placeholder="e.g. Technoxian World Cup 16"
+                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Year</label>
+                                <input
+                                  type="number"
+                                  value={seasonForm.year}
+                                  onChange={(e) => setSeasonForm((f) => ({ ...f, year: Number(e.target.value) || new Date().getFullYear() }))}
+                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                              </div>
+                              <div className="flex items-end">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={seasonForm.isActive}
+                                    onChange={(e) => setSeasonForm((f) => ({ ...f, isActive: e.target.checked }))}
+                                    className="rounded border-slate-300"
+                                  />
+                                  <span className="text-sm font-medium text-slate-700">Active</span>
+                                </label>
+                              </div>
+                              <div className="flex items-end">
+                                <button onClick={handleAddSeason} disabled={seasonSaving} className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                                  {seasonSaving ? 'Adding…' : 'Add Season'}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                         <div className="border-t border-slate-100 pt-4">
-                          <h4 className="font-semibold text-slate-800 mb-3">Seasons list</h4>
                           {seasonsLoading ? (
                             <p className="text-slate-500 text-sm">Loading seasons…</p>
                           ) : seasons.length === 0 ? (
-                            <p className="text-slate-500 text-sm">No seasons yet. Add one above.</p>
+                            <p className="text-slate-500 text-sm">No seasons yet. Click <strong>Add Season</strong> to create one.</p>
                           ) : (
                             <ul className="space-y-2">
                               {seasons.map((s) => (
@@ -2258,131 +2481,154 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
                   {eventsSubTab === 'events' && (
                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-2xl">
-                      <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                        <Calendar size={20} /> Add Event
-                      </h3>
-                      {eventsListError && <p className="text-sm text-amber-600 mb-3">{eventsListError}</p>}
-                      {eventError && <p className="text-sm text-red-600 mb-3">{eventError}</p>}
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-bold text-slate-700 mb-1">Season</label>
-                          <select
-                            value={eventForm.season_id}
-                            onChange={(e) => setEventForm((f) => ({ ...f, season_id: e.target.value }))}
-                            className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+                        <h4 className="font-semibold text-slate-800">Events list</h4>
+                        {!showAddEventForm ? (
+                          <button
+                            onClick={() => setShowAddEventForm(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
                           >
-                            <option value="">Select season</option>
-                            {seasons.map((s) => (
-                              <option key={s._id} value={s._id}>{s.name} ({s.year})</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Name</label>
-                            <input
-                              type="text"
-                              value={eventForm.name}
-                              onChange={(e) => setEventForm((f) => ({ ...f, name: e.target.value }))}
-                              placeholder="e.g. PRC Bangalore Open"
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Type</label>
-                            <select
-                              value={eventForm.type}
-                              onChange={(e) => setEventForm((f) => ({ ...f, type: e.target.value }))}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            >
-                              <option value="PRC">PRC</option>
-                              <option value="ZRC">ZRC</option>
-                              <option value="NRC">NRC</option>
-                              <option value="Other">Other</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Start date</label>
-                            <input
-                              type="date"
-                              value={eventForm.start_date}
-                              onChange={(e) => setEventForm((f) => ({ ...f, start_date: e.target.value }))}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">End date</label>
-                            <input
-                              type="date"
-                              value={eventForm.end_date}
-                              onChange={(e) => setEventForm((f) => ({ ...f, end_date: e.target.value }))}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Country</label>
-                            <input
-                              type="text"
-                              value={eventForm.country}
-                              onChange={(e) => setEventForm((f) => ({ ...f, country: e.target.value }))}
-                              placeholder="e.g. India"
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">State</label>
-                            <input
-                              type="text"
-                              value={eventForm.state}
-                              onChange={(e) => setEventForm((f) => ({ ...f, state: e.target.value }))}
-                              placeholder="e.g. Karnataka"
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">City</label>
-                            <input
-                              type="text"
-                              value={eventForm.city}
-                              onChange={(e) => setEventForm((f) => ({ ...f, city: e.target.value }))}
-                              placeholder="e.g. Bangalore"
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-slate-700 mb-1">Venue</label>
-                          <input
-                            type="text"
-                            value={eventForm.venue}
-                            onChange={(e) => setEventForm((f) => ({ ...f, venue: e.target.value }))}
-                            placeholder="e.g. Kanteerava Stadium"
-                            className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-slate-700 mb-1">Registration fee</label>
-                          <input
-                            type="number"
-                            value={eventForm.registration_fee}
-                            onChange={(e) => setEventForm((f) => ({ ...f, registration_fee: Number(e.target.value) || 0 }))}
-                            className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                          />
-                        </div>
-                        <button onClick={handleAddEvent} disabled={eventSaving} className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50">
-                          {eventSaving ? 'Adding…' : 'Add Event'}
-                        </button>
+                            <Plus size={18} /> Add Event
+                          </button>
+                        ) : null}
                       </div>
-                      <div className="mt-6 border-t border-slate-100 pt-4">
-                        <h4 className="font-semibold text-slate-800 mb-3">All events (from API)</h4>
+                      {showAddEventForm && (
+                        <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-bold text-lg flex items-center gap-2">
+                              <Calendar size={20} /> Add Event
+                            </h3>
+                            <button
+                              onClick={() => { setShowAddEventForm(false); setEventError(''); }}
+                              className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded"
+                              title="Close"
+                            >
+                              <X size={18} />
+                            </button>
+                          </div>
+                          {eventsListError && <p className="text-sm text-amber-600 mb-3">{eventsListError}</p>}
+                          {eventError && <p className="text-sm text-red-600 mb-3">{eventError}</p>}
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-bold text-slate-700 mb-1">Season</label>
+                              <select
+                                value={eventForm.season_id}
+                                onChange={(e) => setEventForm((f) => ({ ...f, season_id: e.target.value }))}
+                                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              >
+                                <option value="">Select season</option>
+                                {seasons.map((s) => (
+                                  <option key={s._id} value={s._id}>{s.name} ({s.year})</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Name</label>
+                                <input
+                                  type="text"
+                                  value={eventForm.name}
+                                  onChange={(e) => setEventForm((f) => ({ ...f, name: e.target.value }))}
+                                  placeholder="e.g. PRC Bangalore Open"
+                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Type</label>
+                                <select
+                                  value={eventForm.type}
+                                  onChange={(e) => setEventForm((f) => ({ ...f, type: e.target.value }))}
+                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                >
+                                  <option value="PRC">PRC</option>
+                                  <option value="ZRC">ZRC</option>
+                                  <option value="NRC">NRC</option>
+                                  <option value="Other">Other</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Start date</label>
+                                <input
+                                  type="date"
+                                  value={eventForm.start_date}
+                                  onChange={(e) => setEventForm((f) => ({ ...f, start_date: e.target.value }))}
+                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">End date</label>
+                                <input
+                                  type="date"
+                                  value={eventForm.end_date}
+                                  onChange={(e) => setEventForm((f) => ({ ...f, end_date: e.target.value }))}
+                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Country</label>
+                                <input
+                                  type="text"
+                                  value={eventForm.country}
+                                  onChange={(e) => setEventForm((f) => ({ ...f, country: e.target.value }))}
+                                  placeholder="e.g. India"
+                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">State</label>
+                                <input
+                                  type="text"
+                                  value={eventForm.state}
+                                  onChange={(e) => setEventForm((f) => ({ ...f, state: e.target.value }))}
+                                  placeholder="e.g. Karnataka"
+                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">City</label>
+                                <input
+                                  type="text"
+                                  value={eventForm.city}
+                                  onChange={(e) => setEventForm((f) => ({ ...f, city: e.target.value }))}
+                                  placeholder="e.g. Bangalore"
+                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-bold text-slate-700 mb-1">Venue</label>
+                              <input
+                                type="text"
+                                value={eventForm.venue}
+                                onChange={(e) => setEventForm((f) => ({ ...f, venue: e.target.value }))}
+                                placeholder="e.g. Kanteerava Stadium"
+                                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-bold text-slate-700 mb-1">Registration fee</label>
+                              <input
+                                type="number"
+                                value={eventForm.registration_fee}
+                                onChange={(e) => setEventForm((f) => ({ ...f, registration_fee: Number(e.target.value) || 0 }))}
+                                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              />
+                            </div>
+                            <button onClick={handleAddEvent} disabled={eventSaving} className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                              {eventSaving ? 'Adding…' : 'Add Event'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      <div className="border-t border-slate-100 pt-4">
                         {eventsLoading ? (
                           <p className="text-sm text-slate-500">Loading events…</p>
                         ) : eventList.length === 0 ? (
-                          <p className="text-sm text-slate-500">No events yet. Add one above or they will appear here once loaded.</p>
+                          <p className="text-sm text-slate-500">No events yet. Click <strong>Add Event</strong> to create one.</p>
                         ) : (
                           <div className="space-y-4 max-h-[32rem] overflow-y-auto pr-1">
                             {eventList.map((ev) => {
@@ -2467,27 +2713,187 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                   {eventsSubTab === 'competitions' && (
                     <div className="space-y-6">
                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                      <div className="flex items-center justify-between gap-4 flex-wrap">
-                        <h3 className="font-bold text-lg flex items-center gap-2">
-                          <Trophy size={20} /> Competitions
-                        </h3>
-                        <button
-                          type="button"
-                          onClick={() => { setEditingCompetition(null); setShowCompetitionModal(true); }}
-                          className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                        >
-                          <Plus size={18} /> Add Competition
-                        </button>
+                      <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+                        <h4 className="font-semibold text-slate-800 flex items-center gap-2">
+                          <Trophy size={20} /> Competitions list
+                        </h4>
+                        {!showAddCompetitionForm ? (
+                          <button
+                            type="button"
+                            onClick={() => { setEditingCompetition(null); setShowAddCompetitionForm(true); }}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            <Plus size={18} /> Add Competition
+                          </button>
+                        ) : null}
                       </div>
-                      {competitionError && <p className="text-sm text-red-600 mt-3">{competitionError}</p>}
-                    </div>
-                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                      <h4 className="font-semibold text-slate-800 mb-3">All competitions (from API)</h4>
+                      {competitionError && <p className="text-sm text-red-600 mb-3">{competitionError}</p>}
+                      {showAddCompetitionForm && (
+                        <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-bold text-lg flex items-center gap-2">
+                              <Trophy size={20} /> {editingCompetition ? 'Edit Competition' : 'Add Competition'}
+                            </h3>
+                            <button onClick={handleCancelCompetitionForm} className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded" title="Close"><X size={18} /></button>
+                          </div>
+                          {Object.keys(competitionFormErrors).length > 0 && (
+                            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">Please fix the errors below.</div>
+                          )}
+                          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Competition Name *</label>
+                                <input name="name" value={competitionForm.name} onChange={handleCompetitionFormChange} placeholder="e.g., Water Rocket Challenge" className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                {competitionFormErrors.name && <p className="mt-1 text-sm text-red-600">{competitionFormErrors.name}</p>}
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Category *</label>
+                                <select name="category" value={competitionForm.category} onChange={handleCompetitionFormChange} className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                  <option value="">Select Category</option>
+                                  {COMPETITION_CATEGORIES.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+                                </select>
+                                {competitionFormErrors.category && <p className="mt-1 text-sm text-red-600">{competitionFormErrors.category}</p>}
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-bold text-slate-700 mb-1">Description</label>
+                              <textarea name="description" value={competitionForm.description} onChange={handleCompetitionFormChange} rows={3} placeholder="Enter competition description" className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Season *</label>
+                                <select name="season_id" value={competitionForm.season_id} onChange={handleCompetitionFormChange} className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                  <option value="">Select Season</option>
+                                  {seasons.map((s) => <option key={s._id || s.id} value={s._id || s.id}>{s.name} ({s.year})</option>)}
+                                </select>
+                                {competitionFormErrors.season_id && <p className="mt-1 text-sm text-red-600">{competitionFormErrors.season_id}</p>}
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Event *</label>
+                                <select name="event_id" value={competitionForm.event_id} onChange={handleCompetitionFormChange} className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                  <option value="">Select Event</option>
+                                  {(() => {
+                                    const getEventSeasonId = (e) => e.season_id || e.seasonId || e.season?._id || e.season?.id;
+                                    const filtered = competitionForm.season_id
+                                      ? eventList.filter((e) => getEventSeasonId(e) === competitionForm.season_id)
+                                      : eventList;
+                                    const eventsForSelect = filtered.length > 0 ? filtered : eventList;
+                                    return eventsForSelect.map((ev) => (
+                                      <option key={ev._id || ev.id} value={ev._id || ev.id}>{ev.name || ev.title || ev.eventName || 'Unnamed Event'}</option>
+                                    ));
+                                  })()}
+                                </select>
+                                {eventsLoading && eventList.length === 0 && <p className="mt-1 text-sm text-slate-500">Loading events…</p>}
+                                {!eventsLoading && eventList.length === 0 && !eventsListError && <p className="mt-1 text-sm text-amber-600">No events yet. Add events in the Events tab first.</p>}
+                                {competitionFormErrors.event_id && <p className="mt-1 text-sm text-red-600">{competitionFormErrors.event_id}</p>}
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Prize Pool</label>
+                                <input name="prizePool" type="number" min={0} value={competitionForm.prizePool} onChange={handleCompetitionFormChange} className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Min Team Members</label>
+                                <input name="teamRequirements.minMembers" type="number" min={1} value={competitionForm.teamRequirements?.minMembers ?? 1} onChange={handleCompetitionFormChange} className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                {competitionFormErrors.minMembers && <p className="mt-1 text-sm text-red-600">{competitionFormErrors.minMembers}</p>}
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Max Team Members</label>
+                                <input name="teamRequirements.maxMembers" type="number" min={competitionForm.teamRequirements?.minMembers ?? 1} value={competitionForm.teamRequirements?.maxMembers ?? 4} onChange={handleCompetitionFormChange} className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                {competitionFormErrors.maxMembers && <p className="mt-1 text-sm text-red-600">{competitionFormErrors.maxMembers}</p>}
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Duration Value</label>
+                                <input name="duration.value" type="number" min={1} value={competitionForm.duration?.value ?? 1} onChange={handleCompetitionFormChange} className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                                {competitionFormErrors.duration && <p className="mt-1 text-sm text-red-600">{competitionFormErrors.duration}</p>}
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Duration Unit</label>
+                                <select name="duration.unit" value={competitionForm.duration?.unit ?? 'day'} onChange={handleCompetitionFormChange} className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                  <option value="day">Day(s)</option>
+                                  <option value="days">Days</option>
+                                  <option value="week">Week(s)</option>
+                                  <option value="hours">Hours</option>
+                                  <option value="month">Month(s)</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-bold text-slate-700 mb-1">Banner Image {!editingCompetition && '*'}</label>
+                              {competitionBannerImagePreview ? (
+                                <div className="relative group">
+                                  <div className="relative w-full h-40 bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
+                                    <img src={competitionBannerImagePreview} alt="Banner" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/800x400?text=Image+Error'; }} />
+                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                      <label className="cursor-pointer p-2 bg-white/90 rounded-lg"><Upload size={18} /><input type="file" className="hidden" accept="image/*" onChange={handleCompetitionBannerImageChange} /></label>
+                                      <button type="button" onClick={handleRemoveCompetitionBannerImage} className="p-2 bg-white/90 rounded-lg"><X size={18} /></button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-blue-400 cursor-pointer" onClick={() => document.getElementById('competition-banner-input')?.click()}>
+                                  <ImageIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                                  <p className="text-sm text-slate-600">Upload banner (PNG, JPG, GIF, WebP up to 10MB)</p>
+                                  <input id="competition-banner-input" type="file" className="hidden" accept="image/*" onChange={handleCompetitionBannerImageChange} />
+                                </div>
+                              )}
+                              {competitionFormErrors.bannerImage && <p className="mt-1 text-sm text-red-600">{competitionFormErrors.bannerImage}</p>}
+                            </div>
+                            <div className="border border-slate-200 rounded-lg p-4 bg-white">
+                              <h4 className="font-semibold text-slate-800 mb-3">Download Titles</h4>
+                              <div className="flex gap-2 mb-3">
+                                <input value={competitionDownloadTitle} onChange={(e) => setCompetitionDownloadTitle(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCompetitionDownload(); } }} placeholder="e.g., Rulebook" className="flex-1 p-2 border rounded-lg text-sm" />
+                                <button type="button" onClick={handleAddCompetitionDownload} className="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium flex items-center gap-1"><Plus size={14} /> Add</button>
+                              </div>
+                              {competitionForm.downloadTitles?.length > 0 && (
+                                <div className="space-y-2">
+                                  {competitionForm.downloadTitles.map((title, i) => (
+                                    <div key={i} className="flex justify-between items-center p-2 bg-slate-50 rounded border">
+                                      <span className="text-sm">{title}</span>
+                                      <button type="button" onClick={() => handleRemoveCompetitionDownload(i)} className="p-1 text-slate-500 hover:text-red-600"><X size={14} /></button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <label className="block text-sm font-bold text-slate-700 mb-1">Rules and Regulations</label>
+                              <textarea name="rulesAndRegulations" value={competitionForm.rulesAndRegulations} onChange={handleCompetitionFormChange} rows={3} placeholder="Enter rules" className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Training Resource URL</label>
+                                <input name="trainingResourseUrl" value={competitionForm.trainingResourseUrl} onChange={handleCompetitionFormChange} placeholder="https://..." className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Past Winner URL</label>
+                                <input name="pastWinnerUrl" value={competitionForm.pastWinnerUrl} onChange={handleCompetitionFormChange} placeholder="https://..." className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Global Ranking URL</label>
+                                <input name="globalRankingeUrl" value={competitionForm.globalRankingeUrl} onChange={handleCompetitionFormChange} placeholder="https://..." className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                              </div>
+                            </div>
+                            <div className="flex gap-4">
+                              <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="isActive" checked={competitionForm.isActive} onChange={handleCompetitionFormChange} className="rounded border-slate-300" /><span className="text-sm">Active</span></label>
+                              <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="hasBots" checked={competitionForm.hasBots} onChange={handleCompetitionFormChange} className="rounded border-slate-300" /><span className="text-sm">Has Bots</span></label>
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                              <button type="button" onClick={handleCancelCompetitionForm} className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">Cancel</button>
+                              <button type="button" onClick={handleSaveCompetition} disabled={competitionSaving} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg disabled:opacity-50">{competitionSaving ? 'Saving…' : (editingCompetition ? 'Update Competition' : 'Create Competition')}</button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <div className="border-t border-slate-100 pt-4">
                       {competitionsListError && <p className="text-sm text-amber-600 mb-2">{competitionsListError}</p>}
                       {competitionsLoading ? (
                         <p className="text-sm text-slate-500">Loading competitions…</p>
                       ) : competitionList.length === 0 ? (
-                        <p className="text-sm text-slate-500">No competitions yet.</p>
+                        <p className="text-sm text-slate-500">No competitions yet. Click <strong>Add Competition</strong> to create one.</p>
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[28rem] overflow-y-auto">
                           {competitionList.map((c) => {
@@ -2504,7 +2910,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                   <div className="flex gap-1">
                                     <button
                                       type="button"
-                                      onClick={() => { setEditingCompetition(c); setShowCompetitionModal(true); }}
+                                      onClick={() => { setEditingCompetition(c); setShowAddCompetitionForm(true); }}
                                       className="p-1.5 text-slate-600 hover:bg-slate-200 rounded"
                                       title="Edit competition"
                                     >
@@ -2533,21 +2939,11 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                           })}
                         </div>
                       )}
+                      </div>
                     </div>
                     </div>
                   )}
 
-                  {showCompetitionModal && (
-                    <CompetitionFormModal
-                      competition={editingCompetition}
-                      events={eventList}
-                      seasons={seasons}
-                      selectedEvent={null}
-                      selectedSeason={null}
-                      onSave={handleCompetitionModalSave}
-                      onCancel={handleCompetitionModalCancel}
-                    />
-                  )}
                 </div>
               )}
               {activeTab === 'academia' && (
@@ -2623,14 +3019,14 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                   <div className="space-y-6">
                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                       <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-slate-800">Team Members</h2>
-                        <button
+                        <h2 className="text-2xl font-bold text-slate-800">Members</h2>
+                        {/* <button
                           onClick={() => setShowAddMemberModal(true)}
                           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                         >
                           <UserPlus size={18} />
                           Add Team Member
-                        </button>
+                        </button> */}
                       </div>
 
                       <div className="mb-6">
