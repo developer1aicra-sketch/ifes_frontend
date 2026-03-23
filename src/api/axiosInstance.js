@@ -49,6 +49,7 @@ const protectedEndpoints = [
   '/payment/create',
   '/payments/verify',
   '/club/add',
+  '/club/add/admin',
   '/club/my/get',
   '/membership/my/get',
   '/membership/bulk',

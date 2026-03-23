@@ -1,6 +1,9 @@
 import React, { useMemo } from 'react';
 import { ExternalLink } from 'lucide-react';
 
+/** Logo dimensions (96x96) – centralised for consistent layout. */
+const LOGO_SIZE = 96;
+
 /**
  * Reusable Supporter section for Partner home.
  * Showcases supporters with name, logo, and clickable link to website.
@@ -45,14 +48,16 @@ const PartnerSupporterSection = ({
                 href={href}
                 target={isExternal ? '_blank' : undefined}
                 rel={isExternal ? 'noopener noreferrer' : undefined}
-                className="flex flex-col items-center justify-center p-6 w-full min-h-[140px] bg-white rounded-xl border border-slate-200 hover:shadow-md hover:border-slate-300 transition-all hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
+                className="flex flex-col items-center justify-center p-6 w-full min-h-[180px] bg-white rounded-xl hover:shadow-md hover:border-slate-300 transition-all hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
                 title={supporter.name}
               >
                 {supporter.logo ? (
                   <img
                     src={supporter.logo}
                     alt={supporter.name}
-                    className="max-h-16 max-w-full object-contain flex-shrink-0"
+                    width={LOGO_SIZE}
+                    height={LOGO_SIZE}
+                    className="object-contain flex-shrink-0"
                     loading="lazy"
                   />
                 ) : (

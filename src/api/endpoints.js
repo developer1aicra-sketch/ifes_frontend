@@ -51,6 +51,8 @@ const endpoints = {
   },
   club: {
     add: `/club/add`,
+    /** Add RoboClub from partner portal (admin flow) */
+    addAdmin: `/club/add/admin`,
     myGet: `/club/my/get`,
     /** GET clubs by website + partnerCode. Query: ?website=worso&partnerCode=XX */
     get: `/club/get`,

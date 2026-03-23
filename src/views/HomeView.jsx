@@ -22,9 +22,23 @@ import { PartnerVideoSection, PartnerNewsSection, PartnerSupporterSection } from
 import { NavLink, useParams } from 'react-router-dom';
 import { useThemeClasses } from '../hooks/useThemeClasses';
 import { usePartnerHome } from '../hooks/usePartnerHome';
+import { usePartnerEvent } from '../hooks/usePartnerEvent';
 import { useLocationPrefix } from '../hooks/useLocationPrefix';
 import { PARTNER_HOME_STATIC } from '../data/partnerHomeStatic';
 import TrophyVideo from '../assets/Trophy-1.m4v';
+
+/** Format raw stat (number or string) for display: 121 → 121, 3200 → 3.2k+, 10200000 → 10.2M+ */
+function formatStatValue(raw) {
+  if (raw == null || raw === '') return null;
+  const s = String(raw).trim();
+  if (!s) return null;
+  // Already formatted (contains k, M, +, etc.)
+  if (/[kKmM+]/.test(s)) return s;
+  const n = parseFloat(s.replace(/[^0-9.]/g, '')) || 0;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1).replace(/\.0$/, '')}M+`;
+  if (n >= 1e3) return `${(n / 1e3).toFixed(1).replace(/\.0$/, '')}k+`;
+  return `${Math.round(n)}+`;
+}
 
 const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError, locationCode: locationCodeProp }) => {
   const theme = useThemeClasses();
@@ -47,6 +61,10 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
   const { data: partnerHomeData, loading: partnerHomeLoading, error: partnerHomeError } = usePartnerHome(locationCode, {
     defaultCode: defaultPartnerCode,
   });
+
+  // Event API: fetch single event from /api/event/get?website=worso&partnerCode=XX (first item only)
+  const effectivePartnerCode = locationCode || defaultPartnerCode || null;
+  const { data: partnerEvent } = usePartnerEvent(effectivePartnerCode);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
@@ -83,6 +101,13 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
   const headline = preparedNews[0];
   const latestPool = preparedNews.slice(1);
   const mostReadPool = [...preparedNews].reverse().slice(1);
+
+  // Featured YouTube videos from home.youtubeVideo or top-level youtubeVideo (array of URL strings)
+  const featuredVideos = useMemo(() => {
+    const arr = partnerHomeData?.home?.youtubeVideo ?? partnerHomeData?.youtubeVideo ?? [];
+    if (!Array.isArray(arr)) return [];
+    return arr.filter((u) => typeof u === 'string' && u.trim());
+  }, [partnerHomeData?.home?.youtubeVideo, partnerHomeData?.youtubeVideo]);
 
   // Helper function to build paths with location prefix
   const buildPath = (path) => {
@@ -220,31 +245,38 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
                         {siteConfig.is_partner ? 'Next Local Event' : 'Upcoming Championship'}
                       </div>
                       <h2 className="text-2xl font-bold text-white">
-                        {partnerHomeData?.event?.title || 'Technoxian World Cup \'26'}
+                        {partnerEvent?.name || partnerHomeData?.event?.title || 'Technoxian World Cup \'26'}
                       </h2>
                     </div>
                     <Trophy size={32} className="text-white/30 group-hover:text-yellow-400 transition-colors" />
                   </div>
                   <div className="flex gap-4 text-xs font-bold text-white/90 relative z-10">
-                    {partnerHomeData?.event?.location && (
+                    {(partnerEvent?.venue || partnerHomeData?.event?.location) && (
                       <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
-                        <MapPin size={12} /> {partnerHomeData.event.location}
+                        <MapPin size={12} /> {partnerEvent?.venue || partnerHomeData?.event?.location}
                       </div>
                     )}
-                    {partnerHomeData?.event?.date && (
+                    {(partnerEvent?.start_date || partnerHomeData?.event?.date) && (
                       <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
-                        <Calendar size={12} /> {partnerHomeData.event.date}
+                        <Calendar size={12} />
+                        {partnerEvent?.start_date
+                          ? new Date(partnerEvent.start_date).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })
+                          : partnerHomeData?.event?.date}
                       </div>
                     )}
-                    {!partnerHomeData?.event && (
-                      <>
-                        <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
-                          <MapPin size={12} /> TBD
-                        </div>
-                        <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
-                          <Calendar size={12} /> OCT 2026
-                        </div>
-                      </>
+                    {!partnerEvent?.venue && !partnerHomeData?.event?.location && (
+                      <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
+                        <MapPin size={12} /> TBD
+                      </div>
+                    )}
+                    {!partnerEvent?.start_date && !partnerHomeData?.event?.date && (
+                      <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
+                        <Calendar size={12} /> OCT 2026
+                      </div>
                     )}
                   </div>
                 </div>
@@ -265,43 +297,29 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
         </div>
       </div>
 
-      {/* Stats Section */}
-      {partnerHomeData?.stats && (
-        <div className="bg-white border-b border-slate-200 py-10">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center place-items-center divide-x divide-slate-100">
-              {[
-                { label: 'Students', val: partnerHomeData.stats.studentsCount || 0 },
-                { label: 'Performance Score', val: partnerHomeData.stats.performanceScore || 0 },
-                { label: 'Revenue', val: `$${partnerHomeData.stats.revenue || 0}` },
-                { label: 'Total Revenue', val: `$${partnerHomeData.stats.totalRevenue || 0}` },
-              ].map((stat, i) => (
-                <div key={i}>
-                  <div className={`text-4xl font-extrabold ${theme.textPrimary || (siteConfig.is_partner ? 'text-emerald-600' : 'text-blue-600')}`}>
-                    {stat.val}
-                  </div>
+      {/* Stats Section — challenges, teams, club, member, viewership (from API top-level) */}
+      <div className="bg-white border-b border-slate-200 py-10">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center place-items-center divide-x divide-slate-100">
+            {[
+              { key: 'challenges', label: 'CHALLENGES', fallback: '15+' },
+              { key: 'teams', label: 'TEAMS', fallback: '3k+' },
+              { key: 'club', label: 'CLUB', fallback: '3.2k+' },
+              { key: 'member', label: 'MEMBER', fallback: '10.2M+' },
+              { key: 'viewership', label: 'VIEWERSHIP', fallback: '150M+' },
+            ].map((stat) => {
+              const raw = partnerHomeData?.[stat.key];
+              const val = formatStatValue(raw) ?? stat.fallback;
+              return (
+                <div key={stat.key}>
+                  <div className={`text-4xl font-extrabold ${theme.textPrimary || (siteConfig.is_partner ? 'text-emerald-600' : 'text-blue-600')}`}>{val}</div>
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">{stat.label}</div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
-      )}
-      
-      {!partnerHomeData?.stats && (
-        <div className="bg-white border-b border-slate-200 py-10">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center place-items-center divide-x divide-slate-100">
-              {[ { label: 'Challenges', val: '15+' },{ label: ' Teams', val: '3k+' },{ label: 'Club', val: '3.2k+' },{ label: 'Member', val: '10.2M+' }, { label: 'Viewership', val: '150M+' }, ].map((stat, i) => (
-                <div key={i}>
-                  <div className={`text-4xl font-extrabold ${theme.textPrimary || (siteConfig.is_partner ? 'text-emerald-600' : 'text-blue-600')}`}>{stat.val}</div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
 
       {!siteConfig.is_partner && (
         <section className="py-20 bg-slate-50 container mx-auto px-4">
@@ -361,13 +379,19 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
       )}
       
       <FeaturedShopSection/>
-      {/* Partner route: Video, News, Supporter sections (API data with static fallback) */}
       {(locationCode || partnerHomeData) && (
         <>
-          <PartnerVideoSection
+          {featuredVideos.length > 0 && (
+            <PartnerVideoSection
+              videos={featuredVideos}
+              title="Featured Videos"
+              carouselId="featured-video-carousel"
+            />
+          )}
+          {/* <PartnerVideoSection
             videos={partnerHomeData?.videos?.length ? partnerHomeData.videos : PARTNER_HOME_STATIC.videos}
             title="Latest Videos"
-          />
+          /> */}
           <PartnerNewsSection
             news={partnerHomeData?.news?.length ? partnerHomeData.news : PARTNER_HOME_STATIC.news}
             title="News"

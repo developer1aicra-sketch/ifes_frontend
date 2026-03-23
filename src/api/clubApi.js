@@ -10,6 +10,13 @@ export const addClub = (data) =>
   axiosInstance.post(endpoints.club.add, data);
 
 /**
+ * Add RoboClub from partner portal — POST /club/add/admin
+ * Admin flow (partner dashboard). Payload: { name, clubName, instituteName, countryCode, country, state, city, mobile, email }
+ */
+export const addClubAdmin = (data) =>
+  axiosInstance.post(endpoints.club.addAdmin, data);
+
+/**
  * Get current user's clubs — GET /club/my/get
  * Requires: Authorization Bearer token.
  * Response: { success, data: Club[] }

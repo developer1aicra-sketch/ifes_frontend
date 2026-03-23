@@ -11,17 +11,24 @@ import { useThemeClasses } from '../../hooks/useThemeClasses';
  * @param {Array<{ _id: string, title: string, youtubeUrl: string, thumbnail?: string, isActive?: boolean }>} props.videos - List of video items
  * @param {string} [props.title] - Section heading
  * @param {string} [props.className] - Optional section wrapper class
+ * @param {string} [props.carouselId] - Optional carousel container id (for multiple sections)
  */
-const PartnerVideoSection = ({ videos = [], title = 'Latest Videos', className = '' }) => {
+const PartnerVideoSection = ({ videos = [], title = 'Latest Videos', className = '', carouselId = 'partner-video-carousel' }) => {
   const theme = useThemeClasses();
 
-  const activeVideos = useMemo(
-    () => (videos || []).filter((v) => v && (v.isActive !== false)),
-    [videos]
-  );
+  const activeVideos = useMemo(() => {
+    const list = (videos || []).filter(
+      (v) => v && (typeof v === 'string' ? v.trim() : v.isActive !== false)
+    );
+    return list.map((v, i) =>
+      typeof v === 'string'
+        ? { youtubeUrl: v.trim(), title: '', _id: `yt-${i}` }
+        : { ...v, _id: v._id || v.youtubeUrl || `yt-${i}` }
+    );
+  }, [videos]);
 
   const scrollCarousel = (direction) => {
-    const container = document.getElementById('partner-video-carousel');
+    const container = document.getElementById(carouselId);
     if (!container) return;
     const amount = 400;
     container.scrollBy({ left: direction === 'prev' ? -amount : amount, behavior: 'smooth' });
@@ -67,7 +74,7 @@ const PartnerVideoSection = ({ videos = [], title = 'Latest Videos', className =
 
         <div className="relative">
           <div
-            id="partner-video-carousel"
+            id={carouselId}
             className="flex overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory gap-6 md:gap-8"
           >
             {activeVideos.map((video) => {

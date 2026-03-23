@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useMemo } from 'react';
 import { ArrowLeft, Calendar, Tag, ChevronRight } from 'lucide-react';
 import { usePartnerHome } from '../hooks/usePartnerHome';
+import NewsArticleBody, { stripHtml } from '../components/NewsArticleBody';
 
 /** Normalize partner API news item to NewsArticleView shape */
 const normalizePartnerNews = (item) => ({
@@ -116,21 +117,16 @@ const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, news
             </h1>
 
             {/* Article Content */}
-            <div className="prose prose-invert prose-lg max-w-none text-slate-300 mb-8">
-              {article.contentHtml ? (
-                <div 
-                  className="prose prose-lg max-w-none" 
-                  dangerouslySetInnerHTML={{ 
-                    __html: article.contentHtml 
-                      .replace(/<img[^>]*>/g, '') // Remove any remaining images
-                      .replace(/<h1[^>]*>.*<\/h1>/g, '') // Remove any h1 tags
-                  }} 
-                />
-              ) : (
-                <div className="space-y-6">
-                  <p className="text-lg leading-relaxed">{article.body || article.desc}</p>
-                </div>
-              )}
+            <div className="prose prose-invert prose-lg max-w-none mb-8">
+              {(() => {
+                const content = article.contentHtml || article.body || article.desc || '';
+                const isHtml = typeof content === 'string' && content.trim().includes('<');
+                if (!content) return null;
+                if (isHtml) {
+                  return <NewsArticleBody html={content} variant="article" className="text-base sm:text-lg" />;
+                }
+                return <p className="text-lg leading-relaxed text-slate-300">{content}</p>;
+              })()}
             </div>
 
             {/* Read More Link */}
@@ -166,7 +162,12 @@ const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, news
                   <span className="text-xs text-slate-400">{news.date}</span>
                 </div>
                 <h3 className="text-lg font-bold text-slate-200 mb-2 group-hover:text-blue-400 transition-colors">{news.title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed mb-3 line-clamp-2">{news.body || news.desc}</p>
+                <p className="text-sm text-slate-400 leading-relaxed mb-3 line-clamp-2">
+                  {(() => {
+                    const raw = news.body || news.desc || '';
+                    return typeof raw === 'string' && raw.includes('<') ? stripHtml(raw) : raw;
+                  })()}
+                </p>
                 <a
                   href="#"
                   onClick={(e) => {

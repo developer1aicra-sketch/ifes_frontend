@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone, UserCircle, Trophy, Trash2, Pencil, CreditCard, Shield, ArrowRight, User, Building2, GraduationCap, MapPin, Upload, Image as ImageIcon } from 'lucide-react';
+import RichTextEditor from '../components/RichTextEditor';
 import ForumView from '../components/ForumView';
 import { DEFAULT_SITES } from '../constants/data';
 import { COMPETITION_CATEGORIES } from '../constants/competition';
 import { COUNTRY_DIAL_CODES } from '../constants/countryDialCodes';
 import { callGemini } from '../utils/gemini';
 import { getMyMembership } from '../app/auth/authApi';
-import { addClub, getClubsByPartner } from '../api/clubApi';
+import { addClubAdmin, getClubsByPartner } from '../api/clubApi';
 import { useLogout } from '../hooks/useLogout';
 import {
   fetchPartnerById,
@@ -73,13 +74,31 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
     const footerInfo = partnerRecord.footerInfo || {};
 
+    // youtubeVideo: array of { url }. No title. Backend key = youtubeVideo, value = array (or JSON string)
+    let youtubeVideo = [];
+    const yv = partnerRecord.youtubeVideo;
+    if (Array.isArray(yv) && yv.length > 0) {
+      youtubeVideo = yv.map((v) => ({ url: v?.url || v?.youtubeUrl || (typeof v === 'string' ? v : '') }));
+    } else if (typeof yv === 'string' && yv.trim()) {
+      try {
+        const parsed = JSON.parse(yv);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          youtubeVideo = parsed.map((v) => ({ url: v?.url || v?.youtubeUrl || (typeof v === 'string' ? v : '') }));
+        } else {
+          youtubeVideo = [{ url: yv.trim() }];
+        }
+      } catch {
+        youtubeVideo = [{ url: yv.trim() }];
+      }
+    }
+
     return {
       home: {
         title: partnerRecord.heroTitle || '',
         subtitle: partnerRecord.heroSubtitle || '',
         bannerImage: partnerRecord.heroBannerImage || partnerRecord.bannerImage || '',
         bannerVideo: partnerRecord.bannerVideo || '',
-        youtubeVideo: partnerRecord.youtubeVideo || '',
+        youtubeVideo,
         themeColor: partnerRecord.themeColor || 'Blue',
       },
       event: {
@@ -100,10 +119,11 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       news: Array.isArray(partnerRecord.news) ? partnerRecord.news : [],
       supporters: Array.isArray(partnerRecord.supporters) ? partnerRecord.supporters : [],
       stats: {
-        studentsCount: typeof partnerRecord.studentsCount === 'number' ? partnerRecord.studentsCount : 0,
-        performanceScore: typeof partnerRecord.performanceScore === 'number' ? partnerRecord.performanceScore : 0,
-        revenue: typeof partnerRecord.revenue === 'number' ? partnerRecord.revenue : 0,
-        totalRevenue: typeof partnerRecord.totalRevenue === 'number' ? partnerRecord.totalRevenue : 0,
+        challenges: partnerRecord.stats?.challenges ?? partnerRecord.challenges ?? '',
+        teams: partnerRecord.stats?.teams ?? partnerRecord.teams ?? '',
+        club: partnerRecord.stats?.club ?? partnerRecord.club ?? '',
+        member: partnerRecord.stats?.member ?? partnerRecord.member ?? '',
+        viewership: partnerRecord.stats?.viewership ?? partnerRecord.viewership ?? '',
       },
     };
   };
@@ -114,7 +134,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     const payload = {
       heroTitle: data.home?.title?.trim() || undefined,
       heroSubtitle: data.home?.subtitle?.trim() || undefined,
-      youtubeVideo: data.home?.youtubeVideo?.trim() || undefined,
+      youtubeVideo: Array.isArray(data.home?.youtubeVideo) && data.home.youtubeVideo.length > 0 ? data.home.youtubeVideo : undefined,
       bannerVideo: data.home?.bannerVideo?.trim() || undefined,
       themeColor: data.home?.themeColor || undefined,
       eventTitle: data.event?.title?.trim() || undefined,
@@ -129,15 +149,12 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       supporters: Array.isArray(data.supporters) ? data.supporters : undefined,
     };
 
-    if (data.stats) {
-      payload.studentsCount =
-        typeof data.stats.studentsCount === 'number' ? data.stats.studentsCount : undefined;
-      payload.performanceScore =
-        typeof data.stats.performanceScore === 'number' ? data.stats.performanceScore : undefined;
-      payload.revenue =
-        typeof data.stats.revenue === 'number' ? data.stats.revenue : undefined;
-      payload.totalRevenue =
-        typeof data.stats.totalRevenue === 'number' ? data.stats.totalRevenue : undefined;
+    if (data.stats && typeof data.stats === 'object') {
+      if (data.stats.challenges?.trim()) payload.challenges = data.stats.challenges.trim();
+      if (data.stats.teams?.trim()) payload.teams = data.stats.teams.trim();
+      if (data.stats.club?.trim()) payload.club = data.stats.club.trim();
+      if (data.stats.member?.trim()) payload.member = data.stats.member.trim();
+      if (data.stats.viewership?.trim()) payload.viewership = data.stats.viewership.trim();
     }
 
     return payload;
@@ -148,7 +165,10 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     const home = data?.home || {};
     if (home.title?.trim()) form.append('heroTitle', home.title.trim());
     if (home.subtitle?.trim()) form.append('heroSubtitle', home.subtitle.trim());
-    if (home.youtubeVideo?.trim()) form.append('youtubeVideo', home.youtubeVideo.trim());
+    if (Array.isArray(home.youtubeVideo) && home.youtubeVideo.length > 0) {
+      const arr = home.youtubeVideo.map((v) => (typeof v === 'string' ? v : v?.url || v?.youtubeUrl || '')).filter((s) => typeof s === 'string' && s.trim());
+      if (arr.length > 0) form.append('youtubeVideo', JSON.stringify(arr));
+    }
     if (home.themeColor?.trim()) form.append('themeColor', home.themeColor.trim());
     if (home._bannerVideoFile) form.append('bannerVideo', home._bannerVideoFile);
     else if (home.bannerVideo?.trim()) form.append('bannerVideo', home.bannerVideo.trim());
@@ -197,11 +217,13 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     }
 
     const stats = data?.stats;
-    if (stats) {
-      if (typeof stats.studentsCount === 'number') form.append('studentsCount', String(stats.studentsCount));
-      if (typeof stats.performanceScore === 'number') form.append('performanceScore', String(stats.performanceScore));
-      if (typeof stats.revenue === 'number') form.append('revenue', String(stats.revenue));
-      if (typeof stats.totalRevenue === 'number') form.append('totalRevenue', String(stats.totalRevenue));
+    if (stats && typeof stats === 'object') {
+      const v = (s) => String(s ?? '').trim();
+      if (v(stats.challenges)) form.append('challenges', v(stats.challenges));
+      if (v(stats.teams)) form.append('teams', v(stats.teams));
+      if (v(stats.club)) form.append('club', v(stats.club));
+      if (v(stats.member)) form.append('member', v(stats.member));
+      if (v(stats.viewership)) form.append('viewership', v(stats.viewership));
     }
 
     return form;
@@ -730,17 +752,21 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
   // RoboClub Registration states (direct registration, no OTP)
   const [roboClubError, setRoboClubError] = useState('');
   const [roboClubLoading, setRoboClubLoading] = useState(false);
-  const [roboClubForm, setRoboClubForm] = useState({
+
+  // RoboClub Add payload — frontend data contract when adding a RoboClub
+  // Payload shape: { name, clubName, instituteName, countryCode, country, state, city, mobile, email }
+  const ROBO_CLUB_FORM_INITIAL = {
     name: '',
-    email: '',
     clubName: '',
     instituteName: '',
     countryCode: 'IN',
     state: '',
     city: '',
     mobile: '',
-    password: '',
-  });
+    email: '',
+  };
+
+  const [roboClubForm, setRoboClubForm] = useState(ROBO_CLUB_FORM_INITIAL);
 
   // Country options for club registration
   const COUNTRY_OPTIONS = [
@@ -779,12 +805,6 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       return;
     }
 
-    const pwd = String(roboClubForm.password || '').trim();
-    if (!pwd || pwd.length < 8) {
-      setRoboClubError('Password must be at least 8 characters');
-      return;
-    }
-
     const normalizedEmail = String(roboClubForm.email || '').trim().toLowerCase();
     if (!normalizedEmail || !normalizedEmail.includes('@')) {
       setRoboClubError('Please enter a valid email address');
@@ -795,7 +815,8 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     setRoboClubError('');
     try {
       const countryObj = COUNTRY_OPTIONS.find((c) => c.code === roboClubForm.countryCode);
-      const response = await addClub({
+      // Build payload matching RoboClub add API contract
+      const payload = {
         name: roboClubForm.name.trim(),
         clubName: roboClubForm.clubName.trim(),
         instituteName: roboClubForm.instituteName.trim(),
@@ -805,24 +826,14 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
         city: roboClubForm.city?.trim() ?? '',
         mobile: roboClubForm.mobile?.trim() ?? '',
         email: normalizedEmail,
-        password: pwd,
-      });
+      };
+      const response = await addClubAdmin(payload);
 
       if (response?.data?.success || response?.status === 200 || response?.status === 201) {
         alert('RoboClub registered successfully!');
         refreshMyClubs();
         setShowRoboClubForm(false);
-        setRoboClubForm({
-          name: '',
-          email: '',
-          clubName: '',
-          instituteName: '',
-          countryCode: 'IN',
-          state: '',
-          city: '',
-          mobile: '',
-          password: '',
-        });
+        setRoboClubForm(ROBO_CLUB_FORM_INITIAL);
       } else {
         setRoboClubError(response?.data?.message || 'Failed to register club');
       }
@@ -1602,7 +1613,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                       )}
                     </button> */}
-  <button
+  {/* <button
                       onClick={() => setActiveTab('academia')}
                       className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${activeTab === 'academia'
                           ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
@@ -1619,8 +1630,8 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       {activeTab === 'academia' && (
                         <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                       )}
-                    </button>
-                    <button
+                    </button> */}
+                    {/* <button
                       onClick={() => setActiveTab('team')}
                       className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${activeTab === 'team'
                           ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
@@ -1637,7 +1648,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       {activeTab === 'team' && (
                         <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                       )}
-                    </button>
+                    </button> */}
 
                   
 
@@ -1917,17 +1928,47 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                             />
                           </div>
                           <div className="md:col-span-2">
-                            <label className="block text-sm font-bold text-black mb-1">YouTube Video (Featured)</label>
-                            <input
-                              type="url"
-                              value={partnerHomeData.home?.youtubeVideo || ''}
-                              onChange={(e) => setPartnerHomeData({
-                                ...partnerHomeData,
-                                home: { ...partnerHomeData.home, youtubeVideo: e.target.value }
-                              })}
-                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
-                              placeholder="https://youtube.com/watch?v=..."
-                            />
+                            <label className="block text-sm font-bold text-black mb-2">YouTube Video (Featured)</label>
+                            <div className="space-y-3">
+                              {(partnerHomeData.home?.youtubeVideo || []).map((url, index) => (
+                                <div key={`yt-${index}`} className="border border-slate-200 rounded-lg p-3 bg-slate-50/50 flex items-center gap-2">
+                                  <input
+                                    type="url"
+                                    value={typeof url === 'string' ? url : ''}
+                                    onChange={(e) => {
+                                      const arr = [...(partnerHomeData.home?.youtubeVideo || [])];
+                                      arr[index] = e.target.value;
+                                      setPartnerHomeData({ ...partnerHomeData, home: { ...partnerHomeData.home, youtubeVideo: arr } });
+                                    }}
+                                    className="flex-1 p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black] text-sm"
+                                    placeholder="https://youtu.be/... or https://youtube.com/watch?v=..."
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const arr = (partnerHomeData.home?.youtubeVideo || []).filter((_, i) => i !== index);
+                                      setPartnerHomeData({ ...partnerHomeData, home: { ...partnerHomeData.home, youtubeVideo: arr } });
+                                    }}
+                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg flex-shrink-0"
+                                    aria-label="Remove video"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ))}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const arr = [...(partnerHomeData.home?.youtubeVideo || []), ''];
+                                  setPartnerHomeData({ ...partnerHomeData, home: { ...partnerHomeData.home, youtubeVideo: arr } });
+                                }}
+                                className="flex items-center gap-2 px-3 py-2 text-sm font-medium border border-dashed border-slate-300 rounded-lg hover:border-blue-500 hover:text-blue-600 text-slate-600"
+                              >
+                                <Plus className="w-4 h-4" />
+                                Add YouTube Video
+                              </button>
+                            </div>
+                            <p className="mt-1 text-xs text-slate-500">Add multiple featured YouTube videos.</p>
                           </div>
                           <div className="md:col-span-2">
                             <label className="block text-sm font-bold text-black mb-1">Banner Video (Upload)</label>
@@ -2038,6 +2079,35 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         </div>
                       </div>
 
+                      {/* Stats Section (Challenges, Teams, Club, Member, Viewership) */}
+                      <div className="border-b border-slate-200 pb-6">
+                        <h3 className="text-lg font-bold text-black mb-4">Stats Section</h3>
+                        <p className="text-sm text-slate-600 mb-4">Display values on the partner home page (e.g. 15+, 3k+, 10.2M+).</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                          {[
+                            { key: 'challenges', label: 'Challenges', placeholder: '15+' },
+                            { key: 'teams', label: 'Teams', placeholder: '3k+' },
+                            { key: 'club', label: 'Club', placeholder: '3.2k+' },
+                            { key: 'member', label: 'Member', placeholder: '10.2M+' },
+                            { key: 'viewership', label: 'Viewership', placeholder: '150M+' },
+                          ].map(({ key, label, placeholder }) => (
+                            <div key={key}>
+                              <label className="block text-sm font-bold text-black mb-1">{label}</label>
+                              <input
+                                type="text"
+                                value={partnerHomeData.stats?.[key] ?? ''}
+                                onChange={(e) => setPartnerHomeData({
+                                  ...partnerHomeData,
+                                  stats: { ...(partnerHomeData.stats || {}), [key]: e.target.value }
+                                })}
+                                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
+                                placeholder={placeholder}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
                       {/* Footer */}
                       <div className="border-b border-slate-200 pb-6">
                         <h3 className="text-lg font-bold text-black mb-4">Footer Information</h3>
@@ -2102,7 +2172,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       </div>
 
                       {/* Videos */}
-                      <div className="border-b border-slate-200 pb-6">
+                      {/* <div className="border-b border-slate-200 pb-6">
                         <h3 className="text-lg font-bold text-black mb-4">Videos</h3>
                         <div className="space-y-3">
                           {partnerHomeData.videos?.map((video, index) => (
@@ -2200,7 +2270,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                             + Add Video
                           </button>
                         </div>
-                      </div>
+                      </div> */}
 
                       {/* News */}
                       <div className="border-b border-slate-200 pb-6">
@@ -2219,17 +2289,19 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 placeholder="News title"
                                 className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                               />
-                              <textarea
-                                value={item.description || ''}
-                                onChange={(e) => {
-                                  const newNews = [...partnerHomeData.news];
-                                  newNews[index] = { ...newNews[index], description: e.target.value };
-                                  setPartnerHomeData({ ...partnerHomeData, news: newNews });
-                                }}
-                                placeholder="News description"
-                                rows={3}
-                                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
-                              />
+                              <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1">Description</label>
+                                <RichTextEditor
+                                  value={item.description || ''}
+                                  onChange={(html) => {
+                                    const newNews = [...partnerHomeData.news];
+                                    newNews[index] = { ...newNews[index], description: html };
+                                    setPartnerHomeData({ ...partnerHomeData, news: newNews });
+                                  }}
+                                  placeholder="News description (use toolbar for headings, lists, bold, italic)"
+                                  minHeight="140px"
+                                />
+                              </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div>
                                   <label className="block text-xs font-medium text-slate-600 mb-1">Date</label>
@@ -2336,7 +2408,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                           {partnerHomeData.supporters?.map((supporter, index) => (
                             <div key={supporter._id || index} className="border border-slate-200 rounded-lg p-4">
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <input
+                                {/* <input
                                   type="text"
                                   value={supporter.name || ''}
                                   onChange={(e) => {
@@ -2346,7 +2418,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                   }}
                                   placeholder="Supporter name"
                                   className="p-3 border text-[black] border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
+                                /> */}
                                 <div>
                                   <label className="block text-xs font-medium text-slate-600 mb-1">Logo</label>
                                   {(supporter._logoFile || supporter.logo) ? (
@@ -3483,7 +3555,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 type="text"
                                 value={roboClubForm.name}
                                 onChange={(e) => updateRoboClubForm('name', e.target.value)}
-                                placeholder="e.g. John Doe"
+                                placeholder="e.g. Sharma ji ka londa"
                                 className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                               />
                             </div>
@@ -3497,7 +3569,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 type="email"
                                 value={roboClubForm.email}
                                 onChange={(e) => updateRoboClubForm('email', e.target.value)}
-                                placeholder="your@email.com"
+                                placeholder="e.g. ashutosh.aicra@gmail.com"
                                 className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                               />
                             </div>
@@ -3513,7 +3585,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 type="text"
                                 value={roboClubForm.clubName}
                                 onChange={(e) => updateRoboClubForm('clubName', e.target.value)}
-                                placeholder="e.g. Tech Innovators"
+                                placeholder="e.g. AICRA CLUB"
                                 className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                               />
                             </div>
@@ -3527,7 +3599,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 type="text"
                                 value={roboClubForm.instituteName}
                                 onChange={(e) => updateRoboClubForm('instituteName', e.target.value)}
-                                placeholder="e.g. ABC College"
+                                placeholder="e.g. DU"
                                 className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                               />
                             </div>
@@ -3590,22 +3662,6 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                             </div>
                           </div>
 
-                          <div className="sm:col-span-2">
-                            <label className="block text-slate-700 text-sm font-medium mb-1">Password</label>
-                            <div className="relative">
-                              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                              <input
-                                type="password"
-                                value={roboClubForm.password}
-                                onChange={(e) => updateRoboClubForm('password', e.target.value)}
-                                placeholder="Min 8 characters"
-                                className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                              />
-                            </div>
-                            <p className="text-slate-500 text-xs mt-1">
-                              Used to sign in to your RoboClub captain account.
-                            </p>
-                          </div>
                         </div>
 
                         <button

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ArrowRight, FileText, Calendar, Scale } from 'lucide-react';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
+import NewsArticleBody from '../NewsArticleBody';
 
 const CATEGORY_CONFIG = {
   GENERAL: { label: 'General', icon: FileText, color: 'text-slate-600 bg-slate-100' },
@@ -125,9 +126,9 @@ const PartnerNewsSection = ({
                     {item.title}
                   </h3>
                   {item.description && (
-                    <p className="text-sm text-slate-600 leading-relaxed line-clamp-3 flex-grow">
-                      {item.description}
-                    </p>
+                    <div className="text-sm text-slate-600 leading-relaxed line-clamp-3 flex-grow overflow-hidden">
+                      <NewsArticleBody html={item.description} variant="card" />
+                    </div>
                   )}
                   {(buildNewsPath || onNewsClick) && (
                     buildNewsPath ? (
