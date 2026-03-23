@@ -65,13 +65,13 @@ const PartnerSupporterSection = ({
                     {supporter.name}
                   </span>
                 )}
-                {isExternal && (
+                {/* {isExternal && (
                   <ExternalLink
                     className="mt-2 w-4 h-4 text-slate-400 flex-shrink-0"
                     size={16}
                     aria-hidden
                   />
-                )}
+                )} */}
               </a>
             );
           })}

@@ -12,6 +12,7 @@ import { useLogout } from '../hooks/useLogout';
 import {
   fetchPartnerById,
   updatePartner,
+  updatePartnerFormData,
   setPartnerAuth,
   getPartnerAuth,
   listSeasons,
@@ -77,6 +78,8 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
         title: partnerRecord.heroTitle || '',
         subtitle: partnerRecord.heroSubtitle || '',
         bannerImage: partnerRecord.heroBannerImage || partnerRecord.bannerImage || '',
+        bannerVideo: partnerRecord.bannerVideo || '',
+        youtubeVideo: partnerRecord.youtubeVideo || '',
         themeColor: partnerRecord.themeColor || 'Blue',
       },
       event: {
@@ -111,6 +114,8 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     const payload = {
       heroTitle: data.home?.title?.trim() || undefined,
       heroSubtitle: data.home?.subtitle?.trim() || undefined,
+      youtubeVideo: data.home?.youtubeVideo?.trim() || undefined,
+      bannerVideo: data.home?.bannerVideo?.trim() || undefined,
       themeColor: data.home?.themeColor || undefined,
       eventTitle: data.event?.title?.trim() || undefined,
       eventLocation: data.event?.location?.trim() || undefined,
@@ -136,6 +141,70 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     }
 
     return payload;
+  };
+
+  const buildPartnerHomeFormData = (data) => {
+    const form = new FormData();
+    const home = data?.home || {};
+    if (home.title?.trim()) form.append('heroTitle', home.title.trim());
+    if (home.subtitle?.trim()) form.append('heroSubtitle', home.subtitle.trim());
+    if (home.youtubeVideo?.trim()) form.append('youtubeVideo', home.youtubeVideo.trim());
+    if (home.themeColor?.trim()) form.append('themeColor', home.themeColor.trim());
+    if (home._bannerVideoFile) form.append('bannerVideo', home._bannerVideoFile);
+    else if (home.bannerVideo?.trim()) form.append('bannerVideo', home.bannerVideo.trim());
+
+    const event = data?.event || {};
+    if (event.title?.trim()) form.append('eventTitle', event.title.trim());
+    if (event.location?.trim()) form.append('eventLocation', event.location.trim());
+    if (event.date?.trim()) form.append('eventDate', event.date.trim());
+
+    if (data?.socialLinks && Object.keys(data.socialLinks).length > 0) {
+      form.append('socialLinks', JSON.stringify(data.socialLinks));
+    }
+    if (data?.footer && Object.keys(data.footer).length > 0) {
+      form.append('footerInfo', JSON.stringify(data.footer));
+    }
+    if (Array.isArray(data?.quickLinks) && data.quickLinks.length > 0) {
+      form.append('quickLinks', JSON.stringify(data.quickLinks));
+    }
+    if (Array.isArray(data?.videos) && data.videos.length > 0) {
+      form.append('videos', JSON.stringify(data.videos));
+    }
+    if (Array.isArray(data?.products) && data.products.length > 0) {
+      form.append('products', JSON.stringify(data.products));
+    }
+
+    if (Array.isArray(data?.news) && data.news.length > 0) {
+      const newsForPayload = data.news.map((item) => {
+        const { _imageFile, image, ...rest } = item;
+        return _imageFile ? rest : { ...rest, image };
+      });
+      form.append('news', JSON.stringify(newsForPayload));
+      data.news.forEach((item, i) => {
+        if (item._imageFile) form.append(`newsImage_${i}`, item._imageFile);
+      });
+    }
+
+    if (Array.isArray(data?.supporters) && data.supporters.length > 0) {
+      const supportersForPayload = data.supporters.map((item) => {
+        const { _logoFile, logo, ...rest } = item;
+        return _logoFile ? rest : { ...rest, logo };
+      });
+      form.append('supporters', JSON.stringify(supportersForPayload));
+      data.supporters.forEach((item, i) => {
+        if (item._logoFile) form.append(`supporterLogo_${i}`, item._logoFile);
+      });
+    }
+
+    const stats = data?.stats;
+    if (stats) {
+      if (typeof stats.studentsCount === 'number') form.append('studentsCount', String(stats.studentsCount));
+      if (typeof stats.performanceScore === 'number') form.append('performanceScore', String(stats.performanceScore));
+      if (typeof stats.revenue === 'number') form.append('revenue', String(stats.revenue));
+      if (typeof stats.totalRevenue === 'number') form.append('totalRevenue', String(stats.totalRevenue));
+    }
+
+    return form;
   };
 
   const handleVideoThumbnailFileChange = (index, event) => {
@@ -228,6 +297,37 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       const item = supporters[index] || {};
       supporters[index] = { ...item, logo: '', _logoFile: null };
       return { ...prev, supporters };
+    });
+  };
+
+  const handleBannerVideoFileChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('video/')) {
+      window.alert('Please select a video file (MP4, WebM, etc.).');
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      window.alert('Banner video must be smaller than 50MB.');
+      return;
+    }
+    setPartnerHomeData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        home: { ...prev.home, _bannerVideoFile: file },
+      };
+    });
+    event.target.value = '';
+  };
+
+  const handleBannerVideoRemove = () => {
+    setPartnerHomeData((prev) => {
+      if (!prev) return prev;
+      const home = { ...prev.home };
+      delete home._bannerVideoFile;
+      home.bannerVideo = '';
+      return { ...prev, home };
     });
   };
 
@@ -1326,55 +1426,14 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     }
   };
 
-  const fileToBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-
   const savePartnerHome = async () => {
     if (!partner?._id || !partnerHomeData) return;
     setPartnerHomeError('');
     setPartnerHomeSuccess(false);
     setPartnerHomeSaving(true);
     try {
-      let dataToSave = { ...partnerHomeData };
-      if (dataToSave.news) {
-        dataToSave = {
-          ...dataToSave,
-          news: await Promise.all(
-            dataToSave.news.map(async (item) => {
-              if (item._imageFile) {
-                const base64 = await fileToBase64(item._imageFile);
-                const { _imageFile, ...rest } = item;
-                return { ...rest, image: base64 };
-              }
-              const { _imageFile, ...rest } = item;
-              return rest;
-            })
-          ),
-        };
-      }
-      if (dataToSave.supporters) {
-        dataToSave = {
-          ...dataToSave,
-          supporters: await Promise.all(
-            dataToSave.supporters.map(async (item) => {
-              if (item._logoFile) {
-                const base64 = await fileToBase64(item._logoFile);
-                const { _logoFile, ...rest } = item;
-                return { ...rest, logo: base64 };
-              }
-              const { _logoFile, ...rest } = item;
-              return rest;
-            })
-          ),
-        };
-      }
-      const payload = buildHomeContentPayload(dataToSave);
-      const data = await updatePartner(partner._id, user?.token, payload);
+      const formData = buildPartnerHomeFormData(partnerHomeData);
+      const data = await updatePartnerFormData(partner._id, user?.token, formData);
       const updatedPartner = data?.partner ?? data;
       if (updatedPartner) {
         const auth = getPartnerAuth();
@@ -1832,7 +1891,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         <h3 className="text-lg font-bold text-black mb-4">Home Section</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-bold text-black mb-1">Title</label>
+                            <label className="block text-sm font-bold text-black mb-1">Hero Title</label>
                             <input
                               type="text"
                               value={partnerHomeData.home?.title || ''}
@@ -1841,11 +1900,11 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 home: { ...partnerHomeData.home, title: e.target.value }
                               })}
                               className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 text-[black] focus:ring-blue-500 outline-none"
-                              placeholder="Enter home title"
+                              placeholder="Enter hero title"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-black mb-1">Subtitle</label>
+                            <label className="block text-sm font-bold text-black mb-1">Hero Subtitle</label>
                             <input
                               type="text"
                               value={partnerHomeData.home?.subtitle || ''}
@@ -1854,8 +1913,68 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 home: { ...partnerHomeData.home, subtitle: e.target.value }
                               })}
                               className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
-                              placeholder="Enter subtitle"
+                              placeholder="Enter hero subtitle"
                             />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-bold text-black mb-1">YouTube Video (Featured)</label>
+                            <input
+                              type="url"
+                              value={partnerHomeData.home?.youtubeVideo || ''}
+                              onChange={(e) => setPartnerHomeData({
+                                ...partnerHomeData,
+                                home: { ...partnerHomeData.home, youtubeVideo: e.target.value }
+                              })}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
+                              placeholder="https://youtube.com/watch?v=..."
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-bold text-black mb-1">Banner Video (Upload)</label>
+                            {(partnerHomeData.home?._bannerVideoFile || partnerHomeData.home?.bannerVideo) ? (
+                              <div className="border border-slate-200 rounded-lg p-4 space-y-2">
+                                <div className="flex items-center gap-3">
+                                  <video
+                                    src={partnerHomeData.home._bannerVideoFile ? URL.createObjectURL(partnerHomeData.home._bannerVideoFile) : (partnerHomeData.home.bannerVideo || undefined)}
+                                    className="h-24 w-auto rounded object-cover bg-slate-100"
+                                    muted
+                                    loop
+                                    playsInline
+                                    preload="metadata"
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    {partnerHomeData.home._bannerVideoFile ? (
+                                      <p className="text-sm font-medium text-black truncate">{partnerHomeData.home._bannerVideoFile.name}</p>
+                                    ) : (
+                                      <p className="text-sm text-slate-600">Current banner video</p>
+                                    )}
+                                    <p className="text-xs text-slate-500">MP4, WebM. Max 50MB.</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <label className="cursor-pointer px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:border-blue-500 hover:text-blue-600 text-black">
+                                      <Upload className="w-4 h-4 inline-block mr-1 align-middle" />
+                                      Change
+                                      <input type="file" className="hidden" accept="video/*" onChange={handleBannerVideoFileChange} />
+                                    </label>
+                                    <button
+                                      type="button"
+                                      onClick={handleBannerVideoRemove}
+                                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-slate-50/50 transition-colors">
+                                <Upload className="w-8 h-8 text-slate-400 mb-2" />
+                                <span className="text-sm font-medium text-slate-600">Upload banner video</span>
+                                <span className="text-xs text-slate-500 mt-1">MP4 or WebM, max 50MB</span>
+                                <input type="file" className="hidden" accept="video/mp4,video/webm" onChange={handleBannerVideoFileChange} />
+                              </label>
+                            )}
+                            <p className="mt-1 text-xs text-slate-500">Hero banner background video. Leave empty to use default.</p>
                           </div>
                         </div>
                       </div>
@@ -1960,6 +2079,23 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                               })}
                               className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
                               placeholder="City, Country"
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-bold text-black mb-1">Countries (comma-separated)</label>
+                            <input
+                              type="text"
+                              value={Array.isArray(partnerHomeData.footer?.countries) ? partnerHomeData.footer.countries.join(', ') : (partnerHomeData.footer?.countries || '')}
+                              onChange={(e) => {
+                                const val = e.target.value || '';
+                                const countries = val.split(',').map((c) => c.trim()).filter(Boolean);
+                                setPartnerHomeData({
+                                  ...partnerHomeData,
+                                  footer: { ...partnerHomeData.footer, countries }
+                                });
+                              }}
+                              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
+                              placeholder="India, Thailand, USA"
                             />
                           </div>
                         </div>
@@ -2096,6 +2232,21 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                               />
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div>
+                                  <label className="block text-xs font-medium text-slate-600 mb-1">Date</label>
+                                  <input
+                                    type="date"
+                                    value={item.Date || item.date || ''}
+                                    onChange={(e) => {
+                                      const newNews = [...partnerHomeData.news];
+                                      newNews[index] = { ...newNews[index], Date: e.target.value };
+                                      setPartnerHomeData({ ...partnerHomeData, news: newNews });
+                                    }}
+                                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-[black]"
+                                  />
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
                                   <label className="block text-xs font-medium text-slate-600 mb-1">Image</label>
                                   {(item._imageFile || item.image) ? (
                                     <div className="relative group">
@@ -2168,7 +2319,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                           ))}
                           <button
                             onClick={() => {
-                              const newNews = [...(partnerHomeData.news || []), { title: '', description: '', image: '', type: 'GENERAL', isActive: true, _id: `temp-${Date.now()}`, _imageFile: null }];
+                              const newNews = [...(partnerHomeData.news || []), { title: '', description: '', Date: '', image: '', type: 'GENERAL', isActive: true, _id: `temp-${Date.now()}`, _imageFile: null }];
                               setPartnerHomeData({ ...partnerHomeData, news: newNews });
                             }}
                             className="w-full py-2 px-4 border-2 border-dashed border-slate-300 rounded-lg text-black hover:border-blue-500 hover:text-blue-600 font-medium"

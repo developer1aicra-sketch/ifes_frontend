@@ -114,8 +114,8 @@ const viewToPath = (view) => {
 };
 
 const NewsArticleRoute = (props) => {
-  const { id } = useParams();
-  return <NewsArticleView articleId={id} {...props} />;
+  const { id, locationCode } = useParams();
+  return <NewsArticleView articleId={id} locationCode={locationCode || null} {...props} />;
 };
 
 const getPartnerSession = () => {

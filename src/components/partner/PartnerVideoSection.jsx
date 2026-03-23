@@ -111,11 +111,11 @@ const PartnerVideoSection = ({ videos = [], title = 'Latest Videos', className =
                       </a>
                     )}
                   </div>
-                  <div className="p-5">
+                  {/* <div className="p-5">
                     <h3 className="font-semibold text-lg text-slate-900 line-clamp-2 leading-tight">
                       {video.title}
                     </h3>
-                  </div>
+                  </div> */}
                 </article>
               );
             })}

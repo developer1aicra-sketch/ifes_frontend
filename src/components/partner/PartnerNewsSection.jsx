@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import { ArrowRight, FileText, Calendar, Scale } from 'lucide-react';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
 
@@ -16,13 +17,15 @@ const CATEGORY_CONFIG = {
  * @param {object} props
  * @param {Array<{ _id: string, title: string, description?: string, image?: string, type?: string, isActive?: boolean }>} props.news - List of news items
  * @param {string} [props.title] - Section heading
- * @param {(id: string) => void} [props.onNewsClick] - Callback when user clicks a news item (e.g. open detail view)
+ * @param {(id: string) => void} [props.onNewsClick] - Callback when user clicks (legacy, use buildNewsPath for URL-based nav)
+ * @param {(id: string) => string} [props.buildNewsPath] - Returns path for news detail (e.g. /news/:id or /AE/news/:id). When provided, uses NavLink for proper routing.
  * @param {string} [props.className] - Optional section wrapper class
  */
 const PartnerNewsSection = ({
   news = [],
   title = 'News',
   onNewsClick,
+  buildNewsPath,
   className = '',
 }) => {
   const theme = useThemeClasses();
@@ -126,17 +129,29 @@ const PartnerNewsSection = ({
                       {item.description}
                     </p>
                   )}
-                  {onNewsClick && (
-                    <button
-                      type="button"
-                      onClick={() => onNewsClick(item._id)}
-                      className={`mt-4 text-sm font-medium inline-flex items-center gap-1 self-start ${
-                        theme.textPrimary ? `${theme.textPrimary} hover:underline` : 'text-blue-600 hover:underline'
-                      }`}
-                    >
-                      Read more
-                      <ArrowRight size={14} />
-                    </button>
+                  {(buildNewsPath || onNewsClick) && (
+                    buildNewsPath ? (
+                      <NavLink
+                        to={buildNewsPath(item._id)}
+                        className={`mt-4 text-sm font-medium inline-flex items-center gap-1 self-start ${
+                          theme.textPrimary ? `${theme.textPrimary} hover:underline` : 'text-blue-600 hover:underline'
+                        }`}
+                      >
+                        Read more
+                        <ArrowRight size={14} />
+                      </NavLink>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onNewsClick(item._id)}
+                        className={`mt-4 text-sm font-medium inline-flex items-center gap-1 self-start ${
+                          theme.textPrimary ? `${theme.textPrimary} hover:underline` : 'text-blue-600 hover:underline'
+                        }`}
+                      >
+                        Read more
+                        <ArrowRight size={14} />
+                      </button>
+                    )
                   )}
                 </div>
               </article>

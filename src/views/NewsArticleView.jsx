@@ -1,26 +1,61 @@
 import { motion } from 'framer-motion';
 import { useEffect, useMemo } from 'react';
 import { ArrowLeft, Calendar, Tag, ChevronRight } from 'lucide-react';
+import { usePartnerHome } from '../hooks/usePartnerHome';
 
-const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, newsError }) => {
+/** Normalize partner API news item to NewsArticleView shape */
+const normalizePartnerNews = (item) => ({
+  id: item._id,
+  title: item.title,
+  body: item.description,
+  desc: item.description,
+  category: (item.type || 'GENERAL').toUpperCase(),
+  date: item.Date ? new Date(item.Date).toLocaleDateString() : new Date().toLocaleDateString(),
+  featuredImage: item.image,
+});
+
+const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, newsError, locationCode = null }) => {
   void motion;
+  const { data: partnerHomeData, loading: partnerLoading } = usePartnerHome(locationCode);
+
   const safeItems = useMemo(() => newsItems.filter(Boolean), [newsItems]);
-  const article = safeItems.find((item) => String(item.id) === String(articleId)) || safeItems[0];
-  const relatedNews = safeItems.filter((item) => String(item.id) !== String(articleId)).slice(0, 4);
+  const partnerItems = useMemo(() => {
+    if (!partnerHomeData?.news?.length) return [];
+    return partnerHomeData.news
+      .filter((n) => n && (n.isActive !== false))
+      .map(normalizePartnerNews);
+  }, [partnerHomeData?.news]);
+
+  const mergedItems = useMemo(
+    () => (locationCode && partnerItems.length > 0 ? [...partnerItems, ...safeItems] : safeItems),
+    [locationCode, partnerItems, safeItems]
+  );
+
+  const article = useMemo(() => {
+    return mergedItems.find(
+      (item) => String(item.id) === String(articleId) || String(item._id) === String(articleId)
+    ) ?? null;
+  }, [mergedItems, articleId]);
+
+  const relatedNews = useMemo(
+    () => mergedItems.filter((item) => String(item.id) !== String(articleId) && String(item._id) !== String(articleId)).slice(0, 4),
+    [mergedItems, articleId]
+  );
 
   useEffect(() => {
     if (!article) return;
     try {
       const raw = localStorage.getItem('news_reads');
       const counts = raw ? JSON.parse(raw) : {};
-      counts[article.id] = (counts[article.id] || 0) + 1;
+      const id = article.id ?? article._id;
+      counts[id] = (counts[id] || 0) + 1;
       localStorage.setItem('news_reads', JSON.stringify(counts));
     } catch {
       void 0;
     }
-  }, [article?.id]);
+  }, [article?.id, article?._id]);
 
-  if (newsLoading && !article) {
+  if ((newsLoading || (locationCode && partnerLoading)) && !article) {
     return (
       <div className="animate-fadeIn pt-20 sm:pt-24 pb-20 bg-[#0a0f1a] min-h-screen flex items-center justify-center text-slate-400">
         Loading article…

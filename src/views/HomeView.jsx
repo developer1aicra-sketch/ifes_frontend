@@ -21,7 +21,7 @@ import FeaturedShopSection from '../components/FeaturedShopSection';
 import { PartnerVideoSection, PartnerNewsSection, PartnerSupporterSection } from '../components/partner';
 import { NavLink, useParams } from 'react-router-dom';
 import { useThemeClasses } from '../hooks/useThemeClasses';
-import { fetchPartnerHome } from '../utils/api';
+import { usePartnerHome } from '../hooks/usePartnerHome';
 import { useLocationPrefix } from '../hooks/useLocationPrefix';
 import { PARTNER_HOME_STATIC } from '../data/partnerHomeStatic';
 import TrophyVideo from '../assets/Trophy-1.m4v';
@@ -42,35 +42,11 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
   /** ✅ FIX: parent-controlled open state (Zoom-style) */
   const [openRows, setOpenRows] = useState({});
 
-  // Partner home data state
-  const [partnerHomeData, setPartnerHomeData] = useState(null);
-  const [partnerHomeLoading, setPartnerHomeLoading] = useState(false);
-  const [partnerHomeError, setPartnerHomeError] = useState(null);
-
-  // Fetch partner home data when locationCode is present
-  useEffect(() => {
-    if (!locationCode) return;
-
-    const loadPartnerHome = async () => {
-      setPartnerHomeLoading(true);
-      setPartnerHomeError(null);
-      try {
-        const data = await fetchPartnerHome(locationCode);
-        if (data.success) {
-          setPartnerHomeData(data);
-        } else {
-          setPartnerHomeError('Failed to load partner home data');
-        }
-      } catch (error) {
-        console.error('Error fetching partner home:', error);
-        setPartnerHomeError(error.message || 'Failed to load partner home data');
-      } finally {
-        setPartnerHomeLoading(false);
-      }
-    };
-
-    loadPartnerHome();
-  }, [locationCode]);
+  // Partner home data: fetch from https://worso-backend-amber.vercel.app/api/partners/home/{countryCode}
+  const defaultPartnerCode = import.meta.env.VITE_DEFAULT_PARTNER_CODE || null;
+  const { data: partnerHomeData, loading: partnerHomeLoading, error: partnerHomeError } = usePartnerHome(locationCode, {
+    defaultCode: defaultPartnerCode,
+  });
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
@@ -96,7 +72,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
         body: item.description,
         desc: item.description,
         category: item.type || 'GENERAL',
-        date: new Date().toLocaleDateString(),
+        date: item.Date ? new Date(item.Date).toLocaleDateString() : new Date().toLocaleDateString(),
         featuredImage: item.image,
       }));
     }
@@ -132,8 +108,8 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
     return () => clearInterval(i);
   }, [mostReadPool.length]);
 
-  // Show loading state
-  if (partnerHomeLoading && locationCode) {
+  // Show loading state when fetching partner home (location route or default code)
+  if (partnerHomeLoading) {
     return (
       <div className="animate-fadeIn bg-slate-50 min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -144,8 +120,8 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
     );
   }
 
-  // Show error state
-  if (partnerHomeError && locationCode) {
+  // Show error state when partner home fetch failed
+  if (partnerHomeError) {
     return (
       <div className="animate-fadeIn bg-slate-50 min-h-screen flex items-center justify-center">
         <div className="text-center max-w-md">
@@ -209,17 +185,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
               </p>
 
               <div className="flex flex-wrap gap-4 pt-6">
-                {partnerHomeData?.quickLinks && partnerHomeData.quickLinks.length > 0 ? (
-                  partnerHomeData.quickLinks.slice(0, 2).map((link) => (
-                    <NavLink
-                      key={link._id}
-                      to={buildPath(link.url)}
-                      className={`${theme.bgPrimary || siteConfig.colors.primary} px-8 py-4 rounded-lg font-bold text-base transition-all shadow-lg flex items-center gap-2 hover:-translate-y-1`}
-                    >
-                      {link.title} <ArrowRight size={18} />
-                    </NavLink>
-                  ))
-                ) : (
+               
                   <>
                     <button
                       onClick={() => setView('technoxian')}
@@ -231,7 +197,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
                       <Users size={18} /> Teams & Rankings
                     </button>
                   </>
-                )}
+              
               </div>
             </div>
 
@@ -366,7 +332,8 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
         </section>
       )}
 
-      {!siteConfig.is_partner && <LogoTicker />}
+      {/* Supporting Organizations & Think Tanks: global home only, not partner home */}
+      {!siteConfig.is_partner && !locationCode && <LogoTicker />}
       
       {/* Quick Links Section */}
       {partnerHomeData?.quickLinks && partnerHomeData.quickLinks.length > 0 && (
@@ -395,7 +362,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
       
       <FeaturedShopSection/>
       {/* Partner route: Video, News, Supporter sections (API data with static fallback) */}
-      {locationCode && (
+      {(locationCode || partnerHomeData) && (
         <>
           <PartnerVideoSection
             videos={partnerHomeData?.videos?.length ? partnerHomeData.videos : PARTNER_HOME_STATIC.videos}
@@ -404,13 +371,13 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
           <PartnerNewsSection
             news={partnerHomeData?.news?.length ? partnerHomeData.news : PARTNER_HOME_STATIC.news}
             title="News"
-            onNewsClick={(id) => setView(`news-${id}`)}
+            buildNewsPath={(id) => buildPath(`/news/${id}`)}
           />
-        </>
+        </> 
       )}
 
       {/* Products Section */}
-      {partnerHomeData?.products && partnerHomeData.products.length > 0 && (
+      {/* {partnerHomeData?.products && partnerHomeData.products.length > 0 && (
         <section className="py-16 bg-slate-50 border-t border-slate-100">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-slate-900 mb-8">Featured Products</h2>
@@ -448,10 +415,10 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
             </div>
           </div>
         </section>
-      )}
+      )} */}
 
       {/* Partner route: Supporters section */}
-      {locationCode && (
+      {(locationCode || partnerHomeData) && (
         <PartnerSupporterSection
           supporters={partnerHomeData?.supporters?.length ? partnerHomeData.supporters : PARTNER_HOME_STATIC.supporters}
           title="Our Supporters"
@@ -493,6 +460,8 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
       </section>
 
 
+      {/* Headline / Latest News / Most Read - global home only, hidden on partner pages */}
+      {!(locationCode || partnerHomeData) && (
       <section className="py-20 bg-white border-t border-slate-100">
         <div className="container mx-auto px-4 max-w-7xl">
           {newsError && <div className="text-sm text-red-500 mb-4">{newsError}</div>}
@@ -654,6 +623,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
           </div>
         </div>
       </section>
+      )}
     </div>
   );
 };

@@ -355,6 +355,29 @@ export const updatePartner = async (partnerId, token, payload) => {
   return data;
 };
 
+/**
+ * Update partner with FormData (multipart/form-data). Used for Partner Home Content with file uploads.
+ * @param {string} partnerId - Partner _id
+ * @param {string} token - JWT from partner login
+ * @param {FormData} formData - FormData instance with home content fields and files
+ * @returns {Promise<{ success: boolean, partner?: object }>}
+ */
+export const updatePartnerFormData = async (partnerId, token, formData) => {
+  const headers = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const response = await apiFetch(`${API_BASE_URL}/partners/${partnerId}`, {
+    method: 'PUT',
+    headers,
+    body: formData,
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = data?.message || data?.error || `Update failed (${response.status})`;
+    throw new Error(message);
+  }
+  return data;
+};
+
 // --- Partner Home Content API ---
 
 /**
