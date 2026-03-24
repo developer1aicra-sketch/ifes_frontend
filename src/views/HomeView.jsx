@@ -18,11 +18,12 @@ import {
 } from 'lucide-react';
 import LogoTicker from '../components/LogoTicker';
 import FeaturedShopSection from '../components/FeaturedShopSection';
-import { PartnerVideoSection, PartnerNewsSection, PartnerSupporterSection } from '../components/partner';
+import { PartnerVideoSection, PartnerNewsSection, PartnerSupporterSection, PartnerCompetitionSection } from '../components/partner';
 import { NavLink, useParams } from 'react-router-dom';
 import { useThemeClasses } from '../hooks/useThemeClasses';
 import { usePartnerHome } from '../hooks/usePartnerHome';
 import { usePartnerEvent } from '../hooks/usePartnerEvent';
+import { usePartnerCompetitions } from '../hooks/usePartnerCompetitions';
 import { useLocationPrefix } from '../hooks/useLocationPrefix';
 import { PARTNER_HOME_STATIC } from '../data/partnerHomeStatic';
 import TrophyVideo from '../assets/Trophy-1.m4v';
@@ -65,6 +66,11 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
   // Event API: fetch single event from /api/event/get?website=worso&partnerCode=XX (first item only)
   const effectivePartnerCode = locationCode || defaultPartnerCode || null;
   const { data: partnerEvent } = usePartnerEvent(effectivePartnerCode);
+  const {
+    data: partnerCompetitions,
+    loading: partnerCompetitionsLoading,
+    error: partnerCompetitionsError,
+  } = usePartnerCompetitions(effectivePartnerCode);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
@@ -381,10 +387,23 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
       <FeaturedShopSection/>
       {(locationCode || partnerHomeData) && (
         <>
+          {!partnerCompetitionsLoading && partnerCompetitions.length > 0 && (
+            <PartnerCompetitionSection
+              competitions={partnerCompetitions}
+              title="Competitions"
+            />
+          )}
+          {partnerCompetitionsError && (
+            <div className="container mx-auto px-4 pt-6">
+              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+                Unable to load competitions right now.
+              </p>
+            </div>
+          )}
           {featuredVideos.length > 0 && (
             <PartnerVideoSection
               videos={featuredVideos}
-              title="Featured Videos"
+              title="Videos"
               carouselId="featured-video-carousel"
             />
           )}

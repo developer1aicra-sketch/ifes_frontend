@@ -1631,7 +1631,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                       )}
                     </button> */}
-                    {/* <button
+                    <button
                       onClick={() => setActiveTab('team')}
                       className={`w-full text-left px-4 py-3 rounded-xl border transition-all shadow-sm flex items-center gap-3 group ${activeTab === 'team'
                           ? 'bg-white/20 border-blue-400 text-white shadow-lg shadow-blue-500/20'
@@ -1644,11 +1644,11 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         }`}>
                         <Users size={16} className="text-blue-300" />
                       </div>
-                      <span className="font-medium">Members</span>
+                      <span className="font-medium">Membership</span>
                       {activeTab === 'team' && (
                         <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                       )}
-                    </button> */}
+                    </button>
 
                   
 
@@ -1693,8 +1693,8 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                     {activeTab === 'partner-home' && 'Partner Home Content'}
                     {activeTab === 'partners' && 'Partner Management'}
                     {activeTab === 'events' && (isAdminMode === 'super' ? 'Event Manager' : 'My Events')}
-                    {activeTab === 'roboclub' && 'RoboClub Registration'}
-                    {/* {activeTab === 'membership' && 'My Membership'} */}
+                    {/* {activeTab === 'roboclub' && 'RoboClub Registration'} */}
+                    {activeTab === 'membership' && 'My Membership'}
 
                     {activeTab === 'courses' && 'Course Management'}
                     {activeTab === 'academia' && 'Academia Portal'}
@@ -3242,7 +3242,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                   <div className="space-y-6">
                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                       <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-slate-800">Members</h2>
+                        <h2 className="text-2xl font-bold text-slate-800">Membership</h2>
                         {/* <button
                           onClick={() => setShowAddMemberModal(true)}
                           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
@@ -3254,11 +3254,11 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
                       <div className="mb-6">
                         <div className="relative">
-                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-black" size={18} />
                           <input
                             type="text"
                             placeholder="Search team members..."
-                            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 text-black focus:border-blue-500 outline-none"
                           />
                         </div>
                       </div>
