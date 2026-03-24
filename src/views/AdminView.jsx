@@ -8,7 +8,9 @@ import { COMPETITION_CATEGORIES } from '../constants/competition';
 import { COUNTRY_DIAL_CODES } from '../constants/countryDialCodes';
 import { callGemini } from '../utils/gemini';
 import { getMyMembership } from '../app/auth/authApi';
-import { addClubAdmin, getClubsByPartner } from '../api/clubApi';
+import { getMembershipsByPartner } from '../api/membershipApi';
+import { addClubAdmin, deleteClub, getClubsByPartner, updateClub } from '../api/clubApi';
+import { addPartnerAbout, updatePartnerAbout, deletePartnerAbout } from '../api/partnerAboutApi';
 import { useLogout } from '../hooks/useLogout';
 import {
   fetchPartnerById,
@@ -32,6 +34,7 @@ import {
 } from '../utils/api';
 import { getEventsList, getEventsByWebsite } from '../api/eventApi';
 import { getLocationCodeFromPath } from '../utils/locationRoutes';
+import { COUNTRIES, getStatesByCountry, getCitiesByState } from '../constants/locationData';
 
 const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => {
   const location = useLocation();
@@ -68,6 +71,24 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
   const [partnerHomeSaving, setPartnerHomeSaving] = useState(false);
   const [partnerHomeError, setPartnerHomeError] = useState('');
   const [partnerHomeSuccess, setPartnerHomeSuccess] = useState(false);
+  const [partnerHomeSubTab, setPartnerHomeSubTab] = useState('home');
+  const [partnerAboutForm, setPartnerAboutForm] = useState({ _id: '', heading: '', content: '' });
+  const [partnerAboutSaving, setPartnerAboutSaving] = useState(false);
+  const [partnerAboutDeleting, setPartnerAboutDeleting] = useState(false);
+  const [partnerAboutError, setPartnerAboutError] = useState('');
+  const [partnerAboutSuccess, setPartnerAboutSuccess] = useState('');
+
+  const normalizePartnerAbout = (payload) => {
+    if (!payload || typeof payload !== 'object') return null;
+    const heading = payload.heading || payload.title || '';
+    const content = payload.content || payload.description || '';
+    if (!heading && !content && !payload._id) return null;
+    return {
+      _id: payload._id || payload.id || '',
+      heading,
+      content,
+    };
+  };
 
   const mapPartnerToHomeContent = (partnerRecord) => {
     if (!partnerRecord) return null;
@@ -364,6 +385,17 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
         const partnerRecord = data?.partner ?? data;
         if (partnerRecord) {
           setPartnerHomeData(mapPartnerToHomeContent(partnerRecord));
+          const about =
+            normalizePartnerAbout(partnerRecord?.about) ||
+            normalizePartnerAbout(partnerRecord?.aboutSection) ||
+            normalizePartnerAbout(Array.isArray(partnerRecord?.abouts) ? partnerRecord.abouts[0] : null) ||
+            normalizePartnerAbout(Array.isArray(partnerRecord?.aboutsData) ? partnerRecord.aboutsData[0] : null) ||
+            normalizePartnerAbout(Array.isArray(partnerRecord?.partnerAbout) ? partnerRecord.partnerAbout[0] : partnerRecord?.partnerAbout);
+          if (about) {
+            setPartnerAboutForm(about);
+          } else {
+            setPartnerAboutForm({ _id: '', heading: '', content: '' });
+          }
         } else {
           setPartnerHomeError('Partner not found.');
         }
@@ -380,140 +412,79 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     }
   }, [partner?._id, activeTab]);
 
-  const [teamMembers, setTeamMembers] = useState([
-    {
-      id: 1,
-      name: 'Alex Johnson',
-      role: 'Frontend Architect',
-      email: 'alex.j@example.com',
-      phone: '+1 (555) 123-4567',
-      avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-      joinDate: '2023-01-15',
-      skills: ['React', 'TypeScript', 'UI/UX', 'Performance'],
-      bio: 'Passionate about building beautiful and performant user interfaces with React and modern web technologies.'
-    },
-    {
-      id: 2,
-      name: 'Sarah Chen',
-      role: 'Senior Frontend Developer',
-      email: 'sarah.c@example.com',
-      phone: '+1 (555) 987-6543',
-      avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-      joinDate: '2022-08-22',
-      skills: ['JavaScript', 'React', 'State Management', 'Testing'],
-      bio: 'Experienced in building scalable frontend applications with a focus on clean code and testing.'
-    },
-    {
-      id: 3,
-      name: 'Michael Rodriguez',
-      role: 'UI/UX Designer',
-      email: 'michael.r@example.com',
-      phone: '+1 (555) 234-5678',
-      avatar: 'https://randomuser.me/api/portraits/men/67.jpg',
-      joinDate: '2023-03-10',
-      skills: ['Figma', 'UI Design', 'User Research', 'Prototyping'],
-      bio: 'Creating intuitive and delightful user experiences through thoughtful design and user-centered approaches.'
-    },
-    {
-      id: 4,
-      name: 'Priya Patel',
-      role: 'Senior React Developer',
-      email: 'priya.p@example.com',
-      phone: '+1 (555) 876-5432',
-      avatar: 'https://randomuser.me/api/portraits/women/28.jpg',
-      joinDate: '2022-11-05',
-      skills: ['React', 'Redux', 'GraphQL', 'Jest'],
-      bio: 'Specializing in building complex React applications with a focus on performance and maintainability.'
-    },
-    {
-      id: 5,
-      name: 'David Kim',
-      role: 'Frontend Tech Lead',
-      email: 'david.k@example.com',
-      phone: '+1 (555) 345-6789',
-      avatar: 'https://randomuser.me/api/portraits/men/54.jpg',
-      joinDate: '2021-09-15',
-      skills: ['React', 'TypeScript', 'Architecture', 'Mentoring'],
-      bio: 'Leading the frontend team with a focus on best practices, code quality, and team growth.'
-    },
-    {
-      id: 6,
-      name: 'Emma Wilson',
-      role: 'UI/UX Designer',
-      email: 'emma.w@example.com',
-      phone: '+1 (555) 765-4321',
-      avatar: 'https://randomuser.me/api/portraits/women/36.jpg',
-      joinDate: '2023-01-20',
-      skills: ['Figma', 'User Research', 'Prototyping', 'Design Systems'],
-      bio: 'Passionate about creating intuitive interfaces and seamless user experiences.'
-    },
-    {
-      id: 7,
-      name: 'James Wilson',
-      role: 'Frontend Developer',
-      email: 'james.w@example.com',
-      phone: '+1 (555) 456-7890',
-      avatar: 'https://randomuser.me/api/portraits/men/48.jpg',
-      joinDate: '2023-04-15',
-      skills: ['Vue.js', 'JavaScript', 'CSS', 'Jest'],
-      bio: 'Focused on building responsive and accessible web applications with Vue.js.'
-    },
-    {
-      id: 8,
-      name: 'Olivia Martinez',
-      role: 'Senior UI Developer',
-      email: 'olivia.m@example.com',
-      phone: '+1 (555) 567-8901',
-      avatar: 'https://randomuser.me/api/portraits/women/52.jpg',
-      joinDate: '2022-06-10',
-      skills: ['HTML/CSS', 'Sass', 'JavaScript', 'Accessibility'],
-      bio: 'Creating pixel-perfect, accessible interfaces with a focus on CSS architecture and performance.'
-    },
-    {
-      id: 9,
-      name: 'Rajesh Kumar',
-      role: 'Backend Developer',
-      email: 'rajesh.k@example.com',
-      phone: '+91 98765 43210',
-      avatar: 'https://randomuser.me/api/portraits/men/42.jpg',
-      joinDate: '2023-02-18',
-      skills: ['Node.js', 'Express', 'MongoDB', 'REST APIs'],
-      bio: 'Building robust and scalable backend systems with Node.js and modern JavaScript frameworks.'
-    },
-    {
-      id: 10,
-      name: 'Aisha Khan',
-      role: 'DevOps Engineer',
-      email: 'aisha.k@example.com',
-      phone: '+44 7911 123456',
-      avatar: 'https://randomuser.me/api/portraits/women/63.jpg',
-      joinDate: '2022-09-30',
-      skills: ['Docker', 'Kubernetes', 'AWS', 'CI/CD'],
-      bio: 'Passionate about infrastructure as code and automating deployment pipelines for seamless software delivery.'
-    },
-    {
-      id: 11,
-      name: 'Carlos Mendez',
-      role: 'Full Stack Developer',
-      email: 'carlos.m@example.com',
-      phone: '+1 (555) 678-9012',
-      avatar: 'https://randomuser.me/api/portraits/men/29.jpg',
-      joinDate: '2023-05-22',
-      skills: ['React', 'Node.js', 'PostgreSQL', 'GraphQL'],
-      bio: 'Versatile developer with expertise in both frontend and backend technologies, delivering end-to-end solutions.'
-    },
-    {
-      id: 12,
-      name: 'Yuki Tanaka',
-      role: 'QA Automation Engineer',
-      email: 'yuki.t@example.com',
-      phone: '+81 90-1234-5678',
-      avatar: 'https://randomuser.me/api/portraits/women/58.jpg',
-      joinDate: '2023-01-10',
-      skills: ['Selenium', 'Cypress', 'Jest', 'TestCafe'],
-      bio: 'Ensuring software quality through comprehensive test automation and continuous integration practices.'
-    }
-  ]);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [teamMembersLoading, setTeamMembersLoading] = useState(false);
+  const [teamMembersError, setTeamMembersError] = useState('');
+  const [teamMembersPage, setTeamMembersPage] = useState(1);
+  const [teamMembersLimit] = useState(9);
+  const [teamMembersTotalPages, setTeamMembersTotalPages] = useState(1);
+  const [teamMembersTotalCount, setTeamMembersTotalCount] = useState(0);
+  const [teamMembersSearch, setTeamMembersSearch] = useState('');
+  const [selectedTeamMember, setSelectedTeamMember] = useState(null);
+
+  const normalizeMembershipMember = useCallback((item, index) => {
+    const userInfo = item?.user_id || item?.user || item?.member || {};
+    const firstName = userInfo?.firstName || item?.firstName || '';
+    const lastName = userInfo?.lastName || item?.lastName || '';
+    const fullNameFromParts = `${firstName} ${lastName}`.trim();
+    const fallbackName = item?.name || item?.fullName || userInfo?.name || userInfo?.fullName || fullNameFromParts || '----';
+
+    return {
+      id: item?._id || item?.id || userInfo?._id || userInfo?.id || `${fallbackName}-${index}`,
+      name: fallbackName,
+      role: item?.role || item?.designation || item?.planTitle || item?.planName || 'Member',
+      email: item?.email || item?.emailId || userInfo?.email || userInfo?.emailId || 'N/A',
+      phone: item?.phone || item?.mobile || item?.mobileNo || userInfo?.phone || userInfo?.mobile || userInfo?.mobileNo || 'N/A',
+      avatar: item?.avatar || item?.profileImage || userInfo?.avatar || userInfo?.profileImage || 'https://randomuser.me/api/portraits/lego/1.jpg',
+      membershipId: item?.publicMembershipId || item?.membershipId || item?._id || 'N/A',
+      category: item?.category?.name || item?.category || 'N/A',
+      plan: item?.planTitle || item?.planName || item?.plan?.name || 'N/A',
+      status: item?.status || 'N/A',
+      paymentStatus: item?.paymentStatus || 'N/A',
+      createdAt: item?.createdAt || item?.startDate || '',
+    };
+  }, []);
+
+  const filteredTeamMembers = teamMembers.filter((member) => {
+    const q = teamMembersSearch.trim().toLowerCase();
+    if (!q) return true;
+    const haystack = `${member.name} ${member.role} ${member.email} ${member.phone}`.toLowerCase();
+    return haystack.includes(q);
+  });
+
+  useEffect(() => {
+    if (activeTab !== 'team') return;
+    let cancelled = false;
+    const fetchTeamMembers = async () => {
+      setTeamMembersLoading(true);
+      setTeamMembersError('');
+      try {
+        const res = await getMembershipsByPartner('IN', { page: teamMembersPage, limit: teamMembersLimit });
+        const responseData = res?.data ?? res;
+        const list = responseData?.data ?? responseData?.memberships ?? responseData?.members ?? responseData?.items ?? [];
+        const meta = responseData?.meta ?? responseData?.pagination ?? {};
+        const normalized = (Array.isArray(list) ? list : []).map((item, index) => normalizeMembershipMember(item, index));
+        if (!cancelled) {
+          setTeamMembers(normalized);
+          const totalPages = Number(meta?.totalPages || responseData?.totalPages || 1);
+          const totalCount = Number(meta?.totalItems || meta?.totalCount || responseData?.totalCount || normalized.length || 0);
+          setTeamMembersTotalPages(totalPages > 0 ? totalPages : 1);
+          setTeamMembersTotalCount(totalCount >= 0 ? totalCount : 0);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setTeamMembersError(err?.response?.data?.message || err?.message || 'Failed to load memberships');
+          setTeamMembers([]);
+          setTeamMembersTotalPages(1);
+          setTeamMembersTotalCount(0);
+        }
+      } finally {
+        if (!cancelled) setTeamMembersLoading(false);
+      }
+    };
+    fetchTeamMembers();
+    return () => { cancelled = true; };
+  }, [activeTab, teamMembersPage, teamMembersLimit, normalizeMembershipMember]);
   const [newMember, setNewMember] = useState({
     name: '',
     role: 'Frontend Developer',
@@ -752,6 +723,8 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
   // RoboClub Registration states (direct registration, no OTP)
   const [roboClubError, setRoboClubError] = useState('');
   const [roboClubLoading, setRoboClubLoading] = useState(false);
+  const [editingClubId, setEditingClubId] = useState(null);
+  const [deletingClubId, setDeletingClubId] = useState(null);
 
   // RoboClub Add payload — frontend data contract when adding a RoboClub
   // Payload shape: { name, clubName, instituteName, countryCode, country, state, city, mobile, email }
@@ -768,46 +741,127 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
   const [roboClubForm, setRoboClubForm] = useState(ROBO_CLUB_FORM_INITIAL);
 
-  // Country options for club registration
-  const COUNTRY_OPTIONS = [
-    { code: 'IN', name: 'India' },
-    { code: 'US', name: 'United States' },
-    { code: 'UK', name: 'United Kingdom' },
-    { code: 'CA', name: 'Canada' },
-    { code: 'AU', name: 'Australia' },
-    { code: 'DE', name: 'Germany' },
-    { code: 'FR', name: 'France' },
-    { code: 'JP', name: 'Japan' },
-    { code: 'CN', name: 'China' },
-    { code: 'BR', name: 'Brazil' },
-    { code: 'AE', name: 'United Arab Emirates' },
-    { code: 'SG', name: 'Singapore' },
-    { code: 'MY', name: 'Malaysia' },
-    { code: 'TH', name: 'Thailand' },
-    { code: 'PH', name: 'Philippines' },
-    { code: 'ID', name: 'Indonesia' },
-    { code: 'VN', name: 'Vietnam' },
-    { code: 'KR', name: 'South Korea' },
-    { code: 'NZ', name: 'New Zealand' },
-    { code: 'ZA', name: 'South Africa' },
-  ];
+  // Country / State / City options for RoboClub registration
+  const COUNTRY_OPTIONS = COUNTRIES.map((country) => ({ code: country.id, name: country.name }));
+  const ROBOCLUB_FALLBACK_STATE_OPTIONS = [{ id: 'OTHER_STATE', name: 'Other' }];
+  const ROBOCLUB_FALLBACK_CITY_OPTIONS = [{ id: 'OTHER_CITY', name: 'Other' }];
+
+  const roboClubStateOptions = (() => {
+    const states = getStatesByCountry(roboClubForm.countryCode);
+    return Array.isArray(states) && states.length > 0 ? states : ROBOCLUB_FALLBACK_STATE_OPTIONS;
+  })();
+
+  const selectedRoboClubStateOption = roboClubStateOptions.find((state) => state.name === roboClubForm.state);
+  const roboClubCityOptions = (() => {
+    if (!selectedRoboClubStateOption?.id) return [];
+    const cities = getCitiesByState(selectedRoboClubStateOption.id);
+    return Array.isArray(cities) && cities.length > 0 ? cities : ROBOCLUB_FALLBACK_CITY_OPTIONS;
+  })();
 
   // Handle club registration form update
   const updateRoboClubForm = (field, value) => {
-    setRoboClubForm((prev) => ({ ...prev, [field]: value }));
+    setRoboClubForm((prev) => {
+      if (field === 'countryCode') {
+        return { ...prev, countryCode: value, state: '', city: '' };
+      }
+      if (field === 'state') {
+        return { ...prev, state: value, city: '' };
+      }
+      return { ...prev, [field]: value };
+    });
     setRoboClubError('');
+  };
+
+  const closeRoboClubForm = () => {
+    setShowRoboClubForm(false);
+    setEditingClubId(null);
+    setRoboClubForm(ROBO_CLUB_FORM_INITIAL);
+    setRoboClubError('');
+  };
+
+  const getCountryCodeFromClub = (club) => {
+    const rawCode = String(club?.countryCode ?? '').trim().toUpperCase();
+    if (rawCode && COUNTRY_OPTIONS.some((item) => item.code === rawCode)) {
+      return rawCode;
+    }
+    const rawCountry = String(club?.country ?? '').trim().toLowerCase();
+    if (!rawCountry) return 'IN';
+    const matched = COUNTRY_OPTIONS.find((item) => item.name.toLowerCase() === rawCountry);
+    return matched?.code ?? 'IN';
+  };
+
+  const handleEditClub = (club) => {
+    if (!club?._id) return;
+    setEditingClubId(club._id);
+    setShowRoboClubForm(true);
+    setRoboClubError('');
+    setRoboClubForm({
+      name: String(club?.name ?? '').trim(),
+      clubName: String(club?.clubName ?? '').trim(),
+      instituteName: String(club?.instituteName ?? '').trim(),
+      countryCode: getCountryCodeFromClub(club),
+      state: String(club?.state ?? '').trim(),
+      city: String(club?.city ?? '').trim(),
+      mobile: String(club?.mobile ?? '').replace(/\D/g, '').slice(0, 10),
+      email: String(club?.email ?? '').trim(),
+    });
+  };
+
+  const handleDeleteClub = async (clubId) => {
+    if (!clubId) return;
+    const confirmed = window.confirm('Are you sure you want to delete this RoboClub?');
+    if (!confirmed) return;
+    setDeletingClubId(clubId);
+    setMyClubsError('');
+    try {
+      const response = await deleteClub(clubId);
+      if (response?.data?.success || response?.status === 200) {
+        if (editingClubId === clubId) {
+          closeRoboClubForm();
+        }
+        await refreshMyClubs();
+      } else {
+        setMyClubsError(response?.data?.message || 'Failed to delete club');
+      }
+    } catch (err) {
+      setMyClubsError(err?.response?.data?.message || err?.message || 'Failed to delete club');
+    } finally {
+      setDeletingClubId(null);
+    }
   };
 
   // Handle submit club registration (direct, no OTP)
   const handleSubmitClub = async () => {
-    if (!roboClubForm.name?.trim() || !roboClubForm.clubName?.trim() || !roboClubForm.instituteName?.trim()) {
-      setRoboClubError('Please fill in Name, Club name, and Institute name');
+    const requiredFieldChecks = [
+      { key: 'name', label: 'Name' },
+      { key: 'clubName', label: 'Club name' },
+      { key: 'instituteName', label: 'Institute name' },
+      { key: 'countryCode', label: 'Country' },
+      { key: 'state', label: 'State' },
+      { key: 'city', label: 'City' },
+      { key: 'mobile', label: 'Mobile' },
+    ];
+    if (!editingClubId) {
+      requiredFieldChecks.splice(1, 0, { key: 'email', label: 'Email' });
+    }
+    const missingField = requiredFieldChecks.find(({ key }) => !String(roboClubForm[key] ?? '').trim());
+    if (missingField) {
+      setRoboClubError(`${missingField.label} is required`);
       return;
     }
 
     const normalizedEmail = String(roboClubForm.email || '').trim().toLowerCase();
-    if (!normalizedEmail || !normalizedEmail.includes('@')) {
+    if (!editingClubId && (!normalizedEmail || !normalizedEmail.includes('@'))) {
       setRoboClubError('Please enter a valid email address');
+      return;
+    }
+    const normalizedMobile = String(roboClubForm.mobile || '').replace(/\D/g, '').trim();
+    if (!normalizedMobile) {
+      setRoboClubError('Mobile is required');
+      return;
+    }
+    if (normalizedMobile.length !== 10) {
+      setRoboClubError('Mobile must be exactly 10 digits');
       return;
     }
 
@@ -815,30 +869,36 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     setRoboClubError('');
     try {
       const countryObj = COUNTRY_OPTIONS.find((c) => c.code === roboClubForm.countryCode);
-      // Build payload matching RoboClub add API contract
       const payload = {
         name: roboClubForm.name.trim(),
         clubName: roboClubForm.clubName.trim(),
         instituteName: roboClubForm.instituteName.trim(),
-        countryCode: roboClubForm.countryCode,
         country: countryObj?.name ?? '',
         state: roboClubForm.state?.trim() ?? '',
         city: roboClubForm.city?.trim() ?? '',
-        mobile: roboClubForm.mobile?.trim() ?? '',
-        email: normalizedEmail,
+        mobile: normalizedMobile,
       };
-      const response = await addClubAdmin(payload);
+      const response = editingClubId
+        ? await updateClub(editingClubId, payload)
+        : await addClubAdmin({
+          ...payload,
+          countryCode: roboClubForm.countryCode,
+          email: normalizedEmail,
+        });
 
       if (response?.data?.success || response?.status === 200 || response?.status === 201) {
-        alert('RoboClub registered successfully!');
-        refreshMyClubs();
-        setShowRoboClubForm(false);
-        setRoboClubForm(ROBO_CLUB_FORM_INITIAL);
+        alert(editingClubId ? 'RoboClub updated successfully!' : 'RoboClub registered successfully!');
+        await refreshMyClubs();
+        closeRoboClubForm();
       } else {
-        setRoboClubError(response?.data?.message || 'Failed to register club');
+        setRoboClubError(response?.data?.message || (editingClubId ? 'Failed to update club' : 'Failed to register club'));
       }
     } catch (err) {
-      setRoboClubError(err?.response?.data?.message || err?.message || 'Failed to register club. Please try again.');
+      setRoboClubError(
+        err?.response?.data?.message
+          || err?.message
+          || (editingClubId ? 'Failed to update club. Please try again.' : 'Failed to register club. Please try again.'),
+      );
     } finally {
       setRoboClubLoading(false);
     }
@@ -1463,6 +1523,61 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     }
   };
 
+  const savePartnerAbout = async () => {
+    const heading = (partnerAboutForm.heading || '').trim();
+    const content = (partnerAboutForm.content || '').trim();
+    if (!heading || !content) {
+      setPartnerAboutError('Heading and content are required.');
+      setPartnerAboutSuccess('');
+      return;
+    }
+
+    setPartnerAboutSaving(true);
+    setPartnerAboutError('');
+    setPartnerAboutSuccess('');
+    try {
+      const payload = { heading, content };
+      if (partnerAboutForm._id) {
+        const res = await updatePartnerAbout(partnerAboutForm._id, payload);
+        const updated = normalizePartnerAbout(res?.data?.data ?? res?.data?.about ?? res?.data ?? res);
+        if (updated) setPartnerAboutForm(updated);
+        setPartnerAboutSuccess('About content updated successfully.');
+      } else {
+        const res = await addPartnerAbout(payload);
+        const created = normalizePartnerAbout(res?.data?.data ?? res?.data?.about ?? res?.data ?? res);
+        if (created) setPartnerAboutForm(created);
+        setPartnerAboutSuccess('About content created successfully.');
+      }
+    } catch (err) {
+      setPartnerAboutError(err?.response?.data?.message || err?.message || 'Failed to save about content.');
+    } finally {
+      setPartnerAboutSaving(false);
+    }
+  };
+
+  const handleDeletePartnerAbout = async () => {
+    if (!partnerAboutForm._id) {
+      setPartnerAboutError('No About record id found to delete.');
+      setPartnerAboutSuccess('');
+      return;
+    }
+    const confirmed = window.confirm('Delete this About content?');
+    if (!confirmed) return;
+
+    setPartnerAboutDeleting(true);
+    setPartnerAboutError('');
+    setPartnerAboutSuccess('');
+    try {
+      await deletePartnerAbout(partnerAboutForm._id);
+      setPartnerAboutForm({ _id: '', heading: '', content: '' });
+      setPartnerAboutSuccess('About content deleted successfully.');
+    } catch (err) {
+      setPartnerAboutError(err?.response?.data?.message || err?.message || 'Failed to delete about content.');
+    } finally {
+      setPartnerAboutDeleting(false);
+    }
+  };
+
   return (
     <div className="bg-slate-50 animate-fadeIn h-screen flex flex-col overflow-hidden">
       <div className="container mx-auto px-4 py-4 h-full">
@@ -1896,7 +2011,25 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                   ) : partnerHomeData ? (
                     <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm space-y-8">
                       <div className="text-xs font-bold text-black uppercase mb-4">Partner Home Content Editor</div>
-                      
+                      <div className="flex gap-2 border-b border-slate-200 pb-3">
+                        <button
+                          type="button"
+                          onClick={() => setPartnerHomeSubTab('home')}
+                          className={`px-4 py-2 rounded-lg text-sm font-semibold ${partnerHomeSubTab === 'home' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                        >
+                          Home
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPartnerHomeSubTab('about')}
+                          className={`px-4 py-2 rounded-lg text-sm font-semibold ${partnerHomeSubTab === 'about' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                        >
+                          About
+                        </button>
+                      </div>
+
+                      {partnerHomeSubTab !== 'about' && (
+                        <>
                       {/* Home Section */}
                       <div className="border-b border-slate-200 pb-6">
                         <h3 className="text-lg font-bold text-black mb-4">Home Section</h3>
@@ -2518,6 +2651,87 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       >
                         {partnerHomeSaving ? 'Saving…' : 'Save Home Content'}
                       </button>
+                        </>
+                      )}
+
+                      {partnerHomeSubTab === 'about' && (
+                        <div className="space-y-5">
+                          <div className="rounded-xl border border-slate-200 p-5">
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                              <h3 className="text-lg font-bold text-black">About Partner</h3>
+                              {partnerAboutForm._id ? (
+                                <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded">
+                                  ID: {partnerAboutForm._id}
+                                </span>
+                              ) : (
+                                <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-1 rounded">
+                                  New record
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="space-y-4">
+                              <div>
+                                <label className="block text-sm font-bold text-black mb-1">Heading</label>
+                                <input
+                                  type="text"
+                                  value={partnerAboutForm.heading}
+                                  onChange={(e) => setPartnerAboutForm((prev) => ({ ...prev, heading: e.target.value }))}
+                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 text-[black] focus:ring-blue-500 outline-none"
+                                  placeholder="About Our Partner"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-sm font-bold text-black mb-1">Content</label>
+                                <RichTextEditor
+                                  value={partnerAboutForm.content}
+                                  onChange={(html) => setPartnerAboutForm((prev) => ({ ...prev, content: html }))}
+                                  placeholder="Write about the partner. You can use heading, paragraph, bullet list, etc."
+                                  minHeight="180px"
+                                />
+                               
+                              </div>
+                            </div>
+                          </div>
+
+                          {partnerAboutError ? (
+                            <div className="text-sm text-red-600 font-medium bg-red-50 p-4 rounded-lg">{partnerAboutError}</div>
+                          ) : null}
+                          {partnerAboutSuccess ? (
+                            <div className="text-sm text-emerald-600 font-medium bg-emerald-50 p-4 rounded-lg flex items-center gap-2">
+                              <CheckCircle size={18} /> {partnerAboutSuccess}
+                            </div>
+                          ) : null}
+
+                          <div className="flex flex-wrap items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={savePartnerAbout}
+                              disabled={partnerAboutSaving}
+                              className="px-5 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {partnerAboutSaving ? 'Saving…' : partnerAboutForm._id ? 'Update About' : 'Add About'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPartnerAboutForm({ _id: '', heading: '', content: '' })}
+                              disabled={partnerAboutSaving || partnerAboutDeleting}
+                              className="px-5 py-3 border border-slate-300 text-black font-semibold rounded-lg hover:border-slate-400 disabled:opacity-50"
+                            >
+                              Clear
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleDeletePartnerAbout}
+                              disabled={!partnerAboutForm._id || partnerAboutDeleting}
+                              className="px-5 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {partnerAboutDeleting ? 'Deleting…' : 'Delete About'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : null}
                 </div>
@@ -3257,22 +3471,49 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-black" size={18} />
                           <input
                             type="text"
-                            placeholder="Search team members..."
+                            placeholder="Search Member..."
+                            value={teamMembersSearch}
+                            onChange={(e) => {
+                              setTeamMembersSearch(e.target.value);
+                              setTeamMembersPage(1);
+                            }}
                             className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 text-black focus:border-blue-500 outline-none"
                           />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {teamMembers.map((member) => (
-                          <div key={member.id} className="bg-white border border-slate-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                      <div className="mb-4 flex items-center justify-between text-sm text-slate-500">
+                        <span>
+                          {teamMembersTotalCount > 0
+                            ? `Total memberships: ${teamMembersTotalCount}`
+                            : 'No memberships found'}
+                        </span>
+                        <span>Page {teamMembersPage} of {teamMembersTotalPages}</span>
+                      </div>
+
+                      {teamMembersLoading ? (
+                        <div className="py-12 text-center text-slate-500">Loading memberships...</div>
+                      ) : teamMembersError ? (
+                        <div className="py-12 text-center text-red-500">{teamMembersError}</div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {filteredTeamMembers.map((member) => (
+                          <div
+                            key={member.id}
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => setSelectedTeamMember(member)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                setSelectedTeamMember(member);
+                              }
+                            }}
+                            className="bg-white border border-slate-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                          >
                             <div className="p-5">
                               <div className="flex items-start space-x-4">
-                                <img
-                                  src={member.avatar}
-                                  alt={member.name}
-                                  className="w-16 h-16 rounded-lg object-cover border border-slate-200"
-                                />
+                             
                                 <div className="flex-1 min-w-0">
                                   <h3 className="font-bold text-slate-800 text-lg truncate">{member.name}</h3>
                                   <p className="text-blue-600 font-medium text-sm">{member.role}</p>
@@ -3289,16 +3530,87 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
 
                             </div>
-                            <div className="bg-slate-50 px-5 py-3 border-t border-slate-100 flex justify-end space-x-2">
-                              <button className="text-sm text-slate-600 hover:text-blue-600 p-1.5 hover:bg-blue-50 rounded-md">
-                                Edit
+                          
+                          </div>
+                          ))}
+                          {teamMembers.length > 0 && filteredTeamMembers.length === 0 && (
+                              <div className="col-span-full py-10 text-center text-slate-500">
+                                No members matched &quot;{teamMembersSearch}&quot;.
+                              </div>
+                            )}
+                        </div>
+                      )}
+
+                      {selectedTeamMember && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                          <div className="w-full max-w-xl rounded-xl bg-white shadow-2xl border border-slate-200">
+                            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                              <h3 className="text-lg font-semibold text-slate-800">Membership Details</h3>
+                              <button
+                                type="button"
+                                onClick={() => setSelectedTeamMember(null)}
+                                className="p-1.5 rounded-md text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+                              >
+                                <X size={18} />
                               </button>
-                              <button className="text-sm text-slate-600 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-md">
-                                Remove
+                            </div>
+                            <div className="p-5 space-y-5">
+                              <div className="flex items-start gap-4">
+                                
+                                <div className="min-w-0">
+                                  <h4 className="text-xl font-bold text-slate-800">{selectedTeamMember.name}</h4>
+                                  <p className="text-blue-600 font-medium">{selectedTeamMember.role}</p>
+                                  <p className="text-sm text-slate-500 mt-1">{selectedTeamMember.email}</p>
+                                  <p className="text-sm text-slate-500">{selectedTeamMember.phone}</p>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                              
+                                <div className="rounded-lg border border-slate-200 p-3">
+                                  <p className="text-slate-500">Category</p>
+                                  <p className="font-medium text-slate-800">{selectedTeamMember.category}</p>
+                                </div>
+                                <div className="rounded-lg border border-slate-200 p-3">
+                                  <p className="text-slate-500">Plan</p>
+                                  <p className="font-medium text-slate-800">{selectedTeamMember.plan}</p>
+                                </div>
+                                <div className="rounded-lg border border-slate-200 p-3 sm:col-span-2">
+                                  <p className="text-slate-500">Payment Status</p>
+                                  <p className="font-medium text-slate-800">{selectedTeamMember.paymentStatus}</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="px-5 py-4 border-t border-slate-100 flex justify-end">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedTeamMember(null)}
+                                className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200"
+                              >
+                                Close
                               </button>
                             </div>
                           </div>
-                        ))}
+                        </div>
+                      )}
+
+                      <div className="mt-6 flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setTeamMembersPage((prev) => Math.max(prev - 1, 1))}
+                          disabled={teamMembersLoading || teamMembersPage <= 1}
+                          className="px-3 py-1.5 text-sm rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Previous
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTeamMembersPage((prev) => Math.min(prev + 1, teamMembersTotalPages))}
+                          disabled={teamMembersLoading || teamMembersPage >= teamMembersTotalPages}
+                          className="px-3 py-1.5 text-sm rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Next
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -3526,12 +3838,14 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                     <div className="space-y-5">
                         <div className="flex items-center justify-between border-b border-slate-200 pb-4">
                           <div className="text-center flex-1">
-                            <h3 className="text-xl font-bold text-slate-900">Register for RoboClub</h3>
-                            <p className="text-slate-600 text-sm">Fill in your club and institute details to register.</p>
+                            <h3 className="text-xl font-bold text-slate-900">{editingClubId ? 'Update RoboClub' : 'Register for RoboClub'}</h3>
+                            <p className="text-slate-600 text-sm">
+                              {editingClubId ? 'Update your club details.' : 'Fill in your club and institute details to register.'}
+                            </p>
                           </div>
                           <button
                             type="button"
-                            onClick={() => setShowRoboClubForm(false)}
+                            onClick={closeRoboClubForm}
                             className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all"
                             aria-label="Close form"
                           >
@@ -3555,7 +3869,8 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 type="text"
                                 value={roboClubForm.name}
                                 onChange={(e) => updateRoboClubForm('name', e.target.value)}
-                                placeholder="e.g. Sharma ji ka londa"
+                                placeholder="Name"
+                                required
                                 className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                               />
                             </div>
@@ -3569,12 +3884,15 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 type="email"
                                 value={roboClubForm.email}
                                 onChange={(e) => updateRoboClubForm('email', e.target.value)}
-                                placeholder="e.g. ashutosh.aicra@gmail.com"
+                                placeholder="Email"
+                                required
+                                disabled={Boolean(editingClubId)}
                                 className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                               />
                             </div>
                             <p className="text-slate-500 text-xs mt-1">
-                              Used for your RoboClub captain account’ </p>
+                              {editingClubId ? 'Email cannot be updated from here.' : 'Used for your RoboClub captain account.'}
+                            </p>
                           </div>
 
                           <div>
@@ -3585,7 +3903,8 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 type="text"
                                 value={roboClubForm.clubName}
                                 onChange={(e) => updateRoboClubForm('clubName', e.target.value)}
-                                placeholder="e.g. AICRA CLUB"
+                                placeholder="Club Name"
+                                required
                                 className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                               />
                             </div>
@@ -3600,6 +3919,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 value={roboClubForm.instituteName}
                                 onChange={(e) => updateRoboClubForm('instituteName', e.target.value)}
                                 placeholder="e.g. DU"
+                                required
                                 className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                               />
                             </div>
@@ -3610,6 +3930,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                             <select
                               value={roboClubForm.countryCode}
                               onChange={(e) => updateRoboClubForm('countryCode', e.target.value)}
+                              required
                               className="w-full border border-slate-300 text-slate-900 px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                             >
                               {COUNTRY_OPTIONS.map((c) => (
@@ -3622,30 +3943,37 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
                           <div>
                             <label className="block text-slate-700 text-sm font-medium mb-1">State</label>
-                            <div className="relative">
-                              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                              <input
-                                type="text"
-                                value={roboClubForm.state}
-                                onChange={(e) => updateRoboClubForm('state', e.target.value)}
-                                placeholder="e.g. Karnataka"
-                                className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                              />
-                            </div>
+                            <select
+                              value={roboClubForm.state}
+                              onChange={(e) => updateRoboClubForm('state', e.target.value)}
+                              required
+                              className="w-full border border-slate-300 text-slate-900 px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                            >
+                              <option value="">Select state</option>
+                              {roboClubStateOptions.map((state) => (
+                                <option key={state.id} value={state.name}>
+                                  {state.name}
+                                </option>
+                              ))}
+                            </select>
                           </div>
 
                           <div>
                             <label className="block text-slate-700 text-sm font-medium mb-1">City</label>
-                            <div className="relative">
-                              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                              <input
-                                type="text"
-                                value={roboClubForm.city}
-                                onChange={(e) => updateRoboClubForm('city', e.target.value)}
-                                placeholder="e.g. Bangalore"
-                                className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                              />
-                            </div>
+                            <select
+                              value={roboClubForm.city}
+                              onChange={(e) => updateRoboClubForm('city', e.target.value)}
+                              disabled={!roboClubForm.state}
+                              required
+                              className="w-full border border-slate-300 text-slate-900 px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-slate-100 disabled:text-slate-400"
+                            >
+                              <option value="">{roboClubForm.state ? 'Select city' : 'Select state first'}</option>
+                              {roboClubCityOptions.map((city) => (
+                                <option key={city.id} value={city.name}>
+                                  {city.name}
+                                </option>
+                              ))}
+                            </select>
                           </div>
 
                           <div className="sm:col-span-2">
@@ -3655,8 +3983,12 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                               <input
                                 type="tel"
                                 value={roboClubForm.mobile}
-                                onChange={(e) => updateRoboClubForm('mobile', e.target.value.replace(/\D/g, '').slice(0, 15))}
+                                onChange={(e) => updateRoboClubForm('mobile', e.target.value.replace(/\D/g, '').slice(0, 10))}
                                 placeholder="e.g. 9876543210"
+                                required
+                                maxLength={10}
+                                inputMode="numeric"
+                                pattern="\d{10}"
                                 className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                               />
                             </div>
@@ -3676,7 +4008,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                             </>
                           ) : (
                             <>
-                              Register for RoboClub
+                              {editingClubId ? 'Update RoboClub' : 'Register for RoboClub'}
                               <ArrowRight size={18} />
                             </>
                           )}
@@ -3696,7 +4028,12 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => setShowRoboClubForm(true)}
+                          onClick={() => {
+                            setEditingClubId(null);
+                            setRoboClubForm(ROBO_CLUB_FORM_INITIAL);
+                            setRoboClubError('');
+                            setShowRoboClubForm(true);
+                          }}
                           className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all text-sm font-semibold flex items-center gap-2"
                         >
                           <Plus size={18} />
@@ -3775,6 +4112,25 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 Created: {new Date(club.createdAt).toLocaleString()}
                               </div>
                             )}
+                            <div className="mt-4 flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleEditClub(club)}
+                                className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all text-xs font-semibold flex items-center gap-1"
+                              >
+                                <Pencil size={14} />
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteClub(club?._id)}
+                                disabled={deletingClubId === club?._id}
+                                className="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 transition-all text-xs font-semibold flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <Trash2 size={14} />
+                                {deletingClubId === club?._id ? 'Deleting...' : 'Delete'}
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>

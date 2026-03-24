@@ -3,6 +3,7 @@ import { Check, Shield, Lock, CreditCard, Globe, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../contexts/ToastContext";
+import { useThemeClasses } from "../../hooks/useThemeClasses";
 import { verifyPayment, normalizePaymentCreateResponse } from "../../api/paymentApi";
 import { createMembershipThenPayment } from "../../app/membership/membershipApi";
 
@@ -21,11 +22,30 @@ export const PaymentSection = ({
 }) => {
   const navigate = useNavigate();
   const toast = useToast();
+  const theme = useThemeClasses();
   const [isProcessing, setIsProcessing] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [paymentData, setPaymentData] = useState(null); // Store payment data from API
   const [razorpayInstance, setRazorpayInstance] = useState(null); // Store Razorpay instance for cleanup
+
+  // Centralized style tokens for light-blue payment UI architecture.
+  const PAYMENT_THEME = {
+    pageBg: "bg-sky-50",
+    card: "bg-white border border-sky-100 shadow-sm rounded-xl",
+    innerSurface: "bg-sky-50/80 border border-sky-100",
+    textPrimary: "text-slate-900",
+    textMuted: "text-slate-600",
+    textSoft: "text-slate-500",
+    accentText: theme.textPrimary || "text-sky-600",
+    accentBg: theme.bgPrimary || "bg-sky-600",
+    accentHover: theme.bgHover || "hover:bg-sky-700",
+    accentRing: theme.ringPrimary || "ring-sky-500",
+    accentBorder: "border-sky-300",
+    accentSubtleBg: "bg-sky-100",
+    accentSubtleText: "text-sky-700",
+    divider: "border-sky-100",
+  };
 
   // Ensure Razorpay is always selected (only payment option available)
   useEffect(() => {
@@ -47,6 +67,7 @@ export const PaymentSection = ({
         : '';
 
   const displayCurrency = paymentData?.currency || displayCurrencyProp || 'INR';
+  const resolvedCurrencySymbol = displayCurrency === "INR" ? "₹" : "$";
 
   // Order summary title: "CategoryName PlanName" e.g. "Student Basic"
   const orderSummaryTitle =
@@ -209,7 +230,7 @@ export const PaymentSection = ({
           membership_plan: selectedPlan,
         },
         theme: {
-          color: '#3b82f6', // Dark blue theme accent
+          color: '#0ea5e9', // Light blue accent
         },
         modal: {
           ondismiss: function() {
@@ -386,23 +407,23 @@ export const PaymentSection = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen py-10 sm:py-12 px-4 sm:px-6 lg:px-8 bg-[#0a0f1a]"
+      className={`min-h-screen py-10 sm:py-12 px-4 sm:px-6 lg:px-8 ${PAYMENT_THEME.pageBg}`}
     >
       <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Complete Your Membership</h1>
-          <p className="text-slate-400">Final step to join our robotics community</p>
+          <h1 className={`text-2xl sm:text-3xl font-bold ${PAYMENT_THEME.textPrimary} mb-2`}>Complete Your Membership</h1>
+          <p className={PAYMENT_THEME.textMuted}>Final step to join our robotics community</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Left Column - Order Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Payment Gateway - Razorpay */}
-            <div className="bg-slate-800/50 rounded-xl border border-white/10 shadow-lg p-5 sm:p-6">
+            <div className={`${PAYMENT_THEME.card} p-5 sm:p-6`}>
               <div className="flex items-center justify-between mb-5 sm:mb-6">
-                <h2 className="text-lg sm:text-xl font-semibold text-white">Payment Method</h2>
-                <div className="flex items-center text-emerald-400 text-sm max-sm:text-xs">
+                <h2 className={`text-lg sm:text-xl font-semibold ${PAYMENT_THEME.textPrimary}`}>Payment Method</h2>
+                <div className={`flex items-center ${PAYMENT_THEME.accentText} text-sm max-sm:text-xs`}>
                   <Lock size={14} className="mr-1 flex-shrink-0" />
                   <span>Secure Payment</span>
                 </div>
@@ -413,45 +434,45 @@ export const PaymentSection = ({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="border-2 border-blue-500/50 bg-slate-900/50 rounded-xl p-4 sm:p-5"
+                className={`border-2 ${PAYMENT_THEME.accentBorder} ${PAYMENT_THEME.innerSurface} rounded-xl p-4 sm:p-5`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-lg font-bold bg-blue-600 text-white flex-shrink-0">
+                    <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-lg font-bold ${PAYMENT_THEME.accentBg} text-white flex-shrink-0`}>
                       {razorpayGateway.icon}
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-white">{razorpayGateway.name}</h3>
-                        <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                        <h3 className={`font-semibold ${PAYMENT_THEME.textPrimary}`}>{razorpayGateway.name}</h3>
+                        <span className={`text-xs px-2 py-1 rounded-full ${PAYMENT_THEME.accentSubtleBg} ${PAYMENT_THEME.accentSubtleText} border ${PAYMENT_THEME.accentBorder}`}>
                           {razorpayGateway.badge}
                         </span>
                       </div>
-                      <p className="text-sm text-slate-400 mt-1">{razorpayGateway.description}</p>
+                      <p className={`text-sm ${PAYMENT_THEME.textMuted} mt-1`}>{razorpayGateway.description}</p>
                       <div className="flex flex-wrap gap-2 mt-3">
                         {razorpayGateway.features.map((feature, index) => (
-                          <span key={index} className="text-xs px-2 py-1 rounded bg-slate-800 text-slate-300">
+                          <span key={index} className="text-xs px-2 py-1 rounded bg-white text-slate-700 border border-sky-100">
                             {feature}
                           </span>
                         ))}
                       </div>
                     </div>
                   </div>
-                  <div className="w-5 h-5 rounded-full border-2 border-blue-500 bg-blue-600 flex items-center justify-center flex-shrink-0">
+                  <div className={`w-5 h-5 rounded-full border-2 ${PAYMENT_THEME.accentBorder} ${PAYMENT_THEME.accentBg} flex items-center justify-center flex-shrink-0`}>
                     <Check size={12} className="text-white" />
                   </div>
                 </div>
               </motion.div>
 
               {/* Payment Security Info */}
-              <div className="mt-5 sm:mt-6 pt-5 sm:pt-6 border-t border-white/10">
+              <div className={`mt-5 sm:mt-6 pt-5 sm:pt-6 border-t ${PAYMENT_THEME.divider}`}>
                 <div className="flex items-start gap-3 sm:gap-4">
                   <div className="flex-shrink-0">
-                    <Shield className="text-emerald-400" size={20} />
+                    <Shield className={PAYMENT_THEME.accentText} size={20} />
                   </div>
                   <div>
-                    <h4 className="font-medium text-white mb-1">Payment Security</h4>
-                    <p className="text-sm text-slate-400">
+                    <h4 className={`font-medium ${PAYMENT_THEME.textPrimary} mb-1`}>Payment Security</h4>
+                    <p className={`text-sm ${PAYMENT_THEME.textMuted}`}>
                       Your payment information is encrypted and securely processed. 
                       We never store your credit card details on our servers.
                     </p>
@@ -461,41 +482,41 @@ export const PaymentSection = ({
             </div>
 
             {/* Payment Details Form (for direct card input if needed) - hidden */}
-            <div className="bg-slate-800/50 rounded-xl border border-white/10 shadow-lg p-6 hidden">
-              <h3 className="text-lg font-semibold text-white mb-4">Card Details</h3>
+            <div className={`${PAYMENT_THEME.card} p-6 hidden`}>
+              <h3 className={`text-lg font-semibold ${PAYMENT_THEME.textPrimary} mb-4`}>Card Details</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className={`block text-sm font-medium ${PAYMENT_THEME.textMuted} mb-2`}>
                     Card Number
                   </label>
-                  <div className="flex items-center bg-slate-900/50 border border-white/10 rounded-lg px-4 py-3">
-                    <CreditCard size={20} className="text-slate-400 mr-3 flex-shrink-0" />
+                  <div className="flex items-center bg-white border border-sky-100 rounded-lg px-4 py-3">
+                    <CreditCard size={20} className="text-slate-500 mr-3 flex-shrink-0" />
                     <input
                       type="text"
                       placeholder="1234 5678 9012 3456"
-                      className="bg-transparent text-white w-full outline-none"
+                      className="bg-transparent text-slate-900 w-full outline-none"
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className={`block text-sm font-medium ${PAYMENT_THEME.textMuted} mb-2`}>
                       Expiry Date
                     </label>
                     <input
                       type="text"
                       placeholder="MM/YY"
-                      className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-4 py-3 text-white"
+                      className="w-full bg-white border border-sky-100 rounded-lg px-4 py-3 text-slate-900"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className={`block text-sm font-medium ${PAYMENT_THEME.textMuted} mb-2`}>
                       CVV
                     </label>
                     <input
                       type="text"
                       placeholder="123"
-                      className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-4 py-3 text-white"
+                      className="w-full bg-white border border-sky-100 rounded-lg px-4 py-3 text-slate-900"
                     />
                   </div>
                 </div>
@@ -506,22 +527,22 @@ export const PaymentSection = ({
           {/* Right Column - Order Summary & Payment */}
           <div className="space-y-6">
             {/* Order Summary */}
-            <div className="bg-slate-800/50 rounded-xl border border-white/10 shadow-lg p-5 sm:p-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">Order Summary</h2>
+            <div className={`${PAYMENT_THEME.card} p-5 sm:p-6`}>
+              <h2 className={`text-lg sm:text-xl font-semibold ${PAYMENT_THEME.textPrimary} mb-4`}>Order Summary</h2>
 
               <div className="space-y-4">
                 {/* Membership Details */}
-                <div className="bg-slate-900/50 rounded-lg p-4 border border-white/5">
+                <div className="bg-sky-50/80 rounded-lg p-4 border border-sky-100">
                   <div className="flex justify-between items-start mb-2 gap-2">
                     <div className="min-w-0">
-                      <h3 className="font-medium text-white">{orderSummaryTitle}</h3>
-                      <p className="text-sm text-slate-400">Annual Membership</p>
+                      <h3 className={`font-medium ${PAYMENT_THEME.textPrimary}`}>{orderSummaryTitle}</h3>
+                      <p className={`text-sm ${PAYMENT_THEME.textMuted}`}>Annual Membership</p>
                     </div>
-                    <span className="font-bold text-blue-400 flex-shrink-0">
-                      {displayAmount !== '' ? (displayCurrency === "INR" ? "₹" : "$") + displayAmount : '—'}
+                    <span className={`font-bold ${PAYMENT_THEME.accentText} flex-shrink-0`}>
+                      {displayAmount !== '' ? `${resolvedCurrencySymbol}${displayAmount}` : '—'}
                     </span>
                   </div>
-                  <div className="text-xs text-slate-500">
+                  <div className={`text-xs ${PAYMENT_THEME.textSoft}`}>
                     Billed annually • Auto-renewable
                   </div>
                 </div>
@@ -529,48 +550,48 @@ export const PaymentSection = ({
                 {/* User Details */}
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between gap-2">
-                    <span className="text-slate-400">Name:</span>
-                    <span className="font-medium text-white text-right truncate max-w-[60%]">{formData?.fullName || 'N/A'}</span>
+                    <span className={PAYMENT_THEME.textMuted}>Name:</span>
+                    <span className={`font-medium ${PAYMENT_THEME.textPrimary} text-right truncate max-w-[60%]`}>{formData?.fullName || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between gap-2">
-                    <span className="text-slate-400">Email:</span>
-                    <span className="font-medium text-white text-right truncate max-w-[60%]">{formData?.email || 'N/A'}</span>
+                    <span className={PAYMENT_THEME.textMuted}>Email:</span>
+                    <span className={`font-medium ${PAYMENT_THEME.textPrimary} text-right truncate max-w-[60%]`}>{formData?.email || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between gap-2">
-                    <span className="text-slate-400">Phone:</span>
-                    <span className="font-medium text-white text-right">{formData?.phone || 'N/A'}</span>
+                    <span className={PAYMENT_THEME.textMuted}>Phone:</span>
+                    <span className={`font-medium ${PAYMENT_THEME.textPrimary} text-right`}>{formData?.phone || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between gap-2">
-                    <span className="text-slate-400">Location:</span>
-                    <span className="font-medium text-white text-right truncate max-w-[60%]">
+                    <span className={PAYMENT_THEME.textMuted}>Location:</span>
+                    <span className={`font-medium ${PAYMENT_THEME.textPrimary} text-right truncate max-w-[60%]`}>
                       {formData?.city || 'N/A'}, {formData?.country || 'N/A'}
                     </span>
                   </div>
                 </div>
 
-                <hr className="my-4 border-white/10" />
+                <hr className={`my-4 ${PAYMENT_THEME.divider}`} />
 
                 {/* Total Amount */}
                 <div className="space-y-2">
-                  <div className="flex justify-between text-slate-300">
+                  <div className={`flex justify-between ${PAYMENT_THEME.textMuted}`}>
                     <span>Subtotal</span>
                     <span>
-                      {displayAmount !== '' ? (displayCurrency === "INR" ? "₹" : "$") + displayAmount + " " + displayCurrency : "—"}
+                      {displayAmount !== '' ? `${resolvedCurrencySymbol}${displayAmount} ${displayCurrency}` : "—"}
                     </span>
                   </div>
-                  <div className="flex justify-between text-slate-300">
+                  <div className={`flex justify-between ${PAYMENT_THEME.textMuted}`}>
                     <span>Processing Fee</span>
-                    <span className="text-emerald-400">
-                      {displayCurrency === "INR" ? "₹" : "$"}0.00
+                    <span className={PAYMENT_THEME.accentText}>
+                      {resolvedCurrencySymbol}0.00
                     </span>
                   </div>
-                  <div className="flex justify-between text-lg font-bold pt-2 border-t border-white/10">
-                    <span className="text-white">Total Amount</span>
-                    <span className="text-blue-400">
-                      {displayAmount !== '' ? (displayCurrency === "INR" ? "₹" : "$") + displayAmount + " " + displayCurrency : "—"}
+                  <div className={`flex justify-between text-lg font-bold pt-2 border-t ${PAYMENT_THEME.divider}`}>
+                    <span className={PAYMENT_THEME.textPrimary}>Total Amount</span>
+                    <span className={PAYMENT_THEME.accentText}>
+                      {displayAmount !== '' ? `${resolvedCurrencySymbol}${displayAmount} ${displayCurrency}` : "—"}
                     </span>
                   </div>
-                  <div className="text-xs text-slate-500 text-right">
+                  <div className={`text-xs ${PAYMENT_THEME.textSoft} text-right`}>
                     Currency: {displayCurrency}
                   </div>
                 </div>
@@ -578,12 +599,12 @@ export const PaymentSection = ({
             </div>
 
             {/* Terms & Conditions */}
-            <div className="bg-slate-800/50 rounded-xl border border-white/10 shadow-lg p-5 sm:p-6">
+            <div className={`${PAYMENT_THEME.card} p-5 sm:p-6`}>
               <div className="flex items-start gap-3 mb-4">
-                <Globe size={18} className="text-blue-400 mt-0.5 flex-shrink-0" />
+                <Globe size={18} className={`${PAYMENT_THEME.accentText} mt-0.5 flex-shrink-0`} />
                 <div>
-                  <h4 className="font-medium text-white mb-1">Terms & Conditions</h4>
-                  <p className="text-xs text-slate-400">
+                  <h4 className={`font-medium ${PAYMENT_THEME.textPrimary} mb-1`}>Terms & Conditions</h4>
+                  <p className={`text-xs ${PAYMENT_THEME.textMuted}`}>
                     By completing this payment, you agree to our Terms of Service and Privacy Policy. 
                     Membership is non-refundable after 7 days.
                   </p>
@@ -594,9 +615,9 @@ export const PaymentSection = ({
                   type="checkbox" 
                   checked={termsAccepted}
                   onChange={(e) => setTermsAccepted(e.target.checked)}
-                  className="rounded bg-slate-700 border-white/20 text-blue-500 focus:ring-blue-500 focus:ring-offset-0 focus:ring-offset-transparent" 
+                  className={`rounded bg-white border-sky-300 text-sky-600 focus:${PAYMENT_THEME.accentRing} focus:ring-offset-0 focus:ring-offset-transparent`} 
                 />
-                <span className="text-sm text-slate-300">
+                <span className={`text-sm ${PAYMENT_THEME.textMuted}`}>
                   I agree to the terms and conditions
                 </span>
               </label>
@@ -612,7 +633,7 @@ export const PaymentSection = ({
                 whileTap={{ scale: isProcessing ? 1 : 0.98 }}
                 type="submit"
                 disabled={isProcessing}
-                className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 sm:py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-xl ${
+                className={`w-full ${PAYMENT_THEME.accentBg} ${PAYMENT_THEME.accentHover} text-white font-semibold py-3.5 sm:py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-xl ${
                   isProcessing ? 'opacity-75 cursor-not-allowed' : ''
                 }`}
               >
@@ -624,7 +645,7 @@ export const PaymentSection = ({
                 ) : (
                   <>
                     <Check size={20} className="flex-shrink-0" />
-                    <span className="truncate">Complete Registration{displayAmount !== '' ? ` - ${displayCurrency === "INR" ? "₹" : "$"}${displayAmount} ${displayCurrency}` : ''}</span>
+                    <span className="truncate">Complete Registration{displayAmount !== '' ? ` - ${resolvedCurrencySymbol}${displayAmount} ${displayCurrency}` : ''}</span>
                   </>
                 )}
               </motion.button>
@@ -632,7 +653,7 @@ export const PaymentSection = ({
                 <button
                   type="button"
                   onClick={onBack}
-                  className="text-slate-400 hover:text-white text-sm font-medium transition-colors"
+                  className={`text-sm font-medium transition-colors ${PAYMENT_THEME.textMuted} ${PAYMENT_THEME.accentText}`}
                 >
                   ← Back to details
                 </button>

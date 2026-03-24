@@ -55,6 +55,16 @@ export const updateClub = (clubId, data) =>
   axiosInstance.put(endpoints.club.update(clubId), data);
 
 /**
+ * Delete club by club ID.
+ * Endpoint: /club/delete/{_id}
+ * Method: DELETE
+ * Requires: Authorization Bearer token.
+ * Response: { success, message }
+ */
+export const deleteClub = (clubId) =>
+  axiosInstance.delete(endpoints.club.delete(clubId));
+
+/**
  * Get club members by club ID.
  * Requires: Authorization Bearer token.
  * Response: { success, count, data: ClubMember[] }

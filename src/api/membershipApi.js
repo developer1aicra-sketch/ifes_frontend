@@ -33,3 +33,23 @@ export const createBulkMembership = (payload) =>
  */
 export const getMyMembership = () =>
   axiosInstance.get(endpoints.membership.myGet);
+
+/**
+ * Get memberships by partner.
+ * Endpoint: /memberships/get?partnerCode=XX&page=&limit=
+ * @param {string} partnerCode - Partner code (e.g. 'IN')
+ * @param {{ page?: number, limit?: number }} options
+ */
+export const getMembershipsByPartner = (partnerCode, options = {}) => {
+  const code = (partnerCode || '').toString().trim();
+  const page = Number(options.page) > 0 ? Number(options.page) : 1;
+  const limit = Number(options.limit) > 0 ? Number(options.limit) : 9;
+
+  return axiosInstance.get(endpoints.memberships.get, {
+    params: {
+      partnerCode: code,
+      page,
+      limit,
+    },
+  });
+};

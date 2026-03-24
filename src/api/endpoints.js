@@ -26,6 +26,10 @@ const endpoints = {
     bulk: `/membership/bulk`, // POST { members: [...] }; run before /payment/create; returns membership(s) with _id
     myGet: `/membership/my/get` // Requires Authorization: Bearer token
   },
+  memberships: {
+    /** GET memberships by partner. Query: ?partnerCode=XX&page=&limit= */
+    get: `/memberships/get`,
+  },
   payment: {
     create: `/payment/create`, // Run after /membership/bulk; uses membership_id from bulk response
     verify: `/payments/verify` // Verify payment after successful Razorpay transaction
@@ -60,6 +64,8 @@ const endpoints = {
     getById: (id) => `/club/get/${id}`,
     /** Update club by id (captain name / clubName etc). Requires Bearer token. */
     update: (id) => `/club/update/${id}`,
+    /** Delete club by id. Requires Bearer token. */
+    delete: (id) => `/club/delete/${id}`,
     /** Club members: list by club id. */
     members: (clubId) => `/clubmember/${clubId}`,
     /** Add club member */
@@ -110,6 +116,14 @@ const endpoints = {
     update: (id) => `/partners/${id}`,
     /** POST - create partner enquiry */
     createEnquiry: `/partner/create/enquiry`,
+  },
+  partnerAbout: {
+    /** POST partner about section payload: { heading, content } */
+    add: '/partner/about/add',
+    /** PUT partner about section payload: { heading, content } */
+    update: (id) => `/partner/about/update/${id}`,
+    /** DELETE partner about section by id */
+    delete: (id) => `/partner/about/delete/${id}`,
   },
   about: {
     people: (category) => `/about-worso/people?category=${encodeURIComponent(category)}`,
