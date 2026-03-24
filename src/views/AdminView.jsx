@@ -585,6 +585,25 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     };
   }, []);
 
+  const getSafeDisplayValue = (value) => {
+    if (typeof value === 'string' && value.trim()) return value.trim();
+    return 'N/A';
+  };
+
+  const getPaymentStatusBadgeClass = (status) => {
+    const normalizedStatus = String(status || '').trim().toUpperCase();
+    if (normalizedStatus === 'SUCCESS' || normalizedStatus === 'COMPLETED' || normalizedStatus === 'PAID') {
+      return 'bg-green-50 text-green-700 border border-green-200';
+    }
+    if (normalizedStatus === 'FAILED' || normalizedStatus === 'ERROR') {
+      return 'bg-red-50 text-red-700 border border-red-200';
+    }
+    if (normalizedStatus === 'PENDING') {
+      return 'bg-amber-50 text-amber-700 border border-amber-200';
+    }
+    return 'bg-slate-100 text-slate-700 border border-slate-200';
+  };
+
   const filteredTeamMembers = teamMembers.filter((member) => {
     const q = teamMembersSearch.trim().toLowerCase();
     if (!q) return true;
@@ -1896,7 +1915,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                           : 'bg-white/5 border-white/10 hover:border-blue-300 text-blue-100'
                         }`}
                     >
-                      <Layout size={18} /> Home Content
+                      <Layout size={18} /> Pages Content
                     </button>
                   </>
                 )}
@@ -2078,7 +2097,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                   <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
                     {activeTab === 'overview' && 'Profile'}
                     {activeTab === 'partner-profile' && 'Edit Partner Profile'}
-                    {activeTab === 'partner-home' && 'Partner Home Content'}
+                    {activeTab === 'partner-home' && 'Partner  Content'}
                     {activeTab === 'partners' && 'Partner Management'}
                     {activeTab === 'events' && (isAdminMode === 'super' ? 'Event Manager' : 'My Events')}
                     {/* {activeTab === 'roboclub' && 'RoboClub Registration'} */}
@@ -2283,7 +2302,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                     </div>
                   ) : partnerHomeData ? (
                     <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm space-y-8">
-                      <div className="text-xs font-bold text-black uppercase mb-4">Partner Home Content Editor</div>
+                      <div className="text-xs font-bold text-black uppercase mb-4">Partner  Content Editor</div>
                       <div className="flex gap-2 border-b border-slate-200 pb-3">
                         <button
                           type="button"
@@ -4217,6 +4236,23 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 </div>
                               </div>
 
+                              <div className="mt-4 grid grid-cols-1 gap-2 text-sm">
+                                <div className="rounded-md border border-slate-200 px-3 py-2">
+                                  <p className="text-xs text-slate-500">Category</p>
+                                  <p className="font-medium text-slate-800">{getSafeDisplayValue(member.category)}</p>
+                                </div>
+                                <div className="rounded-md border border-slate-200 px-3 py-2">
+                                  <p className="text-xs text-slate-500">Plan</p>
+                                  <p className="font-medium text-slate-800">{getSafeDisplayValue(member.plan)}</p>
+                                </div>
+                                <div className="rounded-md border border-slate-200 px-3 py-2 flex items-center justify-between gap-2">
+                                  <p className="text-xs text-slate-500">Payment Status</p>
+                                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getPaymentStatusBadgeClass(member.paymentStatus)}`}>
+                                    {getSafeDisplayValue(member.paymentStatus).toUpperCase()}
+                                  </span>
+                                </div>
+                              </div>
+
 
                             </div>
                           
@@ -4230,7 +4266,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         </div>
                       )}
 
-                      {selectedTeamMember && (
+                      {/* {selectedTeamMember && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                           <div className="w-full max-w-xl rounded-xl bg-white shadow-2xl border border-slate-200">
                             <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
@@ -4251,22 +4287,26 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                   <p className="text-blue-600 font-medium">{selectedTeamMember.role}</p>
                                   <p className="text-sm text-slate-500 mt-1">{selectedTeamMember.email}</p>
                                   <p className="text-sm text-slate-500">{selectedTeamMember.phone}</p>
+                                  
                                 </div>
+                                
                               </div>
 
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                               
                                 <div className="rounded-lg border border-slate-200 p-3">
                                   <p className="text-slate-500">Category</p>
-                                  <p className="font-medium text-slate-800">{selectedTeamMember.category}</p>
+                                  <p className="font-medium text-slate-800">{getSafeDisplayValue(selectedTeamMember.category)}</p>
                                 </div>
                                 <div className="rounded-lg border border-slate-200 p-3">
                                   <p className="text-slate-500">Plan</p>
-                                  <p className="font-medium text-slate-800">{selectedTeamMember.plan}</p>
+                                  <p className="font-medium text-slate-800">{getSafeDisplayValue(selectedTeamMember.plan)}</p>
                                 </div>
                                 <div className="rounded-lg border border-slate-200 p-3 sm:col-span-2">
                                   <p className="text-slate-500">Payment Status</p>
-                                  <p className="font-medium text-slate-800">{selectedTeamMember.paymentStatus}</p>
+                                  <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${getPaymentStatusBadgeClass(selectedTeamMember.paymentStatus)}`}>
+                                    {getSafeDisplayValue(selectedTeamMember.paymentStatus).toUpperCase()}
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -4281,7 +4321,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                             </div>
                           </div>
                         </div>
-                      )}
+                      )} */}
 
                       <div className="mt-6 flex items-center justify-end gap-2">
                         <button
