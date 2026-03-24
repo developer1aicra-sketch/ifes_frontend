@@ -4,10 +4,42 @@ import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers, Ar
 import { useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import endpoints from '../api/endpoints';
-import { getLocationPrefix } from '../utils/locationRoutes';
+import { getLocationPrefix, getLocationCodeFromPath } from '../utils/locationRoutes';
 import { ABOUT_PARTNER_STATIC } from '../data/aboutPartnerStatic';
 import { EXECUTIVE_MEMBERS, ADVISORY_BOARD, REFEREES } from '../data/aboutPeople';
 import PersonCard from '../components/partner/PersonCard';
+import { getPartnerAbout } from '../api/partnerAboutApi';
+import { getAdvisoryBoard, getAdvisoryRefree } from '../api/advisoryApi';
+
+const normalizePartnerAboutItem = (payload) => {
+  if (!payload || typeof payload !== 'object') return null;
+  const heading = String(payload.heading || payload.title || '').trim();
+  const content = String(payload.content || payload.description || '').trim();
+  if (!heading && !content) return null;
+  return {
+    id: payload._id || payload.id || heading,
+    heading: heading || 'About',
+    content,
+    displayOrder: typeof payload.display_order === 'number' ? payload.display_order : Number.MAX_SAFE_INTEGER,
+  };
+};
+
+const normalizePartnerPerson = (payload, fallbackDesignation) => {
+  if (!payload || typeof payload !== 'object') return null;
+  const name = String(payload.name || '').trim();
+  const designation = String(payload.designation || payload.role || fallbackDesignation || '').trim();
+  const image = payload.image || payload.photo || payload.avatar || '';
+  if (!name && !designation && !image) return null;
+  return {
+    id: payload._id || payload.id || `${name}-${designation}`,
+    name: name || 'Member',
+    designation: designation || fallbackDesignation,
+    image,
+    displayOrder: typeof payload.display_order === 'number' ? payload.display_order : Number.MAX_SAFE_INTEGER,
+  };
+};
+
+const sortByDisplayOrder = (a, b) => a.displayOrder - b.displayOrder;
 
 const AboutLayout = ({ setView }) => {
   const navigate = useNavigate();
@@ -37,6 +69,18 @@ const AboutLayout = ({ setView }) => {
   const [boardMembers, setBoardMembers] = useState([]);
   const [boardLoading, setBoardLoading] = useState(false);
   const [boardError, setBoardError] = useState(null);
+
+  // Partner route API state
+  const [partnerAboutSections, setPartnerAboutSections] = useState([]);
+  const [partnerAboutLoading, setPartnerAboutLoading] = useState(false);
+  const [partnerAboutError, setPartnerAboutError] = useState('');
+  const [partnerAdvisoryMembers, setPartnerAdvisoryMembers] = useState([]);
+  const [partnerAdvisoryLoading, setPartnerAdvisoryLoading] = useState(false);
+  const [partnerAdvisoryError, setPartnerAdvisoryError] = useState('');
+  const [partnerReferees, setPartnerReferees] = useState([]);
+  const [partnerRefereesLoading, setPartnerRefereesLoading] = useState(false);
+  const [partnerRefereesError, setPartnerRefereesError] = useState('');
+  const [partnerActiveTab, setPartnerActiveTab] = useState('');
   
   // Update activeSection when URL hash changes
   useEffect(() => {
@@ -67,6 +111,72 @@ const AboutLayout = ({ setView }) => {
       }
     }
   }, [activeSection]);
+
+  // Partner route: fetch about/advisory/refree content
+  useEffect(() => {
+    if (!isPartnerAboutRoute) return;
+
+    const website = 'worso';
+    const partnerCode = getLocationCodeFromPath(location.pathname) || 'IN';
+    let isMounted = true;
+
+    const loadPartnerContent = async () => {
+      setPartnerAboutLoading(true);
+      setPartnerAdvisoryLoading(true);
+      setPartnerRefereesLoading(true);
+      setPartnerAboutError('');
+      setPartnerAdvisoryError('');
+      setPartnerRefereesError('');
+
+      try {
+        const [aboutRes, boardRes, refreeRes] = await Promise.all([
+          getPartnerAbout(website, partnerCode),
+          getAdvisoryBoard(website, partnerCode),
+          getAdvisoryRefree(website, partnerCode),
+        ]);
+
+        if (!isMounted) return;
+
+        const aboutPayload = aboutRes?.data?.data ?? aboutRes?.data?.about ?? aboutRes?.data ?? [];
+        const normalizedAbout = (Array.isArray(aboutPayload) ? aboutPayload : [aboutPayload])
+          .map(normalizePartnerAboutItem)
+          .filter(Boolean)
+          .sort(sortByDisplayOrder);
+        setPartnerAboutSections(normalizedAbout);
+
+        const advisoryPayload = boardRes?.data?.data ?? boardRes?.data?.advisoryBoard ?? boardRes?.data ?? [];
+        const normalizedAdvisory = (Array.isArray(advisoryPayload) ? advisoryPayload : [])
+          .map((item) => normalizePartnerPerson(item, 'Advisory Board Member'))
+          .filter(Boolean)
+          .sort(sortByDisplayOrder);
+        setPartnerAdvisoryMembers(normalizedAdvisory);
+
+        const refreePayload = refreeRes?.data?.data ?? refreeRes?.data?.advisoryRefree ?? refreeRes?.data ?? [];
+        const normalizedReferees = (Array.isArray(refreePayload) ? refreePayload : [])
+          .map((item) => normalizePartnerPerson(item, 'Referee'))
+          .filter(Boolean)
+          .sort(sortByDisplayOrder);
+        setPartnerReferees(normalizedReferees);
+      } catch (error) {
+        console.error('Failed to load partner about page content', error);
+        if (!isMounted) return;
+        setPartnerAboutError('Unable to load partner about sections right now.');
+        setPartnerAdvisoryError('Unable to load advisory board right now.');
+        setPartnerRefereesError('Unable to load referees right now.');
+      } finally {
+        if (isMounted) {
+          setPartnerAboutLoading(false);
+          setPartnerAdvisoryLoading(false);
+          setPartnerRefereesLoading(false);
+        }
+      }
+    };
+
+    loadPartnerContent();
+    return () => {
+      isMounted = false;
+    };
+  }, [isPartnerAboutRoute, location.pathname]);
 
   // Fetch Advisory Board members when advisory tab is active
   useEffect(() => {
@@ -177,123 +287,173 @@ const AboutLayout = ({ setView }) => {
   
   void motion;
 
+  const fallbackPartnerSections = [
+    {
+      id: 'about-worso',
+      heading: ABOUT_PARTNER_STATIC.title || 'About WORSO',
+      content: ABOUT_PARTNER_STATIC.intro,
+    },
+    ...(ABOUT_PARTNER_STATIC.sections || []).map((section) => ({
+      id: section.id,
+      heading: section.title,
+      content: section.content || (Array.isArray(section.points) ? section.points.map((p) => `• ${p}`).join('\n') : ''),
+    })),
+  ];
+
+  const sourcePartnerSections = partnerAboutSections.length > 0 ? partnerAboutSections : fallbackPartnerSections;
+  const aboutSectionIndex = sourcePartnerSections.findIndex((item, index) => {
+    if (index === 0) return true;
+    const idText = String(item?.id || '').toLowerCase();
+    const headingText = String(item?.heading || '').toLowerCase();
+    return idText.includes('about') || headingText.includes('about');
+  });
+
+  const orderedPartnerSections = aboutSectionIndex >= 0
+    ? [
+      sourcePartnerSections[aboutSectionIndex],
+      ...sourcePartnerSections.filter((_, index) => index !== aboutSectionIndex),
+    ]
+    : [
+      {
+        id: 'about',
+        heading: 'About',
+        content: ABOUT_PARTNER_STATIC.intro || '',
+      },
+      ...sourcePartnerSections,
+    ];
+
+  const partnerInfoTabs = orderedPartnerSections.map((item, index) => ({
+    id: `partner-about-${item.id || index}`,
+    type: 'about',
+    label: index === 0 ? 'About' : (item.heading || `About ${index + 1}`),
+    heading: index === 0 ? 'About' : (item.heading || `About ${index + 1}`),
+    content: item.content || '',
+  }));
+
+  const partnerTabs = [
+    ...partnerInfoTabs,
+    { id: 'partner-advisory-board', type: 'advisory', label: 'Advisory Board' },
+    { id: 'partner-referees', type: 'referees', label: 'Referees' },
+  ];
+
+  useEffect(() => {
+    if (!isPartnerAboutRoute || partnerTabs.length === 0) return;
+    if (!partnerActiveTab || !partnerTabs.some((tab) => tab.id === partnerActiveTab)) {
+      setPartnerActiveTab(partnerTabs[0].id);
+    }
+  }, [isPartnerAboutRoute, partnerActiveTab, partnerTabs]);
+
   /* ------------------ Partner route: single About page, static data, no sections ------------------ */
   if (isPartnerAboutRoute) {
-    const data = ABOUT_PARTNER_STATIC;
+    const activePartnerTab = partnerTabs.find((tab) => tab.id === partnerActiveTab) || partnerTabs[0];
+
+    const renderPartnerAboutContent = () => {
+      if (activePartnerTab?.type === 'advisory') {
+        const members = partnerAdvisoryMembers.length > 0
+          ? partnerAdvisoryMembers
+          : ADVISORY_BOARD.map((item) => ({ ...item, id: item.id || item._id || item.name }));
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Advisory Board</h2>
+            {partnerAdvisoryError && <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">{partnerAdvisoryError}</p>}
+            {partnerAdvisoryLoading ? (
+              <p className="text-slate-500">Loading advisory board...</p>
+            ) : (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {members.map((person) => (
+                  <PersonCard
+                    key={person.id}
+                    id={person.id}
+                    name={person.name}
+                    designation={person.designation}
+                    image={person.image}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      if (activePartnerTab?.type === 'referees') {
+        const members = partnerReferees.length > 0
+          ? partnerReferees
+          : REFEREES.map((item) => ({ ...item, id: item.id || item._id || item.name }));
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Official Referees & Judges</h2>
+            {partnerRefereesError && <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">{partnerRefereesError}</p>}
+            {partnerRefereesLoading ? (
+              <p className="text-slate-500">Loading referees...</p>
+            ) : (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {members.map((person) => (
+                  <PersonCard
+                    key={person.id}
+                    id={person.id}
+                    name={person.name}
+                    designation={person.designation}
+                    image={person.image}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      return (
+        <div className="space-y-5">
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">{activePartnerTab?.heading || 'About'}</h2>
+          {partnerAboutError && (
+            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+              {partnerAboutError}
+            </p>
+          )}
+          {partnerAboutLoading ? (
+            <p className="text-slate-500">Loading section...</p>
+          ) : (
+            /<[^>]+>/.test(activePartnerTab?.content || '') ? (
+              <div
+                className="text-slate-700 leading-relaxed prose prose-slate max-w-none"
+                dangerouslySetInnerHTML={{ __html: activePartnerTab?.content || '' }}
+              />
+            ) : (
+              <div className="text-slate-700 leading-relaxed whitespace-pre-line">
+                {activePartnerTab?.content || 'Content will be published soon.'}
+              </div>
+            )
+          )}
+        </div>
+      );
+    };
+
     return (
       <div className="animate-fadeIn min-h-screen flex flex-col">
-        {/* Page header: matches main site "About Worso" style — partner shows "About" */}
-        <section className="bg-[#0f172a] border-b border-white/10">
-          <div className="container mx-auto px-4 py-6 md:py-8">
-            <h1 className="text-center font-bold text-xl md:text-2xl tracking-wide text-cyan-200/95">
-              About
-            </h1>
-            <div className="mt-3 h-px w-full max-w-md mx-auto bg-white/20" aria-hidden="true" />
+        <div className="bg-white border-b border-slate-300 sticky top-0 z-30">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center gap-10 overflow-x-auto scrollbar-hide">
+              {partnerTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setPartnerActiveTab(tab.id)}
+                  className={`py-3 text-sm md:text-base font-bold uppercase tracking-wide border-b-2 transition-colors whitespace-nowrap ${
+                    partnerActiveTab === tab.id
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  {tab.label || tab.heading}
+                </button>
+              ))}
+            </div>
           </div>
-        </section>
+        </div>
 
         <div className="flex-grow bg-gradient-to-b from-slate-50 via-white to-slate-50">
           <div className="container mx-auto px-4 py-8">
             <div className="bg-white p-8 md:p-12 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50">
-              <div className="space-y-10">
-                <div className="bg-[#0f172a] rounded-3xl text-white p-10 md:p-12 shadow-2xl relative overflow-hidden">
-                  <div className="text-yellow-400 font-bold tracking-widest text-xs uppercase mb-3">{data.hero.eyebrow}</div>
-                  <h2 className="text-3xl md:text-4xl font-extrabold mb-3 leading-tight">{data.hero.heading}</h2>
-                  <p className="text-slate-200 text-lg max-w-2xl">{data.hero.tagline}</p>
-                </div>
-
-                <p className="text-lg text-slate-600 leading-relaxed">{data.intro}</p>
-
-                {data.sections.map((section) => (
-                  <div key={section.id} className="space-y-4 pt-6 border-t border-slate-100">
-                    <div className="flex items-center gap-3">
-                      <Target className="text-blue-600 flex-shrink-0" size={20} />
-                      <h2 className="text-xl font-bold text-slate-900">{section.title}</h2>
-                    </div>
-                    {section.content && <p className="text-slate-600 leading-relaxed pl-8">{section.content}</p>}
-                    {section.points && (
-                      <ul className="list-disc list-inside space-y-2 text-slate-600 pl-8">
-                        {section.points.map((point, i) => (
-                          <li key={i}>{point}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                ))}
-
-                <div className="pt-6 border-t border-slate-100">
-                  <div className="bg-gradient-to-r from-blue-50 to-slate-50 rounded-2xl p-6 border border-blue-100">
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">Join the movement</h3>
-                    <p className="text-slate-600">Participate in events, become a member, or get in touch to learn how you can be part of our community.</p>
-                  </div>
-                </div>
-
-                {/* Advisory Board */}
-                <div className="pt-10 border-t border-slate-100 space-y-6">
-                  <div className="flex items-center gap-3">
-                    <Award className="text-blue-600 flex-shrink-0" size={20} />
-                    <h2 className="text-xl font-bold text-slate-900">Advisory Board</h2>
-                  </div>
-                  <p className="text-slate-600 leading-relaxed">
-                    Global leaders and experts guiding WORSO&apos;s mission, governance, and long-term strategy.
-                  </p>
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {ADVISORY_BOARD.map((person) => (
-                      <PersonCard
-                        key={person.id}
-                        id={person.id}
-                        name={person.name}
-                        designation={person.designation}
-                        image={person.image}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Executive Committee */}
-                <div className="pt-10 border-t border-slate-100 space-y-6">
-                  <div className="flex items-center gap-3">
-                    <Users className="text-blue-600 flex-shrink-0" size={20} />
-                    <h2 className="text-xl font-bold text-slate-900">Executive Committee</h2>
-                  </div>
-                  <p className="text-slate-600 leading-relaxed">
-                    The Executive Committee guides WORSO&apos;s strategic vision and policies, overseeing global initiatives and ensuring fair, inclusive practices.
-                  </p>
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {EXECUTIVE_MEMBERS.map((person) => (
-                      <PersonCard
-                        key={person.id}
-                        id={person.id}
-                        name={person.name}
-                        designation={person.designation}
-                        image={person.image}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Referees & Judges */}
-                <div className="pt-10 border-t border-slate-100 space-y-6">
-                  <div className="flex items-center gap-3">
-                    <ClipboardList className="text-blue-600 flex-shrink-0" size={20} />
-                    <h2 className="text-xl font-bold text-slate-900">Official Referees & Judges</h2>
-                  </div>
-                  <p className="text-slate-600 leading-relaxed">
-                    Certified referees and judges appointed by WORSO to ensure fair play and professional evaluation across all robotics competitions.
-                  </p>
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {REFEREES.map((person) => (
-                      <PersonCard
-                        key={person.id}
-                        id={person.id}
-                        name={person.name}
-                        designation={person.designation}
-                        image={person.image}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
+              {renderPartnerAboutContent()}
             </div>
           </div>
         </div>

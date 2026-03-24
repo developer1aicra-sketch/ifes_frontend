@@ -2993,8 +2993,8 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                   >
                                     <div className="flex items-start justify-between gap-3">
                                       <div className="min-w-0">
-                                        <p className="font-semibold text-black truncate">{item.heading || 'Untitled'}</p>
-                                        <p className="text-sm text-slate-600 line-clamp-2">{getPlainTextPreview(item.content) || '-'}</p>
+                                        {/* <p className="font-semibold text-black truncate">{item.heading || 'Untitled'}</p> */}
+                                        <p className="font-semibold text-black truncate">{getPlainTextPreview(item.content) || '-'}</p>
                                       </div>
                                       <div className="flex items-center gap-2 shrink-0">
                                         <button
@@ -3042,10 +3042,10 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                             <div className="rounded-xl border border-slate-200 p-5">
                               <h3 className="text-lg font-bold text-black mb-3">About Partner Details</h3>
                               <div className="space-y-3">
-                                <div>
+                                {/* <div>
                                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Heading</p>
                                   <p className="text-base font-semibold text-black">{selectedPartnerAbout.heading || '-'}</p>
-                                </div>
+                                </div> */}
                                 <div>
                                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Content</p>
                                   <div

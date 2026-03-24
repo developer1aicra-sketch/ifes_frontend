@@ -6,34 +6,13 @@
 
 export const ABOUT_PARTNER_STATIC = {
   title: 'About',
-  subtitle: 'Championing the Future of Competitive Robotics',
+  subtitle: 'Building Scalable, Performant Frontend Experiences',
   hero: {
     eyebrow: 'About',
-    heading: 'World Robotics Sports Organization',
-    tagline: 'Your local partner in robotics and technology sports.',
+    heading: 'Frontend Architecture',
+    tagline: 'Designing reliable UI systems with speed, clarity, and scale.',
   },
-  intro: `We are part of the World Robotics Sports Organization (WORSO) network, bringing competitive robotics and technology sports to our region. Our mission is to promote fair play, foster talent, and connect our community with global standards and events.`,
+  intro: `Our frontend architecture is designed for long-term scale and a smooth user experience. We organize features into reusable components, keep business logic modular, and use clear data flow patterns to make the codebase easier to maintain. Performance is a core focus, including lazy loading, optimized rendering, and lean API integration. We also prioritize accessibility, responsive design, and consistency through shared UI standards so every screen feels unified across devices.`,
 
-  sections: [
-    {
-      id: 'mission',
-      title: 'Our Mission',
-      content: `To develop and promote robotics sports at the grassroots level, provide a clear pathway to national and international competition, and ensure every participant has access to safe, fair, and inclusive events.`,
-    },
-    {
-      id: 'what-we-do',
-      title: 'What We Do',
-      points: [
-        'Organize and sanction local and regional robotics competitions.',
-        'Support teams and players with training and rulebooks aligned with WORSO standards.',
-        'Connect our community with world championships and international opportunities.',
-        'Advocate for recognition of robotics sports in education and society.',
-      ],
-    },
-    {
-      id: 'join',
-      title: 'Get Involved',
-      content: `Whether you are a team, a school, or an enthusiast—join our community. Participate in events, become a member, or volunteer. Together we grow the sport of robotics.`,
-    },
-  ],
+
 };
