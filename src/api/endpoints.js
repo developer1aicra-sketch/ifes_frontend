@@ -120,6 +120,8 @@ const endpoints = {
   partnerAbout: {
     /** POST partner about section payload: { heading, content } */
     add: '/partner/about/add',
+    /** GET partner about list by website and partnerCode */
+    get: '/partner/about/get',
     /** PUT partner about section payload: { heading, content } */
     update: (id) => `/partner/about/update/${id}`,
     /** DELETE partner about section by id */

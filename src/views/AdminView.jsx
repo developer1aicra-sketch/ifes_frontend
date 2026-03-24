@@ -10,7 +10,7 @@ import { callGemini } from '../utils/gemini';
 import { getMyMembership } from '../app/auth/authApi';
 import { getMembershipsByPartner } from '../api/membershipApi';
 import { addClubAdmin, deleteClub, getClubsByPartner, updateClub } from '../api/clubApi';
-import { addPartnerAbout, updatePartnerAbout, deletePartnerAbout } from '../api/partnerAboutApi';
+import { addPartnerAbout, getPartnerAbout, updatePartnerAbout, deletePartnerAbout } from '../api/partnerAboutApi';
 import { addAdvisoryBoard, getAdvisoryBoard, editAdvisoryBoard, deleteAdvisoryBoard, addAdvisoryRefree, getAdvisoryRefree, editAdvisoryRefree, deleteAdvisoryRefree } from '../api/advisoryApi';
 import { useLogout } from '../hooks/useLogout';
 import {
@@ -73,7 +73,12 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
   const [partnerHomeError, setPartnerHomeError] = useState('');
   const [partnerHomeSuccess, setPartnerHomeSuccess] = useState(false);
   const [partnerHomeSubTab, setPartnerHomeSubTab] = useState('home');
-  const [partnerAboutForm, setPartnerAboutForm] = useState({ _id: '', heading: '', content: '' });
+  const emptyPartnerAboutForm = { _id: '', heading: '', content: '' };
+  const [partnerAboutForm, setPartnerAboutForm] = useState(emptyPartnerAboutForm);
+  const [partnerAboutList, setPartnerAboutList] = useState([]);
+  const [selectedPartnerAbout, setSelectedPartnerAbout] = useState(null);
+  const [partnerAboutLoading, setPartnerAboutLoading] = useState(false);
+  const [showPartnerAboutForm, setShowPartnerAboutForm] = useState(false);
   const [partnerAboutSaving, setPartnerAboutSaving] = useState(false);
   const [partnerAboutDeleting, setPartnerAboutDeleting] = useState(false);
   const [partnerAboutError, setPartnerAboutError] = useState('');
@@ -122,6 +127,9 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       _imageFile: null,
     };
   };
+
+  const getPlainTextPreview = (html = '') =>
+    String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
   const buildAdvisoryFormData = (formState) => {
     const fd = new FormData();
@@ -435,10 +443,14 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
             normalizePartnerAbout(Array.isArray(partnerRecord?.aboutsData) ? partnerRecord.aboutsData[0] : null) ||
             normalizePartnerAbout(Array.isArray(partnerRecord?.partnerAbout) ? partnerRecord.partnerAbout[0] : partnerRecord?.partnerAbout);
           if (about) {
-            setPartnerAboutForm(about);
+            setPartnerAboutList([about]);
+            setSelectedPartnerAbout(about);
           } else {
-            setPartnerAboutForm({ _id: '', heading: '', content: '' });
+            setPartnerAboutList([]);
+            setSelectedPartnerAbout(null);
           }
+          setPartnerAboutForm({ _id: '', heading: '', content: '' });
+          setShowPartnerAboutForm(false);
           const advisoryBoardArr = Array.isArray(partnerRecord?.advisoryBoard)
             ? partnerRecord.advisoryBoard
             : Array.isArray(partnerRecord?.advisory_board)
@@ -487,6 +499,33 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     }
   }, []);
 
+  const loadPartnerAbout = useCallback(async () => {
+    setPartnerAboutLoading(true);
+    setPartnerAboutError('');
+    try {
+      const res = await getPartnerAbout('worso', partnerCode || 'IN');
+      const payload = res?.data?.data ?? res?.data?.about ?? res?.data ?? res;
+      const list = Array.isArray(payload) ? payload : [payload];
+      const normalizedList = list.map((item) => normalizePartnerAbout(item)).filter(Boolean);
+      setPartnerAboutList(normalizedList);
+      setSelectedPartnerAbout((prev) => {
+        if (!normalizedList.length) return null;
+        if (prev?._id) {
+          const matched = normalizedList.find((item) => item._id === prev._id);
+          if (matched) return matched;
+        }
+        return normalizedList[0];
+      });
+      if (!showPartnerAboutForm) {
+        setPartnerAboutForm({ _id: '', heading: '', content: '' });
+      }
+    } catch (err) {
+      setPartnerAboutError(err?.response?.data?.message || err?.message || 'Failed to load about content.');
+    } finally {
+      setPartnerAboutLoading(false);
+    }
+  }, [partnerCode, showPartnerAboutForm]);
+
   const loadAdvisoryRefree = useCallback(async () => {
     setAdvisoryRefreeLoading(true);
     setAdvisoryRefreeError('');
@@ -504,12 +543,14 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
   useEffect(() => {
     if (activeTab !== 'partner-home') return;
-    if (partnerHomeSubTab === 'advisory-board') {
+    if (partnerHomeSubTab === 'about') {
+      loadPartnerAbout();
+    } else if (partnerHomeSubTab === 'advisory-board') {
       loadAdvisoryBoard();
     } else if (partnerHomeSubTab === 'advisory-refree') {
       loadAdvisoryRefree();
     }
-  }, [activeTab, partnerHomeSubTab, loadAdvisoryBoard, loadAdvisoryRefree]);
+  }, [activeTab, partnerHomeSubTab, loadPartnerAbout, loadAdvisoryBoard, loadAdvisoryRefree]);
 
   const [teamMembers, setTeamMembers] = useState([]);
   const [teamMembersLoading, setTeamMembersLoading] = useState(false);
@@ -535,9 +576,9 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       email: item?.email || item?.emailId || userInfo?.email || userInfo?.emailId || 'N/A',
       phone: item?.phone || item?.mobile || item?.mobileNo || userInfo?.phone || userInfo?.mobile || userInfo?.mobileNo || 'N/A',
       avatar: item?.avatar || item?.profileImage || userInfo?.avatar || userInfo?.profileImage || 'https://randomuser.me/api/portraits/lego/1.jpg',
-      membershipId: item?.publicMembershipId || item?.membershipId || item?._id || 'N/A',
-      category: item?.category?.name || item?.category || 'N/A',
-      plan: item?.planTitle || item?.planName || item?.plan?.name || 'N/A',
+      membershipId: item?.publicMembershipId || item?.publicMemberShipId || item?.membershipId || item?._id || 'N/A',
+      category: item?.category_id?.name || item?.category?.name || item?.category_id || item?.category || 'N/A',
+      plan: item?.plan_id?.name || item?.planTitle || item?.planName || item?.plan?.name || item?.plan_id?.title || 'N/A',
       status: item?.status || 'N/A',
       paymentStatus: item?.paymentStatus || 'N/A',
       createdAt: item?.createdAt || item?.startDate || '',
@@ -1630,6 +1671,11 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       setPartnerAboutSuccess('');
       return;
     }
+    if (!partnerAboutForm._id && partnerAboutList.length > 0) {
+      setPartnerAboutError('Only one About Partner record is allowed.');
+      setPartnerAboutSuccess('');
+      return;
+    }
 
     setPartnerAboutSaving(true);
     setPartnerAboutError('');
@@ -1637,14 +1683,16 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     try {
       const payload = { heading, content };
       if (partnerAboutForm._id) {
-        const res = await updatePartnerAbout(partnerAboutForm._id, payload);
-        const updated = normalizePartnerAbout(res?.data?.data ?? res?.data?.about ?? res?.data ?? res);
-        if (updated) setPartnerAboutForm(updated);
+        await updatePartnerAbout(partnerAboutForm._id, payload);
+        await loadPartnerAbout();
+        setShowPartnerAboutForm(false);
+        setPartnerAboutForm(emptyPartnerAboutForm);
         setPartnerAboutSuccess('About content updated successfully.');
       } else {
-        const res = await addPartnerAbout(payload);
-        const created = normalizePartnerAbout(res?.data?.data ?? res?.data?.about ?? res?.data ?? res);
-        if (created) setPartnerAboutForm(created);
+        await addPartnerAbout(payload);
+        await loadPartnerAbout();
+        setShowPartnerAboutForm(false);
+        setPartnerAboutForm(emptyPartnerAboutForm);
         setPartnerAboutSuccess('About content created successfully.');
       }
     } catch (err) {
@@ -1654,8 +1702,9 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     }
   };
 
-  const handleDeletePartnerAbout = async () => {
-    if (!partnerAboutForm._id) {
+  const handleDeletePartnerAbout = async (id) => {
+    const recordId = id || partnerAboutForm._id;
+    if (!recordId) {
       setPartnerAboutError('No About record id found to delete.');
       setPartnerAboutSuccess('');
       return;
@@ -1667,8 +1716,10 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     setPartnerAboutError('');
     setPartnerAboutSuccess('');
     try {
-      await deletePartnerAbout(partnerAboutForm._id);
-      setPartnerAboutForm({ _id: '', heading: '', content: '' });
+      await deletePartnerAbout(recordId);
+      await loadPartnerAbout();
+      setPartnerAboutForm(emptyPartnerAboutForm);
+      setShowPartnerAboutForm(false);
       setPartnerAboutSuccess('About content deleted successfully.');
     } catch (err) {
       setPartnerAboutError(err?.response?.data?.message || err?.message || 'Failed to delete about content.');
@@ -2893,43 +2944,138 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       {partnerHomeSubTab === 'about' && (
                         <div className="space-y-5">
                           <div className="rounded-xl border border-slate-200 p-5">
-                            <div className="flex items-center justify-between gap-3 mb-4">
-                              <h3 className="text-lg font-bold text-black">About Partner</h3>
-                              {partnerAboutForm._id ? (
-                                <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded">
-                                  ID: {partnerAboutForm._id}
-                                </span>
-                              ) : (
-                                <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-1 rounded">
-                                  New record
-                                </span>
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="text-base font-bold text-black">About Partner</h4>
+                              {partnerAboutList.length === 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setPartnerAboutForm(emptyPartnerAboutForm);
+                                    setPartnerAboutSuccess('');
+                                    setPartnerAboutError('');
+                                    setShowPartnerAboutForm(true);
+                                  }}
+                                  className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg text-black hover:border-slate-400"
+                                >
+                                  Add About Partner
+                                </button>
                               )}
                             </div>
-
-                            <div className="space-y-4">
-                              <div>
-                                <label className="block text-sm font-bold text-black mb-1">Heading</label>
-                                <input
-                                  type="text"
-                                  value={partnerAboutForm.heading}
-                                  onChange={(e) => setPartnerAboutForm((prev) => ({ ...prev, heading: e.target.value }))}
-                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 text-[black] focus:ring-blue-500 outline-none"
-                                  placeholder="About Our Partner"
-                                />
+                            {partnerAboutLoading ? (
+                              <p className="text-sm text-slate-600">Loading about partner...</p>
+                            ) : partnerAboutList.length === 0 ? (
+                              <p className="text-sm text-slate-500">No about partner records yet.</p>
+                            ) : (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {partnerAboutList.map((item) => (
+                                  <div
+                                    key={item._id || `${item.heading}-${item.content?.slice(0, 20)}`}
+                                    className={`p-3 rounded-lg border transition-colors ${partnerAboutForm._id === item._id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-300'}`}
+                                  >
+                                    <div className="flex items-start justify-between gap-3">
+                                      <div className="min-w-0">
+                                        <p className="font-semibold text-black truncate">{item.heading || 'Untitled'}</p>
+                                        <p className="text-sm text-slate-600 line-clamp-2">{getPlainTextPreview(item.content) || '-'}</p>
+                                      </div>
+                                      <div className="flex items-center gap-2 shrink-0">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setSelectedPartnerAbout(item);
+                                            setPartnerAboutSuccess('');
+                                            setPartnerAboutError('');
+                                          }}
+                                          className="px-2.5 py-1.5 text-xs font-semibold rounded-md border border-slate-300 text-slate-700 hover:border-slate-400"
+                                          title="View About Partner"
+                                        >
+                                          View
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setPartnerAboutForm(item);
+                                            setPartnerAboutSuccess('');
+                                            setPartnerAboutError('');
+                                            setShowPartnerAboutForm(true);
+                                          }}
+                                          className="p-1.5 rounded-md text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+                                          title="Edit About Partner"
+                                        >
+                                          <Pencil className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeletePartnerAbout(item._id)}
+                                          disabled={partnerAboutDeleting}
+                                          className="p-1.5 rounded-md text-slate-600 hover:text-red-600 hover:bg-red-50 disabled:opacity-50"
+                                          title="Delete About Partner"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
-
-                              <div>
-                                <label className="block text-sm font-bold text-black mb-1">Content</label>
-                                <RichTextEditor
-                                  value={partnerAboutForm.content}
-                                  onChange={(html) => setPartnerAboutForm((prev) => ({ ...prev, content: html }))}
-                                  placeholder="Write about the partner. You can use heading, paragraph, bullet list, etc."
-                                  minHeight="180px"
-                                />
-                               
+                            )}
+                          </div>
+                          {selectedPartnerAbout ? (
+                            <div className="rounded-xl border border-slate-200 p-5">
+                              <h3 className="text-lg font-bold text-black mb-3">About Partner Details</h3>
+                              <div className="space-y-3">
+                                <div>
+                                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Heading</p>
+                                  <p className="text-base font-semibold text-black">{selectedPartnerAbout.heading || '-'}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Content</p>
+                                  <div
+                                    className="prose prose-sm max-w-none text-black"
+                                    dangerouslySetInnerHTML={{ __html: selectedPartnerAbout.content || '<p>-</p>' }}
+                                  />
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          ) : null}
+                          {showPartnerAboutForm ? (
+                            <div className="rounded-xl border border-slate-200 p-5">
+                              <div className="flex items-center justify-between gap-3 mb-4">
+                                <h3 className="text-lg font-bold text-black">About Partner</h3>
+                                {partnerAboutForm._id ? (
+                                  <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded">
+                                    ID: {partnerAboutForm._id}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-1 rounded">
+                                    New record
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="block text-sm font-bold text-black mb-1">Heading</label>
+                                  <input
+                                    type="text"
+                                    value={partnerAboutForm.heading}
+                                    onChange={(e) => setPartnerAboutForm((prev) => ({ ...prev, heading: e.target.value }))}
+                                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 text-[black] focus:ring-blue-500 outline-none"
+                                    placeholder="About Our Partner"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-sm font-bold text-black mb-1">Content</label>
+                                  <RichTextEditor
+                                    value={partnerAboutForm.content}
+                                    onChange={(html) => setPartnerAboutForm((prev) => ({ ...prev, content: html }))}
+                                    placeholder="Write about the partner. You can use heading, paragraph, bullet list, etc."
+                                    minHeight="180px"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ) : null}
 
                           {partnerAboutError ? (
                             <div className="text-sm text-red-600 font-medium bg-red-50 p-4 rounded-lg">{partnerAboutError}</div>
@@ -2940,32 +3086,29 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                             </div>
                           ) : null}
 
-                          <div className="flex flex-wrap items-center gap-3">
-                            <button
-                              type="button"
-                              onClick={savePartnerAbout}
-                              disabled={partnerAboutSaving}
-                              className="px-5 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {partnerAboutSaving ? 'Saving…' : partnerAboutForm._id ? 'Update About' : 'Add About'}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setPartnerAboutForm({ _id: '', heading: '', content: '' })}
-                              disabled={partnerAboutSaving || partnerAboutDeleting}
-                              className="px-5 py-3 border border-slate-300 text-black font-semibold rounded-lg hover:border-slate-400 disabled:opacity-50"
-                            >
-                              Clear
-                            </button>
-                            <button
-                              type="button"
-                              onClick={handleDeletePartnerAbout}
-                              disabled={!partnerAboutForm._id || partnerAboutDeleting}
-                              className="px-5 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {partnerAboutDeleting ? 'Deleting…' : 'Delete About'}
-                            </button>
-                          </div>
+                          {showPartnerAboutForm ? (
+                            <div className="flex flex-wrap items-center gap-3">
+                              <button
+                                type="button"
+                                onClick={savePartnerAbout}
+                                disabled={partnerAboutSaving}
+                                className="px-5 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {partnerAboutSaving ? 'Saving…' : partnerAboutForm._id ? 'Update About' : 'Add About'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPartnerAboutForm(emptyPartnerAboutForm);
+                                  setShowPartnerAboutForm(false);
+                                }}
+                                disabled={partnerAboutSaving || partnerAboutDeleting}
+                                className="px-5 py-3 border border-slate-300 text-black font-semibold rounded-lg hover:border-slate-400 disabled:opacity-50"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : null}
                         </div>
                       )}
 

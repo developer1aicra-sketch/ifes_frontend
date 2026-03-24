@@ -9,6 +9,15 @@ export const addPartnerAbout = (payload) =>
   axiosInstance.post(endpoints.partnerAbout.add, payload);
 
 /**
+ * Get partner about content list.
+ * Query: { website: string, partnerCode: string }
+ */
+export const getPartnerAbout = (website = 'worso', partnerCode = 'IN') =>
+  axiosInstance.get(endpoints.partnerAbout.get, {
+    params: { website, partnerCode },
+  });
+
+/**
  * Update partner about content by id.
  * Payload: { heading: string, content: string }
  */
