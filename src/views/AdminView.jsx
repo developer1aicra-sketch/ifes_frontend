@@ -11,6 +11,7 @@ import { getMyMembership } from '../app/auth/authApi';
 import { getMembershipsByPartner } from '../api/membershipApi';
 import { addClubAdmin, deleteClub, getClubsByPartner, updateClub } from '../api/clubApi';
 import { addPartnerAbout, updatePartnerAbout, deletePartnerAbout } from '../api/partnerAboutApi';
+import { addAdvisoryBoard, getAdvisoryBoard, editAdvisoryBoard, deleteAdvisoryBoard, addAdvisoryRefree, getAdvisoryRefree, editAdvisoryRefree, deleteAdvisoryRefree } from '../api/advisoryApi';
 import { useLogout } from '../hooks/useLogout';
 import {
   fetchPartnerById,
@@ -77,6 +78,23 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
   const [partnerAboutDeleting, setPartnerAboutDeleting] = useState(false);
   const [partnerAboutError, setPartnerAboutError] = useState('');
   const [partnerAboutSuccess, setPartnerAboutSuccess] = useState('');
+  const emptyAdvisoryForm = { _id: '', name: '', designation: '', image: '', _imageFile: null };
+  const [advisoryBoardForm, setAdvisoryBoardForm] = useState(emptyAdvisoryForm);
+  const [advisoryBoardList, setAdvisoryBoardList] = useState([]);
+  const [advisoryBoardLoading, setAdvisoryBoardLoading] = useState(false);
+  const [showAdvisoryBoardForm, setShowAdvisoryBoardForm] = useState(false);
+  const [advisoryBoardSaving, setAdvisoryBoardSaving] = useState(false);
+  const [advisoryBoardDeleting, setAdvisoryBoardDeleting] = useState(false);
+  const [advisoryBoardError, setAdvisoryBoardError] = useState('');
+  const [advisoryBoardSuccess, setAdvisoryBoardSuccess] = useState('');
+  const [advisoryRefreeForm, setAdvisoryRefreeForm] = useState(emptyAdvisoryForm);
+  const [advisoryRefreeList, setAdvisoryRefreeList] = useState([]);
+  const [advisoryRefreeLoading, setAdvisoryRefreeLoading] = useState(false);
+  const [showAdvisoryRefreeForm, setShowAdvisoryRefreeForm] = useState(false);
+  const [advisoryRefreeSaving, setAdvisoryRefreeSaving] = useState(false);
+  const [advisoryRefreeDeleting, setAdvisoryRefreeDeleting] = useState(false);
+  const [advisoryRefreeError, setAdvisoryRefreeError] = useState('');
+  const [advisoryRefreeSuccess, setAdvisoryRefreeSuccess] = useState('');
 
   const normalizePartnerAbout = (payload) => {
     if (!payload || typeof payload !== 'object') return null;
@@ -88,6 +106,31 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       heading,
       content,
     };
+  };
+
+  const normalizeAdvisoryPerson = (payload) => {
+    if (!payload || typeof payload !== 'object') return null;
+    const name = payload.name || '';
+    const designation = payload.designation || '';
+    const image = payload.image || payload.photo || payload.avatar || '';
+    if (!payload._id && !name && !designation && !image) return null;
+    return {
+      _id: payload._id || payload.id || '',
+      name,
+      designation,
+      image,
+      _imageFile: null,
+    };
+  };
+
+  const buildAdvisoryFormData = (formState) => {
+    const fd = new FormData();
+    const name = (formState?.name || '').trim();
+    const designation = (formState?.designation || '').trim();
+    if (name) fd.append('name', name);
+    if (designation) fd.append('designation', designation);
+    if (formState?._imageFile) fd.append('image', formState._imageFile);
+    return fd;
   };
 
   const mapPartnerToHomeContent = (partnerRecord) => {
@@ -396,6 +439,23 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
           } else {
             setPartnerAboutForm({ _id: '', heading: '', content: '' });
           }
+          const advisoryBoardArr = Array.isArray(partnerRecord?.advisoryBoard)
+            ? partnerRecord.advisoryBoard
+            : Array.isArray(partnerRecord?.advisory_board)
+              ? partnerRecord.advisory_board
+              : [];
+          setAdvisoryBoardList(advisoryBoardArr.map((item) => normalizeAdvisoryPerson(item)).filter(Boolean));
+          setAdvisoryBoardForm(emptyAdvisoryForm);
+
+          const advisoryRefreeArr = Array.isArray(partnerRecord?.advisoryRefree)
+            ? partnerRecord.advisoryRefree
+            : Array.isArray(partnerRecord?.advisory_refree)
+              ? partnerRecord.advisory_refree
+              : Array.isArray(partnerRecord?.advisoryReferee)
+                ? partnerRecord.advisoryReferee
+                : [];
+          setAdvisoryRefreeList(advisoryRefreeArr.map((item) => normalizeAdvisoryPerson(item)).filter(Boolean));
+          setAdvisoryRefreeForm(emptyAdvisoryForm);
         } else {
           setPartnerHomeError('Partner not found.');
         }
@@ -411,6 +471,45 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       loadPartnerHome();
     }
   }, [partner?._id, activeTab]);
+
+  const loadAdvisoryBoard = useCallback(async () => {
+    setAdvisoryBoardLoading(true);
+    setAdvisoryBoardError('');
+    try {
+      const res = await getAdvisoryBoard('worso');
+      const payload = res?.data?.data ?? res?.data?.advisoryBoard ?? res?.data ?? res;
+      const list = Array.isArray(payload) ? payload : [];
+      setAdvisoryBoardList(list.map((item) => normalizeAdvisoryPerson(item)).filter(Boolean));
+    } catch (err) {
+      setAdvisoryBoardError(err?.response?.data?.message || err?.message || 'Failed to load advisory board list.');
+    } finally {
+      setAdvisoryBoardLoading(false);
+    }
+  }, []);
+
+  const loadAdvisoryRefree = useCallback(async () => {
+    setAdvisoryRefreeLoading(true);
+    setAdvisoryRefreeError('');
+    try {
+      const res = await getAdvisoryRefree('worso');
+      const payload = res?.data?.data ?? res?.data?.advisoryRefree ?? res?.data ?? res;
+      const list = Array.isArray(payload) ? payload : [];
+      setAdvisoryRefreeList(list.map((item) => normalizeAdvisoryPerson(item)).filter(Boolean));
+    } catch (err) {
+      setAdvisoryRefreeError(err?.response?.data?.message || err?.message || 'Failed to load advisory refree list.');
+    } finally {
+      setAdvisoryRefreeLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'partner-home') return;
+    if (partnerHomeSubTab === 'advisory-board') {
+      loadAdvisoryBoard();
+    } else if (partnerHomeSubTab === 'advisory-refree') {
+      loadAdvisoryRefree();
+    }
+  }, [activeTab, partnerHomeSubTab, loadAdvisoryBoard, loadAdvisoryRefree]);
 
   const [teamMembers, setTeamMembers] = useState([]);
   const [teamMembersLoading, setTeamMembersLoading] = useState(false);
@@ -1578,6 +1677,129 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
     }
   };
 
+  const handleAdvisoryImageChange = (type, event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      window.alert('Please select an image file (JPEG, PNG, GIF, WebP).');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      window.alert('Image must be smaller than 2MB.');
+      return;
+    }
+    if (type === 'board') {
+      setAdvisoryBoardForm((prev) => ({ ...prev, _imageFile: file }));
+    } else {
+      setAdvisoryRefreeForm((prev) => ({ ...prev, _imageFile: file }));
+    }
+    event.target.value = '';
+  };
+
+  const saveAdvisoryBoard = async () => {
+    const name = (advisoryBoardForm.name || '').trim();
+    const designation = (advisoryBoardForm.designation || '').trim();
+    if (!name || !designation) {
+      setAdvisoryBoardError('Name and designation are required.');
+      setAdvisoryBoardSuccess('');
+      return;
+    }
+    setAdvisoryBoardSaving(true);
+    setAdvisoryBoardError('');
+    setAdvisoryBoardSuccess('');
+    try {
+      const formData = buildAdvisoryFormData(advisoryBoardForm);
+      const res = advisoryBoardForm._id
+        ? await editAdvisoryBoard(advisoryBoardForm._id, formData)
+        : await addAdvisoryBoard(formData);
+      const normalized = normalizeAdvisoryPerson(res?.data?.data ?? res?.data ?? res);
+      if (normalized) setAdvisoryBoardForm(normalized);
+      await loadAdvisoryBoard();
+      setShowAdvisoryBoardForm(false);
+      setAdvisoryBoardSuccess(advisoryBoardForm._id ? 'Advisory Board updated successfully.' : 'Advisory Board added successfully.');
+    } catch (err) {
+      setAdvisoryBoardError(err?.response?.data?.message || err?.message || 'Failed to save advisory board.');
+    } finally {
+      setAdvisoryBoardSaving(false);
+    }
+  };
+
+  const handleDeleteAdvisoryBoard = async (id) => {
+    const recordId = id || advisoryBoardForm._id;
+    if (!recordId) {
+      setAdvisoryBoardError('No Advisory Board record id found to delete.');
+      setAdvisoryBoardSuccess('');
+      return;
+    }
+    if (!window.confirm('Delete this Advisory Board entry?')) return;
+    setAdvisoryBoardDeleting(true);
+    setAdvisoryBoardError('');
+    setAdvisoryBoardSuccess('');
+    try {
+      await deleteAdvisoryBoard(recordId);
+      setAdvisoryBoardForm(emptyAdvisoryForm);
+      await loadAdvisoryBoard();
+      setShowAdvisoryBoardForm(false);
+      setAdvisoryBoardSuccess('Advisory Board deleted successfully.');
+    } catch (err) {
+      setAdvisoryBoardError(err?.response?.data?.message || err?.message || 'Failed to delete advisory board.');
+    } finally {
+      setAdvisoryBoardDeleting(false);
+    }
+  };
+
+  const saveAdvisoryRefree = async () => {
+    const name = (advisoryRefreeForm.name || '').trim();
+    const designation = (advisoryRefreeForm.designation || '').trim();
+    if (!name || !designation) {
+      setAdvisoryRefreeError('Name and designation are required.');
+      setAdvisoryRefreeSuccess('');
+      return;
+    }
+    setAdvisoryRefreeSaving(true);
+    setAdvisoryRefreeError('');
+    setAdvisoryRefreeSuccess('');
+    try {
+      const formData = buildAdvisoryFormData(advisoryRefreeForm);
+      const res = advisoryRefreeForm._id
+        ? await editAdvisoryRefree(advisoryRefreeForm._id, formData)
+        : await addAdvisoryRefree(formData);
+      const normalized = normalizeAdvisoryPerson(res?.data?.data ?? res?.data ?? res);
+      if (normalized) setAdvisoryRefreeForm(normalized);
+      await loadAdvisoryRefree();
+      setShowAdvisoryRefreeForm(false);
+      setAdvisoryRefreeSuccess(advisoryRefreeForm._id ? 'Advisory Refree updated successfully.' : 'Advisory Refree added successfully.');
+    } catch (err) {
+      setAdvisoryRefreeError(err?.response?.data?.message || err?.message || 'Failed to save advisory refree.');
+    } finally {
+      setAdvisoryRefreeSaving(false);
+    }
+  };
+
+  const handleDeleteAdvisoryRefree = async (id) => {
+    const recordId = id || advisoryRefreeForm._id;
+    if (!recordId) {
+      setAdvisoryRefreeError('No Advisory Refree record id found to delete.');
+      setAdvisoryRefreeSuccess('');
+      return;
+    }
+    if (!window.confirm('Delete this Advisory Refree entry?')) return;
+    setAdvisoryRefreeDeleting(true);
+    setAdvisoryRefreeError('');
+    setAdvisoryRefreeSuccess('');
+    try {
+      await deleteAdvisoryRefree(recordId);
+      setAdvisoryRefreeForm(emptyAdvisoryForm);
+      await loadAdvisoryRefree();
+      setShowAdvisoryRefreeForm(false);
+      setAdvisoryRefreeSuccess('Advisory Refree deleted successfully.');
+    } catch (err) {
+      setAdvisoryRefreeError(err?.response?.data?.message || err?.message || 'Failed to delete advisory refree.');
+    } finally {
+      setAdvisoryRefreeDeleting(false);
+    }
+  };
+
   return (
     <div className="bg-slate-50 animate-fadeIn h-screen flex flex-col overflow-hidden">
       <div className="container mx-auto px-4 py-4 h-full">
@@ -2026,9 +2248,23 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                         >
                           About
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => setPartnerHomeSubTab('advisory-board')}
+                          className={`px-4 py-2 rounded-lg text-sm font-semibold ${partnerHomeSubTab === 'advisory-board' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                        >
+                          Advisory Board
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPartnerHomeSubTab('advisory-refree')}
+                          className={`px-4 py-2 rounded-lg text-sm font-semibold ${partnerHomeSubTab === 'advisory-refree' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                        >
+                           Refree
+                        </button>
                       </div>
 
-                      {partnerHomeSubTab !== 'about' && (
+                      {partnerHomeSubTab === 'home' && (
                         <>
                       {/* Home Section */}
                       <div className="border-b border-slate-200 pb-6">
@@ -2730,6 +2966,316 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                               {partnerAboutDeleting ? 'Deleting…' : 'Delete About'}
                             </button>
                           </div>
+                        </div>
+                      )}
+
+                      {partnerHomeSubTab === 'advisory-board' && (
+                        <div className="space-y-5">
+                          <div className="rounded-xl border border-slate-200 p-5">
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="text-base font-bold text-black">Advisory Board List</h4>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAdvisoryBoardForm(emptyAdvisoryForm);
+                                  setAdvisoryBoardSuccess('');
+                                  setAdvisoryBoardError('');
+                                  setShowAdvisoryBoardForm(true);
+                                }}
+                                className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg text-black hover:border-slate-400"
+                              >
+                                Add Advisory Board
+                              </button>
+                            </div>
+                            {advisoryBoardLoading ? (
+                              <p className="text-sm text-slate-600">Loading advisory board...</p>
+                            ) : advisoryBoardList.length === 0 ? (
+                              <p className="text-sm text-slate-500">No advisory board members yet.</p>
+                            ) : (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {advisoryBoardList.map((item) => (
+                                  <div
+                                    key={item._id || `${item.name}-${item.designation}`}
+                                    className={`p-3 rounded-lg border transition-colors ${advisoryBoardForm._id === item._id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-300'}`}
+                                  >
+                                    <div className="flex items-start justify-between gap-3">
+                                      <div className="min-w-0">
+                                        <p className="font-semibold text-black">{item.name || 'Unnamed'}</p>
+                                        <p className="text-sm text-slate-600">{item.designation || '-'}</p>
+                                      </div>
+                                      <div className="flex items-center gap-2 shrink-0">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setAdvisoryBoardForm({ ...item, _imageFile: null });
+                                            setAdvisoryBoardSuccess('');
+                                            setAdvisoryBoardError('');
+                                            setShowAdvisoryBoardForm(true);
+                                          }}
+                                          className="p-1.5 rounded-md text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+                                          title="Edit Advisory Board"
+                                        >
+                                          <Pencil className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteAdvisoryBoard(item._id)}
+                                          disabled={advisoryBoardDeleting}
+                                          className="p-1.5 rounded-md text-slate-600 hover:text-red-600 hover:bg-red-50 disabled:opacity-50"
+                                          title="Delete Advisory Board"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          {showAdvisoryBoardForm ? (
+                          <div className="rounded-xl border border-slate-200 p-5">
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                              <h3 className="text-lg font-bold text-black">Advisory Board</h3>
+                              {advisoryBoardForm._id ? (
+                                <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded">ID: {advisoryBoardForm._id}</span>
+                              ) : (
+                                <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-1 rounded">New record</span>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-bold text-black mb-1">Name</label>
+                                <input
+                                  type="text"
+                                  value={advisoryBoardForm.name}
+                                  onChange={(e) => setAdvisoryBoardForm((prev) => ({ ...prev, name: e.target.value }))}
+                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 text-[black] focus:ring-blue-500 outline-none"
+                                  placeholder="Enter name"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-black mb-1">Designation</label>
+                                <input
+                                  type="text"
+                                  value={advisoryBoardForm.designation}
+                                  onChange={(e) => setAdvisoryBoardForm((prev) => ({ ...prev, designation: e.target.value }))}
+                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 text-[black] focus:ring-blue-500 outline-none"
+                                  placeholder="Enter designation"
+                                />
+                              </div>
+                              <div className="md:col-span-2">
+                                <label className="block text-sm font-bold text-black mb-1">Image</label>
+                                {(advisoryBoardForm._imageFile || advisoryBoardForm.image) ? (
+                                  <div className="relative group w-full max-w-xs">
+                                    <div className="h-36 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 flex items-center justify-center">
+                                      <img
+                                        src={advisoryBoardForm._imageFile ? URL.createObjectURL(advisoryBoardForm._imageFile) : advisoryBoardForm.image}
+                                        alt=""
+                                        className="max-h-full max-w-full object-contain"
+                                      />
+                                    </div>
+                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                      <label className="cursor-pointer p-2 bg-white rounded-lg shadow">
+                                        <Upload className="w-4 h-4 text-slate-700" />
+                                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleAdvisoryImageChange('board', e)} />
+                                      </label>
+                                      <button type="button" onClick={() => setAdvisoryBoardForm((prev) => ({ ...prev, image: '', _imageFile: null }))} className="p-2 bg-white rounded-lg shadow">
+                                        <X className="w-4 h-4 text-slate-700" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <label className="flex flex-col items-center justify-center w-full max-w-xs h-36 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-slate-50/50 transition-colors">
+                                    <ImageIcon className="w-6 h-6 text-slate-400 mb-1" />
+                                    <span className="text-xs text-slate-500">Upload image</span>
+                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleAdvisoryImageChange('board', e)} />
+                                  </label>
+                                )}
+                                {advisoryBoardForm._imageFile ? <p className="mt-1 text-xs text-slate-500">{advisoryBoardForm._imageFile.name}</p> : null}
+                              </div>
+                            </div>
+                          </div>
+                          ) : null}
+                          {advisoryBoardError ? <div className="text-sm text-red-600 font-medium bg-red-50 p-4 rounded-lg">{advisoryBoardError}</div> : null}
+                          {advisoryBoardSuccess ? (
+                            <div className="text-sm text-emerald-600 font-medium bg-emerald-50 p-4 rounded-lg flex items-center gap-2">
+                              <CheckCircle size={18} /> {advisoryBoardSuccess}
+                            </div>
+                          ) : null}
+                          {showAdvisoryBoardForm ? (
+                            <div className="flex flex-wrap items-center gap-3">
+                              <button type="button" onClick={saveAdvisoryBoard} disabled={advisoryBoardSaving} className="px-5 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                {advisoryBoardSaving ? 'Saving…' : advisoryBoardForm._id ? 'Update Advisory Board' : 'Add Advisory Board'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAdvisoryBoardForm(emptyAdvisoryForm);
+                                  setShowAdvisoryBoardForm(false);
+                                }}
+                                disabled={advisoryBoardSaving || advisoryBoardDeleting}
+                                className="px-5 py-3 border border-slate-300 text-black font-semibold rounded-lg hover:border-slate-400 disabled:opacity-50"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : null}
+                        </div>
+                      )}
+
+                      {partnerHomeSubTab === 'advisory-refree' && (
+                        <div className="space-y-5">
+                          <div className="rounded-xl border border-slate-200 p-5">
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="text-base font-bold text-black"> Refree List</h4>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAdvisoryRefreeForm(emptyAdvisoryForm);
+                                  setAdvisoryRefreeSuccess('');
+                                  setAdvisoryRefreeError('');
+                                  setShowAdvisoryRefreeForm(true);
+                                }}
+                                className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg text-black hover:border-slate-400"
+                              >
+                                Add  Refree
+                              </button>
+                            </div>
+                            {advisoryRefreeLoading ? (
+                              <p className="text-sm text-slate-600">Loading  refree...</p>
+                            ) : advisoryRefreeList.length === 0 ? (
+                              <p className="text-sm text-slate-500">No  refree members yet.</p>
+                            ) : (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {advisoryRefreeList.map((item) => (
+                                  <div
+                                    key={item._id || `${item.name}-${item.designation}`}
+                                    className={`p-3 rounded-lg border transition-colors ${advisoryRefreeForm._id === item._id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-300'}`}
+                                  >
+                                    <div className="flex items-start justify-between gap-3">
+                                      <div className="min-w-0">
+                                        <p className="font-semibold text-black">{item.name || 'Unnamed'}</p>
+                                        <p className="text-sm text-slate-600">{item.designation || '-'}</p>
+                                      </div>
+                                      <div className="flex items-center gap-2 shrink-0">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setAdvisoryRefreeForm({ ...item, _imageFile: null });
+                                            setAdvisoryRefreeSuccess('');
+                                            setAdvisoryRefreeError('');
+                                            setShowAdvisoryRefreeForm(true);
+                                          }}
+                                          className="p-1.5 rounded-md text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+                                          title="Edit  Refree"
+                                        >
+                                          <Pencil className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteAdvisoryRefree(item._id)}
+                                          disabled={advisoryRefreeDeleting}
+                                          className="p-1.5 rounded-md text-slate-600 hover:text-red-600 hover:bg-red-50 disabled:opacity-50"
+                                          title="Delete  Refree"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          {showAdvisoryRefreeForm ? (
+                          <div className="rounded-xl border border-slate-200 p-5">
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                              <h3 className="text-lg font-bold text-black"> Refree</h3>
+                              {advisoryRefreeForm._id ? (
+                                <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded">ID: {advisoryRefreeForm._id}</span>
+                              ) : (
+                                <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-1 rounded">New record</span>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-bold text-black mb-1">Name</label>
+                                <input
+                                  type="text"
+                                  value={advisoryRefreeForm.name}
+                                  onChange={(e) => setAdvisoryRefreeForm((prev) => ({ ...prev, name: e.target.value }))}
+                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 text-[black] focus:ring-blue-500 outline-none"
+                                  placeholder="Enter name"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-black mb-1">Designation</label>
+                                <input
+                                  type="text"
+                                  value={advisoryRefreeForm.designation}
+                                  onChange={(e) => setAdvisoryRefreeForm((prev) => ({ ...prev, designation: e.target.value }))}
+                                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 text-[black] focus:ring-blue-500 outline-none"
+                                  placeholder="Enter designation"
+                                />
+                              </div>
+                              <div className="md:col-span-2">
+                                <label className="block text-sm font-bold text-black mb-1">Image</label>
+                                {(advisoryRefreeForm._imageFile || advisoryRefreeForm.image) ? (
+                                  <div className="relative group w-full max-w-xs">
+                                    <div className="h-36 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 flex items-center justify-center">
+                                      <img
+                                        src={advisoryRefreeForm._imageFile ? URL.createObjectURL(advisoryRefreeForm._imageFile) : advisoryRefreeForm.image}
+                                        alt=""
+                                        className="max-h-full max-w-full object-contain"
+                                      />
+                                    </div>
+                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                      <label className="cursor-pointer p-2 bg-white rounded-lg shadow">
+                                        <Upload className="w-4 h-4 text-slate-700" />
+                                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleAdvisoryImageChange('refree', e)} />
+                                      </label>
+                                      <button type="button" onClick={() => setAdvisoryRefreeForm((prev) => ({ ...prev, image: '', _imageFile: null }))} className="p-2 bg-white rounded-lg shadow">
+                                        <X className="w-4 h-4 text-slate-700" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <label className="flex flex-col items-center justify-center w-full max-w-xs h-36 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-slate-50/50 transition-colors">
+                                    <ImageIcon className="w-6 h-6 text-slate-400 mb-1" />
+                                    <span className="text-xs text-slate-500">Upload image</span>
+                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleAdvisoryImageChange('refree', e)} />
+                                  </label>
+                                )}
+                                {advisoryRefreeForm._imageFile ? <p className="mt-1 text-xs text-slate-500">{advisoryRefreeForm._imageFile.name}</p> : null}
+                              </div>
+                            </div>
+                          </div>
+                          ) : null}
+                          {advisoryRefreeError ? <div className="text-sm text-red-600 font-medium bg-red-50 p-4 rounded-lg">{advisoryRefreeError}</div> : null}
+                          {advisoryRefreeSuccess ? (
+                            <div className="text-sm text-emerald-600 font-medium bg-emerald-50 p-4 rounded-lg flex items-center gap-2">
+                              <CheckCircle size={18} /> {advisoryRefreeSuccess}
+                            </div>
+                          ) : null}
+                          {showAdvisoryRefreeForm ? (
+                            <div className="flex flex-wrap items-center gap-3">
+                              <button type="button" onClick={saveAdvisoryRefree} disabled={advisoryRefreeSaving} className="px-5 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                {advisoryRefreeSaving ? 'Saving…' : advisoryRefreeForm._id ? 'Update Advisory Refree' : 'Add Advisory Refree'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAdvisoryRefreeForm(emptyAdvisoryForm);
+                                  setShowAdvisoryRefreeForm(false);
+                                }}
+                                disabled={advisoryRefreeSaving || advisoryRefreeDeleting}
+                                className="px-5 py-3 border border-slate-300 text-black font-semibold rounded-lg hover:border-slate-400 disabled:opacity-50"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : null}
                         </div>
                       )}
                     </div>

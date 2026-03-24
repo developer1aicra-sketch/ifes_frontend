@@ -125,6 +125,18 @@ const endpoints = {
     /** DELETE partner about section by id */
     delete: (id) => `/partner/about/delete/${id}`,
   },
+  advisoryBoard: {
+    add: '/advisory/board/add',
+    get: '/advisory/board/get',
+    edit: (id) => `/advisory/board/edit/${id}`,
+    delete: (id) => `/advisory/board/delete/${id}`,
+  },
+  advisoryRefree: {
+    add: '/advisory/refree/add',
+    get: '/advisory/refree/get',
+    edit: (id) => `/advisory/refree/edit/${id}`,
+    delete: (id) => `/advisory/refree/delete/${id}`,
+  },
   about: {
     people: (category) => `/about-worso/people?category=${encodeURIComponent(category)}`,
   },
