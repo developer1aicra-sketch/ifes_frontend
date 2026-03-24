@@ -341,8 +341,9 @@ const AppContent = ({
   const { locationPrefix } = useLocationPrefix();
   const hideGlobalChrome = useMemo(() => {
     const path = (location?.pathname || '').toLowerCase();
-    // RoboClub pages have their own layout; keep global nav/footer hidden there.
-    return path.includes('roboclub');
+    // RoboClub and partner portal pages have their own layout;
+    // keep global nav/footer hidden there.
+    return path.includes('roboclub') || path.endsWith('/partner/portal');
   }, [location?.pathname]);
   const setViewRespectingLocation = useCallback(
     (view, options) => (locationPrefix ? setViewWithPrefix(view, locationPrefix, options) : setView(view, options)),

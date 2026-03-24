@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { Calendar, Layout, Building, Plus, Sparkles, LogOut, BookOpen, Lock, CheckCircle, Play, MessageSquare, Search, X, Users, UserPlus, Briefcase, Mail, Phone, UserCircle, Trophy, Trash2, Pencil, CreditCard, Shield, ArrowRight, User, Building2, GraduationCap, MapPin, Upload, Image as ImageIcon } from 'lucide-react';
 import RichTextEditor from '../components/RichTextEditor';
 import ForumView from '../components/ForumView';
@@ -1918,11 +1918,11 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
 
   return (
     <div className="bg-slate-50 animate-fadeIn h-screen flex flex-col overflow-hidden">
-      <div className="container mx-auto px-4 py-4 h-full">
-        <div className="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden flex flex-col lg:flex-row h-[calc(100vh-2rem)]">
+      <div className=" mx-auto  h-full w-full">
+        <div className="bg-white  shadow-lg border border-slate-200 overflow-hidden flex flex-col lg:flex-row h-screen">
           <div className="w-72 bg-gradient-to-b from-slate-900 to-slate-800 text-white relative overflow-hidden border-r border-slate-700/50 shadow-xl">
             <div className="relative px-5 pt-10 pb-8 space-y-4 overflow-y-auto h-full" style={{ scrollbarColor: '#3b82f6 #1e293b', scrollbarWidth: 'thin' }}>
-              <div className="flex items-center justify-between">
+              <NavLink className="w-full flex items-center justify-between" to='/'>
                 <div>
                   <div className="text-[11px] font-bold uppercase text-blue-200">Portal</div>
                   <div className="font-extrabold text-xl">{isAdminMode === 'super' ? 'WORSO HQ' : 'Partner Portal'}</div>
@@ -1930,7 +1930,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                 <div className="px-3 py-1 rounded-full bg-white/10 text-[11px] font-semibold border border-white/10">
                   {isAdminMode === 'super' ? 'Super' : 'Partner'}
                 </div>
-              </div>
+              </NavLink>
 
               <div className="space-y-2">
                 <button
