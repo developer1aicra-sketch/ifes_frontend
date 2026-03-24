@@ -1915,7 +1915,6 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       setAdvisoryRefreeDeleting(false);
     }
   };
-
   return (
     <div className="bg-slate-50 animate-fadeIn h-screen flex flex-col overflow-hidden">
       <div className=" mx-auto  h-full w-full">
