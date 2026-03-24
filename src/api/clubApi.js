@@ -38,6 +38,16 @@ export const getClubsByPartner = (partnerCode) =>
   });
 
 /**
+ * Get clubs (with members) by partner — GET /club/all/get?website=worso&partnerCode=XX
+ * Used for partner admin "My RoboClubs" detail cards.
+ * Response: { success, totalClubs, data: [{ clubDetails, members }] }
+ */
+export const getClubsWithMembersByPartner = (partnerCode) =>
+  axiosInstance.get(endpoints.club.allGet, {
+    params: { website: 'worso', partnerCode: partnerCode || '' },
+  });
+
+/**
  * Get club details by club ID.
  * Requires: Authorization Bearer token.
  * Response: { success, data: Club }

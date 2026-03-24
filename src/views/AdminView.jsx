@@ -9,7 +9,7 @@ import { COUNTRY_DIAL_CODES } from '../constants/countryDialCodes';
 import { callGemini } from '../utils/gemini';
 import { getMyMembership } from '../app/auth/authApi';
 import { getMembershipsByPartner } from '../api/membershipApi';
-import { addClubAdmin, deleteClub, getClubsByPartner, updateClub } from '../api/clubApi';
+import { addClubAdmin, deleteClub, getClubsByPartner, getClubsWithMembersByPartner, updateClub } from '../api/clubApi';
 import { addPartnerAbout, getPartnerAbout, updatePartnerAbout, deletePartnerAbout } from '../api/partnerAboutApi';
 import { addAdvisoryBoard, getAdvisoryBoard, editAdvisoryBoard, deleteAdvisoryBoard, addAdvisoryRefree, getAdvisoryRefree, editAdvisoryRefree, deleteAdvisoryRefree } from '../api/advisoryApi';
 import { useLogout } from '../hooks/useLogout';
@@ -826,30 +826,62 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
   const [myClubs, setMyClubs] = useState([]);
   const [myClubsLoading, setMyClubsLoading] = useState(false);
   const [myClubsError, setMyClubsError] = useState('');
+  const [selectedClubId, setSelectedClubId] = useState('');
+
+  const normalizeMyClubList = useCallback((payload) => {
+    const source = Array.isArray(payload?.data)
+      ? payload.data
+      : Array.isArray(payload)
+        ? payload
+        : [];
+
+    return source.map((entry) => {
+      const details = entry?.clubDetails && typeof entry.clubDetails === 'object' ? entry.clubDetails : entry;
+      const members = Array.isArray(entry?.members) ? entry.members : [];
+      return {
+        ...details,
+        members,
+        _rawClubDetails: details,
+      };
+    });
+  }, []);
 
   const refreshMyClubs = useCallback(async () => {
     setMyClubsLoading(true);
     setMyClubsError('');
     try {
-      const res = await getClubsByPartner(partnerCode);
+      const res = await getClubsWithMembersByPartner(partnerCode);
       const payload = res?.data;
-      const clubs = Array.isArray(payload?.data)
-        ? payload.data
-        : Array.isArray(payload)
-          ? payload
-          : [];
+      const clubs = normalizeMyClubList(payload);
       setMyClubs(clubs);
+      setSelectedClubId((prev) => (clubs.some((club) => club?._id === prev) ? prev : ''));
       return clubs;
     } catch (err) {
-      setMyClubsError(err?.response?.data?.message ?? err?.message ?? 'Failed to load club data');
-      setMyClubs([]);
-      return [];
+      try {
+        const fallbackRes = await getClubsByPartner(partnerCode);
+        const fallbackPayload = fallbackRes?.data;
+        const fallbackClubs = normalizeMyClubList(fallbackPayload);
+        setMyClubs(fallbackClubs);
+        setSelectedClubId((prev) => (fallbackClubs.some((club) => club?._id === prev) ? prev : ''));
+        return fallbackClubs;
+      } catch (fallbackErr) {
+        setMyClubsError(
+          fallbackErr?.response?.data?.message
+          ?? err?.response?.data?.message
+          ?? fallbackErr?.message
+          ?? err?.message
+          ?? 'Failed to load club data',
+        );
+        setMyClubs([]);
+        setSelectedClubId('');
+        return [];
+      }
     } finally {
       setMyClubsLoading(false);
     }
-  }, [partnerCode]);
+  }, [normalizeMyClubList, partnerCode]);
 
-  // Fetch club data when RoboClub tab is active (GET /club/get?website=worso&partnerCode=XX)
+  // Fetch club data when RoboClub tab is active (prefers /club/all/get, falls back to /club/get)
   useEffect(() => {
     if (activeTab !== 'roboclub') return;
     let cancelled = false;
@@ -857,25 +889,38 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       setMyClubsLoading(true);
       setMyClubsError('');
       try {
-        const res = await getClubsByPartner(partnerCode);
+        const res = await getClubsWithMembersByPartner(partnerCode);
         if (cancelled) return;
         const payload = res?.data;
-        const clubs = Array.isArray(payload?.data)
-          ? payload.data
-          : Array.isArray(payload)
-            ? payload
-            : [];
+        const clubs = normalizeMyClubList(payload);
         setMyClubs(clubs);
+        setSelectedClubId((prev) => (clubs.some((club) => club?._id === prev) ? prev : ''));
       } catch (err) {
-        if (cancelled) return;
-        setMyClubsError(err?.response?.data?.message ?? err?.message ?? 'Failed to load club data');
-        setMyClubs([]);
+        try {
+          const fallbackRes = await getClubsByPartner(partnerCode);
+          if (cancelled) return;
+          const fallbackPayload = fallbackRes?.data;
+          const fallbackClubs = normalizeMyClubList(fallbackPayload);
+          setMyClubs(fallbackClubs);
+          setSelectedClubId((prev) => (fallbackClubs.some((club) => club?._id === prev) ? prev : ''));
+        } catch (fallbackErr) {
+          if (cancelled) return;
+          setMyClubsError(
+            fallbackErr?.response?.data?.message
+            ?? err?.response?.data?.message
+            ?? fallbackErr?.message
+            ?? err?.message
+            ?? 'Failed to load club data',
+          );
+          setMyClubs([]);
+          setSelectedClubId('');
+        }
       } finally {
         if (!cancelled) setMyClubsLoading(false);
       }
     })();
     return () => { cancelled = true; };
-  }, [activeTab, partnerCode]);
+  }, [activeTab, normalizeMyClubList, partnerCode]);
 
   // RoboClub: show add form (false = list only, true = form visible)
   const [showRoboClubForm, setShowRoboClubForm] = useState(false);
@@ -978,6 +1023,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
         if (editingClubId === clubId) {
           closeRoboClubForm();
         }
+        setSelectedClubId((prev) => (prev === clubId ? '' : prev));
         await refreshMyClubs();
       } else {
         setMyClubsError(response?.data?.message || 'Failed to delete club');
@@ -4793,8 +4839,18 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       </div>
                     ) : Array.isArray(myClubs) && myClubs.length > 0 ? (
                       <div className="space-y-3">
-                        {myClubs.map((club) => (
-                          <div key={club?._id ?? `${club?.clubCode ?? 'club'}-${club?.email ?? ''}`} className="border border-slate-200 rounded-xl p-4 hover:bg-slate-50/60 transition-all">
+                        {myClubs.map((club) => {
+                          const isSelected = selectedClubId === club?._id;
+                          return (
+                            <div
+                            key={club?._id ?? `${club?.clubCode ?? 'club'}-${club?.email ?? ''}`}
+                            className={`border rounded-xl p-4 transition-all cursor-pointer ${
+                              isSelected
+                                ? 'border-blue-300 bg-blue-50/40'
+                                : 'border-slate-200 hover:bg-slate-50/60'
+                            }`}
+                            onClick={() => setSelectedClubId((prev) => (prev === club?._id ? '' : (club?._id || '')))}
+                          >
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
@@ -4844,7 +4900,10 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                             <div className="mt-4 flex items-center gap-2">
                               <button
                                 type="button"
-                                onClick={() => handleEditClub(club)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditClub(club);
+                                }}
                                 className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all text-xs font-semibold flex items-center gap-1"
                               >
                                 <Pencil size={14} />
@@ -4852,7 +4911,10 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleDeleteClub(club?._id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteClub(club?._id);
+                                }}
                                 disabled={deletingClubId === club?._id}
                                 className="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 transition-all text-xs font-semibold flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
@@ -4860,8 +4922,47 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 {deletingClubId === club?._id ? 'Deleting...' : 'Delete'}
                               </button>
                             </div>
-                          </div>
-                        ))}
+                            {isSelected && (
+                              <div className="mt-4 border-t border-slate-200 pt-4 space-y-4">
+                                <div>
+                                  <h5 className="text-sm font-bold text-slate-900 mb-2">Club Details</h5>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                                    <p className="text-slate-700"><span className="font-semibold text-slate-900">Owner Name:</span> {club?.name || '—'}</p>
+                                   
+                                    {/* <p className="text-slate-700"><span className="font-semibold text-slate-900">Partner Code:</span> {club?.partnerCode || '—'}</p> */}
+                                    <p className="text-slate-700"><span className="font-semibold text-slate-900">Country:</span> {club?.country || '—'} {club?.countryCode ? `(${club.countryCode})` : ''}</p>
+                                    {/* <p className="text-slate-700"><span className="font-semibold text-slate-900">Email Verified:</span> {club?.isEmailVerified ? 'Yes' : 'No'}</p> */}
+                                    {/* <p className="text-slate-700"><span className="font-semibold text-slate-900">Deleted:</span> {club?.isDeleted ? 'Yes' : 'No'}</p> */}
+                                    {/* <p className="text-slate-700"><span className="font-semibold text-slate-900">Updated:</span> {club?.updatedAt ? new Date(club.updatedAt).toLocaleString() : '—'}</p> */}
+                                  </div>
+                                </div>
+                                <div>
+                                  <h5 className="text-sm font-bold text-slate-900 mb-2">Members ({Array.isArray(club?.members) ? club.members.length : 0})</h5>
+                                  {Array.isArray(club?.members) && club.members.length > 0 ? (
+                                    <div className="space-y-2">
+                                      {club.members.map((member) => (
+                                        <div key={member?._id || `${member?.club_id || 'club'}-${member?.user_id?._id || 'member'}`} className="rounded-lg border border-slate-200 bg-white p-3">
+                                          <div className="flex flex-wrap items-center justify-between gap-2">
+                                            <p className="text-sm font-semibold text-slate-900">{member?.user_id?.fullName || 'Member'}</p>
+                                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                                              {member?.role || 'N/A'}
+                                            </span>
+                                          </div>
+                                          <p className="text-xs text-slate-600 mt-1">{member?.user_id?.email || '—'}</p>
+                                          <p className="text-xs text-slate-600 mt-0.5">{member?.user_id?.mobile || '—'}</p>
+                                          <p className="text-xs text-slate-500 mt-1">Status: {member?.status || 'N/A'}</p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm text-slate-500">No members found for this club.</p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            </div>
+                          );
+                        })}
                       </div>
                     ) : (
                       <div className="text-center py-10">

@@ -60,6 +60,8 @@ const endpoints = {
     myGet: `/club/my/get`,
     /** GET clubs by website + partnerCode. Query: ?website=worso&partnerCode=XX */
     get: `/club/get`,
+    /** GET clubs with members by website + partnerCode. Query: ?website=worso&partnerCode=XX */
+    allGet: `/club/all/get`,
     /** Get club by id. Requires Bearer token. */
     getById: (id) => `/club/get/${id}`,
     /** Update club by id (captain name / clubName etc). Requires Bearer token. */
@@ -130,13 +132,13 @@ const endpoints = {
   advisoryBoard: {
     add: '/advisory/board/add',
     get: '/advisory/board/get',
-    edit: (id) => `/advisory/board/edit/${id}`,
+    edit: (id) => `/advisory/board/update/${id}`,
     delete: (id) => `/advisory/board/delete/${id}`,
   },
   advisoryRefree: {
     add: '/advisory/refree/add',
     get: '/advisory/refree/get',
-    edit: (id) => `/advisory/refree/edit/${id}`,
+    edit: (id) => `/advisory/refree/update/${id}`,
     delete: (id) => `/advisory/refree/delete/${id}`,
   },
   about: {
