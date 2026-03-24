@@ -9,7 +9,7 @@ import { COUNTRY_DIAL_CODES } from '../constants/countryDialCodes';
 import { callGemini } from '../utils/gemini';
 import { getMyMembership } from '../app/auth/authApi';
 import { getMembershipsByPartner } from '../api/membershipApi';
-import { addClubAdmin, deleteClub, getClubsByPartner, getClubsWithMembersByPartner, updateClub } from '../api/clubApi';
+import { addClubAdmin, addClubMember, deleteClub, getClubsByPartner, getClubsWithMembersByPartner, updateClub } from '../api/clubApi';
 import { addPartnerAbout, getPartnerAbout, updatePartnerAbout, deletePartnerAbout } from '../api/partnerAboutApi';
 import { addAdvisoryBoard, getAdvisoryBoard, editAdvisoryBoard, deleteAdvisoryBoard, addAdvisoryRefree, getAdvisoryRefree, editAdvisoryRefree, deleteAdvisoryRefree } from '../api/advisoryApi';
 import { useLogout } from '../hooks/useLogout';
@@ -827,6 +827,17 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
   const [myClubsLoading, setMyClubsLoading] = useState(false);
   const [myClubsError, setMyClubsError] = useState('');
   const [selectedClubId, setSelectedClubId] = useState('');
+  const [addingMemberClubId, setAddingMemberClubId] = useState('');
+  const [memberFormByClubId, setMemberFormByClubId] = useState({});
+  const [memberSubmitClubId, setMemberSubmitClubId] = useState('');
+  const [memberFormErrorByClubId, setMemberFormErrorByClubId] = useState({});
+
+  const MEMBER_FORM_INITIAL = {
+    fullname: '',
+    emailId: '',
+    mobileNo: '',
+    role: 'MEMBER',
+  };
 
   const normalizeMyClubList = useCallback((payload) => {
     const source = Array.isArray(payload?.data)
@@ -1106,6 +1117,78 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
       );
     } finally {
       setRoboClubLoading(false);
+    }
+  };
+
+  const setClubMemberField = (clubId, field, value) => {
+    if (!clubId || !field) return;
+    setMemberFormByClubId((prev) => ({
+      ...prev,
+      [clubId]: {
+        ...(prev[clubId] || MEMBER_FORM_INITIAL),
+        [field]: value,
+      },
+    }));
+    setMemberFormErrorByClubId((prev) => ({ ...prev, [clubId]: '' }));
+  };
+
+  const toggleAddMemberForm = (clubId) => {
+    if (!clubId) return;
+    setAddingMemberClubId((prev) => (prev === clubId ? '' : clubId));
+    setMemberFormByClubId((prev) => {
+      if (prev[clubId]) return prev;
+      return { ...prev, [clubId]: { ...MEMBER_FORM_INITIAL } };
+    });
+    setMemberFormErrorByClubId((prev) => ({ ...prev, [clubId]: '' }));
+  };
+
+  const handleSubmitClubMember = async (clubId) => {
+    if (!clubId) return;
+    const memberForm = memberFormByClubId[clubId] || MEMBER_FORM_INITIAL;
+    const fullname = String(memberForm.fullname || '').trim();
+    const emailId = String(memberForm.emailId || '').trim().toLowerCase();
+    const mobileNo = String(memberForm.mobileNo || '').replace(/\D/g, '').slice(0, 10);
+    const role = String(memberForm.role || 'MEMBER').trim().toUpperCase();
+
+    if (!fullname) {
+      setMemberFormErrorByClubId((prev) => ({ ...prev, [clubId]: 'Full name is required' }));
+      return;
+    }
+    if (!emailId || !emailId.includes('@')) {
+      setMemberFormErrorByClubId((prev) => ({ ...prev, [clubId]: 'Valid email is required' }));
+      return;
+    }
+    if (mobileNo.length !== 10) {
+      setMemberFormErrorByClubId((prev) => ({ ...prev, [clubId]: 'Mobile number must be exactly 10 digits' }));
+      return;
+    }
+
+    setMemberSubmitClubId(clubId);
+    setMemberFormErrorByClubId((prev) => ({ ...prev, [clubId]: '' }));
+    try {
+      const response = await addClubMember({
+        club_id: clubId,
+        fullname,
+        emailId,
+        mobileNo,
+        role,
+      });
+
+      if (response?.data?.success || response?.status === 200 || response?.status === 201) {
+        alert('Member added successfully!');
+        await refreshMyClubs();
+        setMemberFormByClubId((prev) => ({ ...prev, [clubId]: { ...MEMBER_FORM_INITIAL } }));
+        setAddingMemberClubId('');
+      } else {
+        setMemberFormErrorByClubId((prev) => ({ ...prev, [clubId]: response?.data?.message || 'Failed to add member' }));
+      }
+    } catch (err) {
+      setMemberFormErrorByClubId((prev) => ({
+        ...prev,
+        [clubId]: err?.response?.data?.message || err?.message || 'Failed to add member',
+      }));
+    } finally {
+      setMemberSubmitClubId('');
     }
   };
 
@@ -4705,7 +4788,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                               value={roboClubForm.countryCode}
                               onChange={(e) => updateRoboClubForm('countryCode', e.target.value)}
                               required
-                              className="w-full border border-slate-300 text-slate-900 px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                              className="w-full border border-slate-300 text-slate-900 px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-black"
                             >
                               {COUNTRY_OPTIONS.map((c) => (
                                 <option key={c.code} value={c.code}>
@@ -4721,7 +4804,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                               value={roboClubForm.state}
                               onChange={(e) => updateRoboClubForm('state', e.target.value)}
                               required
-                              className="w-full border border-slate-300 text-slate-900 px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                              className="w-full border border-slate-300 text-slate-900 px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-black"
                             >
                               <option value="">Select state</option>
                               {roboClubStateOptions.map((state) => (
@@ -4739,7 +4822,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                               onChange={(e) => updateRoboClubForm('city', e.target.value)}
                               disabled={!roboClubForm.state}
                               required
-                              className="w-full border border-slate-300 text-slate-900 px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-slate-100 disabled:text-slate-400"
+                              className="w-full border border-slate-300 text-slate-900 px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-slate-100 disabled:text-slate-400 text-black"
                             >
                               <option value="">{roboClubForm.state ? 'Select city' : 'Select state first'}</option>
                               {roboClubCityOptions.map((city) => (
@@ -4763,7 +4846,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 maxLength={10}
                                 inputMode="numeric"
                                 pattern="\d{10}"
-                                className="w-full border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                className="w-full text-black border border-slate-300 text-slate-900 pl-10 pr-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                               />
                             </div>
                           </div>
@@ -4901,6 +4984,17 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  toggleAddMemberForm(club?._id);
+                                }}
+                                className="px-3 py-1.5 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 transition-all text-xs font-semibold flex items-center gap-1"
+                              >
+                                <UserPlus size={14} />
+                                Add Member
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   handleEditClub(club);
                                 }}
                                 className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all text-xs font-semibold flex items-center gap-1"
@@ -4923,6 +5017,74 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                             </div>
                             {isSelected && (
                               <div className="mt-4 border-t border-slate-200 pt-4 space-y-4">
+                                {addingMemberClubId === club?._id && (
+                                  <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 space-y-3">
+                                    <h5 className="text-sm font-bold text-slate-900">Add Club Member</h5>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                      <input
+                                        type="text"
+                                        value={(memberFormByClubId[club?._id] || MEMBER_FORM_INITIAL).fullname}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onChange={(e) => setClubMemberField(club?._id, 'fullname', e.target.value)}
+                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 text-black focus:ring-blue-100 focus:border-blue-400"
+                                        placeholder="Full name"
+                                      />
+                                      <input
+                                        type="email"
+                                        value={(memberFormByClubId[club?._id] || MEMBER_FORM_INITIAL).emailId}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onChange={(e) => setClubMemberField(club?._id, 'emailId', e.target.value)}
+                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 text-black focus:ring-blue-100 focus:border-blue-400"
+                                        placeholder="Email"
+                                      />
+                                      <input
+                                        type="tel"
+                                        maxLength={10}
+                                        value={(memberFormByClubId[club?._id] || MEMBER_FORM_INITIAL).mobileNo}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onChange={(e) => setClubMemberField(club?._id, 'mobileNo', e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2  text-black focus:ring-blue-100 focus:border-blue-400"
+                                        placeholder="Mobile number"
+                                      />
+                                      <select
+                                        value={(memberFormByClubId[club?._id] || MEMBER_FORM_INITIAL).role}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onChange={(e) => setClubMemberField(club?._id, 'role', e.target.value)}
+                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2  text-black focus:ring-blue-100 focus:border-blue-400"
+                                      >
+                                        <option value="MEMBER">MEMBER</option>
+                                        {/* <option value="CAPTAIN">CAPTAIN</option> */}
+                                      </select>
+                                    </div>
+                                    {memberFormErrorByClubId[club?._id] ? (
+                                      <p className="text-xs text-red-600">{memberFormErrorByClubId[club?._id]}</p>
+                                    ) : null}
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleSubmitClubMember(club?._id);
+                                        }}
+                                        disabled={memberSubmitClubId === club?._id}
+                                        className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all text-xs font-semibold   disabled:opacity-60 disabled:cursor-not-allowed"
+                                      >
+                                        {memberSubmitClubId === club?._id ? 'Adding...' : 'Save Member'}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setAddingMemberClubId('');
+                                          setMemberFormErrorByClubId((prev) => ({ ...prev, [club?._id]: '' }));
+                                        }}
+                                        className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all text-xs font-semibold"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
                                 <div>
                                   <h5 className="text-sm font-bold text-slate-900 mb-2">Club Details</h5>
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
