@@ -1402,13 +1402,13 @@ const MemberDashboard = ({ user, currentSite, setView, setUser }) => {
                                     {' · '}
                                     <a href={`tel:${telDigits}`} className="font-mono hover:text-indigo-200 underline focus:outline-none focus:ring-2 focus:ring-white/50 rounded">
                                       {display}
-                                    </a>x
+                                    </a>
                                   </span>
                                 ) : null;
                               })()}
                             </p>
                           </div>
-                          <div className="text-right flex-shrink-0">
+                          {/* <div className="text-right flex-shrink-0">
                             <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-indigo-200/60">
                               Valid Thru
                             </p>
@@ -1422,7 +1422,7 @@ const MemberDashboard = ({ user, currentSite, setView, setUser }) => {
                                   })()
                                 : '—'}
                             </p>
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                     </section>

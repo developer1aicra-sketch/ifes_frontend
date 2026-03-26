@@ -311,7 +311,7 @@ export function StudentIdCard() {
                   {normalized.category || "Student"}
                 </p>
               </div>
-              <div className="text-right flex-shrink-0">
+              {/* <div className="text-right flex-shrink-0">
                 <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-indigo-200/60">
                   Valid Thru
                 </p>
@@ -320,7 +320,7 @@ export function StudentIdCard() {
                     ? formatValidUpto(normalized.endDate)
                     : "—"}
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
         </section>

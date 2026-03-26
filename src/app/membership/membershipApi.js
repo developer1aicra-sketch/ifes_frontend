@@ -1,7 +1,7 @@
 import axiosInstance from '../../api/axiosInstance';
 import endpoints from '../../api/endpoints';
 import { createPayment } from '../../api/paymentApi';
-import { getAuthToken } from '../../api/authToken';
+import { getMemberPortalApiToken } from '../../api/authToken';
 
 /**
  * Get current user's membership details.
@@ -9,7 +9,7 @@ import { getAuthToken } from '../../api/authToken';
  * Requires Authorization token (member token is attached explicitly to avoid panel-route conflicts).
  */
 export const getMyMembership = () => {
-  const token = getAuthToken();
+  const token = getMemberPortalApiToken();
   return axiosInstance.get(endpoints.membership.myGet, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
@@ -22,7 +22,7 @@ export const getMyMembership = () => {
  * @returns {Promise} Axios response. Shape: { success, message, totalCreated, createdMemberships: [{ _id, plan_id, category_id, ... }], failedUsers }
  */
 export const membershipBulk = (payload) => {
-  const token = getAuthToken();
+  const token = getMemberPortalApiToken();
   return axiosInstance.post(endpoints.membership.bulk, payload, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });

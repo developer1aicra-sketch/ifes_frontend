@@ -2,7 +2,7 @@ import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "../../contexts/ToastContext";
 import { authSignup, signupStep2 } from "../../app/auth/authApi";
-import { setAuthToken } from "../../api/authToken";
+import { setSignupAuthToken } from "../../api/authToken";
 
 export const PersonalInfoForm = ({
   formData,
@@ -43,7 +43,7 @@ export const PersonalInfoForm = ({
         signupData?.objectId ??
         signupData?.userId ??
         signupData?.user_id;
-      if (token) setAuthToken(token);
+      if (token) setSignupAuthToken(token);
       if (userId) updateFormData('createdUserId', userId);
       setAccountCreated(true);
       toast.success('Account created. Fill in your details below.', {
