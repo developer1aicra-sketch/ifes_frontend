@@ -8,6 +8,7 @@ import { verifyPayment, normalizePaymentCreateResponse } from "../../api/payment
 import { createMembershipThenPayment } from "../../app/membership/membershipApi";
 import { CurrencySelect } from "../common/CurrencySelect";
 import { PAYMENT_CURRENCY_OPTIONS } from "../../constants/paymentCurrencies";
+import { getFxRate } from "../../utils/fxRates";
 
 // Currency list moved to `src/constants/paymentCurrencies.js`.
 
@@ -30,7 +31,10 @@ export const PaymentSection = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [paymentData, setPaymentData] = useState(null); // Store payment data from API
+  const [paymentData, setPaymentData] = useState(null); // Order used for Razorpay checkout
+  const [convertedAmount, setConvertedAmount] = useState(null); // Preview converted amount for selected currency
+  const [isConverting, setIsConverting] = useState(false);
+  const [conversionError, setConversionError] = useState(false);
   const [razorpayInstance, setRazorpayInstance] = useState(null); // Store Razorpay instance for cleanup
   const [selectedCurrency, setSelectedCurrency] = useState(displayCurrencyProp || "INR");
 
@@ -63,18 +67,29 @@ export const PaymentSection = ({
   const formatAmountFromPaise = (amountInPaise) =>
     amountInPaise != null ? (Number(amountInPaise) / 100).toFixed(2) : '';
 
-  // Display amount: use payment/create response when available, else use plan price from props
+  // Display amount:
+  // - Prefer checkout order (matches what user will actually pay)
+  // - Else use frontend FX conversion preview (updates Total Amount instantly)
   const displayAmount =
     paymentData?.amount != null
       ? formatAmountFromPaise(paymentData.amount)
-      : (displayAmountRupees != null && displayAmountRupees !== '')
-        ? Number(displayAmountRupees).toFixed(2)
+      : convertedAmount != null
+        ? Number(convertedAmount).toFixed(2)
         : '';
 
-  const isCurrencyLocked = Boolean(paymentData?.orderId || paymentData?.paymentId);
+  // Lock currency only while checkout is in progress / modal is open.
+  // Quote orders should not lock the UI.
+  const isCurrencyLocked = Boolean(isProcessing || razorpayInstance);
+
+  // Frontend architecture note:
+  // - `selectedCurrency` is the user's selection (used for backend /payment/create).
+  // - Plan/base amount (`displayAmountRupees`) is in `displayCurrencyProp` (usually INR).
+  // If we format base INR with the selected currency symbol, the UI shows incorrect amounts.
+  // So we only switch the displayed currency once backend returns an order (quote or checkout).
+  const planCurrency = (displayCurrencyProp || "INR");
   const displayCurrency = isCurrencyLocked
-    ? (paymentData?.currency || "INR")
-    : (selectedCurrency || displayCurrencyProp || "INR");
+    ? (paymentData?.currency || planCurrency || "INR")
+    : (conversionError ? planCurrency : selectedCurrency || planCurrency || "INR");
 
   useEffect(() => {
     if (isCurrencyLocked && paymentData?.currency && paymentData.currency !== selectedCurrency) {
@@ -83,10 +98,58 @@ export const PaymentSection = ({
   }, [isCurrencyLocked, paymentData?.currency]);
 
   useEffect(() => {
-    // If user changes plan/category (or navigates back and changes selections),
-    // unlock currency by resetting previously created payment order state.
+    // If user changes plan/category,
+    // reset conversion + payment order so currency preview doesn't keep stale values.
     setPaymentData(null);
-  }, [selectedCategory, selectedPlan]);
+    setConvertedAmount(null);
+    setConversionError(false);
+  }, [selectedCategory, selectedPlan, displayAmountRupees, displayCurrencyProp]);
+
+  // When currency changes, do frontend FX conversion preview (no backend calls).
+  useEffect(() => {
+    if (isCurrencyLocked) return;
+
+    const baseAmount =
+      displayAmountRupees != null && displayAmountRupees !== "" ? Number(displayAmountRupees) : null;
+
+    if (baseAmount == null || Number.isNaN(baseAmount)) {
+      setConvertedAmount(null);
+      setConversionError(false);
+      return;
+    }
+
+    const baseCurrency = String(planCurrency || "INR").toUpperCase();
+    const targetCurrency = String(selectedCurrency || baseCurrency).toUpperCase();
+
+    if (baseCurrency === targetCurrency) {
+      setConvertedAmount(baseAmount);
+      setConversionError(false);
+      setIsConverting(false);
+      return;
+    }
+
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      try {
+        setIsConverting(true);
+        setConversionError(false);
+        const rate = await getFxRate(baseCurrency, targetCurrency);
+        if (cancelled) return;
+        setConvertedAmount(baseAmount * rate);
+      } catch (e) {
+        if (cancelled) return;
+        setConvertedAmount(baseAmount); // fallback to showing base number
+        setConversionError(true);
+      } finally {
+        if (!cancelled) setIsConverting(false);
+      }
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [selectedCurrency, planCurrency, displayAmountRupees, isCurrencyLocked]);
 
   const amountNumber = displayAmount !== "" ? Number(displayAmount) : null;
   const formattedMoney =
@@ -201,7 +264,7 @@ export const PaymentSection = ({
     setIsProcessing(true);
 
     try {
-      // Complete Registration: run /api/membership/bulk then /api/payment/create; use payment/create response for Razorpay
+      // Checkout order is created only on submit.
       const { paymentResponse } = await createMembershipThenPayment({
         userId,
         categoryId: selectedCategory,
@@ -225,8 +288,10 @@ export const PaymentSection = ({
       const amountPaise =
         paymentData.amount != null && paymentData.amount > 0
           ? paymentData.amount
-          : displayAmountRupees != null && displayAmountRupees !== ''
-            ? Math.round(Number(displayAmountRupees) * 100)
+          : convertedAmount != null
+            ? Math.round(Number(convertedAmount) * 100)
+            : displayAmountRupees != null && displayAmountRupees !== ''
+              ? Math.round(Number(displayAmountRupees) * 100)
             : undefined;
       if (!amountPaise || amountPaise <= 0) {
         toast.error('Unable to determine payment amount. Please go back and select a plan.', {
@@ -571,12 +636,12 @@ export const PaymentSection = ({
                     <div className={`text-xs ${PAYMENT_THEME.textSoft} mt-1`}>
                       {isCurrencyLocked
                         ? `Using ${displayCurrency}`
-                        : "Select before starting the payment checkout"}
+                        : `Selected: ${selectedCurrency}${isConverting ? " (updating total…)" : ""}.`}
                     </div>
                   </div>
                 </div>
                   <CurrencySelect
-                    value={displayCurrency}
+                    value={selectedCurrency}
                     disabled={isProcessing || isCurrencyLocked}
                     onChange={(code) => {
                       const next = String(code || "").toUpperCase();
@@ -653,7 +718,7 @@ export const PaymentSection = ({
                     </span>
                   </div>
                   <div className={`text-xs ${PAYMENT_THEME.textSoft} text-right`}>
-                    Currency: {displayCurrency}
+                    Currency: {displayCurrency}{!isCurrencyLocked && selectedCurrency !== planCurrency ? ` (selected ${selectedCurrency})` : ""}
                   </div>
                 </div>
               </div>
