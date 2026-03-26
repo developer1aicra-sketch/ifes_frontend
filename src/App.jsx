@@ -124,11 +124,9 @@ const getPartnerSession = () => {
   return stored;
 };
 const isPartnerAuthenticated = () => Boolean(getPartnerSession());
-/** Member portal: only when token exists AND no active partner session (partner uses same token key) */
+/** Member portal: only when member token exists */
 const isMemberAuthenticated = () => {
-  if (!getAuthToken()) return false;
-  if (getPartnerSession()) return false; // Partner logged in → not a member
-  return true;
+  return Boolean(getAuthToken());
 };
 
 const MemberLoginRoute = ({ user, setView, setUser, currentSite, locationPrefix }) => {

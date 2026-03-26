@@ -28,10 +28,9 @@ export const useLogout = ({ setUser, setView, type = 'partner', redirectView } =
     } catch {
       // Still clear local session on API failure
     } finally {
-      clearAuthToken();
-      if (type === 'partner') {
-        clearPartnerAuth();
-      }
+      // Clear only the relevant panel token.
+      if (type === 'member') clearAuthToken();
+      if (type === 'partner') clearPartnerAuth();
       setUser?.(null);
       setView?.(targetView);
     }

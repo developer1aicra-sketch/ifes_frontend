@@ -4688,7 +4688,7 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                 <ForumView />
               )}
               {activeTab === 'roboclub' && (
-                <div className="max-w-2xl mx-auto space-y-6">
+                <div className=" mx-auto space-y-6">
                   {/* Add RoboClub form – shown when Add RoboClub is clicked */}
                   {showRoboClubForm && (
                   <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8">

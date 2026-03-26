@@ -1,6 +1,6 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
 import { signUpSendOtp, signUpVerifyOtp, signUp, loginSendOtp, loginVerifyOtp, login } from './authApi';
-import { setAuthToken } from '../../api/authToken';
+import { setAuthToken, setRoboclubAuthToken } from '../../api/authToken';
 import {
   signUpSendOtpRequest,
   signUpSendOtpSuccess,
@@ -87,7 +87,7 @@ function* handleLoginVerifyOtp({ payload }) {
     if (response && response.data) {
       const responseData = response.data?.data ?? response.data;
       const token = extractToken(response);
-      if (token) setAuthToken(token);
+      if (token) setRoboclubAuthToken(token);
       yield put(loginVerifyOtpSuccess(responseData));
     } else {
       yield put(loginVerifyOtpFailure('No data found for login OTP verification'));
@@ -134,7 +134,7 @@ function* handleLogin({ payload }) {
         response.data?.accessToken;
 
       if (token) {
-        setAuthToken(token);
+        setRoboclubAuthToken(token);
       } else {
         console.warn('No token in login response:', responseData);
       }

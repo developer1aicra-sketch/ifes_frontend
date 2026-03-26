@@ -1,24 +1,53 @@
 /**
- * Single source of truth for the auth token used in signup flow.
- * Token is received from POST /auth/signup/verify/otp and must be sent
- * as Authorization: Bearer <token> to POST /signup and other protected APIs.
+ * Auth token storage is panel-specific.
+ *
+ * - Member portal uses localStorage key `token` (backward compatible).
+ * - RoboClub uses a separate key so member + roboclub can be logged in independently.
  */
-const TOKEN_KEY = 'token';
+const MEMBER_TOKEN_KEY = 'token';
+export const ROBOCLUB_TOKEN_KEY = 'worso_roboclub_auth';
 
+const getStorage = () => {
+  if (typeof window === 'undefined') return null;
+  return window.localStorage;
+};
+
+// Member token helpers (backward compatible)
 export function getAuthToken() {
-  return localStorage.getItem(TOKEN_KEY);
+  const storage = getStorage();
+  return storage ? storage.getItem(MEMBER_TOKEN_KEY) : null;
 }
 
 export function setAuthToken(token) {
-  if (token) {
-    localStorage.setItem(TOKEN_KEY, token);
-  } else {
-    localStorage.removeItem(TOKEN_KEY);
-  }
+  const storage = getStorage();
+  if (!storage) return;
+  if (token) storage.setItem(MEMBER_TOKEN_KEY, token);
+  else storage.removeItem(MEMBER_TOKEN_KEY);
 }
 
 export function clearAuthToken() {
-  localStorage.removeItem(TOKEN_KEY);
+  const storage = getStorage();
+  if (!storage) return;
+  storage.removeItem(MEMBER_TOKEN_KEY);
+}
+
+// RoboClub token helpers
+export function getRoboclubAuthToken() {
+  const storage = getStorage();
+  return storage ? storage.getItem(ROBOCLUB_TOKEN_KEY) : null;
+}
+
+export function setRoboclubAuthToken(token) {
+  const storage = getStorage();
+  if (!storage) return;
+  if (token) storage.setItem(ROBOCLUB_TOKEN_KEY, token);
+  else storage.removeItem(ROBOCLUB_TOKEN_KEY);
+}
+
+export function clearRoboclubAuthToken() {
+  const storage = getStorage();
+  if (!storage) return;
+  storage.removeItem(ROBOCLUB_TOKEN_KEY);
 }
 
 /**
@@ -27,7 +56,9 @@ export function clearAuthToken() {
  * @returns {{ Authorization?: string }} Header object; empty if no token.
  */
 export function getAuthHeader() {
-  const token = getAuthToken();
+  // Attach correct bearer token based on the active panel route.
+  const path = typeof window !== 'undefined' ? (window.location?.pathname || '').toLowerCase() : '';
+  const token = path.includes('roboclub') ? getRoboclubAuthToken() : getAuthToken();
   if (!token) return {};
   return { Authorization: `Bearer ${token}` };
 }

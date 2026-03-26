@@ -4,6 +4,7 @@ import { X, CreditCard, Shield, Lock, Loader2, AlertCircle, Users, Trophy } from
 import { toast } from 'react-toastify';
 import { createCompetitionPaymentForSquads, verifyPayment } from '../api/paymentApi.js';
 import { normalizePaymentCreateResponse, formatAmountFromPaise, buildPaymentVerifyPayload } from '../utils/paymentUtils.js';
+import { CurrencySelect } from '../components/common/CurrencySelect';
 
 /**
  * SquadPaymentModal - Payment gateway modal for squad entry fee
@@ -22,6 +23,8 @@ const SquadPaymentModal = ({
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [paymentData, setPaymentData] = useState(null);
   const [razorpayInstance, setRazorpayInstance] = useState(null);
+  const [selectedCurrency, setSelectedCurrency] = useState(currency);
+  const [lockedCurrency, setLockedCurrency] = useState(currency);
 
   const entryFee = Number(squad?.entry_fee ?? 0);
   const teamName = squad?.teamName || squad?.name || 'Squad';
@@ -88,8 +91,15 @@ const SquadPaymentModal = ({
       setPaymentData(null);
       setTermsAccepted(false);
       setRazorpayInstance(null);
+      setSelectedCurrency(currency);
+      setLockedCurrency(currency);
+      return;
     }
-  }, [isOpen]);
+
+    // Initialize currency selection when the modal opens.
+    setSelectedCurrency(currency);
+    setLockedCurrency(currency);
+  }, [isOpen, currency]);
 
   const formatAmount = (amountInPaise) => {
     if (!amountInPaise) return (entryFee || 0).toFixed(2);
@@ -98,9 +108,9 @@ const SquadPaymentModal = ({
 
   const displayAmount =
     paymentData?.amount != null ? formatAmount(paymentData.amount) : (entryFee || 0).toFixed(2);
-  const displayCurrency = paymentData?.currency || currency;
-
-  const openRazorpayCheckout = (rawData) => {
+  const displayCurrency = paymentData?.currency || lockedCurrency || selectedCurrency || currency;
+console.log("display amount",displayAmount)
+  const openRazorpayCheckout = (rawData, paymentCurrency) => {
     const normalized = normalizePaymentCreateResponse(rawData);
 
     if (!normalized.amount || normalized.amount <= 0) {
@@ -112,7 +122,7 @@ const SquadPaymentModal = ({
     const options = {
       key: normalized.razorpayKey,
       amount: normalized.amount,
-      currency: normalized.currency || currency,
+      currency: normalized.currency || paymentCurrency,
       name: 'Technoxian',
       description: `Squad Entry Fee - ${teamName}`,
       order_id: normalized.orderId,
@@ -202,16 +212,19 @@ const SquadPaymentModal = ({
       return;
     }
 
+    // Frontend architecture: lock currency at click time so order/payment matches selection.
+    const paymentCurrency = String(selectedCurrency || currency || 'INR').toUpperCase();
+    setLockedCurrency(paymentCurrency);
     setIsProcessing(true);
 
     try {
       // Create competition payment order for this squad (POST /payment/create)
-      const response = await createCompetitionPaymentForSquads(squad);
+      const response = await createCompetitionPaymentForSquads(squad, paymentCurrency);
       const rawData = response.data?.success
         ? response.data.data
         : response.data?.data || response.data;
 
-      openRazorpayCheckout(rawData);
+      openRazorpayCheckout(rawData, paymentCurrency);
     } catch (error) {
       const backendMessage =
         error?.response?.data?.message ||
@@ -235,7 +248,7 @@ const SquadPaymentModal = ({
         maybeExistingPaymentData
       ) {
         try {
-          openRazorpayCheckout(maybeExistingPaymentData);
+          openRazorpayCheckout(maybeExistingPaymentData, paymentCurrency);
           return;
         } catch (inner) {
           console.error('Failed to initialize Razorpay from existing competition payment:', inner);
@@ -385,6 +398,21 @@ const SquadPaymentModal = ({
                         {displayAmount} {displayCurrency}
                       </span>
                     </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <span className="text-xs text-slate-500 whitespace-nowrap">Currency</span>
+                  <div className="w-full sm:w-[240px]">
+                    <CurrencySelect
+                      value={selectedCurrency}
+                      onChange={(code) => setSelectedCurrency(code)}
+                      disabled={isProcessing || !!paymentData}
+                      variant="dark"
+                      size="sm"
+                      ariaLabel="Select payment currency"
+                      placeholder="Search currency…"
+                    />
                   </div>
                 </div>
 

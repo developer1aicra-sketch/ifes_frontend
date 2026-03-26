@@ -12,8 +12,8 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
   const path = (p) => pathWithLocationPrefix(locationPrefix, p);
   const partnerSession = getPartnerAuth();
   const isPartnerAuthenticated = Boolean(partnerSession?.token && partnerSession?.partner);
-  /** Member portal: only when token exists AND no active partner session (partner uses same token key) */
-  const isMemberAuthenticated = Boolean(getAuthToken()) && !isPartnerAuthenticated;
+  /** Member portal: when member token exists */
+  const isMemberAuthenticated = Boolean(getAuthToken());
   const isMemberPortalActive =
     location.pathname === '/member/portal' || location.pathname.endsWith('/member/portal');
   const isPartnerPortalActive =
@@ -45,16 +45,17 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
   };
 
   const logout = async () => {
-    const token = partnerSession?.token || user?.token;
+    const shouldLogoutPartner = Boolean(partnerSession?.token) && user?.type !== 'member';
+    const shouldLogoutMember = Boolean(getAuthToken()) && !shouldLogoutPartner;
     try {
-      if (token) {
-        await partnerLogout(token);
+      if (shouldLogoutPartner && partnerSession?.token) {
+        await partnerLogout(partnerSession.token);
       }
     } catch {
       // still clear local session on logout API failure
     } finally {
-      clearAuthToken();
-      clearPartnerAuth();
+      if (shouldLogoutMember) clearAuthToken();
+      if (shouldLogoutPartner) clearPartnerAuth();
       setUser?.(null);
       setView('home');
     }

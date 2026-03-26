@@ -26,7 +26,7 @@ import { usePartnerEvent } from '../hooks/usePartnerEvent';
 import { usePartnerCompetitions } from '../hooks/usePartnerCompetitions';
 import { useLocationPrefix } from '../hooks/useLocationPrefix';
 import { PARTNER_HOME_STATIC } from '../data/partnerHomeStatic';
-import TrophyVideo from '../assets/Trophy-1.m4v';
+import TrophyVideo from '../assets/technoxian zrc_1.mp4';
 
 /** Format raw stat (number or string) for display: 121 → 121, 3200 → 3.2k+, 10200000 → 10.2M+ */
 function formatStatValue(raw) {

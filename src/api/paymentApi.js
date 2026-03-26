@@ -33,7 +33,7 @@ export const createPayment = (payload) => {
  * @param {Array<Object>} createdMemberships - array of membership objects (expects _id, plan_id, category_id)
  * @returns {Promise} Axios response from POST /payment/create
  */
-export const createMembershipPayment = (createdMemberships = []) => {
+export const createMembershipPayment = (createdMemberships = [], currency = 'INR') => {
   const list = Array.isArray(createdMemberships) ? createdMemberships : [];
   const items = list
     .map((m) => {
@@ -52,10 +52,11 @@ export const createMembershipPayment = (createdMemberships = []) => {
     .filter((it) => it.membership_id && it.plan_id && it.category_id);
 
   const idempotencyKey = `pay_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+  const currencyCode = String(currency || 'INR').toUpperCase();
   const payload = {
     purchase_type: 'MEMBERSHIP',
     gateway: 'RAZORPAY',
-    currency: 'INR',
+    currency: currencyCode,
     idempotencyKey,
     items,
   };
@@ -71,7 +72,7 @@ export const createMembershipPayment = (createdMemberships = []) => {
  * @param {Object} squad - squad/team object (expects _id, club_id, competition_id)
  * @returns {Promise} Axios response from POST /payment/create
  */
-export const createCompetitionPaymentForSquads = (squad) => {
+export const createCompetitionPaymentForSquads = (squad, currency = 'INR') => {
   const squadId = squad?._id ?? squad?.id;
   const clubId = squad?.club_id?._id ?? squad?.club_id ?? squad?.clubId;
   const competitionId =
@@ -80,10 +81,11 @@ export const createCompetitionPaymentForSquads = (squad) => {
   if (!squadId) throw new Error('squad _id is required for competition payment');
 
   const idempotencyKey = `pay_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+  const currencyCode = String(currency || 'INR').toUpperCase();
   const payload = {
     purchase_type: 'COMPETITION',
     gateway: 'RAZORPAY',
-    currency: 'INR',
+    currency: currencyCode,
     idempotencyKey,
     items: [
       {

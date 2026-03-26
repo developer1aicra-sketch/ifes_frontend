@@ -6,6 +6,10 @@ import { useToast } from "../../contexts/ToastContext";
 import { useThemeClasses } from "../../hooks/useThemeClasses";
 import { verifyPayment, normalizePaymentCreateResponse } from "../../api/paymentApi";
 import { createMembershipThenPayment } from "../../app/membership/membershipApi";
+import { CurrencySelect } from "../common/CurrencySelect";
+import { PAYMENT_CURRENCY_OPTIONS } from "../../constants/paymentCurrencies";
+
+// Currency list moved to `src/constants/paymentCurrencies.js`.
 
 export const PaymentSection = ({
   selectedPayment,
@@ -28,6 +32,7 @@ export const PaymentSection = ({
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [paymentData, setPaymentData] = useState(null); // Store payment data from API
   const [razorpayInstance, setRazorpayInstance] = useState(null); // Store Razorpay instance for cleanup
+  const [selectedCurrency, setSelectedCurrency] = useState(displayCurrencyProp || "INR");
 
   // Centralized style tokens for light-blue payment UI architecture.
   const PAYMENT_THEME = {
@@ -66,8 +71,25 @@ export const PaymentSection = ({
         ? Number(displayAmountRupees).toFixed(2)
         : '';
 
-  const displayCurrency = paymentData?.currency || displayCurrencyProp || 'INR';
-  const resolvedCurrencySymbol = displayCurrency === "INR" ? "₹" : "$";
+  const displayCurrency = paymentData?.currency || selectedCurrency || displayCurrencyProp || "INR";
+
+  useEffect(() => {
+    if (paymentData?.currency && paymentData.currency !== selectedCurrency) {
+      setSelectedCurrency(paymentData.currency);
+    }
+  }, [paymentData?.currency]);
+
+  const amountNumber = displayAmount !== "" ? Number(displayAmount) : null;
+  const formattedMoney =
+    amountNumber == null || Number.isNaN(amountNumber)
+      ? ""
+      : new Intl.NumberFormat(displayCurrency === "INR" ? "en-IN" : "en-US", {
+          style: "currency",
+          currency: displayCurrency,
+          currencyDisplay: "narrowSymbol",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(amountNumber);
 
   // Order summary title: "CategoryName PlanName" e.g. "Student Basic"
   const orderSummaryTitle =
@@ -175,6 +197,7 @@ export const PaymentSection = ({
         userId,
         categoryId: selectedCategory,
         planId: selectedPlan,
+        currency: selectedCurrency,
       });
 
       const paymentData = normalizePaymentCreateResponse(paymentResponse);
@@ -210,7 +233,7 @@ export const PaymentSection = ({
       const options = {
         key: paymentData.razorpayKey, // Razorpay public key from backend
         amount: amountPaise, // Amount in paise (from API or plan-derived)
-        currency: paymentData.currency || displayCurrencyProp || 'INR',
+        currency: paymentData.currency || selectedCurrency || displayCurrencyProp || "INR",
         name: "Technoxian",
         description: `Membership Payment - ${orderSummaryTitle}`,
         order_id: paymentData.orderId, // Razorpay order ID from backend
@@ -464,21 +487,7 @@ export const PaymentSection = ({
                 </div>
               </motion.div>
 
-              {/* Payment Security Info */}
-              <div className={`mt-5 sm:mt-6 pt-5 sm:pt-6 border-t ${PAYMENT_THEME.divider}`}>
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="flex-shrink-0">
-                    <Shield className={PAYMENT_THEME.accentText} size={20} />
-                  </div>
-                  <div>
-                    <h4 className={`font-medium ${PAYMENT_THEME.textPrimary} mb-1`}>Payment Security</h4>
-                    <p className={`text-sm ${PAYMENT_THEME.textMuted}`}>
-                      Your payment information is encrypted and securely processed. 
-                      We never store your credit card details on our servers.
-                    </p>
-                  </div>
-                </div>
-              </div>
+          
             </div>
 
             {/* Payment Details Form (for direct card input if needed) - hidden */}
@@ -531,6 +540,45 @@ export const PaymentSection = ({
               <h2 className={`text-lg sm:text-xl font-semibold ${PAYMENT_THEME.textPrimary} mb-4`}>Order Summary</h2>
 
               <div className="space-y-4">
+                {/* Currency */}
+                <div
+                  className={`${PAYMENT_THEME.innerSurface} rounded-lg p-2 flex items-start justify-between gap-3`}
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <div className={`text-sm font-medium ${PAYMENT_THEME.textPrimary}`}>Currency</div>
+                      {paymentData?.currency ? (
+                        <span
+                          className={`inline-flex items-center gap-1 text-[11px] font-semibold ${PAYMENT_THEME.accentSubtleText} bg-sky-100 border border-sky-200 rounded-full px-2 py-0.5 flex-shrink-0`}
+                          title="Currency is locked after the payment order is created."
+                        >
+                          <Lock size={14} className={PAYMENT_THEME.accentText} />
+                          Locked
+                        </span>
+                      ) : (
+                        <span
+                          className={`inline-flex items-center text-[11px] font-semibold ${PAYMENT_THEME.textSoft} bg-white border border-sky-100 rounded-full px-2 py-0.5 flex-shrink-0`}
+                        >
+                          Editable
+                        </span>
+                      )}
+                    </div>
+                    <div className={`text-xs ${PAYMENT_THEME.textSoft} mt-1`}>
+                      {paymentData?.currency
+                        ? `Using ${paymentData.currency}`
+                        : "Select before starting the payment checkout"}
+                    </div>
+                  </div>
+                </div>
+                  <CurrencySelect
+                    value={displayCurrency}
+                    disabled={isProcessing || Boolean(paymentData?.currency)}
+                    onChange={(code) => setSelectedCurrency(code)}
+                    size="sm"
+                    className="w-[260px] sm:w-[320px] flex-shrink-0"
+                    ariaLabel="Select currency"
+                  />
+
                 {/* Membership Details */}
                 <div className="bg-sky-50/80 rounded-lg p-4 border border-sky-100">
                   <div className="flex justify-between items-start mb-2 gap-2">
@@ -539,7 +587,7 @@ export const PaymentSection = ({
                       <p className={`text-sm ${PAYMENT_THEME.textMuted}`}>Annual Membership</p>
                     </div>
                     <span className={`font-bold ${PAYMENT_THEME.accentText} flex-shrink-0`}>
-                      {displayAmount !== '' ? `${resolvedCurrencySymbol}${displayAmount}` : '—'}
+                      {formattedMoney !== "" ? formattedMoney : "—"}
                     </span>
                   </div>
                   <div className={`text-xs ${PAYMENT_THEME.textSoft}`}>
@@ -576,19 +624,24 @@ export const PaymentSection = ({
                   <div className={`flex justify-between ${PAYMENT_THEME.textMuted}`}>
                     <span>Subtotal</span>
                     <span>
-                      {displayAmount !== '' ? `${resolvedCurrencySymbol}${displayAmount} ${displayCurrency}` : "—"}
+                      {formattedMoney !== "" ? formattedMoney : "—"}
                     </span>
                   </div>
                   <div className={`flex justify-between ${PAYMENT_THEME.textMuted}`}>
                     <span>Processing Fee</span>
                     <span className={PAYMENT_THEME.accentText}>
-                      {resolvedCurrencySymbol}0.00
+                      {new Intl.NumberFormat(displayCurrency === "INR" ? "en-IN" : "en-US", {
+                        style: "currency",
+                        currency: displayCurrency,
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(0)}
                     </span>
                   </div>
                   <div className={`flex justify-between text-lg font-bold pt-2 border-t ${PAYMENT_THEME.divider}`}>
                     <span className={PAYMENT_THEME.textPrimary}>Total Amount</span>
                     <span className={PAYMENT_THEME.accentText}>
-                      {displayAmount !== '' ? `${resolvedCurrencySymbol}${displayAmount} ${displayCurrency}` : "—"}
+                      {formattedMoney !== "" ? formattedMoney : "—"}
                     </span>
                   </div>
                   <div className={`text-xs ${PAYMENT_THEME.textSoft} text-right`}>
@@ -645,7 +698,9 @@ export const PaymentSection = ({
                 ) : (
                   <>
                     <Check size={20} className="flex-shrink-0" />
-                    <span className="truncate">Complete Registration{displayAmount !== '' ? ` - ${resolvedCurrencySymbol}${displayAmount} ${displayCurrency}` : ''}</span>
+                    <span className="truncate">
+                      Complete Registration{formattedMoney !== "" ? ` - ${formattedMoney}` : ""}
+                    </span>
                   </>
                 )}
               </motion.button>

@@ -4,6 +4,7 @@ import { X, CreditCard, Shield, Lock, Loader2, AlertCircle } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { createMembershipPayment, verifyPayment } from '../api/paymentApi'
 import { normalizePaymentCreateResponse, formatAmountFromPaise, buildPaymentVerifyPayload } from '../utils/paymentUtils.js'
+import { CurrencySelect } from './common/CurrencySelect'
 
 /**
  * MembershipPaymentModal - Payment for memberships created via bulk membership API.
@@ -23,6 +24,7 @@ const MembershipPaymentModal = ({
   const [paymentData, setPaymentData] = useState(null)
   const [razorpayInstance, setRazorpayInstance] = useState(null)
   const [orderInitError, setOrderInitError] = useState(null)
+  const [selectedCurrency, setSelectedCurrency] = useState(currency || 'INR')
 
   useEffect(() => {
     if (!isOpen || razorpayLoaded) return
@@ -66,15 +68,16 @@ const MembershipPaymentModal = ({
       setOrderInitError(null)
       setTermsAccepted(false)
       setRazorpayInstance(null)
+      setSelectedCurrency(currency || 'INR')
     }
-  }, [isOpen])
+  }, [isOpen, currency])
 
   const formatAmount = (amountInPaise) => {
     if (!amountInPaise) return '0.00'
     return formatAmountFromPaise(amountInPaise)
   }
   const displayAmount = paymentData?.amount != null ? formatAmount(paymentData.amount) : (paymentData?.totalAmountRupees != null ? Number(paymentData.totalAmountRupees).toFixed(2) : '—')
-  const displayCurrency = paymentData?.currency || currency
+  const displayCurrency = paymentData?.currency || selectedCurrency
 
   const initPaymentOrder = async () => {
     if (!createdMemberships?.length) return
@@ -84,7 +87,7 @@ const MembershipPaymentModal = ({
     setOrderInitError(null)
     setIsProcessing(true)
     try {
-      const response = await createMembershipPayment(createdMemberships)
+      const response = await createMembershipPayment(createdMemberships, selectedCurrency)
       const rawData = response.data?.success ? response.data.data : (response.data?.data || response.data)
       const data = normalizePaymentCreateResponse(rawData)
 
@@ -111,12 +114,8 @@ const MembershipPaymentModal = ({
     }
   }
 
-  // Auto-create the payment order once memberships are created (after /membership/bulk),
-  // so the subsequent "Proceed to Payment" opens Razorpay immediately.
-  useEffect(() => {
-    if (!isOpen) return
-    initPaymentOrder()
-  }, [isOpen, razorpayLoaded, createdMemberships, paymentData])
+  // Intentionally do NOT auto-create order on modal open.
+  // Flow: user selects currency -> clicks "Proceed to Payment".
 
   const handlePayment = async () => {
     if (!createdMemberships?.length) {
@@ -163,7 +162,7 @@ const MembershipPaymentModal = ({
       const options = {
         key: data.razorpayKey,
         amount: data.amount,
-        currency: data.currency || currency,
+        currency: data.currency || selectedCurrency,
         name: 'Technoxian',
         description: `Membership payment - ${createdMemberships.length} membership(s)`,
         order_id: data.orderId,
@@ -337,12 +336,35 @@ const MembershipPaymentModal = ({
                 </div>
 
                 <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Total</span>
-                    <span className="text-2xl font-bold text-blue-400">
-                      {displayCurrency === 'INR' ? '₹' : '$'}
-                      {displayAmount} {displayCurrency}
-                    </span>
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div className="flex-1 min-w-[180px]">
+                      <span className="text-slate-400 text-sm">Total</span>
+                      <span className="text-2xl font-bold text-blue-400 block mt-1">
+                        {displayCurrency === 'INR' ? '₹' : '$'}
+                        {displayAmount} {displayCurrency}
+                      </span>
+                    </div>
+
+                    <div className="w-full sm:w-[240px]">
+                      <div className="text-slate-400 text-xs mb-1">Currency</div>
+                      <CurrencySelect
+                        value={selectedCurrency}
+                        onChange={(code) => {
+                          if (paymentData) return
+                          setSelectedCurrency(code)
+                        }}
+                        size="sm"
+                        variant="dark"
+                        ariaLabel="Select membership payment currency"
+                        disabled={isProcessing || !!paymentData}
+                        placeholder="Search currency…"
+                      />
+                      {paymentData && (
+                        <div className="mt-1 text-[11px] text-slate-500">
+                          Currency locked for this payment.
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <p className="text-xs text-slate-500 mt-1">
                     Amount will be shown after creating order.
@@ -372,7 +394,7 @@ const MembershipPaymentModal = ({
 
                 <motion.button
                   onClick={handlePayment}
-                  disabled={isProcessing || !termsAccepted || !razorpayLoaded || createdMemberships.length === 0 || !paymentData}
+                  disabled={isProcessing || !termsAccepted || !razorpayLoaded || createdMemberships.length === 0}
                   whileHover={{ scale: isProcessing || !termsAccepted ? 1 : 1.02 }}
                   whileTap={{ scale: isProcessing || !termsAccepted ? 1 : 0.98 }}
                   className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3.5 rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -405,7 +427,7 @@ const MembershipPaymentModal = ({
                 {razorpayLoaded && createdMemberships.length > 0 && !paymentData && (
                   <div className="flex items-center gap-2 text-slate-400 text-sm">
                     <Loader2 size={16} className="animate-spin" />
-                    Preparing payment order...
+                    Ready to create payment order...
                   </div>
                 )}
                 {!!orderInitError && (

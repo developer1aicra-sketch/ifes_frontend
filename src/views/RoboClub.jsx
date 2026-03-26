@@ -14,6 +14,7 @@ import {
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { INITIAL_DB } from '../../src/constants/userData'
 import { getMyClubs } from '../api/clubApi';
+import { clearRoboclubAuthToken, getRoboclubAuthToken } from '../api/authToken';
 // import { getMyMembership } from '../api/membershipApi';
 import { LiveTicker } from '../components/LiveTicker';
 import { StadiumHome } from '../components/StadiumHome';
@@ -33,8 +34,6 @@ import StudentCommunityDirectory from '../components/StudentCommunityDirectory';
 import DiyOffers from '../components/DiyOffers';
 import CareerGrowth from '../components/CareerGrowth';
 import TechConferences from '../components/TechConferences';
-
-const AUTH_TOKEN_KEY = 'token';
 
 export default function TechnoXianApp({ mode = 'public' }) {
   const [page, setPage] = useState('home');
@@ -59,7 +58,7 @@ export default function TechnoXianApp({ mode = 'public' }) {
   const [nationalGlobalEventsSection, setNationalGlobalEventsSection] = useState('all');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const isAuthenticated = typeof window !== 'undefined' && !!localStorage.getItem(AUTH_TOKEN_KEY);
+  const isAuthenticated = !!getRoboclubAuthToken();
   const isDashboardMode = mode === 'dashboard';
 
   // When navigated with state.editSquad (e.g. from /squad ClubDetail Edit), open Squad Manager in edit mode
@@ -114,7 +113,7 @@ export default function TechnoXianApp({ mode = 'public' }) {
     }
 
     try {
-      const token = localStorage.getItem(AUTH_TOKEN_KEY);
+      const token = getRoboclubAuthToken();
       if (!token) {
         setUserRole(null);
         setMembershipPlanName(null);
@@ -229,7 +228,7 @@ export default function TechnoXianApp({ mode = 'public' }) {
   }, [viewMode, userRole]);
 
   const handleLogout = () => {
-    localStorage.removeItem(AUTH_TOKEN_KEY);
+    clearRoboclubAuthToken();
     setPage('home');
     // Ensure the URL also returns to the public home route
     navigate('/', { replace: true });

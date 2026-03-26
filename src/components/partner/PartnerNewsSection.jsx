@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ArrowRight, FileText, Calendar, Scale } from 'lucide-react';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
 import NewsArticleBody from '../NewsArticleBody';
+import { PartnerCarouselNav, partnerCarouselTrackClassName, partnerCarouselCardClassName } from './PartnerCarouselNav';
 
 const CATEGORY_CONFIG = {
   GENERAL: { label: 'General', icon: FileText, color: 'text-slate-600 bg-slate-100' },
@@ -21,6 +22,7 @@ const CATEGORY_CONFIG = {
  * @param {(id: string) => void} [props.onNewsClick] - Callback when user clicks (legacy, use buildNewsPath for URL-based nav)
  * @param {(id: string) => string} [props.buildNewsPath] - Returns path for news detail (e.g. /news/:id or /AE/news/:id). When provided, uses NavLink for proper routing.
  * @param {string} [props.className] - Optional section wrapper class
+ * @param {string} [props.carouselId] - Scroll container id for prev/next controls
  */
 const PartnerNewsSection = ({
   news = [],
@@ -28,6 +30,7 @@ const PartnerNewsSection = ({
   onNewsClick,
   buildNewsPath,
   className = '',
+  carouselId = 'partner-news-carousel',
 }) => {
   const theme = useThemeClasses();
   const [activeCategory, setActiveCategory] = useState('ALL');
@@ -51,6 +54,12 @@ const PartnerNewsSection = ({
     return activeNews.filter((n) => (n.type || 'GENERAL').toUpperCase() === activeCategory);
   }, [activeNews, activeCategory]);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const el = document.getElementById(carouselId);
+    if (el) el.scrollTo({ left: 0, behavior: 'smooth' });
+  }, [activeCategory, carouselId]);
+
   const getCategoryMeta = (type) => {
     const key = (type || 'GENERAL').toUpperCase();
     return CATEGORY_CONFIG[key] || CATEGORY_CONFIG.default;
@@ -64,9 +73,16 @@ const PartnerNewsSection = ({
       aria-labelledby="partner-news-section-title"
     >
       <div className="container mx-auto px-4">
-        <h2 id="partner-news-section-title" className="text-3xl font-bold text-slate-900 mb-8">
-          {title}
-        </h2>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <h2 id="partner-news-section-title" className="text-3xl font-bold text-slate-900">
+            {title}
+          </h2>
+          <PartnerCarouselNav
+            carouselId={carouselId}
+            prevAriaLabel="Previous news"
+            nextAriaLabel="Next news"
+          />
+        </div>
 
         {/* Category filter */}
         <div className="flex flex-wrap gap-2 mb-8">
@@ -93,7 +109,8 @@ const PartnerNewsSection = ({
           })}
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="relative">
+          <div id={carouselId} className={partnerCarouselTrackClassName}>
           {filteredNews.map((item) => {
             const meta = getCategoryMeta(item.type);
             const Icon = meta.icon;
@@ -101,7 +118,7 @@ const PartnerNewsSection = ({
             return (
               <article
                 key={item._id}
-                className="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col"
+                className={`${partnerCarouselCardClassName} bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col`}
               >
                 {item.image && (
                   <div className="relative pt-[56.25%] bg-slate-100 overflow-hidden">
@@ -158,6 +175,7 @@ const PartnerNewsSection = ({
               </article>
             );
           })}
+          </div>
         </div>
       </div>
     </section>

@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local build bundles (often exceed GitHub's 100 MB blob limit)
+worso-build-version-five.zip
+worso-build-version-six.zip

@@ -1,14 +1,19 @@
 import axiosInstance from '../../api/axiosInstance';
 import endpoints from '../../api/endpoints';
 import { createPayment } from '../../api/paymentApi';
+import { getAuthToken } from '../../api/authToken';
 
 /**
  * Get current user's membership details.
  * Wraps GET /membership/my/get.
- * Requires Authorization token (handled by axiosInstance interceptors).
+ * Requires Authorization token (member token is attached explicitly to avoid panel-route conflicts).
  */
-export const getMyMembership = () =>
-  axiosInstance.get(endpoints.membership.myGet);
+export const getMyMembership = () => {
+  const token = getAuthToken();
+  return axiosInstance.get(endpoints.membership.myGet, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+};
 
 /**
  * Create membership in bulk (POST /api/membership/bulk). Called before payment/create.
@@ -16,20 +21,24 @@ export const getMyMembership = () =>
  * @param {{ members: Array<{ user_id: string, category_id: string, plan_id: string }> }} payload
  * @returns {Promise} Axios response. Shape: { success, message, totalCreated, createdMemberships: [{ _id, plan_id, category_id, ... }], failedUsers }
  */
-export const membershipBulk = (payload) =>
-  axiosInstance.post(endpoints.membership.bulk, payload);
+export const membershipBulk = (payload) => {
+  const token = getAuthToken();
+  return axiosInstance.post(endpoints.membership.bulk, payload, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+};
 
 /**
  * Checkout flow: run /api/membership/bulk then immediately /api/payment/create with _id and plan_id from bulk response.
  * Bulk response shape: { success, message, createdMemberships: [{ _id, plan_id, category_id, ... }], failedUsers }.
  * We take _id, plan_id, category_id from createdMemberships[0], call payment/create with items: [{ membership_id, plan_id, category_id }], then UI opens payment gateway.
  *
- * @param {{ userId: string, categoryId: string, planId: string }} params
+ * @param {{ userId: string, categoryId: string, planId: string, currency?: string }} params
  *   Backend derives amount from plan/membership; do not send amount in /payment/create payload.
  * @returns {Promise<{ membershipId: string, planId: string, categoryId: string, paymentResponse: import('axios').AxiosResponse }>}
  */
 export async function createMembershipThenPayment(params) {
-  const { userId, categoryId, planId } = params;
+  const { userId, categoryId, planId, currency = 'INR' } = params;
 
   const bulkRes = await membershipBulk({
     members: [
@@ -55,7 +64,7 @@ export async function createMembershipThenPayment(params) {
   const paymentPayload = {
     purchase_type: 'MEMBERSHIP',
     gateway: 'RAZORPAY',
-    currency: 'INR',
+    currency,
     idempotencyKey,
     items: [
       {

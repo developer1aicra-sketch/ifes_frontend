@@ -52,7 +52,7 @@ const LocationSwitcher = ({
             title={`Open ${code} (${themeColor} theme)`}
             aria-label={`Go to ${code} route - ${themeColor} theme`}
           >
-            {isSelected ? `${code} (${themeColor})` : code}
+            {isSelected ? `${code} ` : code}
           </Link>
         ))}
       </div>

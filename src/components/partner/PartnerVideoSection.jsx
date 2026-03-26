@@ -1,7 +1,12 @@
 import React, { useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { getYouTubeVideoId, getYouTubeEmbedUrl } from '../../utils/youtubeEmbed';
 import { useThemeClasses } from '../../hooks/useThemeClasses';
+import {
+  PartnerCarouselNav,
+  partnerCarouselTrackClassName,
+  partnerCarouselCardClassName,
+} from './PartnerCarouselNav';
 
 /**
  * Reusable Video section for Partner home.
@@ -27,13 +32,6 @@ const PartnerVideoSection = ({ videos = [], title = 'Latest Videos', className =
     );
   }, [videos]);
 
-  const scrollCarousel = (direction) => {
-    const container = document.getElementById(carouselId);
-    if (!container) return;
-    const amount = 400;
-    container.scrollBy({ left: direction === 'prev' ? -amount : amount, behavior: 'smooth' });
-  };
-
   if (activeVideos.length === 0) return null;
 
   return (
@@ -46,37 +44,15 @@ const PartnerVideoSection = ({ videos = [], title = 'Latest Videos', className =
           <h2 id="partner-video-section-title" className="text-3xl font-bold text-slate-900">
             {title}
           </h2>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                scrollCarousel('prev');
-              }}
-              className="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-300"
-              aria-label="Previous videos"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                scrollCarousel('next');
-              }}
-              className="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-300"
-              aria-label="Next videos"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
+          <PartnerCarouselNav
+            carouselId={carouselId}
+            prevAriaLabel="Previous videos"
+            nextAriaLabel="Next videos"
+          />
         </div>
 
         <div className="relative">
-          <div
-            id={carouselId}
-            className="flex overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory gap-6 md:gap-8"
-          >
+          <div id={carouselId} className={partnerCarouselTrackClassName}>
             {activeVideos.map((video) => {
               const videoId = getYouTubeVideoId(video.youtubeUrl);
               const embedUrl = videoId ? getYouTubeEmbedUrl(videoId) : null;
@@ -84,7 +60,7 @@ const PartnerVideoSection = ({ videos = [], title = 'Latest Videos', className =
               return (
                 <article
                   key={video._id}
-                  className="flex-shrink-0 w-full sm:w-[320px] md:w-[360px] snap-start bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition-all hover:-translate-y-1"
+                  className={`${partnerCarouselCardClassName} bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition-all hover:-translate-y-1`}
                 >
                   <div className="relative pt-[56.25%] bg-slate-100 overflow-hidden">
                     {embedUrl ? (

@@ -2,7 +2,7 @@
 
 import { apiRoutes } from '../constants/apiRoutes';
 import { getPartnerCode } from '../api/partnerCode';
-import { getAuthToken } from '../api/authToken';
+import { getAuthToken, getRoboclubAuthToken } from '../api/authToken';
 import { getLocationCodeFromPath } from './locationRoutes';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://worso-backend-rm6w.vercel.app/api';
@@ -27,7 +27,19 @@ const apiFetch = (url, options = {}) => {
   headers.set('x-partner-code', getPartnerCodeForRequest());
 
   if (!headers.has('Authorization') && !headers.has('authorization')) {
-    const token = getAuthToken();
+    const path = typeof window !== 'undefined' ? (window.location?.pathname || '').toLowerCase() : '';
+
+    let token = null;
+    // Partner portal APIs should use partner JWT stored in `worso_partner_auth`.
+    if (path.includes('partner/portal')) {
+      token = getPartnerAuth()?.token ?? null;
+    } else if (path.includes('roboclub')) {
+      token = getRoboclubAuthToken();
+    } else {
+      // Default to member portal token.
+      token = getAuthToken();
+    }
+
     if (token) headers.set('Authorization', `Bearer ${token}`);
   }
 

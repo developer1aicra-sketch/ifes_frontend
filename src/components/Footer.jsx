@@ -211,13 +211,13 @@ const Footer = ({ setView, switchSite, currentSite }) => {
               </a>
             </div>
             <div className="flex flex-col gap-2 mb-6">
-              <div className="flex items-center gap-3 flex-wrap">
+              {/* <div className="flex items-center gap-3 flex-wrap">
                 <LocationSwitcher
                   regionLabel="Country"
                   locationCodes={countryCodes}
                   locationThemeMap={locationThemeMap}
                 />
-              </div>
+              </div> */}
               {footerAddress ? (
                 <div className="flex items-center gap-2 text-xs text-slate-400">
                   <MapPin size={14} className="flex-shrink-0" />

@@ -28,6 +28,7 @@ import { fetchPlans } from '../api/planApi'
 import MemberPaymentModal from './MemberPaymentModal'
 import BulkPaymentModal from './BulkPaymentModal'
 import MembershipPaymentModal from './MembershipPaymentModal'
+import { CurrencySelect } from './common/CurrencySelect'
 
 // ---------------------------------------------------------------------------
 // Constants & utilities
@@ -1061,6 +1062,11 @@ const MemberShipDetails = ({ setPage, setpage }) => {
   // Keep selection as IDs so it stays in-sync with latest member edits (category/plan changes).
   const [selectedMemberIds, setSelectedMemberIds] = useState([]) // string[]
   const [memberPaymentAmount, setMemberPaymentAmount] = useState(10) // Default payment amount per member in USD
+  const [selectedCurrency, setSelectedCurrency] = useState('INR')
+  const [currencyManuallySelected, setCurrencyManuallySelected] = useState(false)
+  // Snapshot currency for the "create memberships -> payment" flow.
+  // This makes the flow deterministic even if UI state changes.
+  const [bulkMembershipCurrencySnapshot, setBulkMembershipCurrencySnapshot] = useState('INR')
   const [editingMember, setEditingMember] = useState(null)
   const [editFormData, setEditFormData] = useState(INITIAL_FORM)
   const [editErrors, setEditErrors] = useState({})
@@ -1677,6 +1683,14 @@ const MemberShipDetails = ({ setPage, setpage }) => {
     }
   }, [payableMembers, planPriceById])
 
+  // Auto-select currency only when plan prices share the same currency.
+  // If currencies are mixed, require an explicit user selection.
+  useEffect(() => {
+    if (!pricingSummary.mixedCurrency && pricingSummary.currency && !currencyManuallySelected) {
+      setSelectedCurrency(pricingSummary.currency)
+    }
+  }, [pricingSummary.mixedCurrency, pricingSummary.currency, currencyManuallySelected])
+
   const formatMoney = useCallback((amount, currency) => {
     const n = Number(amount || 0)
     const pretty = n.toLocaleString(undefined, { maximumFractionDigits: 2 })
@@ -1749,6 +1763,8 @@ const MemberShipDetails = ({ setPage, setpage }) => {
     }
 
     try {
+      // Lock currency once creation+payment pipeline starts.
+      setBulkMembershipCurrencySnapshot(selectedCurrency)
       setIsSubmittingBulkMembership(true)
       const response = await createBulkMembership({ members: membersPayload })
 
@@ -2038,7 +2054,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-900 border border-slate-700 rounded-lg overflow-hidden shadow-md"
+          className="bg-slate-900 border border-slate-700 rounded-lg overflow-visible shadow-md"
         >
           <div className="p-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -2063,9 +2079,10 @@ const MemberShipDetails = ({ setPage, setpage }) => {
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-slate-400">Total:</span>
                   <span className="text-lg font-bold text-blue-400">
-                    {pricingSummary.mixedCurrency
-                      ? pricingSummary.total.toLocaleString()
-                      : formatMoney(pricingSummary.total, pricingSummary.currency)}
+                    {formatMoney(
+                      pricingSummary.total,
+                      pricingSummary.mixedCurrency ? selectedCurrency : pricingSummary.currency
+                    )}
                   </span>
                   <span className="text-xs text-slate-500">
                     ({pricingSummary.memberCount} members
@@ -2075,7 +2092,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
               </div>
 
               {/* Right: Create membership + Payment Buttons */}
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-3 flex-wrap">
                 <motion.button
                   onClick={handleCreateBulkMembership}
                   disabled={
@@ -2171,7 +2188,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
         onClose={handleClosePaymentModal}
         memberData={selectedMemberForPayment}
         amount={memberPaymentAmount}
-        currency="INR"
+        currency={selectedCurrency}
         onPaymentSuccess={handlePaymentSuccess}
       />
 
@@ -2184,7 +2201,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
         }}
         selectedMembers={selectedMembers}
         amountPerMember={memberPaymentAmount}
-        currency="INR"
+        currency={selectedCurrency}
         onPaymentSuccess={(paymentResult) => {
           const finalStatus = resolvePaymentStatus(paymentResult)
           setPaymentStatusView({
@@ -2266,7 +2283,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
           setCreatedMembershipsForPayment([])
         }}
         createdMemberships={createdMembershipsForPayment}
-        currency="INR"
+        currency={bulkMembershipCurrencySnapshot}
         onPaymentSuccess={(result) => {
           const finalStatus = resolvePaymentStatus(result)
           setPaymentStatusView({

@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Mail, KeyRound, User, Eye, EyeOff } from 'lucide-react';
 import { login } from '../app/auth/authApi';
 import { setAuthToken } from '../api/authToken';
-import { clearPartnerAuth } from '../utils/api';
 import { getLocationPrefix, pathWithLocationPrefix } from '../utils/locationRoutes';
 
 const MemberLoginView = ({ setView, setUser, siteConfig, user }) => {
@@ -54,7 +53,6 @@ const MemberLoginView = ({ setView, setUser, siteConfig, user }) => {
         res?.data?.accessToken;
       if (token) {
         setAuthToken(token);
-        clearPartnerAuth(); // Ensure member-only mode; partner session would block isMemberAuthenticated()
       } else {
         setError('Login succeeded but no token received. Please contact support.');
         setLoading(false);

@@ -19,7 +19,7 @@ import { getMyClubs, updateClub } from "../api/clubApi";
 import { updateProfile as updateProfileApi } from "../api/profileApi";
 import { INITIAL_DB } from "../constants/userData";
 
-const AUTH_TOKEN_KEY = "token";
+import { getRoboclubAuthToken } from "../api/authToken";
 
 // Fallback stats/career/certificates until profile API exists
 const DEFAULT_STATS = INITIAL_DB.currentUser.career_stats ?? { matches: 0, golds: 0, silvers: 0 };
@@ -33,9 +33,9 @@ const DEFAULT_CERTIFICATES = INITIAL_DB.currentUser.certificates ?? [
 ];
 
 function useAuth() {
-  const [token, setToken] = useState(() => localStorage.getItem(AUTH_TOKEN_KEY));
+  const [token, setToken] = useState(() => getRoboclubAuthToken());
   const checkAuth = useCallback(() => {
-    setToken(localStorage.getItem(AUTH_TOKEN_KEY));
+    setToken(getRoboclubAuthToken());
   }, []);
   return { isAuthenticated: !!token, token, checkAuth };
 }

@@ -71,10 +71,14 @@ axiosInstance.interceptors.request.use(
     }
    
     const authHeader = getAuthHeader();
-    if (authHeader.Authorization) {
+    const existingAuthorization =
+      (config.headers && (config.headers.Authorization || config.headers.authorization)) ||
+      (typeof config.headers?.get === 'function' ? config.headers.get('Authorization') : null);
+
+    if (!existingAuthorization && authHeader.Authorization) {
       config.headers = setRequestHeader(config.headers, 'Authorization', authHeader.Authorization);
-    } else {
-      const isProtectedEndpoint = protectedEndpoints.some(endpoint => config.url?.includes(endpoint));
+    } else if (!existingAuthorization) {
+      const isProtectedEndpoint = protectedEndpoints.some((endpoint) => config.url?.includes(endpoint));
       if (isProtectedEndpoint) {
         console.warn(`⚠️ No auth token for protected endpoint: ${config.url}`);
       }

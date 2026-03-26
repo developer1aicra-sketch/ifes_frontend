@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, KeyRound, Shield } from 'lucide-react';
 import { partnerLoginSendOtp, partnerLoginVerifyOtp, setPartnerAuth } from '../utils/api';
-import { setAuthToken } from '../api/authToken';
 import { getPartnerPortalPath } from '../utils/locationRoutes';
 
 const PartnerAdminLoginView = ({ setView, setUser, siteConfig, user }) => {
@@ -60,8 +59,6 @@ const PartnerAdminLoginView = ({ setView, setUser, siteConfig, user }) => {
       };
       if (token && partner) {
         setPartnerAuth({ token, partner, email: userPayload.email });
-        // Save token to token storage for use in API calls
-        setAuthToken(token);
       }
       setUser(userPayload);
       const path = getPartnerPortalPath(partner?.partnerCode);
