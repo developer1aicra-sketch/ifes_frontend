@@ -45,6 +45,18 @@ const INITIAL_FORM = {
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MEMBERS_PER_PAGE = 10
 
+const ALLOWED_CATEGORY_NAMES = new Set(['student', 'professional'])
+
+function normalizeCategoryName(name) {
+  return String(name || '').trim().toLowerCase()
+}
+
+function getAllowedCategories(categories) {
+  return (Array.isArray(categories) ? categories : []).filter((cat) =>
+    ALLOWED_CATEGORY_NAMES.has(normalizeCategoryName(cat?.name))
+  )
+}
+
 const PAYMENT_STATUS = Object.freeze({
   PENDING: 'PENDING',
   SUCCESS: 'SUCCESS',
@@ -541,7 +553,7 @@ function MembersList({
                         onClick={(e) => e.stopPropagation()}
                       >
                         <option value="">Select category</option>
-                        {categories.map((cat) => (
+                        {getAllowedCategories(categories).map((cat) => (
                           <option key={cat._id || cat.id} value={cat._id || cat.id}>
                             {cat.name}
                           </option>
@@ -876,7 +888,7 @@ function EditMemberModal({
               className="w-full bg-slate-800 border border-slate-600 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors"
             >
               <option value="">Select category</option>
-              {categories.map((cat) => (
+              {getAllowedCategories(categories).map((cat) => (
                 <option key={cat._id || cat.id} value={cat._id || cat.id}>
                   {cat.name}
                 </option>
