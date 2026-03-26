@@ -67,7 +67,7 @@ axiosInstance.interceptors.request.use(
       const partnerCodeFromRoute = getLocationCodeFromPath(window.location.pathname);
       const partnerCode = getPartnerCode() || partnerCodeFromRoute;
       config.headers = setRequestHeader(config.headers, 'x-partner-code', partnerCode || '');
-      console.log('partnerCode', partnerCode);
+      // console.log('partnerCode', partnerCode);
     }
    
     const authHeader = getAuthHeader();
@@ -80,7 +80,7 @@ axiosInstance.interceptors.request.use(
     } else if (!existingAuthorization) {
       const isProtectedEndpoint = protectedEndpoints.some((endpoint) => config.url?.includes(endpoint));
       if (isProtectedEndpoint) {
-        console.warn(`⚠️ No auth token for protected endpoint: ${config.url}`);
+        // console.warn(`⚠️ No auth token for protected endpoint: ${config.url}`);
       }
     }
     // IMPORTANT: Never manually set multipart boundary.

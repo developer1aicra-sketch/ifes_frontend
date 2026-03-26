@@ -1,19 +1,13 @@
-import { AlertTriangle, CheckCircle, PlusCircle, Trophy } from "lucide-react";
+import { AlertTriangle, ChartNoAxesColumnDecreasing, CheckCircle, PlusCircle, Trophy } from "lucide-react";
 import { INITIAL_DB } from "../constants/userData";
 
 export const Dashboard = ({ setPage, clubProfile }) => {
   const { club, currentUser } = INITIAL_DB;
   const captainName =
-    clubProfile?.name ||
-    currentUser?.full_name ||
-    currentUser?.fullName ||
-    "Captain";
+    
+  clubProfile?.owner?.fullName ;
   const clubName =
-    clubProfile?.clubName ||
-    clubProfile?.club_name ||
-    clubProfile?.club ||
-    club?.name ||
-    "Club";
+    clubProfile?.clubName ;
 
   return (
     <div className="animate-fadeIn space-y-6">
@@ -23,7 +17,7 @@ export const Dashboard = ({ setPage, clubProfile }) => {
           <h1 className="text-xl font-bold text-white">Hello, {captainName}</h1>
           <p className="text-slate-400 text-xs">{clubName}</p>
         </div>
-        <div className="flex space-x-6 text-right">
+        {/* <div className="flex space-x-6 text-right">
           <div>
             <p className="text-[10px] text-slate-500 uppercase font-bold">Wallet</p>
             <p className="text-lg font-mono text-green-400">₹0</p>
@@ -32,7 +26,7 @@ export const Dashboard = ({ setPage, clubProfile }) => {
             <p className="text-[10px] text-slate-500 uppercase font-bold">Rank</p>
             <p className="text-lg font-mono text-yellow-500">#0</p>
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -46,7 +40,7 @@ export const Dashboard = ({ setPage, clubProfile }) => {
             <li className="flex items-start text-sm text-slate-300">
               <AlertTriangle size={16} className="text-yellow-500 mr-2 mt-0.5" />
               <span className="cursor-pointer hover:text-white" onClick={() => setPage('user')}>
-                ⚠️ Profile is incomplete. <span className="underline">Fix now.</span>
+                 Profile is incomplete. <span className="underline">Fix now.</span>
               </span>
             </li>
            

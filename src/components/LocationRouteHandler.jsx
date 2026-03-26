@@ -41,7 +41,7 @@ const LocationRouteHandler = () => {
       const pathSegments = location.pathname.split('/').filter(Boolean);
       const locationCode = pathSegments[0]?.toUpperCase();
       
-      console.log(`[LocationRouteHandler] 🔍 Route: ${location.pathname} → LocationCode: ${locationCode}`);
+      // console.log(`[LocationRouteHandler] 🔍 Route: ${location.pathname} → LocationCode: ${locationCode}`);
       
       // Known routes that should NOT trigger theme change
       const knownRoutes = ['teams', 'technoxian', 'roboclub', 'about', 'governance', 
@@ -73,7 +73,7 @@ const LocationRouteHandler = () => {
           }
         } catch (error) {
           console.error(`[LocationRouteHandler] ❌ Error applying theme:`, error);
-          updateTheme('Blue', locationCode);
+          // updateTheme('Blue', locationCode);
         }
       } else {
         // Clear partner code on non-location routes
