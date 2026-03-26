@@ -17,6 +17,7 @@ import {
   EyeOff,
 } from 'lucide-react';
 import { addClub } from '../../api/clubApi';
+import { getRoboclubAuthToken } from '../../api/authToken';
 
 // Common countries for dropdown (countryCode, country name)
 const COUNTRY_OPTIONS = [
@@ -40,6 +41,41 @@ const COUNTRY_OPTIONS = [
   { code: 'KR', name: 'South Korea' },
   { code: 'OTHER', name: 'Other' },
 ];
+
+const INDIA_STATE_CITY = {
+  'Andhra Pradesh': ['Visakhapatnam', 'Vijayawada', 'Guntur', 'Tirupati', 'Kurnool', 'Rajahmundry'],
+  'Arunachal Pradesh': ['Itanagar', 'Naharlagun'],
+  Assam: ['Guwahati', 'Silchar', 'Dibrugarh', 'Jorhat'],
+  Bihar: ['Patna', 'Gaya', 'Muzaffarpur', 'Bhagalpur'],
+  Chhattisgarh: ['Raipur', 'Bhilai', 'Bilaspur', 'Korba'],
+  Delhi: ['New Delhi', 'Delhi'],
+  Goa: ['Panaji', 'Margao', 'Vasco da Gama'],
+  Gujarat: ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar'],
+  Haryana: ['Gurugram', 'Faridabad', 'Panipat', 'Ambala'],
+  'Himachal Pradesh': ['Shimla', 'Dharamshala', 'Solan'],
+  'Jammu and Kashmir': ['Srinagar', 'Jammu'],
+  Jharkhand: ['Ranchi', 'Jamshedpur', 'Dhanbad'],
+  Karnataka: ['Bengaluru', 'Mysuru', 'Mangaluru', 'Hubballi', 'Belagavi'],
+  Kerala: ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur'],
+  'Madhya Pradesh': ['Bhopal', 'Indore', 'Jabalpur', 'Gwalior'],
+  Maharashtra: ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Thane'],
+  Manipur: ['Imphal'],
+  Meghalaya: ['Shillong'],
+  Mizoram: ['Aizawl'],
+  Nagaland: ['Kohima', 'Dimapur'],
+  Odisha: ['Bhubaneswar', 'Cuttack', 'Rourkela'],
+  Punjab: ['Chandigarh', 'Ludhiana', 'Amritsar', 'Jalandhar'],
+  Rajasthan: ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota'],
+  Sikkim: ['Gangtok'],
+  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli'],
+  Telangana: ['Hyderabad', 'Warangal', 'Nizamabad'],
+  Tripura: ['Agartala'],
+  'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Varanasi', 'Agra', 'Noida'],
+  Uttarakhand: ['Dehradun', 'Haridwar', 'Rishikesh'],
+  'West Bengal': ['Kolkata', 'Howrah', 'Durgapur', 'Siliguri'],
+};
+
+const FALLBACK_OTHER_OPTION = 'Other';
 
 const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
   const navigate = useNavigate();
@@ -67,6 +103,20 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
       if (field === 'countryCode') {
         const opt = COUNTRY_OPTIONS.find((c) => c.code === value);
         if (opt) next.country = opt.name;
+        if (value === 'IN') {
+          next.state = '';
+          next.city = '';
+        } else {
+          next.state = FALLBACK_OTHER_OPTION;
+          next.city = FALLBACK_OTHER_OPTION;
+        }
+      }
+      if (field === 'state') {
+        if (next.countryCode === 'IN') {
+          next.city = '';
+        } else {
+          next.city = FALLBACK_OTHER_OPTION;
+        }
       }
       return next;
     });
@@ -201,7 +251,8 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
   const handleContinue = () => {
     handleClose();
     if (onSuccess) onSuccess();
-    navigate('/login');
+    const roboclubToken = getRoboclubAuthToken();
+    navigate(roboclubToken ? '/roboclub-dashboard' : '/roboclub-login');
   };
 
   if (!showModal) return null;
@@ -369,13 +420,31 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
                   <label className="block text-slate-300 text-sm font-medium mb-1">State</label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
-                    <input
-                      type="text"
-                      value={form.state}
-                      onChange={(e) => updateForm('state', e.target.value)}
-                      placeholder="e.g. Karnataka"
-                      className="w-full bg-slate-800/50 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-lg outline-none focus:border-cyan-400 transition-all"
-                    />
+                    {form.countryCode === 'IN' ? (
+                      <select
+                        value={form.state}
+                        onChange={(e) => updateForm('state', e.target.value)}
+                        className="w-full bg-slate-800/50 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-lg outline-none focus:border-cyan-400 transition-all"
+                      >
+                        <option value="" disabled>
+                          Select state
+                        </option>
+                        {Object.keys(INDIA_STATE_CITY).map((stateName) => (
+                          <option key={stateName} value={stateName}>
+                            {stateName}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <select
+                        value={form.state}
+                        onChange={(e) => updateForm('state', e.target.value)}
+                        disabled
+                        className="w-full bg-slate-800/50 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-lg outline-none focus:border-cyan-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <option value={FALLBACK_OTHER_OPTION}>{FALLBACK_OTHER_OPTION}</option>
+                      </select>
+                    )}
                   </div>
                 </div>
 
@@ -383,13 +452,32 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
                   <label className="block text-slate-300 text-sm font-medium mb-1">City</label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
-                    <input
-                      type="text"
-                      value={form.city}
-                      onChange={(e) => updateForm('city', e.target.value)}
-                      placeholder="e.g. Bangalore"
-                      className="w-full bg-slate-800/50 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-lg outline-none focus:border-cyan-400 transition-all"
-                    />
+                    {form.countryCode === 'IN' ? (
+                      <select
+                        value={form.city}
+                        onChange={(e) => updateForm('city', e.target.value)}
+                        disabled={!form.state}
+                        className="w-full bg-slate-800/50 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-lg outline-none focus:border-cyan-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <option value="" disabled>
+                          {form.state ? 'Select city' : 'Select state first'}
+                        </option>
+                        {(INDIA_STATE_CITY[form.state] || []).map((cityName) => (
+                          <option key={cityName} value={cityName}>
+                            {cityName}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <select
+                        value={form.city}
+                        onChange={(e) => updateForm('city', e.target.value)}
+                        disabled
+                        className="w-full bg-slate-800/50 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-lg outline-none focus:border-cyan-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <option value={FALLBACK_OTHER_OPTION}>{FALLBACK_OTHER_OPTION}</option>
+                      </select>
+                    )}
                   </div>
                 </div>
 
