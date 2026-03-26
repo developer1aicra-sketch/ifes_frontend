@@ -526,7 +526,7 @@ const MemberDashboard = ({ user, currentSite, setView, setUser }) => {
 
                 {/* Class Schedule – coming soon */}
                 <div className="relative">
-                  {/* <button
+                  <button
                     type="button"
                     onClick={() => { setActiveTab('class-schedule'); closeSidebar(); }}
                     className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border transition-all shadow-sm flex items-center justify-between gap-2 text-sm sm:text-base ${
@@ -540,7 +540,7 @@ const MemberDashboard = ({ user, currentSite, setView, setUser }) => {
                       <span className="truncate">Make Your Bot</span>
                     </span>
                    
-                  </button> */}
+                  </button>
                 </div>
 
                 {/* DIY Offers – expandable section (theme-aligned) */}
