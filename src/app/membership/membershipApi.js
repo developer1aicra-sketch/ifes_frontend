@@ -47,11 +47,35 @@ export async function createMembershipThenPayment(params) {
   });
   const resData = bulkRes?.data;
 
-  // Parse bulk response: { success, createdMemberships: [{ _id, plan_id, category_id, ... }], ... }
-  const created = resData?.createdMemberships?.[0];
-  const membershipId = created?._id ?? resData?.data?.createdMemberships?.[0]?._id;
-  const planIdFromBulk = created?.plan_id ?? planId;
-  const categoryIdFromBulk = created?.category_id ?? categoryId;
+  // Parse bulk response.
+  // Backend may return:
+  // - createdMemberships[] for newly created memberships
+  // - failedUsers[].membership for memberships that already existed (when bulk is called multiple times)
+  const created =
+    resData?.createdMemberships?.[0] ??
+    resData?.data?.createdMemberships?.[0] ??
+    null;
+  const existingFromFailed =
+    resData?.failedUsers?.[0]?.membership ??
+    resData?.data?.failedUsers?.[0]?.membership ??
+    null;
+
+  const membershipId =
+    created?._id ??
+    created?.id ??
+    existingFromFailed?._id ??
+    existingFromFailed?.id ??
+    null;
+
+  const planIdFromBulk =
+    (typeof created?.plan_id === 'object' ? (created?.plan_id?._id ?? created?.plan_id?.id) : created?.plan_id) ??
+    (typeof existingFromFailed?.plan_id === 'object' ? (existingFromFailed?.plan_id?._id ?? existingFromFailed?.plan_id?.id) : existingFromFailed?.plan_id) ??
+    planId;
+
+  const categoryIdFromBulk =
+    (typeof created?.category_id === 'object' ? (created?.category_id?._id ?? created?.category_id?.id) : created?.category_id) ??
+    (typeof existingFromFailed?.category_id === 'object' ? (existingFromFailed?.category_id?._id ?? existingFromFailed?.category_id?.id) : existingFromFailed?.category_id) ??
+    categoryId;
 
   if (!membershipId) {
     const msg =

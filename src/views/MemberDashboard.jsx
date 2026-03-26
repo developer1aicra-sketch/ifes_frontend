@@ -141,6 +141,7 @@ const MemberDashboard = ({ user, currentSite, setView, setUser }) => {
   const [registeringClassId, setRegisteringClassId] = useState(null);
   const [registerSuccessId, setRegisterSuccessId] = useState(null);
   const [registerError, setRegisterError] = useState('');
+  const [expandedScheduleDay, setExpandedScheduleDay] = useState(null); // 'monday' | ... | null
   const [profileForm, setProfileForm] = useState({
     fullName: '',
     mobile: '',
@@ -449,6 +450,112 @@ const MemberDashboard = ({ user, currentSite, setView, setUser }) => {
   };
 
   const closeSidebar = () => setSidebarOpen(false);
+
+  const DAY_ORDER = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const DAY_LABEL = {
+    sunday: 'Sunday',
+    monday: 'Monday',
+    tuesday: 'Tuesday',
+    wednesday: 'Wednesday',
+    thursday: 'Thursday',
+    friday: 'Friday',
+    saturday: 'Saturday',
+  };
+
+  const formatClassDate = (iso) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
+  const getStatusLabel = (cls) => {
+    if (cls?.isJoined) return 'Joined';
+    return (cls?.status || 'scheduled')
+      .toString()
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+
+  const StatusPill = ({ cls }) => {
+    const label = getStatusLabel(cls);
+    const base = 'inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold border';
+    const isJoined = !!cls?.isJoined;
+    const status = (cls?.status || '').toLowerCase();
+    const tone =
+      isJoined
+        ? 'bg-emerald-500/15 text-emerald-100 border-emerald-400/40'
+        : status === 'cancelled'
+          ? 'bg-red-500/15 text-red-100 border-red-400/40'
+          : status === 'completed'
+            ? 'bg-slate-500/15 text-slate-100 border-slate-300/30'
+            : 'bg-white/10 text-white/90 border-white/25';
+    return <span className={`${base} ${tone}`}>{label}</span>;
+  };
+
+  const ClassCard = ({ cls, showDate = true }) => {
+    if (!cls) return null;
+    const canJoin = (cls?.isJoined || registerSuccessId === cls?._id) && !!cls?.zoomLink;
+    const canRegister = !cls?.isJoined && registerSuccessId !== cls?._id;
+
+    return (
+      <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5 shadow-sm hover:bg-white/10 transition-colors">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="text-sm sm:text-base font-semibold text-white/95 truncate">
+                {cls.topic || 'Class'}
+              </h4>
+              <StatusPill cls={cls} />
+            </div>
+            <div className="mt-1 text-xs sm:text-sm text-white/80 space-y-0.5">
+              <div className="truncate">
+                <span className="text-white/60">Batch:</span> {cls.batchName || '—'}
+              </div>
+              <div className="flex flex-wrap gap-x-3 gap-y-1">
+                {showDate && (
+                  <span>
+                    <span className="text-white/60">Date:</span> {formatClassDate(cls.date) || '—'}
+                  </span>
+                )}
+                <span className="whitespace-nowrap">
+                  <span className="text-white/60">Time:</span> {cls.startTime || '—'} – {cls.endTime || '—'}
+                </span>
+                {typeof cls.studentCount === 'number' && (
+                  <span className="whitespace-nowrap">
+                    <span className="text-white/60">Students:</span> {cls.studentCount}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-shrink-0 flex flex-col items-end gap-2">
+            {canJoin && (
+              <a
+                href={cls.zoomLink}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center rounded-full bg-white/10 text-slate-50 px-3 py-1.5 text-[11px] sm:text-xs font-semibold border border-white/40 hover:bg-white/20 transition-colors"
+              >
+                Join via Zoom
+              </a>
+            )}
+            {canRegister && (
+              <button
+                type="button"
+                onClick={() => handleRegisterClass(cls._id)}
+                disabled={registeringClassId === cls._id}
+                className="inline-flex items-center justify-center rounded-full bg-white text-slate-900 px-3 py-1.5 text-[11px] sm:text-xs font-semibold shadow-md hover:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              >
+                {registeringClassId === cls._id ? 'Registering...' : 'Register'}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="animate-fadeIn bg-slate-50 min-h-screen flex flex-col">
@@ -1453,120 +1560,76 @@ const MemberDashboard = ({ user, currentSite, setView, setUser }) => {
                   )}
 
                   {!classLoading && !classError && classSchedule && (
-                    <div className="mt-6 w-full space-y-6">
-                      {Array.isArray(classSchedule.todayClasses) && classSchedule.todayClasses.length > 0 && (
-                        <div className="overflow-x-auto">
-                          <h3 className="text-sm sm:text-base font-semibold text-slate-100 mb-2 text-left">
-                            Today&apos;s Classes
-                          </h3>
-                          <table className="min-w-full divide-y divide-white/10 text-left text-xs sm:text-sm text-slate-100">
-                            <thead className="bg-white/5">
-                              <tr>
-                                <th className="px-3 py-2 font-semibold">Topic</th>
-                                <th className="px-3 py-2 font-semibold">Batch</th>
-                                <th className="px-3 py-2 font-semibold whitespace-nowrap">Time</th>
-                                <th className="px-3 py-2 font-semibold">Status</th>
-                                <th className="px-3 py-2 font-semibold text-right">Action</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5">
-                              {classSchedule.todayClasses.map((cls) => (
-                                <tr key={cls._id} className="bg-white/5 hover:bg-white/10">
-                                  <td className="px-3 py-2">{cls.topic}</td>
-                                  <td className="px-3 py-2">{cls.batchName}</td>
-                                  <td className="px-3 py-2 whitespace-nowrap">
-                                    {cls.startTime} – {cls.endTime}
-                                  </td>
-                                  <td className="px-3 py-2 capitalize">
-                                    {cls.isJoined ? 'joined' : (cls.status || 'scheduled')}
-                                  </td>
-                                  <td className="px-3 py-2 text-right space-x-2 whitespace-nowrap">
-                                    { (cls.isJoined || registerSuccessId === cls._id) && cls.zoomLink && (
-                                      <a
-                                        href={cls.zoomLink}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="inline-flex items-center justify-center rounded-full bg-white/10 text-slate-50 px-3 py-1.5 text-[11px] sm:text-xs font-semibold border border-white/40 hover:bg-white/20 transition-colors"
-                                      >
-                                        Join via Zoom
-                                      </a>
-                                    )}
-                                    {!cls.isJoined && registerSuccessId !== cls._id && (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleRegisterClass(cls._id)}
-                                        disabled={registeringClassId === cls._id}
-                                        className="inline-flex items-center justify-center rounded-full bg-white text-slate-900 px-3 py-1.5 text-[11px] sm:text-xs font-semibold shadow-md hover:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-                                      >
-                                        {registeringClassId === cls._id ? 'Registering...' : 'Register'}
-                                      </button>
-                                    )}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
+                    <div className="mt-6 w-full space-y-8">
+                      {/* Summary */}
+               
 
-                      {Array.isArray(classSchedule.upcomingClasses) && classSchedule.upcomingClasses.length > 0 && (
-                        <div className="overflow-x-auto">
-                          <h3 className="text-sm sm:text-base font-semibold text-slate-100 mb-2 text-left">
-                            Upcoming Classes
+
+                      {/* Day-wise (Week) */}
+                      <section className="space-y-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <h3 className="text-sm sm:text-base font-semibold text-slate-100 text-left">
+                           Class Schedule
                           </h3>
-                          <table className="min-w-full divide-y divide-white/10 text-left text-xs sm:text-sm text-slate-100">
-                            <thead className="bg-white/5">
-                              <tr>
-                                <th className="px-3 py-2 font-semibold">Topic</th>
-                                <th className="px-3 py-2 font-semibold">Batch</th>
-                                <th className="px-3 py-2 font-semibold">Date</th>
-                                <th className="px-3 py-2 font-semibold whitespace-nowrap">Time</th>
-                                <th className="px-3 py-2 font-semibold">Status</th>
-                                <th className="px-3 py-2 font-semibold text-right">Action</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5">
-                              {classSchedule.upcomingClasses.map((cls) => (
-                                <tr key={cls._id} className="bg-white/5 hover:bg-white/10">
-                                  <td className="px-3 py-2">{cls.topic}</td>
-                                  <td className="px-3 py-2">{cls.batchName}</td>
-                                  <td className="px-3 py-2">
-                                    {cls.date ? new Date(cls.date).toLocaleDateString() : ''}
-                                  </td>
-                                  <td className="px-3 py-2 whitespace-nowrap">
-                                    {cls.startTime} – {cls.endTime}
-                                  </td>
-                                  <td className="px-3 py-2 capitalize">
-                                    {cls.isJoined ? 'joined' : (cls.status || 'scheduled')}
-                                  </td>
-                                  <td className="px-3 py-2 text-right space-x-2 whitespace-nowrap">
-                                    { (cls.isJoined || registerSuccessId === cls._id) && cls.zoomLink && (
-                                      <a
-                                        href={cls.zoomLink}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="inline-flex items-center justify-center rounded-full bg-white/10 text-slate-50 px-3 py-1.5 text-[11px] sm:text-xs font-semibold border border-white/40 hover:bg-white/20 transition-colors"
-                                      >
-                                        Join via Zoom
-                                      </a>
-                                    )}
-                                    {!cls.isJoined && registerSuccessId !== cls._id && (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleRegisterClass(cls._id)}
-                                        disabled={registeringClassId === cls._id}
-                                        className="inline-flex items-center justify-center rounded-full bg-white text-slate-900 px-3 py-1.5 text-[11px] sm:text-xs font-semibold shadow-md hover:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-                                      >
-                                        {registeringClassId === cls._id ? 'Registering...' : 'Register'}
-                                      </button>
-                                    )}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                         
                         </div>
-                      )}
+
+                        {(() => {
+                          const dw = classSchedule?.dayWise || {};
+                          const daysWithData = DAY_ORDER.filter((dayKey) => Array.isArray(dw?.[dayKey]) && dw[dayKey].length > 0);
+
+                          if (daysWithData.length === 0) {
+                            return (
+                              <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
+                                No classes scheduled for this week.
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div className="space-y-2">
+                              {daysWithData.map((dayKey) => {
+                                const list = dw[dayKey];
+                                const isOpen = expandedScheduleDay === dayKey;
+                                return (
+                                  <div key={dayKey} className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+                                    <button
+                                      type="button"
+                                      onClick={() => setExpandedScheduleDay((prev) => (prev === dayKey ? null : dayKey))}
+                                      className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-white/10 transition-colors text-left"
+                                    >
+                                      <div className="min-w-0">
+                                        <div className="text-sm font-semibold text-white/95">
+                                          {DAY_LABEL[dayKey] || dayKey}
+                                        </div>
+                                        <div className="text-xs text-white/60">
+                                          {list.length} {list.length === 1 ? 'class' : 'classes'}
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2 flex-shrink-0 text-white/80">
+                                        {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                      </div>
+                                    </button>
+
+                                    {isOpen && (
+                                      <div className="px-4 pb-4">
+                                        <div className="mt-3 space-y-3">
+                                          {list
+                                            .slice()
+                                            .sort((a, b) => String(a?.startTime || '').localeCompare(String(b?.startTime || '')))
+                                            .map((cls) => (
+                                              <ClassCard key={cls._id} cls={cls} showDate />
+                                            ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })()}
+                      </section>
                     </div>
                   )}
 
