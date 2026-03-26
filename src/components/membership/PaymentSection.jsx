@@ -71,13 +71,22 @@ export const PaymentSection = ({
         ? Number(displayAmountRupees).toFixed(2)
         : '';
 
-  const displayCurrency = paymentData?.currency || selectedCurrency || displayCurrencyProp || "INR";
+  const isCurrencyLocked = Boolean(paymentData?.orderId || paymentData?.paymentId);
+  const displayCurrency = isCurrencyLocked
+    ? (paymentData?.currency || "INR")
+    : (selectedCurrency || displayCurrencyProp || "INR");
 
   useEffect(() => {
-    if (paymentData?.currency && paymentData.currency !== selectedCurrency) {
+    if (isCurrencyLocked && paymentData?.currency && paymentData.currency !== selectedCurrency) {
       setSelectedCurrency(paymentData.currency);
     }
-  }, [paymentData?.currency]);
+  }, [isCurrencyLocked, paymentData?.currency]);
+
+  useEffect(() => {
+    // If user changes plan/category (or navigates back and changes selections),
+    // unlock currency by resetting previously created payment order state.
+    setPaymentData(null);
+  }, [selectedCategory, selectedPlan]);
 
   const amountNumber = displayAmount !== "" ? Number(displayAmount) : null;
   const formattedMoney =
@@ -547,7 +556,7 @@ export const PaymentSection = ({
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <div className={`text-sm font-medium ${PAYMENT_THEME.textPrimary}`}>Currency</div>
-                      {paymentData?.currency ? (
+                      {isCurrencyLocked ? (
                         <span
                           className={`inline-flex items-center gap-1 text-[11px] font-semibold ${PAYMENT_THEME.accentSubtleText} bg-sky-100 border border-sky-200 rounded-full px-2 py-0.5 flex-shrink-0`}
                           title="Currency is locked after the payment order is created."
@@ -556,24 +565,23 @@ export const PaymentSection = ({
                           Locked
                         </span>
                       ) : (
-                        <span
-                          className={`inline-flex items-center text-[11px] font-semibold ${PAYMENT_THEME.textSoft} bg-white border border-sky-100 rounded-full px-2 py-0.5 flex-shrink-0`}
-                        >
-                          Editable
-                        </span>
+                      <></>
                       )}
                     </div>
                     <div className={`text-xs ${PAYMENT_THEME.textSoft} mt-1`}>
-                      {paymentData?.currency
-                        ? `Using ${paymentData.currency}`
+                      {isCurrencyLocked
+                        ? `Using ${displayCurrency}`
                         : "Select before starting the payment checkout"}
                     </div>
                   </div>
                 </div>
                   <CurrencySelect
                     value={displayCurrency}
-                    disabled={isProcessing || Boolean(paymentData?.currency)}
-                    onChange={(code) => setSelectedCurrency(code)}
+                    disabled={isProcessing || isCurrencyLocked}
+                    onChange={(code) => {
+                      const next = String(code || "").toUpperCase();
+                      setSelectedCurrency(next || "INR");
+                    }}
                     size="sm"
                     className="w-[260px] sm:w-[320px] flex-shrink-0"
                     ariaLabel="Select currency"

@@ -136,7 +136,7 @@ const BulkPaymentModal = ({
       const response = await createPayment({
         gateway: "RAZORPAY",
         currency: currency,
-        amount: Math.round(totalAmount * 100), // Convert to paise
+        amount: totalAmount , // Convert to paise
         memberIds: selectedMembers.map(m => m.id),
         memberCount: selectedMembers.length,
         amountPerMember: amountPerMember,
