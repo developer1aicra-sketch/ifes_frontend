@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import {
-  Trophy, Users, Calendar, Settings, LogOut, Globe,
+  Trophy, Users, Calendar, CalendarClock, Settings, LogOut, Globe,
   Cpu, Activity, Lock, Unlock, ChevronRight, MapPin,
   Menu, X, Wallet, Shield, AlertTriangle, CheckCircle,
   FileText, Award, Zap, Download, Share2, Building2,
@@ -34,6 +34,7 @@ import StudentCommunityDirectory from '../components/StudentCommunityDirectory';
 import DiyOffers from '../components/DiyOffers';
 import CareerGrowth from '../components/CareerGrowth';
 import TechConferences from '../components/TechConferences';
+import { MakeYourBotSchedule } from '../components/MakeYourBotSchedule';
 
 export default function TechnoXianApp({ mode = 'public' }) {
   const [page, setPage] = useState('home');
@@ -246,6 +247,7 @@ export default function TechnoXianApp({ mode = 'public' }) {
   const menuItems = useMemo(() => {
     const items = [
       { id: 'dashboard', icon: Activity, label: 'Dashboard' },
+      { id: 'make_your_bot', icon: CalendarClock, label: 'Make Your Bot' },
       { id: 'national_global_events', icon: Calendar, label: 'Events & Games', isSection: true },
       { id: 'Add Members', icon: Award, label: 'Add Members' },
       { id: 'squad_manager', icon: Users, label: 'Squad Manager' },
@@ -254,7 +256,6 @@ export default function TechnoXianApp({ mode = 'public' }) {
       { id: 'career_growth', icon: Briefcase, label: 'Career Growth', isSection: true },
       { id: 'contact_directory', icon: Globe, label: 'Contact Directory', isSection: true },
       // { id: 'my_squads', icon: Users, label: 'My Squads' },
-      // { id: 'class_schedule', icon: Calendar, label: 'Class Schedule' },
       { id: 'user', icon: UserCheck, label: 'Club Profile', action: () => setPage('user') },
       // { id: 'community', icon: MessageSquare, label: 'Community' },
     ];
@@ -311,6 +312,10 @@ export default function TechnoXianApp({ mode = 'public' }) {
     userRole === 'MEMBER' && restrictedForMember.has(baseActivePage)
       ? 'dashboard'
       : baseActivePage;
+
+  const activePageTitle =
+    menuItems.find((item) => item.id === activePage)?.label ??
+    activePage.replace(/_/g, ' ');
 
   return (
     <div className="flex h-screen bg-slate-950 text-slate-200 font-sans">
@@ -692,7 +697,7 @@ export default function TechnoXianApp({ mode = 'public' }) {
               </button>
             )}
             {/* <span className="uppercase font-bold tracking-wider">{clubName}</span> */}
-            <span className="text-white capitalize">{activePage.replace('_', ' ')}</span>
+            <span className="text-white">{activePageTitle}</span>
           </div>
           <div className="flex items-center space-x-4">
             {/* <span className="text-slate-300 text-xs font-semibold truncate max-w-[320px]" title={`Captain ${captainName}`}>
@@ -745,11 +750,8 @@ export default function TechnoXianApp({ mode = 'public' }) {
               ? <TechConferences />
               : <EventsPage events={INITIAL_DB.events} />
           )}
-          {activePage === 'class_schedule' && (
-            <div className="max-w-3xl mx-auto mt-8 text-center">
-              <h1 className="text-2xl font-bold text-white mb-2">Class Schedule</h1>
-              <p className="text-sm text-slate-400">Coming soon</p>
-            </div>
+          {activePage === 'make_your_bot' && (
+            <MakeYourBotSchedule surfaceClassName="bg-slate-900/70" />
           )}
           {activePage === 'admin' && <AdminConsole onVerify={handleVerify} />}
           {/* {activePage === 'community' && <CommunityForum />} */}

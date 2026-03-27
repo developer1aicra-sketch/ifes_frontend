@@ -340,8 +340,14 @@ const AppContent = ({
   const hideGlobalChrome = useMemo(() => {
     const path = (location?.pathname || '').toLowerCase();
     // RoboClub and partner portal pages have their own layout;
-    // keep global nav/footer hidden there.
-    return path.includes('roboclub') || path.endsWith('/partner/portal');
+    // member portal (MemberDashboard) is a dedicated shell — hide global chrome.
+    const isMemberPortal =
+      path === '/member/portal' || path.endsWith('/member/portal');
+    return (
+      path.includes('roboclub') ||
+      path.endsWith('/partner/portal') ||
+      isMemberPortal
+    );
   }, [location?.pathname]);
   const setViewRespectingLocation = useCallback(
     (view, options) => (locationPrefix ? setViewWithPrefix(view, locationPrefix, options) : setView(view, options)),
