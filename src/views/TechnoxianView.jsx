@@ -42,7 +42,7 @@ const TechnoxianView = () => {
   const locationPrefix = getLocationPrefix(location.pathname);
   const isPartnerRoute = Boolean(locationPrefix);
 
-  const allTabs = ["overview", "competitions", "schedule", "gallery", "register"];
+  const allTabs = ["overview", "competitions", "gallery", "register"];
   const partnerTabs = ["competitions", "schedule", "gallery", "register"];
   const tabs = isPartnerRoute ? partnerTabs : allTabs;
   const defaultTab = isPartnerRoute ? "competitions" : "overview";

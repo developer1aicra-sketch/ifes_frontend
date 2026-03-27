@@ -32,6 +32,7 @@ import TermsOfUseView from './views/TermsOfUseView';
 import MembershipView from './views/MembershipView'; // ✅ NEW
 import LocationView from './views/LocationView';
 import BecomePartnerView from './views/BecomePartnerView';
+import PartnersView from './views/PartnersView';
 
 import { DEFAULT_SITES, NEWS_ITEMS } from './constants/data';
 import { styles } from './styles/inlineStyles';
@@ -417,7 +418,7 @@ const AppContent = ({
               <Route path="/associates/join-worso" element={<JoinWorsoView />} />
               <Route path="/associates/list" element={<AssociationsListView />} />
               {/* <Route path="/careers" element={<CareersView />} /> */}
-              <Route path="/partners" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
+              <Route path="/partners" element={<PartnersView />} />
               <Route path="/become-partner" element={<BecomePartnerView />} />
         {/* <Route path="/shop" element={<StoreView />} /> */}
         
@@ -456,7 +457,7 @@ const AppContent = ({
               <Route path="/:locationCode/associates/join-worso" element={<JoinWorsoView />} />
               <Route path="/:locationCode/associates/list" element={<AssociationsListView />} />
               {/* <Route path="/:locationCode/careers" element={<CareersView />} /> */}
-              <Route path="/:locationCode/partners" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
+              <Route path="/:locationCode/partners" element={<PartnersView />} />
               <Route path="/:locationCode/become-partner" element={<BecomePartnerView />} />
               <Route path="/:locationCode/member/login" element={<MemberLoginRoute user={user} setView={setViewRespectingLocation} setUser={setUser} currentSite={currentSite} locationPrefix={locationPrefix} />} />
               <Route path="/:locationCode/login" element={<Navigate to={pathWithLocationPrefix(locationPrefix, '/member/login')} replace />} />

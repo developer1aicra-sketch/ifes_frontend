@@ -287,12 +287,23 @@ const Footer = ({ setView, switchSite, currentSite }) => {
               })}
             </ul>
           </nav>
-          <div className="flex  gap-3 flex-wrap">
+          <div className="flex flex-col gap-3 flex-wrap">
                 <LocationSwitcher
                   regionLabel="Country"
                   locationCodes={countryCodes}
                   locationThemeMap={locationThemeMap}
+                  showFullNames
                 />
+                {/* <div>
+
+                <button
+                  type="button"
+                  onClick={() => navigate(pathWithLocationPrefix(locationPrefix || '', '/partners'))}
+                  className="text-sm font-medium px-3 py-1.5 rounded-md transition-all duration-300 no-underline text-slate-300 hover:text-white hover:bg-slate-800 border border-transparent"
+                >
+                  See all
+                </button>
+                </div> */}
               </div>
         </div>
 
