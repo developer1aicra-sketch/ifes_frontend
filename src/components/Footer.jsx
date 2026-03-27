@@ -176,7 +176,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
     <footer className={`${themeConfig?.colors?.gradient || 'bg-[#0a0f1a]'} text-slate-400 pt-10`}>
       <div className="container mx-auto px-4 sm:px-6 max-w-[1600px]">
         {/* Three-column layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 lg:gap-16 mb-10 md:mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 lg:gap-16 mb-10 md:mb-12">
           {/* Column 1: Logo, description, contact, country, social */}
           <div className="flex flex-col">
             <div className="flex items-center gap-3 mb-4">
@@ -211,13 +211,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
               </a>
             </div>
             <div className="flex flex-col gap-2 mb-6">
-              {/* <div className="flex items-center gap-3 flex-wrap">
-                <LocationSwitcher
-                  regionLabel="Country"
-                  locationCodes={countryCodes}
-                  locationThemeMap={locationThemeMap}
-                />
-              </div> */}
+          
               {footerAddress ? (
                 <div className="flex items-center gap-2 text-xs text-slate-400">
                   <MapPin size={14} className="flex-shrink-0" />
@@ -293,6 +287,13 @@ const Footer = ({ setView, switchSite, currentSite }) => {
               })}
             </ul>
           </nav>
+          <div className="flex  gap-3 flex-wrap">
+                <LocationSwitcher
+                  regionLabel="Country"
+                  locationCodes={countryCodes}
+                  locationThemeMap={locationThemeMap}
+                />
+              </div>
         </div>
 
         {/* Bottom bar */}

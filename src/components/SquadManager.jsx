@@ -2255,25 +2255,19 @@ export const SquadManager = ({
                         setError('');
                       }}
                       className="bg-slate-800 text-white text-sm font-medium rounded-lg px-4 py-2 border border-slate-600 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer hover:bg-slate-700 transition-colors pr-10"
-                      disabled={!selectedEventType}
                     >
                       {competitionsLoading ? (
                         <option value="">Loading competitions...</option>
-                      ) : !selectedEventType ? (
-                        <option value="">Select an event type first</option>
                       ) : competitions && competitions.length > 0 ? (
-                        // Filter competitions by selected event type
-                        competitions
-                          .filter((comp) => normalizeEventType(comp.event?.type) === normalizeEventType(selectedEventType))
-                          .map((comp) => {
-                            const compTeams = teamsByCompetition[comp.name] || [];
-                            const teamCount = compTeams.length;
-                            return (
-                              <option key={comp._id} value={comp.name}>
-                                {comp.name} {teamCount > 0 ? `(${teamCount} team${teamCount !== 1 ? 's' : ''})` : ''}
-                              </option>
-                            );
-                          })
+                        competitions.map((comp) => {
+                          const compTeams = teamsByCompetition[comp.name] || [];
+                          const teamCount = compTeams.length;
+                          return (
+                            <option key={comp._id} value={comp.name}>
+                              {comp.name} {teamCount > 0 ? `(${teamCount} team${teamCount !== 1 ? 's' : ''})` : ''}
+                            </option>
+                          );
+                        })
                       ) : (
                         <option value="">No competitions available</option>
                       )}

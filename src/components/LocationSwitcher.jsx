@@ -35,9 +35,9 @@ const LocationSwitcher = ({
   }, [locationCodes, locationThemeMap, activeCode]);
 
   return (
-    <div className={`flex items-center gap-3 flex-wrap ${className}`}>
+    <div className={`flex items-center gap-3 flex-col flex-wrap ${className}`}>
       <span className="text-sm text-white font-medium">{regionLabel}</span>
-      <div className="flex flex-wrap gap-2 items-center">
+      <div className="flex flex-wrap flex-col gap-2 items-center">
         {items.map(({ code, themeColor, themeConfig, isSelected }) => (
           <Link
             key={code}
