@@ -29,6 +29,8 @@ import MemberPaymentModal from './MemberPaymentModal'
 import BulkPaymentModal from './BulkPaymentModal'
 import MembershipPaymentModal from './MembershipPaymentModal'
 import { CurrencySelect } from './common/CurrencySelect'
+import { useMembershipCreateAndPay } from '../hooks/useMembershipCreateAndPay'
+import { extractBulkMembershipResponse, prepareMembershipsForPayment } from '../utils/membershipPaymentFlow'
 
 // ---------------------------------------------------------------------------
 // Constants & utilities
@@ -365,6 +367,7 @@ function MembersList({
   onCategoryChange,
   onPlanChange,
   updatingMemberId = null,
+  payingMemberId = null,
 }) {
   if (isLoading) {
     return (
@@ -606,6 +609,29 @@ function MembersList({
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
+                        {onMemberPayment && (
+                          <motion.button
+                            type="button"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onMemberPayment(member)
+                            }}
+                            disabled={
+                              !!updatingMemberId ||
+                              String(payingMemberId || '') === String(resolveMemberId(member) || '')
+                            }
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-900/30 border border-blue-700/60 text-blue-200 hover:text-white hover:border-blue-500 hover:bg-blue-800/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Create membership & pay"
+                          >
+                            {String(payingMemberId || '') === String(resolveMemberId(member) || '') ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <>Pay</>
+                            )}
+                          </motion.button>
+                        )}
                         {onDelete && (
                           <motion.button
                             type="button"
@@ -1090,6 +1116,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
   const [isLoadingMeta, setIsLoadingMeta] = useState(true)
   const [updatingMemberId, setUpdatingMemberId] = useState(null)
   const [isSubmittingBulkMembership, setIsSubmittingBulkMembership] = useState(false)
+  const [payingMemberId, setPayingMemberId] = useState(null)
   const [createdMembershipsForPayment, setCreatedMembershipsForPayment] = useState([])
   const [membershipPaymentModalOpen, setMembershipPaymentModalOpen] = useState(false)
   const [paymentStatusView, setPaymentStatusView] = useState(null) // { status: 'success'|'failure', context: 'member'|'bulk'|'membership', result }
@@ -1417,11 +1444,99 @@ const MemberShipDetails = ({ setPage, setpage }) => {
     }
   }
 
-  // Handle member payment
-  const handleMemberPayment = useCallback((member) => {
-    setSelectedMemberForPayment(member)
-    setPaymentModalOpen(true)
-  }, [])
+  const refetchMembers = useCallback(async () => {
+    if (!clubId) return
+    const membersResponse = await getClubMembers(clubId)
+    const membersData = membersResponse?.data?.data || membersResponse?.data || []
+    if (!Array.isArray(membersData)) return
+    const transformedMembers = membersData.map((member) => ({
+      id: member._id || member.id,
+      fullname:
+        member.fullname ||
+        member.user?.fullName ||
+        member.user?.fullname ||
+        member.user_id?.fullname ||
+        member.name ||
+        'N/A',
+      emailId:
+        member.emailId ||
+        member.user?.email ||
+        member.user_id?.email ||
+        member.email ||
+        'N/A',
+      mobileNo:
+        member.mobileNo ||
+        member.user?.mobile ||
+        member.user?.mobileNo ||
+        member.user_id?.mobileNo ||
+        member.phone ||
+        member.mobile ||
+        '',
+      role: member.role || member.user?.role || 'MEMBER',
+      categoryId:
+        member.categoryId?._id ||
+        member.category_id?._id ||
+        member.categoryId ||
+        member.category_id ||
+        null,
+      planId:
+        member.planId?._id ||
+        member.plan_id?._id ||
+        member.planId ||
+        member.plan_id ||
+        null,
+      ...member,
+    }))
+    setMembers(transformedMembers)
+  }, [clubId])
+
+  const { start: startMembershipCreateAndPay } = useMembershipCreateAndPay({
+    createBulkMembership,
+    refetchMembers,
+    getCurrencySnapshot: () => selectedCurrency,
+    onOpenPaymentModal: ({ membershipsForPayment, currencySnapshot }) => {
+      setBulkMembershipCurrencySnapshot(currencySnapshot)
+      setCreatedMembershipsForPayment(membershipsForPayment)
+      requestAnimationFrame(() => setMembershipPaymentModalOpen(true))
+    },
+  })
+
+  // Handle member "membership + payment" flow from the list (creates a membership, then opens Razorpay payment modal).
+  const handleMemberPayment = useCallback(async (member) => {
+    const memberId = resolveMemberId(member)
+    const userId = resolveUserId(member)
+    const categoryId = resolveCategoryId(member)
+    const planId = resolvePlanId(member)
+
+    if (!memberId || !userId) {
+      toast.error('Member ID not found. Cannot create membership.', {
+        position: 'top-right',
+        autoClose: 3000,
+        theme: 'dark',
+      })
+      return
+    }
+
+    if (!categoryId || !planId) {
+      toast.warning('Assign category and plan for this member, then click Pay again.', {
+        position: 'top-right',
+        autoClose: 3500,
+        theme: 'dark',
+      })
+      return
+    }
+
+    setPayingMemberId(memberId)
+    try {
+      await startMembershipCreateAndPay({
+        payingId: memberId,
+        membersPayload: [{ user_id: userId, category_id: categoryId, plan_id: planId }],
+        successToast: 'Membership created. Opening payment...',
+      })
+    } finally {
+      setPayingMemberId(null)
+    }
+  }, [startMembershipCreateAndPay])
 
   // Handle payment success
   const handlePaymentSuccess = useCallback((paymentResult) => {
@@ -1652,6 +1767,41 @@ const MemberShipDetails = ({ setPage, setpage }) => {
     return map
   }, [plans])
 
+  // Compute totals specifically for the memberships that are about to be paid for.
+  // This avoids relying on selection/filter state (which can be cleared before opening the modal).
+  const membershipPaymentPricing = useMemo(() => {
+    const items = Array.isArray(createdMembershipsForPayment) ? createdMembershipsForPayment : []
+    let total = 0
+    let currency = null
+    let missingPriceCount = 0
+
+    items.forEach((m) => {
+      const planId =
+        (typeof m?.plan_id === 'object' ? (m?.plan_id?._id ?? m?.plan_id?.id) : (m?.plan_id ?? m?.planId)) ??
+        null
+      if (!planId) {
+        missingPriceCount += 1
+        return
+      }
+      const entry = planPriceById.get(String(planId))
+      if (!entry) {
+        missingPriceCount += 1
+        return
+      }
+      if (currency == null) currency = entry.currency || 'INR'
+      else if (currency !== entry.currency) currency = 'MIXED'
+      total += entry.amount
+    })
+
+    return {
+      total,
+      currency: currency ?? 'INR',
+      mixedCurrency: currency === 'MIXED',
+      missingPriceCount,
+      memberCount: items.length,
+    }
+  }, [createdMembershipsForPayment, planPriceById])
+
   const selectedMembers = useMemo(() => {
     if (!selectedMemberIds.length) return []
     const idSet = new Set(selectedMemberIds.map(String))
@@ -1780,69 +1930,12 @@ const MemberShipDetails = ({ setPage, setpage }) => {
       setIsSubmittingBulkMembership(true)
       const response = await createBulkMembership({ members: membersPayload })
 
-      const createdRaw =
-        response?.data?.data?.createdMemberships ??
-        response?.data?.createdMemberships ??
-        []
-      const failedRaw =
-        response?.data?.data?.failedUsers ??
-        response?.data?.failedUsers ??
-        []
-
-      const createdMemberships = Array.isArray(createdRaw) ? createdRaw : []
-      const failedUsers = Array.isArray(failedRaw) ? failedRaw : []
-
-      // Build memberships list for payment for THIS selection.
-      // Backend may return memberships under:
-      // - createdMemberships (newly created)
-      // - failedUsers[].membership (already existed; e.g. pending/active)
-      // We accept both, but we must normalize IDs and enrich missing plan/category from request payload.
-      const membershipsForPayment = (() => {
-        const out = []
-        const seen = new Set()
-        const requestedUserIds = new Set(membersPayload.map((m) => String(m.user_id)))
-        const payloadByUserId = new Map(membersPayload.map((m) => [String(m.user_id), m]))
-
-        const pushIfValid = (m) => {
-          if (!m) return
-          const membershipId = m._id ?? m.id
-          const rawPlanId =
-            typeof m.plan_id === 'object'
-              ? (m.plan_id?._id ?? m.plan_id?.id)
-              : (m.plan_id ?? m.planId)
-          const rawCategoryId =
-            typeof m.category_id === 'object'
-              ? (m.category_id?._id ?? m.category_id?.id)
-              : (m.category_id ?? m.categoryId)
-          const userId =
-            (typeof m.user_id === 'object' ? (m.user_id?._id ?? m.user_id?.id) : m.user_id) ??
-            (typeof m.user === 'object' ? (m.user?._id ?? m.user?.id) : null) ??
-            m.userId ??
-            null
-
-          if (userId && !requestedUserIds.has(String(userId))) return
-
-          const payloadForUser = userId != null ? payloadByUserId.get(String(userId)) : undefined
-          const planId = rawPlanId ?? payloadForUser?.plan_id ?? null
-          const categoryId = rawCategoryId ?? payloadForUser?.category_id ?? null
-
-          if (!membershipId || !planId || !categoryId) return
-          const key = String(membershipId)
-          if (seen.has(key)) return
-          seen.add(key)
-          out.push({
-            ...m,
-            _id: membershipId,
-            plan_id: planId,
-            category_id: categoryId,
-          })
-        }
-
-        createdMemberships.forEach(pushIfValid)
-        failedUsers.forEach((fu) => pushIfValid(fu?.membership))
-
-        return out
-      })()
+      const { createdMemberships, failedUsers } = extractBulkMembershipResponse(response)
+      const membershipsForPayment = prepareMembershipsForPayment({
+        membersPayload,
+        createdMemberships,
+        failedUsers,
+      })
 
       if (membershipsForPayment.length !== membersPayload.length) {
         toast.warning(
@@ -1870,51 +1963,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
         }
       )
       setSelectedMemberIds([])
-      if (clubId) {
-        const membersResponse = await getClubMembers(clubId)
-        const membersData = membersResponse?.data?.data || membersResponse?.data || []
-        if (Array.isArray(membersData)) {
-          const transformedMembers = membersData.map((member) => ({
-            id: member._id || member.id,
-            fullname:
-              member.fullname ||
-              member.user?.fullName ||
-              member.user?.fullname ||
-              member.user_id?.fullname ||
-              member.name ||
-              'N/A',
-            emailId:
-              member.emailId ||
-              member.user?.email ||
-              member.user_id?.email ||
-              member.email ||
-              'N/A',
-            mobileNo:
-              member.mobileNo ||
-              member.user?.mobile ||
-              member.user?.mobileNo ||
-              member.user_id?.mobileNo ||
-              member.phone ||
-              member.mobile ||
-              '',
-            role: member.role || member.user?.role || 'MEMBER',
-            categoryId:
-              member.categoryId?._id ||
-              member.category_id?._id ||
-              member.categoryId ||
-              member.category_id ||
-              null,
-            planId:
-              member.planId?._id ||
-              member.plan_id?._id ||
-              member.planId ||
-              member.plan_id ||
-              null,
-            ...member,
-          }))
-          setMembers(transformedMembers)
-        }
-      }
+      await refetchMembers()
       if (membershipsForPayment.length > 0) {
         setCreatedMembershipsForPayment(membershipsForPayment)
         requestAnimationFrame(() => setMembershipPaymentModalOpen(true))
@@ -1933,7 +1982,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
     } finally {
       setIsSubmittingBulkMembership(false)
     }
-  }, [selectedMemberIds, members, clubId])
+  }, [selectedMemberIds, members, clubId, refetchMembers])
 
   const isAllSelected = useMemo(() => {
     if (filteredMembers.length === 0) return false
@@ -2137,7 +2186,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
                   ) : (
                     <>
                       <UserPlus size={16} />
-                      Create membership
+                      Pay All
                       {selectedMemberIds.length > 0 && (
                         <span className="bg-slate-600 text-slate-200 text-xs font-medium px-2 py-0.5 rounded">
                           {selectedMemberIds.length}
@@ -2192,6 +2241,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
         onCategoryChange={handleCategoryChange}
         onPlanChange={handlePlanChange}
         updatingMemberId={updatingMemberId}
+        payingMemberId={payingMemberId}
       />
 
       {/* Individual Payment Modal */}
@@ -2296,6 +2346,13 @@ const MemberShipDetails = ({ setPage, setpage }) => {
         }}
         createdMemberships={createdMembershipsForPayment}
         currency={bulkMembershipCurrencySnapshot}
+        baseAmountRupees={membershipPaymentPricing?.mixedCurrency ? null : membershipPaymentPricing?.total}
+        baseCurrency={membershipPaymentPricing?.mixedCurrency ? null : membershipPaymentPricing?.currency}
+        isBaseAmountAvailable={
+          !membershipPaymentPricing?.mixedCurrency &&
+          membershipPaymentPricing?.missingPriceCount === 0 &&
+          (membershipPaymentPricing?.total ?? 0) > 0
+        }
         onPaymentSuccess={(result) => {
           const finalStatus = resolvePaymentStatus(result)
           setPaymentStatusView({

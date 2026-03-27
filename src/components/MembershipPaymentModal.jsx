@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import { createMembershipPayment, verifyPayment } from '../api/paymentApi'
 import { normalizePaymentCreateResponse, formatAmountFromPaise, buildPaymentVerifyPayload } from '../utils/paymentUtils.js'
 import { CurrencySelect } from './common/CurrencySelect'
+import { getFxRate } from '../utils/fxRates'
 
 /**
  * MembershipPaymentModal - Payment for memberships created via bulk membership API.
@@ -16,6 +17,9 @@ const MembershipPaymentModal = ({
   onClose,
   createdMemberships = [],
   currency = 'INR',
+  baseAmountRupees: baseAmountRupeesProp = null,
+  baseCurrency: baseCurrencyProp = null,
+  isBaseAmountAvailable: isBaseAmountAvailableProp = false,
   onPaymentSuccess,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false)
@@ -25,6 +29,9 @@ const MembershipPaymentModal = ({
   const [razorpayInstance, setRazorpayInstance] = useState(null)
   const [orderInitError, setOrderInitError] = useState(null)
   const [selectedCurrency, setSelectedCurrency] = useState(currency || 'INR')
+  const [convertedAmount, setConvertedAmount] = useState(null) // preview amount in selectedCurrency (unit currency)
+  const [isConverting, setIsConverting] = useState(false)
+  const [conversionError, setConversionError] = useState(false)
 
   useEffect(() => {
     if (!isOpen || razorpayLoaded) return
@@ -69,6 +76,9 @@ const MembershipPaymentModal = ({
       setTermsAccepted(false)
       setRazorpayInstance(null)
       setSelectedCurrency(currency || 'INR')
+      setConvertedAmount(null)
+      setIsConverting(false)
+      setConversionError(false)
     }
   }, [isOpen, currency])
 
@@ -76,8 +86,133 @@ const MembershipPaymentModal = ({
     if (!amountInPaise) return '0.00'
     return formatAmountFromPaise(amountInPaise)
   }
-  const displayAmount = paymentData?.amount != null ? formatAmount(paymentData.amount) : (paymentData?.totalAmountRupees != null ? Number(paymentData.totalAmountRupees).toFixed(2) : '—')
-  const displayCurrency = paymentData?.currency || selectedCurrency
+
+  const isCurrencyLocked = Boolean(isProcessing || razorpayInstance || paymentData)
+  const baseCurrency =
+    String(baseCurrencyProp || currency || 'INR').toUpperCase()
+
+  // Best-effort base amount for FX preview (before order is created).
+  // Backend bulk response may (optionally) populate plan/category objects with amounts.
+  const baseAmountRupeesFallback = (() => {
+    const items = Array.isArray(createdMemberships) ? createdMemberships : []
+    if (items.length === 0) return null
+
+    const getAmountFromAnyShape = (m) => {
+      const candidates = [
+        m?.amount,
+        m?.price,
+        m?.planAmount,
+        m?.plan_amount,
+        m?.membershipAmount,
+        m?.membership_amount,
+        m?.totalAmount,
+        m?.total_amount,
+        m?.plan?.amount,
+        m?.plan?.price,
+        m?.plan_id?.amount,
+        m?.plan_id?.price,
+      ]
+      for (const c of candidates) {
+        if (c == null) continue
+        const n = Number(c)
+        if (!Number.isNaN(n) && n > 0) return n
+      }
+      return null
+    }
+
+    let sum = 0
+    let count = 0
+    for (const m of items) {
+      const a = getAmountFromAnyShape(m)
+      if (a != null) {
+        sum += a
+        count += 1
+      }
+    }
+
+    // Only trust the estimate if we could compute for all memberships.
+    if (count !== items.length) return null
+    return sum
+  })()
+
+  const baseAmountRupees =
+    baseAmountRupeesProp != null && Number.isFinite(Number(baseAmountRupeesProp))
+      ? Number(baseAmountRupeesProp)
+      : baseAmountRupeesFallback
+
+  const isBaseAmountAvailable =
+    Boolean(isBaseAmountAvailableProp) ||
+    (baseAmountRupeesProp != null && Number.isFinite(Number(baseAmountRupeesProp))) ||
+    baseAmountRupeesFallback != null
+
+  useEffect(() => {
+    if (!isOpen) return
+    if (isCurrencyLocked) return
+
+    const baseAmount =
+      baseAmountRupees != null && baseAmountRupees !== '' ? Number(baseAmountRupees) : null
+
+    if (baseAmount == null || Number.isNaN(baseAmount)) {
+      setConvertedAmount(null)
+      setConversionError(false)
+      return
+    }
+
+    const targetCurrency = String(selectedCurrency || baseCurrency).toUpperCase()
+    if (baseCurrency === targetCurrency) {
+      setConvertedAmount(baseAmount)
+      setConversionError(false)
+      setIsConverting(false)
+      return
+    }
+
+    let cancelled = false
+    const t = setTimeout(async () => {
+      try {
+        setIsConverting(true)
+        setConversionError(false)
+        const rate = await getFxRate(baseCurrency, targetCurrency)
+        if (cancelled) return
+        setConvertedAmount(baseAmount * rate)
+      } catch (e) {
+        if (cancelled) return
+        setConvertedAmount(baseAmount)
+        setConversionError(true)
+      } finally {
+        if (!cancelled) setIsConverting(false)
+      }
+    }, 250)
+
+    return () => {
+      cancelled = true
+      clearTimeout(t)
+    }
+  }, [isOpen, isCurrencyLocked, baseAmountRupees, baseCurrency, selectedCurrency])
+
+  // Display amount priority:
+  // - Backend order (source of truth; in selected currency)
+  // - Frontend FX preview (if we can compute an estimate before order creation)
+  const displayCurrency =
+    isCurrencyLocked ? (paymentData?.currency || baseCurrency) : (conversionError ? baseCurrency : String(selectedCurrency || baseCurrency).toUpperCase())
+
+  const displayAmount =
+    paymentData?.amount != null
+      ? formatAmount(paymentData.amount)
+      : convertedAmount != null
+        ? Number(convertedAmount).toFixed(2)
+        : '—'
+
+  const amountNumber = displayAmount !== '—' ? Number(displayAmount) : null
+  const formattedMoney =
+    amountNumber == null || Number.isNaN(amountNumber)
+      ? '—'
+      : new Intl.NumberFormat(displayCurrency === 'INR' ? 'en-IN' : 'en-US', {
+          style: 'currency',
+          currency: displayCurrency,
+          currencyDisplay: 'narrowSymbol',
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(amountNumber)
 
   const initPaymentOrder = async () => {
     if (!createdMemberships?.length) return
@@ -340,9 +475,16 @@ const MembershipPaymentModal = ({
                     <div className="flex-1 min-w-[180px]">
                       <span className="text-slate-400 text-sm">Total</span>
                       <span className="text-2xl font-bold text-blue-400 block mt-1">
-                        {displayCurrency === 'INR' ? '₹' : '$'}
-                        {displayAmount} {displayCurrency}
+                        {formattedMoney}
                       </span>
+                      {!isCurrencyLocked && isConverting && (
+                        <div className="mt-1 text-[11px] text-slate-500">Updating total…</div>
+                      )}
+                      {!isCurrencyLocked && conversionError && (
+                        <div className="mt-1 text-[11px] text-yellow-300">
+                          FX conversion unavailable. Showing base estimate.
+                        </div>
+                      )}
                     </div>
 
                     <div className="w-full sm:w-[240px]">
@@ -351,7 +493,7 @@ const MembershipPaymentModal = ({
                         value={selectedCurrency}
                         onChange={(code) => {
                           if (paymentData) return
-                          setSelectedCurrency(code)
+                          setSelectedCurrency(String(code || '').toUpperCase())
                         }}
                         size="sm"
                         variant="dark"
@@ -367,7 +509,11 @@ const MembershipPaymentModal = ({
                     </div>
                   </div>
                   <p className="text-xs text-slate-500 mt-1">
-                    Amount will be shown after creating order.
+                    {!paymentData && !isBaseAmountAvailable
+                      ? 'Amount will be shown after creating order.'
+                      : !paymentData
+                        ? `Estimated total based on selected members' plan prices (${baseCurrency}).`
+                        : 'Amount is finalized from the payment order.'}
                   </p>
                 </div>
 
@@ -424,12 +570,7 @@ const MembershipPaymentModal = ({
                     Loading payment gateway...
                   </div>
                 )}
-                {razorpayLoaded && createdMemberships.length > 0 && !paymentData && (
-                  <div className="flex items-center gap-2 text-slate-400 text-sm">
-                    <Loader2 size={16} className="animate-spin" />
-                    Ready to create payment order...
-                  </div>
-                )}
+               
                 {!!orderInitError && (
                   <div className="flex items-center gap-2 text-red-300 text-sm p-3 bg-red-500/10 rounded-lg border border-red-600/30">
                     <AlertCircle size={16} />

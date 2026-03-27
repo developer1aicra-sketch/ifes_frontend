@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, CreditCard, Shield, Lock, Loader2, AlertCircle, Users, Trophy } from 'lucide-react';
-import { toast } from 'react-toastify';
-import { createCompetitionPaymentForSquads, verifyPayment } from '../api/paymentApi.js';
-import { normalizePaymentCreateResponse, formatAmountFromPaise, buildPaymentVerifyPayload } from '../utils/paymentUtils.js';
-import { CurrencySelect } from '../components/common/CurrencySelect';
+import React, { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { X, CreditCard, Shield, Lock, Loader2, AlertCircle, Users, Trophy } from 'lucide-react'
+import { toast } from 'react-toastify'
+import { createCompetitionPaymentForSquads, verifyPayment } from '../api/paymentApi.js'
+import { normalizePaymentCreateResponse, formatAmountFromPaise, buildPaymentVerifyPayload } from '../utils/paymentUtils.js'
+import { CurrencySelect } from '../components/common/CurrencySelect'
+import { getFxRate } from '../utils/fxRates'
 
 /**
  * SquadPaymentModal - Payment gateway modal for squad entry fee
@@ -18,106 +19,237 @@ const SquadPaymentModal = ({
   currency = 'INR',
   onPaymentSuccess,
 }) => {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [paymentData, setPaymentData] = useState(null);
-  const [razorpayInstance, setRazorpayInstance] = useState(null);
-  const [selectedCurrency, setSelectedCurrency] = useState(currency);
-  const [lockedCurrency, setLockedCurrency] = useState(currency);
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [paymentData, setPaymentData] = useState(null)
+  const [razorpayInstance, setRazorpayInstance] = useState(null)
+  const [orderInitError, setOrderInitError] = useState(null)
+  const [selectedCurrency, setSelectedCurrency] = useState(currency || 'INR')
+  const [convertedAmount, setConvertedAmount] = useState(null) // preview amount in selectedCurrency (unit currency)
+  const [isConverting, setIsConverting] = useState(false)
+  const [conversionError, setConversionError] = useState(false)
 
-  const entryFee = Number(squad?.entry_fee ?? 0);
-  const teamName = squad?.teamName || squad?.name || 'Squad';
-  const category = squad?.category || 'Competition';
+  const entryFee = Number(squad?.entry_fee ?? 0)
+  const teamName = squad?.teamName || squad?.name || 'Squad'
+  const category = squad?.category || 'Competition'
+
+  const baseCurrency = String(currency || 'INR').toUpperCase()
+  const baseAmount = Number.isFinite(entryFee) && entryFee > 0 ? entryFee : null
+  const isCurrencyLocked = Boolean(isProcessing || razorpayInstance || paymentData)
 
   // Load Razorpay script when modal opens
   useEffect(() => {
-    if (!isOpen || razorpayLoaded) return;
+    if (!isOpen || razorpayLoaded) return
 
     const existingScript = document.querySelector(
       'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
-    );
+    )
     if (existingScript) {
-      setRazorpayLoaded(true);
-      return;
+      setRazorpayLoaded(true)
+      return
     }
 
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    script.onload = () => setRazorpayLoaded(true);
+    const script = document.createElement('script')
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    script.async = true
+    script.onload = () => setRazorpayLoaded(true)
     script.onerror = () => {
-      setRazorpayLoaded(false);
+      setRazorpayLoaded(false)
       toast.error('Failed to load Razorpay SDK. Please refresh the page.', {
         position: 'top-right',
         autoClose: 3000,
         theme: 'dark',
-      });
-    };
-    document.body.appendChild(script);
+      })
+    }
+    document.body.appendChild(script)
 
     return () => {
       try {
         const scriptToRemove = document.querySelector(
           'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
-        );
+        )
         if (scriptToRemove && scriptToRemove.parentNode) {
-          scriptToRemove.parentNode.removeChild(scriptToRemove);
+          scriptToRemove.parentNode.removeChild(scriptToRemove)
         }
       } catch {
         // no-op
       }
-    };
-  }, [isOpen, razorpayLoaded]);
+    }
+  }, [isOpen, razorpayLoaded])
 
   // Cleanup Razorpay instance when unmounting
   useEffect(() => {
     return () => {
       if (razorpayInstance?.close) {
         try {
-          razorpayInstance.close();
+          razorpayInstance.close()
         } catch {
           // no-op
         }
       }
-      setRazorpayInstance(null);
-    };
-  }, [razorpayInstance]);
+      setRazorpayInstance(null)
+    }
+  }, [razorpayInstance])
 
   // Reset internal state when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setIsProcessing(false);
-      setPaymentData(null);
-      setTermsAccepted(false);
-      setRazorpayInstance(null);
-      setSelectedCurrency(currency);
-      setLockedCurrency(currency);
-      return;
+      setIsProcessing(false)
+      setPaymentData(null)
+      setOrderInitError(null)
+      setTermsAccepted(false)
+      setRazorpayInstance(null)
+      setSelectedCurrency(currency || 'INR')
+      setConvertedAmount(null)
+      setIsConverting(false)
+      setConversionError(false)
+      return
     }
 
     // Initialize currency selection when the modal opens.
-    setSelectedCurrency(currency);
-    setLockedCurrency(currency);
-  }, [isOpen, currency]);
+    setSelectedCurrency(currency || 'INR')
+  }, [isOpen, currency])
 
-  const formatAmount = (amountInPaise) => {
-    if (!amountInPaise) return (entryFee || 0).toFixed(2);
-    return formatAmountFromPaise(amountInPaise);
-  };
+  useEffect(() => {
+    if (!isOpen) return
+    if (isCurrencyLocked) return
 
-  const displayAmount =
-    paymentData?.amount != null ? formatAmount(paymentData.amount) : (entryFee || 0).toFixed(2);
-  const displayCurrency = paymentData?.currency || lockedCurrency || selectedCurrency || currency;
-console.log("display amount",displayAmount)
-  const openRazorpayCheckout = (rawData, paymentCurrency) => {
-    const normalized = normalizePaymentCreateResponse(rawData);
-
-    if (!normalized.amount || normalized.amount <= 0) {
-      throw new Error('Invalid payment amount');
+    const targetCurrency = String(selectedCurrency || baseCurrency).toUpperCase()
+    if (baseAmount == null) {
+      setConvertedAmount(null)
+      setConversionError(false)
+      return
     }
 
-    setPaymentData(normalized);
+    if (baseCurrency === targetCurrency) {
+      setConvertedAmount(baseAmount)
+      setConversionError(false)
+      setIsConverting(false)
+      return
+    }
+
+    let cancelled = false
+    const t = setTimeout(async () => {
+      try {
+        setIsConverting(true)
+        setConversionError(false)
+        const rate = await getFxRate(baseCurrency, targetCurrency)
+        if (cancelled) return
+        setConvertedAmount(baseAmount * rate)
+      } catch (e) {
+        if (cancelled) return
+        setConvertedAmount(baseAmount)
+        setConversionError(true)
+      } finally {
+        if (!cancelled) setIsConverting(false)
+      }
+    }, 250)
+
+    return () => {
+      cancelled = true
+      clearTimeout(t)
+    }
+  }, [isOpen, isCurrencyLocked, baseAmount, baseCurrency, selectedCurrency])
+
+  const formatAmount = (amountInPaise) => {
+    if (!amountInPaise) return '0.00'
+    return formatAmountFromPaise(amountInPaise)
+  }
+
+  // Display amount priority:
+  // - Backend order (source of truth; in selected currency)
+  // - Frontend FX preview (entryFee is in baseCurrency)
+  const displayCurrency = isCurrencyLocked
+    ? (paymentData?.currency || baseCurrency)
+    : (conversionError ? baseCurrency : String(selectedCurrency || baseCurrency).toUpperCase())
+
+  const displayAmount =
+    paymentData?.amount != null
+      ? formatAmount(paymentData.amount)
+      : convertedAmount != null
+        ? Number(convertedAmount).toFixed(2)
+        : baseAmount != null
+          ? Number(baseAmount).toFixed(2)
+          : '—'
+
+  const amountNumber = displayAmount !== '—' ? Number(displayAmount) : null
+  const formattedMoney =
+    amountNumber == null || Number.isNaN(amountNumber)
+      ? '—'
+      : new Intl.NumberFormat(displayCurrency === 'INR' ? 'en-IN' : 'en-US', {
+          style: 'currency',
+          currency: displayCurrency,
+          currencyDisplay: 'narrowSymbol',
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(amountNumber)
+
+  const initPaymentOrder = async () => {
+    if (!squad || !squad._id) return
+    if (!razorpayLoaded) return
+    if (paymentData) return
+
+    const paymentCurrency = String(selectedCurrency || baseCurrency || 'INR').toUpperCase()
+    setOrderInitError(null)
+    setIsProcessing(true)
+
+    try {
+      const response = await createCompetitionPaymentForSquads(squad, paymentCurrency)
+      const rawData = response.data?.success ? response.data.data : response.data?.data || response.data
+      const normalized = normalizePaymentCreateResponse(rawData)
+
+      if (!normalized.razorpayKey || !normalized.orderId) {
+        throw new Error('Invalid payment response from server')
+      }
+      if (!normalized.amount || normalized.amount <= 0) {
+        throw new Error('Invalid payment amount')
+      }
+
+      setPaymentData(normalized)
+      return normalized
+    } catch (error) {
+      const backendMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to initialize payment.'
+
+      const lowerMsg = typeof backendMessage === 'string' ? backendMessage.toLowerCase() : ''
+      const maybeExistingPaymentData =
+        error?.response?.data?.data ||
+        error?.response?.data?.payment ||
+        error?.response?.data?.order ||
+        error?.response?.data
+
+      // Special case: backend says all items already have payment in progress.
+      // In this case we still want to open Razorpay using existing payment/order data.
+      if (
+        lowerMsg.includes('all selected items already have payment in progress') &&
+        maybeExistingPaymentData
+      ) {
+        const normalizedExisting = normalizePaymentCreateResponse(maybeExistingPaymentData)
+        if (normalizedExisting?.razorpayKey && normalizedExisting?.orderId) {
+          setPaymentData(normalizedExisting)
+          return normalizedExisting
+        }
+      }
+
+      setOrderInitError(backendMessage)
+      toast.error(backendMessage, { position: 'top-right', autoClose: 4000, theme: 'dark' })
+      return undefined
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+  const openRazorpayCheckout = (normalizedData, paymentCurrency) => {
+    const normalized = normalizePaymentCreateResponse(normalizedData)
+
+    if (!normalized.amount || normalized.amount <= 0) {
+      throw new Error('Invalid payment amount')
+    }
+
+    setPaymentData(normalized)
 
     const options = {
       key: normalized.razorpayKey,
@@ -127,7 +259,7 @@ console.log("display amount",displayAmount)
       description: `Squad Entry Fee - ${teamName}`,
       order_id: normalized.orderId,
       handler: (razorpayResponse) => {
-        handlePaymentSuccess(razorpayResponse, normalized.orderId, normalized.paymentId);
+        handlePaymentSuccess(razorpayResponse, normalized.orderId, normalized.paymentId)
       },
       prefill: {
         name: normalized.userName || 'Club Administrator',
@@ -148,41 +280,39 @@ console.log("display amount",displayAmount)
       },
       modal: {
         ondismiss: () => {
-          setIsProcessing(false);
-          setPaymentData(null);
-          setRazorpayInstance(null);
+          setIsProcessing(false)
+          setRazorpayInstance(null)
           toast.info('Payment cancelled', {
             position: 'top-right',
             autoClose: 2000,
             theme: 'dark',
-          });
+          })
         },
       },
       handler_error: (error) => {
-        setIsProcessing(false);
-        setPaymentData(null);
-        setRazorpayInstance(null);
+        setIsProcessing(false)
+        setRazorpayInstance(null)
         const msg =
           error?.error?.description ||
           error?.error?.reason ||
           error?.error?.code ||
-          'Payment failed. Please try again.';
+          'Payment failed. Please try again.'
         toast.error(`Payment failed: ${msg}`, {
           position: 'top-right',
           autoClose: 4000,
           theme: 'dark',
-        });
+        })
       },
-    };
+    }
 
     if (window.Razorpay) {
-      const razorpay = new window.Razorpay(options);
-      setRazorpayInstance(razorpay);
-      razorpay.open();
+      const razorpay = new window.Razorpay(options)
+      setRazorpayInstance(razorpay)
+      razorpay.open()
     } else {
-      throw new Error('Razorpay SDK not loaded. Please refresh the page.');
+      throw new Error('Razorpay SDK not loaded. Please refresh the page.')
     }
-  };
+  }
 
   const handlePayment = async () => {
     if (!squad || !squad._id) {
@@ -190,8 +320,8 @@ console.log("display amount",displayAmount)
         position: 'top-right',
         autoClose: 3000,
         theme: 'dark',
-      });
-      return;
+      })
+      return
     }
 
     if (!termsAccepted) {
@@ -199,8 +329,8 @@ console.log("display amount",displayAmount)
         position: 'top-right',
         autoClose: 3000,
         theme: 'dark',
-      });
-      return;
+      })
+      return
     }
 
     if (!razorpayLoaded) {
@@ -208,84 +338,53 @@ console.log("display amount",displayAmount)
         position: 'top-right',
         autoClose: 3000,
         theme: 'dark',
-      });
-      return;
+      })
+      return
     }
 
-    // Frontend architecture: lock currency at click time so order/payment matches selection.
-    const paymentCurrency = String(selectedCurrency || currency || 'INR').toUpperCase();
-    setLockedCurrency(paymentCurrency);
-    setIsProcessing(true);
-
     try {
-      // Create competition payment order for this squad (POST /payment/create)
-      const response = await createCompetitionPaymentForSquads(squad, paymentCurrency);
-      const rawData = response.data?.success
-        ? response.data.data
-        : response.data?.data || response.data;
+      let data = paymentData
+      if (!data) {
+        data = await initPaymentOrder()
+      }
+      if (!data) {
+        throw new Error(orderInitError || 'Payment order could not be created. Please try again.')
+      }
 
-      openRazorpayCheckout(rawData, paymentCurrency);
+      const paymentCurrency = String(data.currency || selectedCurrency || baseCurrency || 'INR').toUpperCase()
+      openRazorpayCheckout(data, paymentCurrency)
     } catch (error) {
-      const backendMessage =
+      const msg =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.message ||
-        '';
-
-      const lowerMsg =
-        typeof backendMessage === 'string' ? backendMessage.toLowerCase() : '';
-
-      const maybeExistingPaymentData =
-        error?.response?.data?.data ||
-        error?.response?.data?.payment ||
-        error?.response?.data?.order ||
-        error?.response?.data;
-
-      // Special case: backend says all items already have payment in progress.
-      // In this case we still want to open Razorpay using existing payment/order data.
-      if (
-        lowerMsg.includes('all selected items already have payment in progress') &&
-        maybeExistingPaymentData
-      ) {
-        try {
-          openRazorpayCheckout(maybeExistingPaymentData, paymentCurrency);
-          return;
-        } catch (inner) {
-          console.error('Failed to initialize Razorpay from existing competition payment:', inner);
-        }
-      }
-
-      setIsProcessing(false);
-      setPaymentData(null);
-      const msg =
-        backendMessage ||
-        'Failed to initialize payment. Please try again.';
+        'Failed to initialize payment. Please try again.'
       toast.error(msg, {
         position: 'top-right',
         autoClose: 4000,
         theme: 'dark',
-      });
+      })
     }
-  };
+  }
 
   const handlePaymentSuccess = async (razorpayResponse, razorpayOrderId, backendPaymentId) => {
     try {
-      setIsProcessing(true);
+      setIsProcessing(true)
       toast.success('Payment successful! Verifying...', {
         position: 'top-right',
         autoClose: 2000,
         theme: 'dark',
-      });
+      })
 
       try {
-        const verifyPayload = buildPaymentVerifyPayload(razorpayResponse);
-        const verificationResponse = await verifyPayment(verifyPayload);
+        const verifyPayload = buildPaymentVerifyPayload(razorpayResponse)
+        const verificationResponse = await verifyPayment(verifyPayload)
 
         toast.success('Payment verified. Squad entry confirmed.', {
           position: 'top-right',
           autoClose: 3000,
           theme: 'dark',
-        });
+        })
 
         if (typeof onPaymentSuccess === 'function') {
           onPaymentSuccess({
@@ -295,22 +394,22 @@ console.log("display amount",displayAmount)
             razorpayOrderId,
             verificationData: verificationResponse.data,
             squad,
-          });
+          })
         }
 
-        setTimeout(() => onClose(), 1500);
+        setTimeout(() => onClose(), 1500)
       } catch (verifyError) {
         const msg =
           verifyError.response?.data?.message ||
           verifyError.response?.data?.error ||
           verifyError.message ||
-          'Verification failed';
+          'Verification failed'
 
         toast.warning('Payment successful but verification failed. Please contact support.', {
           position: 'top-right',
           autoClose: 4000,
           theme: 'dark',
-        });
+        })
 
         if (typeof onPaymentSuccess === 'function') {
           onPaymentSuccess({
@@ -319,7 +418,7 @@ console.log("display amount",displayAmount)
             verificationFailed: true,
             verificationError: msg,
             squad,
-          });
+          })
         }
       }
     } catch {
@@ -327,15 +426,15 @@ console.log("display amount",displayAmount)
         position: 'top-right',
         autoClose: 4000,
         theme: 'dark',
-      });
+      })
     } finally {
-      setIsProcessing(false);
-      setRazorpayInstance(null);
-      setPaymentData(null);
+      setIsProcessing(false)
+      setRazorpayInstance(null)
+      setPaymentData(null)
     }
-  };
+  }
 
-  if (!isOpen || !squad) return null;
+  if (!isOpen || !squad) return null
 
   return (
     <AnimatePresence>
@@ -394,10 +493,17 @@ console.log("display amount",displayAmount)
                     <div className="flex items-center justify-between">
                       <span className="text-slate-400 text-sm">Entry fee</span>
                       <span className="text-lg font-bold text-emerald-400">
-                        {displayCurrency === 'INR' ? '₹' : '$'}
-                        {displayAmount} {displayCurrency}
+                        {formattedMoney}
                       </span>
                     </div>
+                    {!isCurrencyLocked && isConverting && (
+                      <div className="mt-1 text-[11px] text-slate-500">Updating total…</div>
+                    )}
+                    {!isCurrencyLocked && conversionError && (
+                      <div className="mt-1 text-[11px] text-yellow-300">
+                        FX conversion unavailable. Showing base estimate.
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -406,13 +512,21 @@ console.log("display amount",displayAmount)
                   <div className="w-full sm:w-[240px]">
                     <CurrencySelect
                       value={selectedCurrency}
-                      onChange={(code) => setSelectedCurrency(code)}
+                      onChange={(code) => {
+                        if (paymentData) return
+                        setSelectedCurrency(String(code || '').toUpperCase())
+                      }}
                       disabled={isProcessing || !!paymentData}
                       variant="dark"
                       size="sm"
                       ariaLabel="Select payment currency"
                       placeholder="Search currency…"
                     />
+                    {paymentData && (
+                      <div className="mt-1 text-[11px] text-slate-500">
+                        Currency locked for this payment.
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -452,8 +566,13 @@ console.log("display amount",displayAmount)
                   ) : (
                     <>
                       <Lock size={18} />
-                      Pay Now - {displayCurrency === 'INR' ? '₹' : '$'}
-                      {displayAmount}
+                      Pay Now
+                      {paymentData?.amount != null && (
+                        <span>
+                          — {displayCurrency === 'INR' ? '₹' : '$'}
+                          {displayAmount}
+                        </span>
+                      )}
                     </>
                   )}
                 </motion.button>
@@ -474,14 +593,21 @@ console.log("display amount",displayAmount)
                     </span>
                   </div>
                 )}
+
+                {!!orderInitError && (
+                  <div className="flex items-center gap-2 text-red-300 text-sm p-3 bg-red-500/10 rounded-lg border border-red-600/30">
+                    <AlertCircle size={16} />
+                    {orderInitError}
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
         </>
       )}
     </AnimatePresence>
-  );
-};
+  )
+}
 
-export default SquadPaymentModal;
+export default SquadPaymentModal
 

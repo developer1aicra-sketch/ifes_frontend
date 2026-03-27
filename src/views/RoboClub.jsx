@@ -57,6 +57,22 @@ export default function TechnoXianApp({ mode = 'public' }) {
   const [isNationalGlobalEventsOpen, setIsNationalGlobalEventsOpen] = useState(false);
   const [nationalGlobalEventsSection, setNationalGlobalEventsSection] = useState('all');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(() => {
+    try {
+      const raw = localStorage.getItem('roboclub.desktopSidebarOpen');
+      return raw == null ? true : raw === 'true';
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('roboclub.desktopSidebarOpen', String(isDesktopSidebarOpen));
+    } catch {
+      // ignore storage write failures (private mode / blocked storage)
+    }
+  }, [isDesktopSidebarOpen]);
 
   const isAuthenticated = !!getRoboclubAuthToken();
   const isDashboardMode = mode === 'dashboard';
@@ -179,11 +195,27 @@ export default function TechnoXianApp({ mode = 'public' }) {
         if (!primaryClub) return;
 
         setClubProfile(primaryClub);
-        if (primaryClub.name) {
-          setSidebarDisplayName(primaryClub.name);
+
+        const displayNameFromApi =
+          primaryClub?.owner?.fullName ||
+          primaryClub?.member?.user?.fullName ||
+          primaryClub?.member?.fullName ||
+          primaryClub?.fullName ||
+          primaryClub?.clubName ||
+          primaryClub?.club_name ||
+          primaryClub?.name;
+
+        if (displayNameFromApi) {
+          setSidebarDisplayName(displayNameFromApi);
         }
-        if (primaryClub.clubCode || primaryClub.tx_id) {
-          setSidebarSecondaryId(primaryClub.clubCode || primaryClub.tx_id);
+
+        const secondaryIdFromApi =
+          primaryClub?.clubCode ||
+          primaryClub?.club_code ||
+          primaryClub?.tx_id;
+
+        if (secondaryIdFromApi) {
+          setSidebarSecondaryId(secondaryIdFromApi);
         }
       })
       .catch((err) => {
@@ -191,11 +223,24 @@ export default function TechnoXianApp({ mode = 'public' }) {
       });
 
     return () => {
-      cancelled = true;
+      cancelled = true; 
     };
   }, [isDashboardMode, isAuthenticated]);
 
-  const captainName = clubProfile?.name || sidebarDisplayName || 'Captain';
+  const captainName =
+    clubProfile?.owner?.fullName ||
+    clubProfile?.member?.user?.fullName ||
+    clubProfile?.member?.fullName ||
+    clubProfile?.fullName ||
+    sidebarDisplayName ||
+    'Captain';
+
+  const sidebarName = captainName;
+  const sidebarId =
+    clubProfile?.clubCode ||
+    clubProfile?.club_code ||
+    clubProfile?.tx_id ||
+    sidebarSecondaryId;
   const clubName = clubProfile?.clubName || clubProfile?.club_name || clubProfile?.club || clubProfile?.name || INITIAL_DB.club.name;
 
   const menuItems = useMemo(() => {
@@ -270,314 +315,335 @@ export default function TechnoXianApp({ mode = 'public' }) {
   return (
     <div className="flex h-screen bg-slate-950 text-slate-200 font-sans">
       {/* Sidebar */}
-      <div className="w-64 bg-slate-900 border-r border-slate-800 hidden md:flex flex-col overflow-hidden">
-        <div className="p-6 border-b border-slate-800">
-          <NavLink to="/" className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 italic">
-            TECHNOXIAN
-          </NavLink>
-          <p className="text-slate-500 text-xs tracking-widest mt-1">FEDERATION PORTAL</p>
-        </div>
-
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          {menuItems.map((item) => {
-            if (item.id === 'diy_offers') {
-              const isChildActive =
-                activePage === 'diy_offers' &&
-                (diyOffersSection === 'kits' ||
-                  diyOffersSection === 'tools' ||
-                  diyOffersSection === 'workshops');
-              return (
-                <div key={item.id} className="space-y-1">
-                  <button
-                    onClick={() => setIsDiyOffersOpen((prev) => !prev)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
-                      isChildActive || isDiyOffersOpen
-                        ? 'bg-blue-600/20 text-blue-400 border border-blue-600/30'
-                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                    }`}
-                  >
-                    <span className="flex items-center space-x-3">
-                      <item.icon size={18} />
-                      <span className="font-medium text-sm">{item.label}</span>
-                    </span>
-                    <ChevronRight
-                      size={16}
-                      className={`transition-transform duration-200 ${
-                        isDiyOffersOpen ? 'rotate-90' : ''
-                      }`}
-                    />
-                  </button>
-                  {isDiyOffersOpen && (
-                    <div className="pl-8 space-y-1">
-                      <button
-                        onClick={() => {
-                          setPage('diy_offers');
-                          setDiyOffersSection('kits');
-                        }}
-                        className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
-                          activePage === 'diy_offers' && diyOffersSection === 'kits'
-                            ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
-                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        Robotics Kits
-                      </button>
-                      <button
-                        onClick={() => {
-                          setPage('diy_offers');
-                          setDiyOffersSection('tools');
-                        }}
-                        className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
-                          activePage === 'diy_offers' && diyOffersSection === 'tools'
-                            ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
-                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        Access Advanced Tools
-                      </button>
-                      <button
-                        onClick={() => {
-                          setPage('diy_offers');
-                          setDiyOffersSection('workshops');
-                        }}
-                        className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
-                          activePage === 'diy_offers' && diyOffersSection === 'workshops'
-                            ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
-                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        Premium Workshops
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            }
-
-            if (item.id === 'career_growth') {
-              const isChildActive =
-                activePage === 'career_growth' &&
-                (careerGrowthSection === 'internships' ||
-                  careerGrowthSection === 'priority');
-              return (
-                <div key={item.id} className="space-y-1">
-                  <button
-                    onClick={() => setIsCareerGrowthOpen((prev) => !prev)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
-                      isChildActive || isCareerGrowthOpen
-                        ? 'bg-blue-600/20 text-blue-400 border border-blue-600/30'
-                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                    }`}
-                  >
-                    <span className="flex items-center space-x-3">
-                      <item.icon size={18} />
-                      <span className="font-medium text-sm">{item.label}</span>
-                    </span>
-                    <ChevronRight
-                      size={16}
-                      className={`transition-transform duration-200 ${
-                        isCareerGrowthOpen ? 'rotate-90' : ''
-                      }`}
-                    />
-                  </button>
-                  {isCareerGrowthOpen && (
-                    <div className="pl-8 space-y-1">
-                      <button
-                        onClick={() => {
-                          setPage('career_growth');
-                          setCareerGrowthSection('internships');
-                        }}
-                        className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
-                          activePage === 'career_growth' && careerGrowthSection === 'internships'
-                            ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
-                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        Internship Listings
-                      </button>
-                      <button
-                        onClick={() => {
-                          setPage('career_growth');
-                          setCareerGrowthSection('priority');
-                        }}
-                        className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
-                          activePage === 'career_growth' && careerGrowthSection === 'priority'
-                            ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
-                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        Priority Internships
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            }
-
-            if (item.id === 'national_global_events') {
-              const isChildActive =
-                activePage === 'national_global_events' &&
-                (nationalGlobalEventsSection === 'all' ||
-                  nationalGlobalEventsSection === 'conferences');
-
-              return (
-                <div key={item.id} className="space-y-1">
-                  <button
-                    onClick={() => setIsNationalGlobalEventsOpen((prev) => !prev)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
-                      isChildActive || isNationalGlobalEventsOpen
-                        ? 'bg-blue-600/20 text-blue-400 border border-blue-600/30'
-                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                    }`}
-                  >
-                    <span className="flex items-center space-x-3">
-                      <item.icon size={18} />
-                      <span className="font-medium text-sm">{item.label}</span>
-                    </span>
-                    <ChevronRight
-                      size={16}
-                      className={`transition-transform duration-200 ${
-                        isNationalGlobalEventsOpen ? 'rotate-90' : ''
-                      }`}
-                    />
-                  </button>
-
-                  {isNationalGlobalEventsOpen && (
-                    <div className="pl-8 space-y-1">
-                      <button
-                        onClick={() => {
-                          setPage('national_global_events');
-                          setNationalGlobalEventsSection('all');
-                        }}
-                        className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
-                          activePage === 'national_global_events' && nationalGlobalEventsSection === 'all'
-                            ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
-                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        All Events & Competitions
-                      </button>
-                      {/* <button
-                        onClick={() => {
-                          setPage('national_global_events');
-                          setNationalGlobalEventsSection('conferences');
-                        }}
-                        className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
-                          activePage === 'national_global_events' && nationalGlobalEventsSection === 'conferences'
-                            ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
-                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        Tech Conferences
-                      </button> */}
-                    </div>
-                  )}
-                </div>
-              );
-            }
-
-            if (item.id === 'contact_directory') {
-              const isChildActive =
-                activePage === 'global_young_innovators' ||
-                activePage === 'student_community';
-              return (
-                <div key={item.id} className="space-y-1">
-                  <button
-                    onClick={() => setIsContactDirectoryOpen((prev) => !prev)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
-                      isChildActive || isContactDirectoryOpen
-                        ? 'bg-blue-600/20 text-blue-400 border border-blue-600/30'
-                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                    }`}
-                  >
-                    <span className="flex items-center space-x-3">
-                      <item.icon size={18} />
-                      <span className="font-medium text-sm">{item.label}</span>
-                    </span>
-                    <ChevronRight
-                      size={16}
-                      className={`transition-transform duration-200 ${
-                        isContactDirectoryOpen ? 'rotate-90' : ''
-                      }`}
-                    />
-                  </button>
-                  {isContactDirectoryOpen && (
-                    <div className="pl-8 space-y-1">
-                      <button
-                        onClick={() => setPage('global_young_innovators')}
-                        className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
-                          activePage === 'global_young_innovators'
-                            ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
-                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        Global Young Innovators Directory
-                      </button>
-                      <button
-                        onClick={() => setPage('student_community')}
-                        className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
-                          activePage === 'student_community'
-                            ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
-                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        Student Community Directory
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            }
-
-            return (
+      <div
+        className={`bg-slate-900 hidden md:flex flex-col overflow-hidden transition-[width] duration-300 ${
+          isDesktopSidebarOpen
+            ? 'w-64 border-r border-slate-800'
+            : 'w-0 border-r-0'
+        }`}
+      >
+        {isDesktopSidebarOpen && (
+          <>
+            <div className="p-6 border-b border-slate-800 flex items-start justify-between gap-3">
+              <div>
+                <NavLink to="/" className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 italic">
+                  TECHNOXIAN
+                </NavLink>
+                <p className="text-slate-500 text-xs tracking-widest mt-1">FEDERATION PORTAL</p>
+              </div>
               <button
-                key={item.id}
-                onClick={() => (item.action ? item.action() : setPage(item.id))}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                  activePage === item.id
-                    ? 'bg-blue-600/20 text-blue-400 border border-blue-600/30'
-                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                }`}
+                type="button"
+                onClick={() => setIsDesktopSidebarOpen(false)}
+                className="p-2 rounded-md border border-slate-700 text-slate-200 hover:bg-slate-800 focus:outline-none"
+                aria-label="Hide sidebar"
+                title="Hide sidebar"
               >
-                <item.icon size={18} />
-                <span className="font-medium text-sm">{item.label}</span>
+                <ChevronRight size={18} className="rotate-180" />
               </button>
-            );
-          })}
-        </nav>
-
-        {/* Role Switcher */}
-        <div className="p-4 border-t border-slate-800 space-y-2 hidden">
-          {/* <p className="text-[10px] text-slate-500 uppercase font-bold px-2">Role Switcher</p> */}
-          <div className="space-x-1 bg-slate-800 p-1 rounded hidden">
-            {/* <button
-              onClick={() => setViewMode('user')}
-              className={`flex-1 py-1 text-xs rounded ${viewMode === 'user' ? 'bg-slate-600 text-white' : 'text-slate-400'}`}
-            >
-              User
-            </button> */}
-            {/* <button
-              onClick={() => { setViewMode('admin'); setPage('admin') }}
-              className={`flex-1 py-1 text-xs rounded ${viewMode === 'admin' ? 'bg-red-600 text-white' : 'text-slate-400'}`}
-            >
-              Admin
-            </button> */}
-          </div>
-        </div>
-
-        {/* User Profile */}
-        <div className="p-4 border-t border-slate-800">
-          <div className="flex items-center space-x-3 bg-slate-800/50 p-3 rounded-lg border border-slate-700">
-            <img src={INITIAL_DB.currentUser.avatar} alt="User" className="w-10 h-10 rounded-full bg-slate-700" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">{sidebarDisplayName}</p>
-              <p className="text-xs text-slate-500 truncate">{sidebarSecondaryId}</p>
             </div>
-            <button onClick={handleLogout} className="text-red-400 hover:text-red-300" title="Log out">
-              <LogOut size={16} />
-            </button>
-          </div>
-        </div>
+
+            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+              {menuItems.map((item) => {
+                if (item.id === 'diy_offers') {
+                  const isChildActive =
+                    activePage === 'diy_offers' &&
+                    (diyOffersSection === 'kits' ||
+                      diyOffersSection === 'tools' ||
+                      diyOffersSection === 'workshops');
+                  return (
+                    <div key={item.id} className="space-y-1">
+                      <button
+                        onClick={() => setIsDiyOffersOpen((prev) => !prev)}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
+                          isChildActive || isDiyOffersOpen
+                            ? 'bg-blue-600/20 text-blue-400 border border-blue-600/30'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                        }`}
+                      >
+                        <span className="flex items-center space-x-3">
+                          <item.icon size={18} />
+                          <span className="font-medium text-sm">{item.label}</span>
+                        </span>
+                        <ChevronRight
+                          size={16}
+                          className={`transition-transform duration-200 ${
+                            isDiyOffersOpen ? 'rotate-90' : ''
+                          }`}
+                        />
+                      </button>
+                      {isDiyOffersOpen && (
+                        <div className="pl-8 space-y-1">
+                          <button
+                            onClick={() => {
+                              setPage('diy_offers');
+                              setDiyOffersSection('kits');
+                            }}
+                            className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
+                              activePage === 'diy_offers' && diyOffersSection === 'kits'
+                                ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
+                                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                          >
+                            Robotics Kits
+                          </button>
+                          <button
+                            onClick={() => {
+                              setPage('diy_offers');
+                              setDiyOffersSection('tools');
+                            }}
+                            className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
+                              activePage === 'diy_offers' && diyOffersSection === 'tools'
+                                ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
+                                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                          >
+                            Access Advanced Tools
+                          </button>
+                          <button
+                            onClick={() => {
+                              setPage('diy_offers');
+                              setDiyOffersSection('workshops');
+                            }}
+                            className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
+                              activePage === 'diy_offers' && diyOffersSection === 'workshops'
+                                ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
+                                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                          >
+                            Premium Workshops
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                if (item.id === 'career_growth') {
+                  const isChildActive =
+                    activePage === 'career_growth' &&
+                    (careerGrowthSection === 'internships' ||
+                      careerGrowthSection === 'priority');
+                  return (
+                    <div key={item.id} className="space-y-1">
+                      <button
+                        onClick={() => setIsCareerGrowthOpen((prev) => !prev)}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
+                          isChildActive || isCareerGrowthOpen
+                            ? 'bg-blue-600/20 text-blue-400 border border-blue-600/30'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                        }`}
+                      >
+                        <span className="flex items-center space-x-3">
+                          <item.icon size={18} />
+                          <span className="font-medium text-sm">{item.label}</span>
+                        </span>
+                        <ChevronRight
+                          size={16}
+                          className={`transition-transform duration-200 ${
+                            isCareerGrowthOpen ? 'rotate-90' : ''
+                          }`}
+                        />
+                      </button>
+                      {isCareerGrowthOpen && (
+                        <div className="pl-8 space-y-1">
+                          <button
+                            onClick={() => {
+                              setPage('career_growth');
+                              setCareerGrowthSection('internships');
+                            }}
+                            className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
+                              activePage === 'career_growth' && careerGrowthSection === 'internships'
+                                ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
+                                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                          >
+                            Internship Listings
+                          </button>
+                          <button
+                            onClick={() => {
+                              setPage('career_growth');
+                              setCareerGrowthSection('priority');
+                            }}
+                            className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
+                              activePage === 'career_growth' && careerGrowthSection === 'priority'
+                                ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
+                                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                          >
+                            Priority Internships
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                if (item.id === 'national_global_events') {
+                  const isChildActive =
+                    activePage === 'national_global_events' &&
+                    (nationalGlobalEventsSection === 'all' ||
+                      nationalGlobalEventsSection === 'conferences');
+
+                  return (
+                    <div key={item.id} className="space-y-1">
+                      <button
+                        onClick={() => setIsNationalGlobalEventsOpen((prev) => !prev)}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
+                          isChildActive || isNationalGlobalEventsOpen
+                            ? 'bg-blue-600/20 text-blue-400 border border-blue-600/30'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                        }`}
+                      >
+                        <span className="flex items-center space-x-3">
+                          <item.icon size={18} />
+                          <span className="font-medium text-sm">{item.label}</span>
+                        </span>
+                        <ChevronRight
+                          size={16}
+                          className={`transition-transform duration-200 ${
+                            isNationalGlobalEventsOpen ? 'rotate-90' : ''
+                          }`}
+                        />
+                      </button>
+
+                      {isNationalGlobalEventsOpen && (
+                        <div className="pl-8 space-y-1">
+                          <button
+                            onClick={() => {
+                              setPage('national_global_events');
+                              setNationalGlobalEventsSection('all');
+                            }}
+                            className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
+                              activePage === 'national_global_events' && nationalGlobalEventsSection === 'all'
+                                ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
+                                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                          >
+                            All Events & Competitions
+                          </button>
+                          {/* <button
+                            onClick={() => {
+                              setPage('national_global_events');
+                              setNationalGlobalEventsSection('conferences');
+                            }}
+                            className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
+                              activePage === 'national_global_events' && nationalGlobalEventsSection === 'conferences'
+                                ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
+                                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                          >
+                            Tech Conferences
+                          </button> */}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                if (item.id === 'contact_directory') {
+                  const isChildActive =
+                    activePage === 'global_young_innovators' ||
+                    activePage === 'student_community';
+                  return (
+                    <div key={item.id} className="space-y-1">
+                      <button
+                        onClick={() => setIsContactDirectoryOpen((prev) => !prev)}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
+                          isChildActive || isContactDirectoryOpen
+                            ? 'bg-blue-600/20 text-blue-400 border border-blue-600/30'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                        }`}
+                      >
+                        <span className="flex items-center space-x-3">
+                          <item.icon size={18} />
+                          <span className="font-medium text-sm">{item.label}</span>
+                        </span>
+                        <ChevronRight
+                          size={16}
+                          className={`transition-transform duration-200 ${
+                            isContactDirectoryOpen ? 'rotate-90' : ''
+                          }`}
+                        />
+                      </button>
+                      {isContactDirectoryOpen && (
+                        <div className="pl-8 space-y-1">
+                          <button
+                            onClick={() => setPage('global_young_innovators')}
+                            className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
+                              activePage === 'global_young_innovators'
+                                ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
+                                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                          >
+                            Global Young Innovators Directory
+                          </button>
+                          <button
+                            onClick={() => setPage('student_community')}
+                            className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
+                              activePage === 'student_community'
+                                ? 'bg-blue-600/20 text-blue-300 border border-blue-600/30'
+                                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                          >
+                            Student Community Directory
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => (item.action ? item.action() : setPage(item.id))}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                      activePage === item.id
+                        ? 'bg-blue-600/20 text-blue-400 border border-blue-600/30'
+                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    }`}
+                  >
+                    <item.icon size={18} />
+                    <span className="font-medium text-sm">{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Role Switcher */}
+            <div className="p-4 border-t border-slate-800 space-y-2 hidden">
+              {/* <p className="text-[10px] text-slate-500 uppercase font-bold px-2">Role Switcher</p> */}
+              <div className="space-x-1 bg-slate-800 p-1 rounded hidden">
+                {/* <button
+                  onClick={() => setViewMode('user')}
+                  className={`flex-1 py-1 text-xs rounded ${viewMode === 'user' ? 'bg-slate-600 text-white' : 'text-slate-400'}`}
+                >
+                  User
+                </button> */}
+                {/* <button
+                  onClick={() => { setViewMode('admin'); setPage('admin') }}
+                  className={`flex-1 py-1 text-xs rounded ${viewMode === 'admin' ? 'bg-red-600 text-white' : 'text-slate-400'}`}
+                >
+                  Admin
+                </button> */}
+              </div>
+            </div>
+
+            {/* User Profile */}
+            <div className="p-4 border-t border-slate-800">
+              <div className="flex items-center space-x-3 bg-slate-800/50 p-3 rounded-lg border border-slate-700">
+                <img src={INITIAL_DB.currentUser.avatar} alt="User" className="w-10 h-10 rounded-full bg-slate-700" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">{sidebarName}</p>
+                  <p className="text-xs text-slate-500 truncate">{sidebarId}</p>
+                </div>
+                <button onClick={handleLogout} className="text-red-400 hover:text-red-300" title="Log out">
+                  <LogOut size={16} />
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Main Content */}
@@ -614,6 +680,17 @@ export default function TechnoXianApp({ mode = 'public' }) {
         {/* Desktop header */}
         <header className="h-16 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 items-center justify-between px-6 sticky top-0 z-40 hidden md:flex">
           <div className="flex items-center space-x-2 text-sm text-slate-400">
+            {!isDesktopSidebarOpen && (
+              <button
+                type="button"
+                onClick={() => setIsDesktopSidebarOpen(true)}
+                className="p-2 rounded-md border border-slate-700 text-slate-200 hover:bg-slate-800 focus:outline-none"
+                aria-label="Show sidebar"
+                title="Show sidebar"
+              >
+                <Menu size={18} />
+              </button>
+            )}
             {/* <span className="uppercase font-bold tracking-wider">{clubName}</span> */}
             <span className="text-white capitalize">{activePage.replace('_', ' ')}</span>
           </div>
@@ -740,9 +817,9 @@ export default function TechnoXianApp({ mode = 'public' }) {
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white truncate">
-                    {sidebarDisplayName}
+                    {sidebarName}
                   </p>
-                  <p className="text-xs text-slate-500 truncate">{sidebarSecondaryId}</p>
+                  <p className="text-xs text-slate-500 truncate">{sidebarId}</p>
                 </div>
               </div>
             </div>
