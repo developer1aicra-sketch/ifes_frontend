@@ -80,7 +80,7 @@ const LocationRouteHandler = () => {
         setPartnerCode('');
         // Not a location route - keep current theme if we have one
         if (selectedLocation && location.pathname !== '/') {
-          console.log(`[LocationRouteHandler] 📌 Keeping theme for ${selectedLocation} on route: ${location.pathname}`);
+          // console.log(`[LocationRouteHandler] 📌 Keeping theme for ${selectedLocation} on route: ${location.pathname}`);
         }
       }
     };

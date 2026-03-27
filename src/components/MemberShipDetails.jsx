@@ -224,9 +224,7 @@ function AddMemberForm({ formData, setFormData, errors, setErrors, onAddMember, 
           <UserPlus size={20} className="text-blue-400" />
           Add Member
         </h2>
-        <p className="text-slate-400 text-sm mt-1">
-          Fill in member details to add them to your club.
-        </p>
+       
         {isLoadingClubId && (
           <p className="text-blue-400 text-xs mt-2 flex items-center gap-2">
             <RefreshCw size={14} className="animate-spin" />
@@ -334,7 +332,7 @@ function AddMemberForm({ formData, setFormData, errors, setErrors, onAddMember, 
             ) : (
               <>
                 <UserPlus size={20} />
-                Add Member
+                Add
               </>
             )}
           </motion.button>
@@ -495,9 +493,7 @@ function MembersList({
                 <th className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">
                   Mobile
                 </th>
-                <th className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">
-                  Role
-                </th>
+              
                 <th className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">
                   Category
                 </th>
@@ -538,11 +534,7 @@ function MembersList({
                     </td>
                     <td className="px-4 py-3 text-slate-300 text-sm">{member.emailId || member.email}</td>
                     <td className="px-4 py-3 text-slate-300 text-sm">{member.mobileNo || member.mobile || '-'}</td>
-                    <td className="px-4 py-3 text-slate-400 text-sm">
-                      <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-medium">
-                        {member.role || 'MEMBER'}
-                      </span>
-                    </td>
+                   
                     <td className="px-4 py-2">
                       <select
                         value={member.categoryId || member.category_id || ''}
@@ -1260,7 +1252,7 @@ const MemberShipDetails = ({ setPage, setpage }) => {
           }))
           
           setMembers(transformedMembers)
-          console.log('✅ Club members fetched:', transformedMembers.length)
+          // console.log('✅ Club members fetched:', transformedMembers.length)
         } else {
           console.warn('⚠️ Invalid members data structure:', membersData)
           setMembers([])
