@@ -43,7 +43,7 @@ const TechnoxianView = () => {
   const isPartnerRoute = Boolean(locationPrefix);
 
   const allTabs = ["overview", "competitions", "gallery", "register"];
-  const partnerTabs = ["competitions", "schedule", "gallery", "register"];
+  const partnerTabs = ["competitions", "gallery", "register"];
   const tabs = isPartnerRoute ? partnerTabs : allTabs;
   const defaultTab = isPartnerRoute ? "competitions" : "overview";
 
@@ -62,6 +62,12 @@ const TechnoxianView = () => {
   // Discipline sidebar states
   const [selectedDisciplineGame, setSelectedDisciplineGame] =
     useState("Innovation Jr.");
+  const [competitionGames, setCompetitionGames] = useState([]);
+  const [competitionLoading, setCompetitionLoading] = useState(false);
+  const [competitionError, setCompetitionError] = useState(null);
+
+  const COMPETITION_LIST_API =
+    "https://worso-backend-rm6w.vercel.app/api/competition/list";
 
   // On partner route, overview is hidden — ensure we never show overview tab
   useEffect(() => {
@@ -69,6 +75,98 @@ const TechnoxianView = () => {
       setActiveTab("competitions");
     }
   }, [isPartnerRoute, activeTab]);
+
+  const formatDuration = (duration) => {
+    const value = duration?.value;
+    const unit = duration?.unit;
+    if (!value || !unit) return "—";
+    const plural = Number(value) === 1 ? "" : "s";
+    return `${value} ${unit}${plural}`;
+  };
+
+  const formatTeamSize = (teamRequirements) => {
+    const min = teamRequirements?.minMembers;
+    const max = teamRequirements?.maxMembers;
+    if (!min && !max) return "—";
+    if (min && max) return `${min}-${max} members`;
+    if (min) return `${min}+ members`;
+    return `Up to ${max} members`;
+  };
+
+  const getCompetitionIcon = (competition) => {
+    const name = (competition?.name || "").toLowerCase();
+    const category = (competition?.category || "").toLowerCase();
+
+    if (name.includes("drone") || category.includes("drone")) return <Drone size={20} />;
+    if (name.includes("race") || category.includes("race")) return <Flag size={20} />;
+    if (name.includes("soccer") || name.includes("hockey")) return <Target size={20} />;
+    if (name.includes("rocket")) return <Rocket size={20} />;
+    if (name.includes("maze") || name.includes("puzzle")) return <Puzzle size={20} />;
+    if (name.includes("innovation")) return <Brain size={20} />;
+    if (name.includes("rc") || name.includes("car")) return <Car size={20} />;
+
+    if (competition?.hasBots) return <Shield size={20} />;
+    return <Star size={20} />;
+  };
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const run = async () => {
+      try {
+        setCompetitionLoading(true);
+        setCompetitionError(null);
+
+        const res = await fetch(COMPETITION_LIST_API, {
+          method: "GET",
+          signal: controller.signal,
+          headers: {
+            Accept: "application/json",
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Request failed (${res.status})`);
+        }
+
+        const json = await res.json();
+        const rows = Array.isArray(json?.data) ? json.data : [];
+
+        const mapped = rows.map((c) => ({
+          id: c?._id || c?.id || c?.name,
+          name: c?.name || "Untitled",
+          icon: getCompetitionIcon(c),
+          category: c?.category || "—",
+          description: c?.description || "—",
+          rules: c?.rulesAndRegulations || "—",
+          teamSize: formatTeamSize(c?.teamRequirements),
+          duration: formatDuration(c?.duration),
+          prize: typeof c?.prizePool === "number" ? c.prizePool : 0,
+          image: c?.bannerImage,
+          _raw: c,
+        }));
+
+        setCompetitionGames(mapped);
+
+        // If current selection isn't present, default to first API result.
+        if (mapped.length) {
+          setSelectedDisciplineGame((prev) => {
+            const exists = mapped.some((g) => g.name === prev);
+            return exists ? prev : mapped[0].name;
+          });
+        }
+      } catch (e) {
+        if (e?.name === "AbortError") return;
+        setCompetitionError(e?.message || "Failed to load competitions");
+      } finally {
+        setCompetitionLoading(false);
+      }
+    };
+
+    run();
+
+    return () => controller.abort();
+  }, []);
 
   // Define the 11 games for registration
   const GAMES_LIST = [
@@ -472,9 +570,11 @@ const TechnoxianView = () => {
   const galleryImageUrls = galleryImages.map(img => img.src);
 
   // Get currently selected game
+  const disciplineGames =
+    competitionGames && competitionGames.length ? competitionGames : DISCIPLINE_GAMES;
   const currentGame =
-    DISCIPLINE_GAMES.find((game) => game.name === selectedDisciplineGame) ||
-    DISCIPLINE_GAMES[0];
+    disciplineGames.find((game) => game.name === selectedDisciplineGame) ||
+    disciplineGames[0];
 
   function TechComparisonRow({ row, index }) {
     const isOpen = !!openTechRows[index];
@@ -741,7 +841,18 @@ const TechnoxianView = () => {
                   {/* Scrollable List */}
                   <div className="absolute top-24 bottom-0 left-0 right-0 overflow-y-auto scroll-smooth scrollbar-hide">
                     <div className="p-5 space-y-1.5">
-                      {DISCIPLINE_GAMES.map((game) => {
+                      {competitionLoading && (
+                        <div className="px-4 py-3 text-xs text-blue-200/70">
+                          Loading competitions…
+                        </div>
+                      )}
+                      {!competitionLoading && competitionError && (
+                        <div className="px-4 py-3 text-xs text-amber-200/80">
+                          {competitionError}
+                        </div>
+                      )}
+
+                      {disciplineGames.map((game) => {
                         const active = selectedDisciplineGame === game.name;
 
                         return (
@@ -820,14 +931,14 @@ const TechnoxianView = () => {
                           {currentGame.description}
                         </p>
                       </div>
-                      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl text-center">
+                      {/* <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl text-center">
                         <div className="text-xs font-bold uppercase">
                           Prize Pool
                         </div>
                         <div className="text-2xl font-extrabold">
                           {currentGame.prize}
                         </div>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
 
@@ -944,7 +1055,7 @@ const TechnoxianView = () => {
                   </div>
 
                   {/* Registration CTA */}
-                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
+                  {/* <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                       <div>
                         <h3 className="text-2xl font-bold mb-2">
@@ -967,7 +1078,7 @@ const TechnoxianView = () => {
                         </button>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Additional Resources */}
                   <div className="mt-8 grid md:grid-cols-3 gap-6">

@@ -94,16 +94,15 @@ export function EventsPage({ events = [], themeAccent }) {
       setIsSeasonLoading(true);
       setSeasonError("");
       try {
-        const seasonId = "69ba3843c5a9ae9038c7630b";
-        const response = await axiosInstance.get(`/season/get/${seasonId}`);
-        const season = response?.data?.data ?? response?.data ?? {};
-        const list = Array.isArray(season?.events) ? season.events : [];
+        const response = await axiosInstance.get(endpoints.event.list);
+        const raw = response?.data?.data ?? response?.data ?? [];
+        const list = Array.isArray(raw) ? raw : [];
         if (isMounted) setSeasonEvents(list);
       } catch (err) {
         const message =
           err?.response?.data?.message ||
           err?.message ||
-          "Failed to load season events.";
+          "Failed to load events.";
         if (isMounted) setSeasonError(String(message));
       } finally {
         if (isMounted) setIsSeasonLoading(false);
@@ -116,17 +115,24 @@ export function EventsPage({ events = [], themeAccent }) {
     };
   }, []);
 
-  const zrcCompetitions = useMemo(() => {
-    return (Array.isArray(competitions) ? competitions : []).filter((c) => {
-      const type = String(c?.event?.type ?? c?.type ?? "").toUpperCase();
-      return type === "ZRC";
-    });
-  }, [competitions]);
-
-  const nrcWrcEvents = useMemo(() => {
+  const nrcEvents = useMemo(() => {
     return (Array.isArray(seasonEvents) ? seasonEvents : []).filter((evt) => {
       const type = String(evt?.type ?? "").toUpperCase();
-      return type === "NRC" || type === "WRC";
+      return type === "NRC";
+    });
+  }, [seasonEvents]);
+
+  const wrcEvents = useMemo(() => {
+    return (Array.isArray(seasonEvents) ? seasonEvents : []).filter((evt) => {
+      const type = String(evt?.type ?? "").toUpperCase();
+      return type === "WRC";
+    });
+  }, [seasonEvents]);
+
+  const zrcEvents = useMemo(() => {
+    return (Array.isArray(seasonEvents) ? seasonEvents : []).filter((evt) => {
+      const type = String(evt?.type ?? "").toUpperCase();
+      return type === "ZRC";
     });
   }, [seasonEvents]);
 
@@ -143,23 +149,85 @@ export function EventsPage({ events = [], themeAccent }) {
     return s || e;
   };
 
-  const toDisplayEvent = (competition) => {
-    const evt = competition?.event || {};
-    const venue =
-      evt.venue ||
-      [evt.city, evt.state, evt.country].filter(Boolean).join(", ") ||
-      "—";
-console.log(venue,"venue")
-    return {
-      _id: competition?._id,
-      name: competition?.name || "Competition",
-      venue,
-      date: formatDateRange(evt.start_date, evt.end_date),
-      host: competition?.website || evt.website || "—",
-      description: competition?.description || evt?.name || "",
-      bannerImage: competition?.bannerImage,
-      raw: competition,
-    };
+  const formatMonthDateYear = (value) => {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "—";
+
+    // Build a stable "Month Day Year" string (no locale comma issues).
+    const parts = new Intl.DateTimeFormat(undefined, {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }).formatToParts(date);
+
+    const month = parts.find((p) => p.type === "month")?.value;
+    const day = parts.find((p) => p.type === "day")?.value;
+    const year = parts.find((p) => p.type === "year")?.value;
+
+    if (month && day && year) return `${month} ${day} ${year}`;
+    return new Intl.DateTimeFormat(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(date);
+  };
+
+  const findZrcCompetitionForEvent = (zrcEvt) => {
+    // Best-effort mapping from `/api/event/list` event objects to `/competition/list`
+    // items so ZRC "Register" navigation can pass the correct `competitionId`.
+    if (!zrcEvt) return null;
+
+    const targetType = "ZRC";
+    const targetName = String(zrcEvt?.name ?? "").trim().toUpperCase();
+    const targetStart = String(zrcEvt?.start_date ?? "").trim();
+    const targetEnd = String(zrcEvt?.end_date ?? "").trim();
+
+    const targetStartMs = Number.isFinite(Date.parse(targetStart))
+      ? Date.parse(targetStart)
+      : null;
+    const targetEndMs = Number.isFinite(Date.parse(targetEnd)) ? Date.parse(targetEnd) : null;
+
+    // Venue is sometimes `TBD`, so it is only used as a weak hint.
+    const targetVenue = String(zrcEvt?.venue ?? "").trim().toUpperCase();
+
+    const match = (Array.isArray(competitions) ? competitions : []).find((c) => {
+      const compType = String(c?.event?.type ?? c?.type ?? "").toUpperCase();
+      if (compType !== targetType) return false;
+
+      const compName = String(c?.name ?? "").trim().toUpperCase();
+      const compStart = String(c?.event?.start_date ?? "").trim();
+      const compEnd = String(c?.event?.end_date ?? "").trim();
+      const compVenue = String(c?.event?.venue ?? "").trim().toUpperCase();
+
+      const sameName = targetName && compName && targetName === compName;
+
+      const compStartMs = Number.isFinite(Date.parse(compStart)) ? Date.parse(compStart) : null;
+      const compEndMs = Number.isFinite(Date.parse(compEnd)) ? Date.parse(compEnd) : null;
+
+      const sameDates =
+        targetStartMs !== null &&
+        targetEndMs !== null &&
+        compStartMs !== null &&
+        compEndMs !== null &&
+        compStartMs === targetStartMs &&
+        compEndMs === targetEndMs;
+
+      const sameVenue = targetVenue && compVenue && targetVenue === compVenue;
+
+      return Boolean(sameName || sameDates || sameVenue);
+    });
+
+    return match || null;
+  };
+
+  const handleZrcCardClick = (zrcEvt) => {
+    const match = findZrcCompetitionForEvent(zrcEvt);
+    if (match?._id) return goToApplyChampionshipByCompetition(match._id, "ZRC");
+    if (match?.id) return goToApplyChampionshipByCompetition(match.id, "ZRC");
+
+    // If we can't map it yet, still open the ZRC flow by type.
+    return goToApplyChampionshipByEventType("ZRC");
   };
 
   const toDisplaySeasonEvent = (evt) => {
@@ -177,14 +245,84 @@ console.log(venue,"venue")
       description: evt?.publicEventId || evt?.status || "",
       type: evt?.type,
       raw: evt,
+      state: evt?.state,
+      city: evt?.city,
+      // Explicitly formatted start/end for consistent frontend display.
+      startDate: formatMonthDateYear(evt?.start_date),
+      endDate: formatMonthDateYear(evt?.end_date),
     };
+  };
+
+  const renderSeasonEventSection = ({ title, list, emptyText }) => {
+    return (
+      <section className="space-y-4">
+        <h3
+          className={`text-sm font-bold text-slate-400 uppercase mb-3 border-l-4 ${borderClass} pl-3`}
+        >
+          {title}
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {isSeasonLoading && (
+            <div className="col-span-full bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-400 text-sm">
+              Loading season events…
+            </div>
+          )}
+
+          {!isSeasonLoading && seasonError && (
+            <div className="col-span-full bg-slate-900 border border-red-600/40 p-4 rounded-xl text-red-300 text-sm">
+              {seasonError}
+            </div>
+          )}
+
+          {!isSeasonLoading && !seasonError && list.length === 0 && (
+            <div className="col-span-full bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-400 text-sm">
+              {emptyText}
+            </div>
+          )}
+
+          {!isSeasonLoading &&
+            !seasonError &&
+            list.map((evt) => {
+              const display = toDisplaySeasonEvent(evt);
+              const typeLabel = String(display.type ?? "").toUpperCase();
+              return (
+                <article
+                  key={display._id || display.name}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => goToApplyChampionshipByEventType(typeLabel)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && goToApplyChampionshipByEventType(typeLabel)
+                  }
+                  className="bg-slate-900 border border-slate-700 p-4 rounded-xl flex justify-between items-center hover:border-green-500 transition-colors cursor-pointer"
+                >
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-white truncate">{display.name}</h3>
+                    <p className="text-xs text-slate-500 truncate">
+                      {display.venue} • {display.startDate} – {display.endDate}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1 truncate">
+                      <Globe size={12} className="text-green-400 flex-shrink-0" />
+                      <span className="truncate">{display.host}</span>
+                    </p>
+                  </div>
+                  <span className="bg-slate-800 text-slate-200 text-xs px-4 py-2 rounded">
+                    {typeLabel || "EVENT"}
+                  </span>
+                </article>
+              );
+            })}
+        </div>
+      </section>
+    );
   };
 
   return (
     <div className="space-y-6 animate-fadeIn">
       <section className="space-y-4">
         <h3 className={`text-sm font-bold text-slate-400 uppercase mb-3 border-l-4 ${borderClass} pl-3`}>
-          Upcoming International Competitions
+          Upcoming  Events
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {FEATURED_EVENTS.map((event) => (
@@ -212,46 +350,43 @@ console.log(venue,"venue")
             </article>
           ))}
 
-          {isLoading && (
+          {isSeasonLoading && (
             <div className="col-span-full bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-400 text-sm">
-              Loading competitions…
+              Loading events…
             </div>
           )}
 
-          {!isLoading && loadError && (
+          {!isSeasonLoading && seasonError && (
             <div className="col-span-full bg-slate-900 border border-red-600/40 p-4 rounded-xl text-red-300 text-sm">
-              {loadError}
+              {seasonError}
             </div>
           )}
 
-          {!isLoading && !loadError && zrcCompetitions.length === 0 && (
+          {!isSeasonLoading && !seasonError && zrcEvents.length === 0 && (
             <div className="col-span-full bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-400 text-sm">
-              No ZRC competitions found.
+              No ZRC events found.
             </div>
           )}
 
-          {!isLoading &&
-            !loadError &&
-            zrcCompetitions.map((competition) => {
-              const event = toDisplayEvent(competition);
+          {!isSeasonLoading &&
+            !seasonError &&
+            zrcEvents.map((evt) => {
+              const event = toDisplaySeasonEvent(evt);
               return (
                 <article
                   key={event._id || event.name}
                   role="button"
                   tabIndex={0}
-                  onClick={() => goToApplyChampionshipByCompetition(event?._id, "ZRC")}
+                  onClick={() => handleZrcCardClick(evt)}
                   onKeyDown={(e) =>
-                    e.key === "Enter" && goToApplyChampionshipByCompetition(event?._id, "ZRC")
+                    e.key === "Enter" && handleZrcCardClick(evt)
                   }
                   className="bg-slate-900 border border-slate-700 p-4 rounded-xl flex justify-between items-center hover:border-green-500 transition-colors cursor-pointer"
                 >
                   <div className="min-w-0">
-                    <h3 className="font-bold text-white truncate">{event.name}</h3>
+                    <h3 className="font-bold text-white truncate">Location: {event.state} ({event.city})</h3>
                     <p className="text-xs text-slate-500 truncate ">
-                      <span className="font-bold">
-                      Venue: 
-                      </span>
-                      {" "}  {event.description}
+                      <span className="font-bold">Venue: </span> {event.venue} {event?.startDate}-{event?.endDate}
                     </p>
                     <p className="text-xs text-slate-400 mt-1 flex items-center gap-1 truncate">
                       <Globe size={12} className="text-green-400 flex-shrink-0" />
@@ -267,64 +402,17 @@ console.log(venue,"venue")
         </div>
       </section>
 
-      <section className="space-y-4">
-        <h3 className={`text-sm font-bold text-slate-400 uppercase mb-3 border-l-4 ${borderClass} pl-3`}>
-          Season Events (NRC & WRC)
-        </h3>
+      {renderSeasonEventSection({
+        title: "Events (NRC)",
+        list: nrcEvents,
+        emptyText: "No NRC events found.",
+      })}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {isSeasonLoading && (
-            <div className="col-span-full bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-400 text-sm">
-              Loading season events…
-            </div>
-          )}
-
-          {!isSeasonLoading && seasonError && (
-            <div className="col-span-full bg-slate-900 border border-red-600/40 p-4 rounded-xl text-red-300 text-sm">
-              {seasonError}
-            </div>
-          )}
-
-          {!isSeasonLoading && !seasonError && nrcWrcEvents.length === 0 && (
-            <div className="col-span-full bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-400 text-sm">
-              No NRC/WRC events found.
-            </div>
-          )}
-
-          {!isSeasonLoading &&
-            !seasonError &&
-            nrcWrcEvents.map((evt) => {
-              const display = toDisplaySeasonEvent(evt);
-              const typeLabel = String(display.type ?? "").toUpperCase();
-              return (
-                <article
-                  key={display._id || display.name}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => goToApplyChampionshipByEventType(typeLabel)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && goToApplyChampionshipByEventType(typeLabel)
-                  }
-                  className="bg-slate-900 border border-slate-700 p-4 rounded-xl flex justify-between items-center hover:border-green-500 transition-colors cursor-pointer"
-                >
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-white truncate">{display.name}</h3>
-                    <p className="text-xs text-slate-500 truncate">
-                      {display.venue} • {display.date}
-                    </p>
-                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1 truncate">
-                      <Globe size={12} className="text-green-400 flex-shrink-0" />
-                      <span className="truncate">{display.host}</span>
-                    </p>
-                  </div>
-                  <span className="bg-slate-800 text-slate-200 text-xs px-4 py-2 rounded">
-                    {typeLabel || "EVENT"}
-                  </span>
-                </article>
-              );
-            })}
-        </div>
-      </section>
+      {renderSeasonEventSection({
+        title: "Events (WRC)",
+        list: wrcEvents,
+        emptyText: "No WRC events found.",
+      })}
 
       {selectedEvent && (
         <div

@@ -14,8 +14,8 @@ export const Dashboard = ({ setPage, clubProfile }) => {
       {/* Header Stat Bar */}
       <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl flex justify-between items-center">
         <div>
-          <h1 className="text-xl font-bold text-white">Hello, {captainName}</h1>
-          <p className="text-slate-400 text-xs">{clubName}</p>
+          <h1 className="text-xl font-bold text-white">Hello, {captainName ||"loading..."}</h1>
+          <p className="text-slate-400 text-xs">{clubName || "loading..."}</p>
         </div>
         {/* <div className="flex space-x-6 text-right">
           <div>

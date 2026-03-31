@@ -37,7 +37,7 @@ export const deleteSquad = (id) => {
 
 /**
  * Update a squad by id with full payload (PATCH /squad/update/:id).
- * Payload shape: { club_id, category, teamName, event_id, competition_id, lineup: { bot_id, captain_id, members }, entry_fee }
+ * Payload shape: { club_id, category, teamName, event_id, competition_id, bot_id, lineup: { captain_id, members }, entry_fee }
  */
 export const updateSquad = (id, payload) => {
   const squadId = String(id ?? payload._id ?? payload.id ?? '').trim();
@@ -51,8 +51,8 @@ export const updateSquad = (id, payload) => {
     teamName: String(payload.teamName ?? payload.name ?? '').trim(),
     event_id: String(payload.event_id ?? ''),
     competition_id: String(payload.competition_id ?? ''),
+    // bot_id: String(payload.bot_id ?? '').trim(),
     lineup: {
-      bot_id: String(payload.lineup?.bot_id ?? ''),
       captain_id: String(payload.lineup?.captain_id ?? payload.captain_id ?? '').trim(),
       members: Array.isArray(payload.lineup?.members) ? payload.lineup.members.map((m) => String(m)) : [],
     },

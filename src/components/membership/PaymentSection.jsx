@@ -663,9 +663,9 @@ export const PaymentSection = ({
                       {formattedMoney !== "" ? formattedMoney : "—"}
                     </span>
                   </div>
-                  <div className={`text-xs ${PAYMENT_THEME.textSoft}`}>
-                    Billed annually • Auto-renewable
-                  </div>
+                  {/* <div className={`text-xs ${PAYMENT_THEME.textSoft}`}>
+                   Billed annually • Auto-renewable
+                  </div>  */}
                 </div>
 
                 {/* User Details */}
@@ -690,27 +690,12 @@ export const PaymentSection = ({
                   </div>
                 </div>
 
-                <hr className={`my-4 ${PAYMENT_THEME.divider}`} />
+                {/* <hr className={`my-4 ${PAYMENT_THEME.divider}`} /> */}
 
                 {/* Total Amount */}
                 <div className="space-y-2">
-                  <div className={`flex justify-between ${PAYMENT_THEME.textMuted}`}>
-                    <span>Subtotal</span>
-                    <span>
-                      {formattedMoney !== "" ? formattedMoney : "—"}
-                    </span>
-                  </div>
-                  <div className={`flex justify-between ${PAYMENT_THEME.textMuted}`}>
-                    <span>Processing Fee</span>
-                    <span className={PAYMENT_THEME.accentText}>
-                      {new Intl.NumberFormat(displayCurrency === "INR" ? "en-IN" : "en-US", {
-                        style: "currency",
-                        currency: displayCurrency,
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }).format(0)}
-                    </span>
-                  </div>
+              
+                  
                   <div className={`flex justify-between text-lg font-bold pt-2 border-t ${PAYMENT_THEME.divider}`}>
                     <span className={PAYMENT_THEME.textPrimary}>Total Amount</span>
                     <span className={PAYMENT_THEME.accentText}>
@@ -732,7 +717,7 @@ export const PaymentSection = ({
                   <h4 className={`font-medium ${PAYMENT_THEME.textPrimary} mb-1`}>Terms & Conditions</h4>
                   <p className={`text-xs ${PAYMENT_THEME.textMuted}`}>
                     By completing this payment, you agree to our Terms of Service and Privacy Policy. 
-                    Membership is non-refundable after 7 days.
+                  
                   </p>
                 </div>
               </div>

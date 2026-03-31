@@ -1,6 +1,6 @@
 import { ArrowRight, Upload, X } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectCategories } from "../../app/categories/categoriesSlice";
 import { signUpStep2 } from "../../app/auth/authApi";
@@ -47,6 +47,32 @@ export const ShippingInfoForm = ({
     () => getCitiesByState(selectedStateId),
     [selectedStateId]
   );
+
+  /** Latest allowed DOB: yesterday (local). Today and future dates are not valid birth dates. */
+  const dateOfBirthMax = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - 1);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }, []);
+
+  const handleDateOfBirthChange = (value) => {
+    if (value && value > dateOfBirthMax) {
+      updateFormData("dateOfBirth", dateOfBirthMax);
+      return;
+    }
+    updateFormData("dateOfBirth", value);
+  };
+
+  useEffect(() => {
+    const dob = formData.dateOfBirth;
+    if (dob && dob > dateOfBirthMax) {
+      updateFormData("dateOfBirth", dateOfBirthMax);
+    }
+  }, [formData.dateOfBirth, dateOfBirthMax, updateFormData]);
 
   const handleCountryChange = (countryId) => {
     const country = COUNTRIES.find((c) => c.id === countryId);
@@ -367,7 +393,8 @@ export const ShippingInfoForm = ({
               <input
                 type="date"
                 value={formData.dateOfBirth || ''}
-                onChange={(e) => updateFormData('dateOfBirth', e.target.value)}
+                max={dateOfBirthMax}
+                onChange={(e) => handleDateOfBirthChange(e.target.value)}
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
                 required
               />

@@ -47,7 +47,7 @@ export function CurrencySelect({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
-        className={`w-full ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-sky-200'} rounded-lg ${
+        className={`w-full border border-black ${isDark ? 'bg-slate-900' : 'bg-white'} rounded-lg ${
           size === "sm" ? "px-2 py-1.5 text-sm" : "px-3 py-2 text-sm"
         } ${isDark ? 'text-slate-200' : 'text-slate-900'} focus:outline-none focus:ring-2 ${
           isDark ? 'ring-sky-500' : 'ring-sky-500'
@@ -63,7 +63,7 @@ export function CurrencySelect({
 
       {open && !disabled && (
         <div
-          className={`absolute z-50 mt-2 w-full ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-sky-100'} rounded-lg shadow-lg overflow-hidden ${listClassName}`}
+          className={`absolute z-50 mt-2 w-full border border-black ${isDark ? 'bg-slate-900' : 'bg-white'} rounded-lg shadow-lg overflow-hidden ${listClassName}`}
           role="listbox"
         >
           <div
@@ -77,7 +77,7 @@ export function CurrencySelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={placeholder}
-              className={`w-full ${isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-sky-50/70 border-sky-100 text-slate-900'} rounded-md ${
+              className={`w-full border border-black ${isDark ? 'bg-slate-900 text-slate-200' : 'bg-sky-50/70 text-slate-900'} rounded-md ${
                 size === "sm" ? "px-2 py-1.5 text-sm" : "px-3 py-2 text-sm"
               } outline-none focus:ring-2 ring-sky-500`}
               autoFocus

@@ -268,13 +268,6 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
       >
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-violet-500/10 pointer-events-none" />
 
-        <button
-          onClick={handleClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white z-10 transition-colors"
-        >
-          <X size={20} />
-        </button>
-
         <div className="relative z-10 p-8">
           {/* Step 1: Your details & club */}
           {step === 1 && (
@@ -547,12 +540,24 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
                 onClick={handleContinue}
                 className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold py-4 rounded-lg hover:shadow-[0_0_30px_rgba(74,222,128,0.5)] transition-all flex items-center justify-center gap-2"
               >
-                Continue to Dashboard
+                Continue to Login
                 <ArrowRight size={18} />
               </button>
             </div>
           )}
         </div>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClose();
+          }}
+          className="absolute top-4 right-4 z-20 rounded-lg p-1 text-slate-400 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:ring-2 focus-visible:ring-cyan-400"
+          aria-label="Close registration"
+        >
+          <X size={20} />
+        </button>
       </div>
     </div>
   );

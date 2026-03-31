@@ -2,15 +2,17 @@ import axiosInstance from "../../api/axiosInstance";
 import endpoints from "../../api/endpoints";
 
 // ===== Squad Add (full lineup registration) =====
-// Required: club_id, teamName, captain_id. Result shape: { club_id, category, teamName, event_id, competition_id, lineup: { bot_id, captain_id, members }, entry_fee }
+// Required: club_id, teamName, captain_id. Result shape: { club_id, category, teamName, event_id, competition_id, bot_id, lineup: { captain_id, members }, entry_fee }
 export const addSquad = async (payload) => {
   const club_id = String(payload.club_id ?? '').trim();
   const teamName = String(payload.teamName ?? '').trim();
   const captain_id = String(payload.lineup?.captain_id ?? '').trim();
+  // const bot_id = String(payload.bot_id ?? '').trim();
 
   if (!club_id) throw new Error('club_id is required');
   if (!teamName) throw new Error('teamName is required');
   if (!captain_id) throw new Error('captain_id is required');
+  // if (!bot_id) throw new Error('bot_id is required');
 
   const rawMembers = Array.isArray(payload.lineup?.members) ? payload.lineup.members : [];
   const members = rawMembers
@@ -24,8 +26,8 @@ export const addSquad = async (payload) => {
     teamName,
     event_id: String(payload.event_id ?? ''),
     competition_id: String(payload.competition_id ?? ''),
+    // bot_id,
     lineup: {
-      bot_id: String(payload.lineup?.bot_id ?? ''),
       captain_id,
       members,
     },
@@ -270,7 +272,7 @@ export const createTeam = async (clubId, teamData) => {
           // Keep lineup.captain_id too because squad endpoints use lineup shape.
           captain_id: String(teamData.captain_id ?? teamData.lineup?.captain_id ?? ''),
           lineup: {
-            bot_id: String(teamData.lineup?.bot_id ?? ''),
+            // bot_id: String(teamData.lineup?.bot_id ?? ''),
             captain_id: String(teamData.lineup?.captain_id ?? teamData.captain_id ?? ''),
             members: Array.isArray(teamData.lineup?.members) ? teamData.lineup.members.map((m) => String(m)) : [],
           },
@@ -385,6 +387,7 @@ export const updateSquad = async (clubId, teamId, payload) => {
   const club_id = String(payload.club_id ?? payload.clubId ?? clubId ?? '').trim();
   const teamName = String(payload.teamName ?? payload.name ?? '').trim();
   const captain_id = String(payload.lineup?.captain_id ?? payload.captain_id ?? '').trim();
+  const bot_id = String(payload.bot_id ?? '').trim();
   const rawMembers = Array.isArray(payload.lineup?.members) ? payload.lineup.members : [];
   const members = rawMembers
     .map((m) => (m != null && typeof m === 'object' ? m._id ?? m.id : m))
@@ -397,8 +400,8 @@ export const updateSquad = async (clubId, teamId, payload) => {
     teamName,
     event_id: String(payload.event_id ?? ''),
     competition_id: String(payload.competition_id ?? ''),
+    bot_id,
     lineup: {
-      bot_id: String(payload.lineup?.bot_id ?? ''),
       captain_id,
       members,
     },
