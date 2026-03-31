@@ -84,6 +84,15 @@ export const getClubMembers = (clubId) =>
   axiosInstance.get(endpoints.club.members(clubId));
 
 /**
+ * Get club members whose payment status is SUCCESS by club ID.
+ * Endpoint: /clubmember/payment/success/{_id}
+ * Requires: Authorization Bearer token.
+ * Response: { success, count, data: ClubMember[] } where each ClubMember includes user + club + paymentStatus + membershipStatus
+ */
+export const getClubMembersPaymentSuccess = (clubId) =>
+  axiosInstance.get(endpoints.club.paymentSuccessMembers(clubId));
+
+/**
  * Add a member to a club.
  * Payload: { club_id, fullname, emailId, role }
  * Requires: Authorization Bearer token.

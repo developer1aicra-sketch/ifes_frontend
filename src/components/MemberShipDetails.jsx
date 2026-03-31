@@ -510,7 +510,11 @@ function MembersList({
             </thead>
             <tbody>
               <AnimatePresence mode="popLayout">
-                {paginatedMembers.map((member, index) => (
+                {paginatedMembers.map((member, index) => {
+                  const status = getMemberPaymentStatus(member)
+                  const isPaid = status === PAYMENT_STATUS.SUCCESS
+
+                  return (
                   <motion.tr
                     key={member.id}
                     layout
@@ -521,13 +525,17 @@ function MembersList({
                     className="border-b border-slate-700/80 hover:bg-slate-800/30 transition-colors"
                   >
                     <td className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedMembers.some((m) => String(resolveMemberId(m)) === String(resolveMemberId(member)))}
-                        onChange={() => onMemberSelect && onMemberSelect(member)}
-                        className="rounded bg-slate-700 border-slate-600 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
-                        onClick={(e) => e.stopPropagation()}
-                      />
+                      {!isPaid ? (
+                        <input
+                          type="checkbox"
+                          checked={selectedMembers.some((m) => String(resolveMemberId(m)) === String(resolveMemberId(member)))}
+                          onChange={() => onMemberSelect && onMemberSelect(member)}
+                          className="rounded bg-slate-700 border-slate-600 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <div className="w-4 h-4" />
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <span className="font-medium text-white">{member.fullname || member.name}</span>
@@ -584,24 +592,19 @@ function MembersList({
                       })()}
                     </td>
                     <td className="px-4 py-3">
-                      {(() => {
-                        const status = getMemberPaymentStatus(member)
-                        return (
-                          <span
-                            className={[
-                              'inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold border',
-                              paymentStatusBadgeClasses(status),
-                            ].join(' ')}
-                            title={`Payment status: ${status}`}
-                          >
-                            {status}
-                          </span>
-                        )
-                      })()}
+                      <span
+                        className={[
+                          'inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold border',
+                          paymentStatusBadgeClasses(status),
+                        ].join(' ')}
+                        title={`Payment status: ${status}`}
+                      >
+                        {status}
+                      </span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
-                        {onMemberPayment && (
+                        {onMemberPayment && !isPaid && (
                           <motion.button
                             type="button"
                             whileHover={{ scale: 1.05 }}
@@ -655,7 +658,8 @@ function MembersList({
                       </div>
                     </td>
                   </motion.tr>
-                ))}
+                  )
+                })}
               </AnimatePresence>
             </tbody>
           </table>

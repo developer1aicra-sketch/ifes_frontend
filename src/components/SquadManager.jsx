@@ -28,7 +28,7 @@ import { selectReceivedOtp as selectUser } from "../app/auth/authSlice";
 import { getActiveClubIdFromStorage, setActiveClubIdToStorage } from "../utils/squadStorage";
 import { selectCompetitions, fetchCompetitionsRequest, selectIsCompetitionsLoading } from "../app/competition/competitionSlice";
 import axiosInstance from "../api/axiosInstance";
-import { getClubMembers } from "../api/clubApi";
+import { getClubMembers, getClubMembersPaymentSuccess } from "../api/clubApi";
 import { getBotsList } from "../api/botApi";
 import { getTeamList } from "../api/teamApi";
 import { deleteSquad } from "../api/squadApi";
@@ -108,6 +108,10 @@ export const SquadManager = ({
   const [clubMembers, setClubMembers] = useState([]);
   const [clubMembersCount, setClubMembersCount] = useState(0);
   const [clubMembersLoading, setClubMembersLoading] = useState(false);
+  const [paymentSuccessMembers, setPaymentSuccessMembers] = useState([]);
+  const [paymentSuccessCount, setPaymentSuccessCount] = useState(0);
+  const [paymentSuccessLoading, setPaymentSuccessLoading] = useState(false);
+  const [paymentSuccessError, setPaymentSuccessError] = useState('');
   /** Search query for filtering team members */
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
   /** Captain for new team: club member from /clubmember/{_id} (use member.user_id._id as captain_id) */
@@ -603,6 +607,47 @@ export const SquadManager = ({
     return () => { cancelled = true; };
   }, [clubIdForMembers]);
 
+  // Fetch payment-success members for the selected club: GET /clubmember/payment/success/{_id}
+  useEffect(() => {
+    if (!clubIdForMembers) {
+      setPaymentSuccessMembers([]);
+      setPaymentSuccessCount(0);
+      setPaymentSuccessError('');
+      return;
+    }
+    let cancelled = false;
+    setPaymentSuccessLoading(true);
+    setPaymentSuccessError('');
+    getClubMembersPaymentSuccess(clubIdForMembers)
+      .then((res) => {
+        if (cancelled) return;
+        const payload = res?.data;
+        const raw = payload?.data ?? payload ?? [];
+        const list = Array.isArray(raw) ? raw : [];
+        setPaymentSuccessMembers(list);
+        setPaymentSuccessCount(typeof payload?.count === "number" ? payload.count : list.length);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        setPaymentSuccessMembers([]);
+        setPaymentSuccessCount(0);
+        setPaymentSuccessError(e?.response?.data?.message || 'Failed to load payment success members');
+      })
+      .finally(() => {
+        if (!cancelled) setPaymentSuccessLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [clubIdForMembers]);
+
+  const paymentSuccessByUserId = useMemo(() => {
+    const map = new Map();
+    for (const m of paymentSuccessMembers || []) {
+      const uid = m?.user?._id ?? m?.user_id?._id ?? m?.user_id;
+      if (uid) map.set(String(uid), m);
+    }
+    return map;
+  }, [paymentSuccessMembers]);
+
   // Reset captain-for-new-team when club changes; default to current user if in club members
   useEffect(() => {
     if (!clubMembers.length) {
@@ -1020,14 +1065,14 @@ export const SquadManager = ({
   const teamsByEventType = getTeamsByEventType();
   const clubTeamsCount = teams.filter(t => t.clubId === selectedClub?.id).length;
 
-  // Filter team members based on search query
+  // Filter *payment-success* members based on search query (Team Members panel should show only SUCCESS payments)
   const filteredClubMembers = useMemo(() => {
     if (!memberSearchQuery.trim()) {
-      return clubMembers;
+      return paymentSuccessMembers;
     }
 
     const query = memberSearchQuery.toLowerCase().trim();
-    return clubMembers.filter((member) => {
+    return paymentSuccessMembers.filter((member) => {
       // Extract fullname and email for search (support API shape: user.fullName, user.email)
       const fullname =
         member.user?.fullName ||
@@ -1054,7 +1099,7 @@ export const SquadManager = ({
         role.toLowerCase().includes(query)
       );
     });
-  }, [clubMembers, memberSearchQuery]);
+  }, [paymentSuccessMembers, memberSearchQuery]);
 
   // Get teams for current competition
   const teamsForCurrentCompetition = teamsByCompetition[competitionType] || [];
@@ -2949,11 +2994,27 @@ export const SquadManager = ({
                       <div className="mb-6">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                           <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
-                            TEAM MEMBERS ({memberSearchQuery.trim() ? filteredClubMembers.length : clubMembersCount})
+                            TEAM MEMBERS ({memberSearchQuery.trim() ? filteredClubMembers.length : paymentSuccessCount})
                           </h2>
+                          <div className="flex items-center gap-2 flex-wrap justify-end">
+                            {paymentSuccessLoading ? (
+                              <span className="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-800/60 text-slate-300 border border-slate-700">
+                                <Loader2 className="animate-spin" size={14} />
+                                Payment status...
+                              </span>
+                            ) : paymentSuccessError ? (
+                              <span className="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-semibold rounded-lg bg-red-900/20 text-red-300 border border-red-700/40">
+                                {paymentSuccessError}
+                              </span>
+                            ) : (
+                              <span className="">
+                                {/* Payment SUCCESS: {paymentSuccessCount} */}
+                              </span>
+                            )}
+                          </div>
                           {memberSearchQuery.trim() && (
                             <p className="text-xs text-slate-500">
-                              Showing {filteredClubMembers.length} of {clubMembersCount} members
+                              Showing {filteredClubMembers.length} of {paymentSuccessCount} members
                             </p>
                           )}
                         </div>
@@ -2981,15 +3042,15 @@ export const SquadManager = ({
                       </div>
 
                       {/* Loading State */}
-                      {clubMembersLoading ? (
+                      {paymentSuccessLoading ? (
                         <div className="flex items-center justify-center py-12">
                           <Loader2 className="animate-spin text-blue-400" size={24} />
-                          <span className="text-slate-400 text-sm ml-3">Loading team members...</span>
+                          <span className="text-slate-400 text-sm ml-3">Loading paid members...</span>
                         </div>
-                      ) : clubMembers.length === 0 ? (
+                      ) : paymentSuccessMembers.length === 0 ? (
                         <div className="text-center py-12">
                           <Users className="mx-auto text-slate-600 mb-3" size={48} />
-                          <p className="text-slate-500 text-sm">No team members found</p>
+                          <p className="text-slate-500 text-sm">No paid members found (Payment: SUCCESS)</p>
                         </div>
                       ) : filteredClubMembers.length === 0 ? (
                         <div className="text-center py-12">
@@ -3029,6 +3090,7 @@ export const SquadManager = ({
                               const isPilot = selectedPilot && String(selectedPilot.id) === memberId;
                               const isCrew = selectedCrew.some((c) => String(c.id) === memberId);
                               const isAssigned = isPilot || isCrew;
+                              const paymentMeta = paymentSuccessByUserId.get(memberId);
 
                               // Generate AI avatar URL using DiceBear API
                               const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fullname.trim())}`;
@@ -3084,6 +3146,16 @@ export const SquadManager = ({
                                           {member.role}
                                         </span>
                                       )}
+                                      {/* {paymentMeta?.paymentStatus === 'SUCCESS' && (
+                                        <span className="inline-block mt-1 ml-1 px-2 py-0.5 text-xs font-semibold bg-emerald-900/20 text-emerald-300 rounded border border-emerald-700/40">
+                                          Payment: SUCCESS
+                                        </span>
+                                      )}
+                                      {paymentMeta?.membershipStatus && (
+                                        <span className="inline-block mt-1 ml-1 px-2 py-0.5 text-xs font-semibold bg-slate-700/30 text-slate-200 rounded border border-slate-600/50">
+                                          Membership: {String(paymentMeta.membershipStatus)}
+                                        </span>
+                                      )} */}
                                       {isAssigned && (
                                         <span className={`inline-block mt-1 ml-1 px-2 py-0.5 text-xs font-semibold rounded ${isPilot ? 'bg-green-600/50 text-green-300 border border-green-500/50' : 'bg-purple-600/50 text-purple-300 border border-purple-500/50'}`}>
                                           {isPilot ? 'Pilot' : 'Crew'}

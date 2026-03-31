@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Users,
@@ -35,14 +35,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getLocationPrefix } from "../utils/locationRoutes";
 import { GAME_CATEGORIES } from "../constants/data";
 import { galleryImages } from "../assets/gallery";
+import { usePartnerCompetitions } from "../hooks/usePartnerCompetitions";
+import { listCompetitions } from "../utils/api";
+import axiosInstance from "../api/axiosInstance";
+import endpoints from "../api/endpoints";
 
 const TechnoxianView = () => {
   void motion;
   const location = useLocation();
   const locationPrefix = getLocationPrefix(location.pathname);
   const isPartnerRoute = Boolean(locationPrefix);
+  const partnerCode = useMemo(
+    () => (isPartnerRoute ? locationPrefix.slice(1) : null),
+    [isPartnerRoute, locationPrefix],
+  );
 
-  const allTabs = ["overview", "competitions", "gallery", "register"];
+  const allTabs = ["overview", "schedule","gallery", "register"];
   const partnerTabs = ["competitions", "gallery", "register"];
   const tabs = isPartnerRoute ? partnerTabs : allTabs;
   const defaultTab = isPartnerRoute ? "competitions" : "overview";
@@ -66,8 +74,16 @@ const TechnoxianView = () => {
   const [competitionLoading, setCompetitionLoading] = useState(false);
   const [competitionError, setCompetitionError] = useState(null);
 
-  const COMPETITION_LIST_API =
-    "https://worso-backend-rm6w.vercel.app/api/competition/list";
+  // /event/list (Schedule tab)
+  const [seasonEvents, setSeasonEvents] = useState([]);
+  const [seasonEventsLoading, setSeasonEventsLoading] = useState(false);
+  const [seasonEventsError, setSeasonEventsError] = useState("");
+
+  const {
+    data: partnerCompetitions,
+    loading: partnerCompetitionsLoading,
+    error: partnerCompetitionsError,
+  } = usePartnerCompetitions(isPartnerRoute ? partnerCode : null);
 
   // On partner route, overview is hidden — ensure we never show overview tab
   useEffect(() => {
@@ -110,45 +126,52 @@ const TechnoxianView = () => {
   };
 
   useEffect(() => {
-    const controller = new AbortController();
+    const mapRows = (rows) =>
+      (Array.isArray(rows) ? rows : []).map((c) => ({
+        id: c?._id || c?.id || c?.name,
+        name: c?.name || "Untitled",
+        icon: getCompetitionIcon(c),
+        category: c?.category || "—",
+        description: c?.description || "—",
+        rules: c?.rulesAndRegulations || c?.rules || "—",
+        teamSize: typeof c?.teamSize === "string" ? c.teamSize : formatTeamSize(c?.teamRequirements),
+        duration: typeof c?.duration === "string" ? c.duration : formatDuration(c?.duration),
+        prize: typeof c?.prizePool === "number" ? c.prizePool : c?.prize || 0,
+        image: c?.bannerImage || c?.image,
+        _raw: c,
+      }));
 
-    const run = async () => {
+    // Partner route uses /competitions/get?partnerCode=XX via usePartnerCompetitions.
+    if (isPartnerRoute) {
+      setCompetitionLoading(partnerCompetitionsLoading);
+      setCompetitionError(partnerCompetitionsError || null);
+
+      const mapped = mapRows(partnerCompetitions);
+      setCompetitionGames(mapped);
+
+      if (mapped.length) {
+        setSelectedDisciplineGame((prev) => {
+          const exists = mapped.some((g) => g.name === prev);
+          return exists ? prev : mapped[0].name;
+        });
+      }
+
+      return;
+    }
+
+    // Non-partner route falls back to /competition/list.
+    let cancelled = false;
+    (async () => {
       try {
         setCompetitionLoading(true);
         setCompetitionError(null);
 
-        const res = await fetch(COMPETITION_LIST_API, {
-          method: "GET",
-          signal: controller.signal,
-          headers: {
-            Accept: "application/json",
-          },
-        });
+        const json = await listCompetitions();
+        const rows = Array.isArray(json?.data) ? json.data : Array.isArray(json) ? json : [];
+        const mapped = mapRows(rows);
 
-        if (!res.ok) {
-          throw new Error(`Request failed (${res.status})`);
-        }
-
-        const json = await res.json();
-        const rows = Array.isArray(json?.data) ? json.data : [];
-
-        const mapped = rows.map((c) => ({
-          id: c?._id || c?.id || c?.name,
-          name: c?.name || "Untitled",
-          icon: getCompetitionIcon(c),
-          category: c?.category || "—",
-          description: c?.description || "—",
-          rules: c?.rulesAndRegulations || "—",
-          teamSize: formatTeamSize(c?.teamRequirements),
-          duration: formatDuration(c?.duration),
-          prize: typeof c?.prizePool === "number" ? c.prizePool : 0,
-          image: c?.bannerImage,
-          _raw: c,
-        }));
-
+        if (cancelled) return;
         setCompetitionGames(mapped);
-
-        // If current selection isn't present, default to first API result.
         if (mapped.length) {
           setSelectedDisciplineGame((prev) => {
             const exists = mapped.some((g) => g.name === prev);
@@ -156,16 +179,50 @@ const TechnoxianView = () => {
           });
         }
       } catch (e) {
-        if (e?.name === "AbortError") return;
+        if (cancelled) return;
         setCompetitionError(e?.message || "Failed to load competitions");
       } finally {
-        setCompetitionLoading(false);
+        if (!cancelled) setCompetitionLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isPartnerRoute,
+    partnerCompetitions,
+    partnerCompetitionsError,
+    partnerCompetitionsLoading,
+  ]);
+
+  // Load events for schedule sidebar
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadSeasonEvents = async () => {
+      setSeasonEventsLoading(true);
+      setSeasonEventsError("");
+      try {
+        const response = await axiosInstance.get(endpoints.event.list);
+        const raw = response?.data?.data ?? response?.data ?? [];
+        const list = Array.isArray(raw) ? raw : [];
+        if (isMounted) setSeasonEvents(list);
+      } catch (err) {
+        const message =
+          err?.response?.data?.message ||
+          err?.message ||
+          "Failed to load events.";
+        if (isMounted) setSeasonEventsError(String(message));
+      } finally {
+        if (isMounted) setSeasonEventsLoading(false);
       }
     };
 
-    run();
-
-    return () => controller.abort();
+    loadSeasonEvents();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Define the 11 games for registration
@@ -531,6 +588,60 @@ const TechnoxianView = () => {
       events: generateWorldCupEvents(),
     },
   ];
+
+  const formatEventVenue = (evt) => {
+    const venue = String(evt?.venue || "").trim();
+    if (venue && venue.toLowerCase() !== "tbd") return venue;
+    return [evt?.city, evt?.state, evt?.country].filter(Boolean).join(", ") || "—";
+  };
+
+  const scheduleData = useMemo(() => {
+    const list = Array.isArray(seasonEvents) ? seasonEvents : [];
+    if (!list.length) return SCHEDULE_DATA;
+
+    const byType = (type) =>
+      list.filter((e) => String(e?.type || "").toUpperCase() === type);
+
+    const mapEventToSidebarEvent = (evt) => {
+      const venue = formatEventVenue(evt);
+      const competitions = Array.isArray(evt?.competition) ? evt.competition : [];
+      return {
+        id: evt?._id || evt?.publicEventId || evt?.name,
+        name: evt?.name || "Event",
+        zone: evt?.zone || "",
+        venue,
+        startDate: evt?.start_date,
+        endDate: evt?.end_date,
+        games: competitions.map((c) => ({
+          id: c?._id || c?.name,
+          name: c?.name || "Game",
+          venue,
+          zone: evt?.zone || "",
+          startDate: evt?.start_date,
+          endDate: evt?.end_date,
+          description: c?.description || "",
+          rules: c?.rulesAndRegulations || "",
+          schedule: Array.isArray(c?.schedule) ? c.schedule : [],
+          registrationLink:
+            c?.trainingResourseUrl ||
+            c?.pastWinnerUrl ||
+            c?.globalRankingeUrl ||
+            "",
+          teamRequirements: c?.teamRequirements,
+          duration: c?.duration,
+          bannerImage: c?.bannerImage,
+          _raw: c,
+        })),
+        _raw: evt,
+      };
+    };
+
+    return [
+      { id: "zonals", name: "Zonals", events: byType("ZRC").map(mapEventToSidebarEvent) },
+      { id: "national", name: "National", events: byType("NRC").map(mapEventToSidebarEvent) },
+      { id: "worldcup", name: "World Cup", events: byType("WRC").map(mapEventToSidebarEvent) },
+    ].filter((c) => c.events.length);
+  }, [seasonEvents]);
 
   // Trophy data for years 2025-2015 (decreasing order)
   const trophies = Array.from({ length: 11 }, (_, i) => {
@@ -927,9 +1038,9 @@ const TechnoxianView = () => {
                         <h2 className="text-2xl font-bold text-slate-900">
                           {currentGame.name} Details
                         </h2>
-                        <p className="text-slate-600 mt-2">
+                        {/* <p className="text-slate-600 mt-2">
                           {currentGame.description}
-                        </p>
+                        </p> */}
                       </div>
                       {/* <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl text-center">
                         <div className="text-xs font-bold uppercase">
@@ -1181,28 +1292,48 @@ const TechnoxianView = () => {
                         {/* Content */}
                         <div className="absolute top-24 bottom-0 left-0 right-0 overflow-y-auto scroll-smooth scrollbar-hide">
                           <div className="p-5 space-y-1.5">
-                            {SCHEDULE_DATA.map((champ) => {
-                              const active = selectedChampionship === champ.id;
-                              return (
-                                <button
-                                  key={champ.id}
-                                  onClick={() => {
-                                    setSelectedChampionship(champ.id);
-                                    setSidebarLevel("event");
-                                  }}
-                                  className={`w-full text-left px-4 py-3 rounded-xl flex items-center justify-between transition-all
+                            {seasonEventsLoading && (
+                              <div className="px-4 py-3 rounded-xl bg-white/5 text-blue-100/80 text-sm">
+                                Loading events…
+                              </div>
+                            )}
+
+                            {!seasonEventsLoading && !!seasonEventsError && (
+                              <div className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-200 text-sm">
+                                {seasonEventsError}
+                              </div>
+                            )}
+
+                            {!seasonEventsLoading && !seasonEventsError && !scheduleData?.length && (
+                              <div className="px-4 py-3 rounded-xl bg-white/5 text-blue-100/80 text-sm">
+                                No events found.
+                              </div>
+                            )}
+
+                            {!seasonEventsLoading &&
+                              !seasonEventsError &&
+                              scheduleData.map((champ) => {
+                                const active = selectedChampionship === champ.id;
+                                return (
+                                  <button
+                                    key={champ.id}
+                                    onClick={() => {
+                                      setSelectedChampionship(champ.id);
+                                      setSidebarLevel("event");
+                                    }}
+                                    className={`w-full text-left px-4 py-3 rounded-xl flex items-center justify-between transition-all
                       ${active
-                                      ? "bg-gradient-to-r from-blue-500/20 to-indigo-500/10 shadow-lg"
-                                      : "hover:bg-white/5 text-blue-100/80"
-                                    }`}
-                                >
-                                  <span className="font-semibold text-sm text-white">
-                                    {champ.name}
-                                  </span>
-                                  <ChevronRight size={14} className="text-blue-300" />
-                                </button>
-                              );
-                            })}
+                                        ? "bg-gradient-to-r from-blue-500/20 to-indigo-500/10 shadow-lg"
+                                        : "hover:bg-white/5 text-blue-100/80"
+                                      }`}
+                                  >
+                                    <span className="font-semibold text-sm text-white">
+                                      {champ.name}
+                                    </span>
+                                    <ChevronRight size={14} className="text-blue-300" />
+                                  </button>
+                                );
+                              })}
                           </div>
                         </div>
                       </motion.div>
@@ -1238,7 +1369,7 @@ const TechnoxianView = () => {
                             </div>
                             <div className="text-lg font-extrabold text-white mt-1">
                               {
-                                SCHEDULE_DATA.find(c => c.id === selectedChampionship)?.name
+                                scheduleData.find(c => c.id === selectedChampionship)?.name
                               }
                             </div>
                           </div>
@@ -1247,7 +1378,7 @@ const TechnoxianView = () => {
                         {/* Content */}
                         <div className="absolute top-36 bottom-0 left-0 right-0 overflow-y-auto scroll-smooth scrollbar-hide">
                           <div className="p-5 space-y-1.5">
-                            {SCHEDULE_DATA.find(c => c.id === selectedChampionship)?.events.map(event => {
+                            {scheduleData.find(c => c.id === selectedChampionship)?.events.map(event => {
                               const active = selectedEvent === event.id;
                               return (
                                 <button
@@ -1268,7 +1399,7 @@ const TechnoxianView = () => {
                                   </span>
                                   <div className="flex items-center gap-2 text-blue-300 text-[11px] uppercase">
                                     <MapPin size={10} />
-                                    {ZONE_CITIES[event.id] || ""}
+                                    {event?.city || event?.state || event?.zone || ""}
                                     <ChevronRight size={14} />
                                   </div>
                                 </button>
@@ -1308,7 +1439,7 @@ const TechnoxianView = () => {
                             </div>
                             <div className="text-lg font-extrabold text-white mt-1">
                               {
-                                SCHEDULE_DATA
+                                scheduleData
                                   .find(c => c.id === selectedChampionship)
                                   ?.events.find(e => e.id === selectedEvent)?.name
                               }
@@ -1319,7 +1450,7 @@ const TechnoxianView = () => {
                         {/* Content */}
                         <div className="absolute top-36 bottom-0 left-0 right-0 overflow-y-auto scroll-smooth scrollbar-hide">
                           <div className="p-5 space-y-2">
-                            {SCHEDULE_DATA
+                            {scheduleData
                               .find(c => c.id === selectedChampionship)
                               ?.events.find(e => e.id === selectedEvent)
                               ?.games.map(game => {
@@ -1376,7 +1507,7 @@ const TechnoxianView = () => {
               <div className="flex-1 overflow-y-auto p-8">
                 {selectedChampionship && selectedEvent && selectedGame ? (
                   (() => {
-                    const championship = SCHEDULE_DATA.find(
+                    const championship = scheduleData.find(
                       (c) => c.id === selectedChampionship,
                     );
                     const event = championship?.events.find(
@@ -1459,32 +1590,38 @@ const TechnoxianView = () => {
                         <h3 className="text-xl font-bold text-slate-900 mb-4">
                           Schedule Details
                         </h3>
-                        <div className="space-y-4 mb-8">
-                          {game.schedule.map((item, idx) => (
-                            <div
-                              key={idx}
-                              className="rounded-xl border border-slate-200 overflow-hidden"
-                            >
-                              <div className="bg-slate-50 px-5 py-3 flex items-center gap-3">
-                                <Calendar size={14} className="text-blue-600" />
-                                <div className="text-sm font-bold text-slate-700">
-                                  {formatDate(item.date)}
-                                </div>
-                                <div className="ml-auto flex items-center gap-2">
-                                  <Clock3 size={14} className="text-blue-600" />
+                        {Array.isArray(game.schedule) && game.schedule.length ? (
+                          <div className="space-y-4 mb-8">
+                            {game.schedule.map((item, idx) => (
+                              <div
+                                key={idx}
+                                className="rounded-xl border border-slate-200 overflow-hidden"
+                              >
+                                <div className="bg-slate-50 px-5 py-3 flex items-center gap-3">
+                                  <Calendar size={14} className="text-blue-600" />
                                   <div className="text-sm font-bold text-slate-700">
-                                    {item.time}
+                                    {formatDate(item.date)}
+                                  </div>
+                                  <div className="ml-auto flex items-center gap-2">
+                                    <Clock3 size={14} className="text-blue-600" />
+                                    <div className="text-sm font-bold text-slate-700">
+                                      {item.time}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="bg-white p-5">
+                                  <div className="font-bold text-slate-900">
+                                    {item.title}
                                   </div>
                                 </div>
                               </div>
-                              <div className="bg-white p-5">
-                                <div className="font-bold text-slate-900">
-                                  {item.title}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="mb-8 p-6 bg-slate-50 rounded-xl border border-slate-200 text-sm text-slate-600">
+                            No detailed schedule is available for this game yet.
+                          </div>
+                        )}
 
                         <div className="grid md:grid-cols-2 gap-6">
                           <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">

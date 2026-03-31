@@ -70,6 +70,8 @@ const endpoints = {
     delete: (id) => `/club/delete/${id}`,
     /** Club members: list by club id. */
     members: (clubId) => `/clubmember/${clubId}`,
+    /** Club members with successful payment by club id. */
+    paymentSuccessMembers: (clubId) => `/clubmember/payment/success/${clubId}`,
     /** Add club member */
     addMember: `/club/member/add`,
     /** Update club member by member id */
