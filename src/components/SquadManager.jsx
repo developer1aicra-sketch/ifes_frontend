@@ -315,8 +315,11 @@ export const SquadManager = ({
         const start_date = normalizeDateInputValue(ev?.start_date ?? ev?.startDate ?? '');
         const end_date = normalizeDateInputValue(ev?.end_date ?? ev?.endDate ?? '');
         const eventId = String(ev?._id ?? ev?.event_id ?? ev?.eventId ?? '').trim();
+        const zone = String(ev?.zone ?? ev?.zrc_zone ?? '').trim();
+        const competition = Array.isArray(ev?.competition) ? ev.competition : [];
 
-        return { state, start_date, end_date, eventId };
+        // Keep the full competition list so "Zonal Location -> Competition" can be derived safely.
+        return { state, start_date, end_date, eventId, zone, competition, raw: ev };
       })
       .filter((i) => i.state && i.start_date && i.end_date && i.eventId);
 
@@ -349,6 +352,106 @@ export const SquadManager = ({
   }, [selectedEventType, zrcEventState, zrcEventStartDate, zrcEventEndDate, zrcEventInstances]);
 
   const resolvedZrcEventId = resolvedZrcEvent?.eventId || '';
+
+  const resolvedZrcEventFromList = useMemo(() => {
+    if (!resolvedZrcEventId) return null;
+    return (zrcEventInstances || []).find((i) => String(i.eventId) === String(resolvedZrcEventId)) || null;
+  }, [resolvedZrcEventId, zrcEventInstances]);
+
+  const zrcCompetitionsForSelectedEvent = useMemo(() => {
+    const comps = resolvedZrcEventFromList?.competition;
+    return Array.isArray(comps) ? comps : [];
+  }, [resolvedZrcEventFromList]);
+
+  const selectedZrcCompetition = useMemo(() => {
+    if (!competitionType) return null;
+    const nameN = String(competitionType).trim().toLowerCase();
+    return (
+      (zrcCompetitionsForSelectedEvent || []).find(
+        (c) => String(c?.name ?? '').trim().toLowerCase() === nameN
+      ) || null
+    );
+  }, [competitionType, zrcCompetitionsForSelectedEvent]);
+
+  const resolvedNrcWrcEventFromList = useMemo(() => {
+    const t = normalizeEventType(selectedEventType);
+    if (!(t === 'NRC' || t === 'WRC')) return null;
+    if (!selectedEventInstanceId) return null;
+    return (
+      (allEvents || []).find((e) => String(e?._id ?? '') === String(selectedEventInstanceId)) ||
+      null
+    );
+  }, [allEvents, selectedEventInstanceId, selectedEventType]);
+
+  const nrcWrcCompetitionsForSelectedEvent = useMemo(() => {
+    const comps = resolvedNrcWrcEventFromList?.competition;
+    return Array.isArray(comps) ? comps : [];
+  }, [resolvedNrcWrcEventFromList]);
+
+  const selectedNrcWrcCompetition = useMemo(() => {
+    const t = normalizeEventType(selectedEventType);
+    if (!(t === 'NRC' || t === 'WRC')) return null;
+    if (!competitionType) return null;
+    const nameN = String(competitionType).trim().toLowerCase();
+    return (
+      (nrcWrcCompetitionsForSelectedEvent || []).find(
+        (c) => String(c?.name ?? '').trim().toLowerCase() === nameN
+      ) || null
+    );
+  }, [competitionType, nrcWrcCompetitionsForSelectedEvent, selectedEventType]);
+
+  const competitionOptionsForDropdown = useMemo(() => {
+    const t = normalizeEventType(selectedEventType);
+    if (t === 'ZRC') {
+      // For ZRC, competitions come from /event/list for the selected zonal event.
+      return (zrcCompetitionsForSelectedEvent || [])
+        .map((c) => ({
+          key: String(c?._id ?? c?.id ?? c?.name ?? ''),
+          value: String(c?.name ?? ''),
+          label: String(c?.name ?? ''),
+        }))
+        .filter((o) => o.value);
+    }
+
+    if ((t === 'NRC' || t === 'WRC') && selectedEventInstanceId) {
+      // Prefer competitions scoped to the selected event instance from /event/list.
+      const fromEventList = (nrcWrcCompetitionsForSelectedEvent || [])
+        .map((c) => ({
+          key: String(c?._id ?? c?.id ?? c?.name ?? ''),
+          value: String(c?.name ?? ''),
+          label: String(c?.name ?? ''),
+        }))
+        .filter((o) => o.value);
+
+      if (fromEventList.length > 0) return fromEventList;
+
+      // Fallback: filter competitions slice by event_id if possible.
+      const byEventId = (competitions || [])
+        .filter((c) => String(c?.event?._id ?? c?.event_id ?? '') === String(selectedEventInstanceId))
+        .map((c) => ({
+          key: String(c?._id ?? c?.id ?? c?.name ?? ''),
+          value: String(c?.name ?? ''),
+          label: String(c?.name ?? ''),
+        }))
+        .filter((o) => o.value);
+      if (byEventId.length > 0) return byEventId;
+    }
+
+    // Default: competitions come from the competitions API slice.
+    return (competitions || [])
+      .map((c) => ({
+        key: String(c?._id ?? c?.id ?? c?.name ?? ''),
+        value: String(c?.name ?? ''),
+        label: String(c?.name ?? ''),
+      }))
+      .filter((o) => o.value);
+  }, [
+    competitions,
+    nrcWrcCompetitionsForSelectedEvent,
+    selectedEventInstanceId,
+    selectedEventType,
+    zrcCompetitionsForSelectedEvent,
+  ]);
 
   const formatZrcDateRangeLabel = (start, end) => {
     if (!start && !end) return '—';
@@ -469,6 +572,13 @@ export const SquadManager = ({
 
   // Update competition when event type changes
   useEffect(() => {
+    // For ZRC, competition list is driven by the selected zonal event from /event/list,
+    // so don't auto-select from the competitions slice here.
+    if (normalizeEventType(selectedEventType) === 'ZRC') {
+      if (!resolvedZrcEventId) setCompetitionType('');
+      return;
+    }
+
     if (selectedEventType && competitionsByEventType[selectedEventType]?.length > 0) {
       const firstCompetition = competitionsByEventType[selectedEventType][0];
       // Only update if current competition is not from this event type
@@ -477,7 +587,7 @@ export const SquadManager = ({
         setCompetitionType(firstCompetition.name);
       }
     }
-  }, [selectedEventType, competitionsByEventType, competitionType, competitions]);
+  }, [selectedEventType, competitionsByEventType, competitionType, competitions, resolvedZrcEventId]);
 
   // Fetch bots from API
   useEffect(() => {
@@ -871,7 +981,7 @@ export const SquadManager = ({
 
       // Normalize bot id (can be an id or object). Support both old shape (lineup.bot_id)
       // and new shape (top-level bot_id).
-      // const rawBotId = squad.bot_id ?? lineup.bot_id ?? squad.lineup?.bot_id;
+      const rawBotId = squad.bot_id ?? lineup.bot_id ?? squad.lineup?.bot_id;
       const botId =
         rawBotId && typeof rawBotId === 'object'
           ? rawBotId.bot_id ?? rawBotId._id ?? rawBotId.id
@@ -1191,7 +1301,7 @@ export const SquadManager = ({
   const getMemberIdForPayload = (person) => {
     if (!person) return null;
     const raw =
-      person.user_id?._id ?? person.user_id ?? person.user?._id ?? person.user ?? person._id ?? person.id;
+      person.club?._id ?? person.club ?? person.club?._id ?? person.club ?? person._id ?? person.id;
     return raw != null ? String(raw) : null;
   };
 
@@ -1208,9 +1318,11 @@ export const SquadManager = ({
         (competitionType || '').toString().toLowerCase()
     );
     const activeComp =
-      normalizeEventType(selectedEventType) === 'ZRC' && resolvedZrcEvent?.competition
-        ? resolvedZrcEvent.competition
-        : selectedCompByName;
+      normalizeEventType(selectedEventType) === 'ZRC'
+        ? (selectedZrcCompetition || null)
+        : (['NRC', 'WRC'].includes(normalizeEventType(selectedEventType))
+          ? (selectedNrcWrcCompetition || selectedCompByName)
+          : selectedCompByName);
 
     const competition_id = String(
       activeComp?._id ?? activeComp?.id ?? getCompetitionId(competitionType) ?? ''
@@ -2553,6 +2665,132 @@ export const SquadManager = ({
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-end gap-4 mb-3">
+                     {/* ZRC Zonal Location Select - Only show when ZRC is selected */}
+                     {selectedEventType && normalizeEventType(selectedEventType) === 'ZRC' && (
+                      <div className="flex items-start flex-col justify-start gap-2 flex-wrap">
+                        <div className="text-green-400 text-xs font-bold bg-purple-900/20 uppercase">Zonal Location</div>
+                        <div className="bg-purple-900/20 border border-purple-500/50 rounded-xl shadow-lg shadow-purple-900/20">
+                          <div className="flex items-center justify-between gap-3 flex-wrap">
+                            <div className="relative flex-1 w-[200px]">
+                              <select
+                                value={resolvedZrcEventId}
+                                onChange={(e) => {
+                                  const eventId = e.target.value;
+                                  const inst = (zrcZonalLocationOptions || []).find((o) => o.value === eventId)?.instance;
+                                  if (inst) {
+                                    setZrcEventState(inst.state);
+                                    setZrcEventStartDate(inst.start_date);
+                                    setZrcEventEndDate(inst.end_date);
+                                    // When zonal event changes, reset dependent selection safely.
+                                    const firstCompName = String(inst?.competition?.[0]?.name ?? '').trim();
+                                    setCompetitionType(firstCompName);
+                                  } else {
+                                    setZrcEventState('');
+                                    setZrcEventStartDate('');
+                                    setZrcEventEndDate('');
+                                    setCompetitionType('');
+                                  }
+                                  setSelectedBot(null);
+                                  setSelectedPilot(null);
+                                  setSelectedCrew([]);
+                                  setCaptain(null);
+                                  setSelectedTeamForCaptain(null);
+                                  setTeamName('');
+                                  setSelectedTeam(null);
+                                  setError('');
+                                }}
+                                className="w-full bg-slate-900/90 text-white text-sm font-medium rounded-lg px-4 py-2.5 border-2 border-purple-500/50 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500/30 appearance-none cursor-pointer hover:bg-slate-800 hover:border-purple-400/70 transition-all pr-10 shadow-sm"
+                              >
+                                <option value="" className="bg-slate-800 text-slate-300">
+                                  Please Select
+                                </option>
+                                {zrcZonalLocationOptions.length > 0 ? (
+                                  zrcZonalLocationOptions.map((opt) => (
+                                    <option key={opt.value} value={opt.value} className="bg-slate-800 text-white">
+                                      {opt.label}
+                                    </option>
+                                  ))
+                                ) : (
+                                  <option value="" disabled className="bg-slate-800 text-slate-300">
+                                    No ZRC locations available
+                                  </option>
+                                )}
+                              </select>
+
+                              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+
+                         
+                        </div>
+                      </div>
+                    )}
+                    {/* NRC/WRC Event Select - Only show when NRC/WRC is selected */}
+                    {selectedEventType && ['NRC', 'WRC'].includes(normalizeEventType(selectedEventType)) && (
+                      <div className="flex items-start flex-col justify-start gap-2 flex-wrap">
+                        <div className="text-green-400 text-xs font-bold bg-purple-900/20 uppercase">Event</div>
+                        <div className="bg-purple-900/20 border border-purple-500/50 rounded-xl shadow-lg shadow-purple-900/20">
+                          <div className="flex items-center justify-between gap-3 flex-wrap">
+                            <div className="relative flex-1  w-[200px]">
+                              <select
+                                value={selectedEventInstanceId}
+                                onChange={(e) => {
+                                  const eventId = e.target.value;
+                                  setSelectedEventInstanceId(eventId);
+
+                                  // Reset dependent selection safely and prefer first competition from /event/list.
+                                  const ev = (allEvents || []).find((x) => String(x?._id ?? '') === String(eventId));
+                                  const firstCompName = String(ev?.competition?.[0]?.name ?? '').trim();
+                                  setCompetitionType(firstCompName);
+
+                                  setSelectedBot(null);
+                                  setSelectedPilot(null);
+                                  setSelectedCrew([]);
+                                  setCaptain(null);
+                                  setSelectedTeamForCaptain(null);
+                                  setTeamName('');
+                                  setSelectedTeam(null);
+                                  setError('');
+                                }}
+                                className="w-full bg-slate-900/90 text-white text-sm font-medium rounded-lg px-4 py-2.5 border-2 border-purple-500/50 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500/30 appearance-none cursor-pointer hover:bg-slate-800 hover:border-purple-400/70 transition-all pr-10 shadow-sm"
+                              >
+                                <option value="" className="bg-slate-800 text-slate-300">
+                                  Please Select
+                                </option>
+                                {nrcWrcEventOptions.length > 0 ? (
+                                  nrcWrcEventOptions.map((opt) => (
+                                    <option key={opt.value} value={opt.value} className="bg-slate-800 text-white">
+                                      {opt.label}
+                                    </option>
+                                  ))
+                                ) : (
+                                  <option value="" disabled className="bg-slate-800 text-slate-300">
+                                    No events available
+                                  </option>
+                                )}
+                              </select>
+                              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                          {/* {!!String(selectedEventInstanceId || '').trim() && (
+                            <div className="mt-3 flex items-center gap-2 px-3 py-1.5 bg-green-900/30 border border-green-500/30 rounded-lg">
+                              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                              <p className="text-green-400 text-xs font-semibold">
+                                Selected event_id: {String(selectedEventInstanceId).slice(0, 10)}…
+                              </p>
+                            </div>
+                          )} */}
+                        </div>
+                      </div>
+                    )}
                     <div className="flex items-start flex-col justify-start gap-2 flex-wrap">
                       <div className="px-2 py-1 bg-purple-900/30 border border-purple-500/30 rounded">
                         <p className="text-purple-400 text-xs font-bold uppercase">Competition</p>
@@ -2564,25 +2802,29 @@ export const SquadManager = ({
                             const selectedCompName = e.target.value;
                             setCompetitionType(selectedCompName);
 
-                            // Update selected event type based on selected competition
-                            const selectedComp = competitions.find(c => c.name === selectedCompName);
-                            if (selectedComp?.event?.type) {
-                              const newEventType = normalizeEventType(selectedComp.event.type);
-                              setSelectedEventType(newEventType);
-                              // Reset/pre-fill ZRC event selection based on selected competition event fields.
-                              if (newEventType.toUpperCase() !== 'ZRC') {
-                                setZrcEventState('');
-                                setZrcEventStartDate('');
-                                setZrcEventEndDate('');
-                              } else if (selectedComp?.event) {
-                                const ev = selectedComp.event;
-                                const stateCandidate = ev.state ?? ev.zrc_state ?? ev.region ?? ev.zrc_region ?? '';
-                                const start = normalizeDateInputValue(ev.start_date ?? ev.startDate ?? '');
-                                const end = normalizeDateInputValue(ev.end_date ?? ev.endDate ?? '');
-                                if (String(stateCandidate).trim() && start && end) {
-                                  setZrcEventState(String(stateCandidate).trim());
-                                  setZrcEventStartDate(start);
-                                  setZrcEventEndDate(end);
+                            // For non-ZRC, align event type with chosen competition (legacy behavior).
+                            // For ZRC, competitions are already scoped by the selected zonal event, so don't change event type here.
+                            const t = normalizeEventType(selectedEventType);
+                            if (t !== 'ZRC') {
+                              const selectedComp = (competitions || []).find((c) => c.name === selectedCompName);
+                              if (selectedComp?.event?.type) {
+                                const newEventType = normalizeEventType(selectedComp.event.type);
+                                setSelectedEventType(newEventType);
+                                // Reset/pre-fill ZRC event selection based on selected competition event fields.
+                                if (newEventType.toUpperCase() !== 'ZRC') {
+                                  setZrcEventState('');
+                                  setZrcEventStartDate('');
+                                  setZrcEventEndDate('');
+                                } else if (selectedComp?.event) {
+                                  const ev = selectedComp.event;
+                                  const stateCandidate = ev.state ?? ev.zrc_state ?? ev.region ?? ev.zrc_region ?? '';
+                                  const start = normalizeDateInputValue(ev.start_date ?? ev.startDate ?? '');
+                                  const end = normalizeDateInputValue(ev.end_date ?? ev.endDate ?? '');
+                                  if (String(stateCandidate).trim() && start && end) {
+                                    setZrcEventState(String(stateCandidate).trim());
+                                    setZrcEventStartDate(start);
+                                    setZrcEventEndDate(end);
+                                  }
                                 }
                               }
                             }
@@ -2600,13 +2842,13 @@ export const SquadManager = ({
                         >
                           {competitionsLoading ? (
                             <option value="">Loading competitions...</option>
-                          ) : competitions && competitions.length > 0 ? (
-                            competitions.map((comp) => {
-                              const compTeams = teamsByCompetition[comp.name] || [];
+                          ) : competitionOptionsForDropdown && competitionOptionsForDropdown.length > 0 ? (
+                            competitionOptionsForDropdown.map((opt) => {
+                              const compTeams = teamsByCompetition[opt.value] || [];
                               const teamCount = compTeams.length;
                               return (
-                                <option key={comp._id} value={comp.name}>
-                                  {comp.name} {teamCount > 0 ? `(${teamCount} team${teamCount !== 1 ? 's' : ''})` : ''}
+                                <option key={opt.key} value={opt.value}>
+                                  {opt.label} {teamCount > 0 ? `(${teamCount} team${teamCount !== 1 ? 's' : ''})` : ''}
                                 </option>
                               );
                             })
@@ -2738,107 +2980,7 @@ export const SquadManager = ({
                         </div>
                       </div>
                     </div>
-                    {/* ZRC Zonal Location Select - Only show when ZRC is selected */}
-                    {selectedEventType && normalizeEventType(selectedEventType) === 'ZRC' && (
-                      <div className="flex items-start flex-col justify-start gap-2 flex-wrap">
-                        <div className="text-green-400 text-xs font-bold bg-purple-900/20 uppercase">Zonal Location</div>
-                        <div className="bg-purple-900/20 border border-purple-500/50 rounded-xl shadow-lg shadow-purple-900/20">
-                          <div className="flex items-center justify-between gap-3 flex-wrap">
-                            <div className="relative flex-1 w-[200px]">
-                              <select
-                                value={resolvedZrcEventId}
-                                onChange={(e) => {
-                                  const eventId = e.target.value;
-                                  const inst = (zrcZonalLocationOptions || []).find((o) => o.value === eventId)?.instance;
-                                  if (inst) {
-                                    setZrcEventState(inst.state);
-                                    setZrcEventStartDate(inst.start_date);
-                                    setZrcEventEndDate(inst.end_date);
-                                  } else {
-                                    setZrcEventState('');
-                                    setZrcEventStartDate('');
-                                    setZrcEventEndDate('');
-                                  }
-                                  setError('');
-                                }}
-                                className="w-full bg-slate-900/90 text-white text-sm font-medium rounded-lg px-4 py-2.5 border-2 border-purple-500/50 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500/30 appearance-none cursor-pointer hover:bg-slate-800 hover:border-purple-400/70 transition-all pr-10 shadow-sm"
-                              >
-                                <option value="" className="bg-slate-800 text-slate-300">
-                                  Please Select
-                                </option>
-                                {zrcZonalLocationOptions.length > 0 ? (
-                                  zrcZonalLocationOptions.map((opt) => (
-                                    <option key={opt.value} value={opt.value} className="bg-slate-800 text-white">
-                                      {opt.label}
-                                    </option>
-                                  ))
-                                ) : (
-                                  <option value="" disabled className="bg-slate-800 text-slate-300">
-                                    No ZRC locations available
-                                  </option>
-                                )}
-                              </select>
-
-                              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-
-                         
-                        </div>
-                      </div>
-                    )}
-                    {/* NRC/WRC Event Select - Only show when NRC/WRC is selected */}
-                    {selectedEventType && ['NRC', 'WRC'].includes(normalizeEventType(selectedEventType)) && (
-                      <div className="flex items-start flex-col justify-start gap-2 flex-wrap">
-                        <div className="text-green-400 text-xs font-bold bg-purple-900/20 uppercase">Event</div>
-                        <div className="bg-purple-900/20 border border-purple-500/50 rounded-xl shadow-lg shadow-purple-900/20">
-                          <div className="flex items-center justify-between gap-3 flex-wrap">
-                            <div className="relative flex-1  w-[200px]">
-                              <select
-                                value={selectedEventInstanceId}
-                                onChange={(e) => {
-                                  setSelectedEventInstanceId(e.target.value);
-                                  setError('');
-                                }}
-                                className="w-full bg-slate-900/90 text-white text-sm font-medium rounded-lg px-4 py-2.5 border-2 border-purple-500/50 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500/30 appearance-none cursor-pointer hover:bg-slate-800 hover:border-purple-400/70 transition-all pr-10 shadow-sm"
-                              >
-                                <option value="" className="bg-slate-800 text-slate-300">
-                                  Please Select
-                                </option>
-                                {nrcWrcEventOptions.length > 0 ? (
-                                  nrcWrcEventOptions.map((opt) => (
-                                    <option key={opt.value} value={opt.value} className="bg-slate-800 text-white">
-                                      {opt.label}
-                                    </option>
-                                  ))
-                                ) : (
-                                  <option value="" disabled className="bg-slate-800 text-slate-300">
-                                    No events available
-                                  </option>
-                                )}
-                              </select>
-                              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-                          {/* {!!String(selectedEventInstanceId || '').trim() && (
-                            <div className="mt-3 flex items-center gap-2 px-3 py-1.5 bg-green-900/30 border border-green-500/30 rounded-lg">
-                              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                              <p className="text-green-400 text-xs font-semibold">
-                                Selected event_id: {String(selectedEventInstanceId).slice(0, 10)}…
-                              </p>
-                            </div>
-                          )} */}
-                        </div>
-                      </div>
-                    )}
+                   
                     <div className="flex flex-wrap items-center gap-3 flex-1 min-w-0">
                       <div className="flex  flex-wrap items-center gap-2 flex-1 min-w-[200px]">
                         <input
@@ -3194,6 +3336,7 @@ export const SquadManager = ({
               <div className="lg:col-span-2 bg-slate-900 border border-slate-700 rounded-xl p-8 relative">
                 <div className="absolute top-4 right-4 text-xs text-slate-500 uppercase font-bold tracking-widest">
                   {competitionType}
+                  
                 </div>
 
                 <div className="flex flex-wrap gap-5 justify-center mt-8">

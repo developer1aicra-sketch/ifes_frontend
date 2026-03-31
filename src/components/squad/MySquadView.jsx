@@ -50,26 +50,59 @@ function getLineupMemberIds(squad) {
     .map((id) => String(id));
 }
 
-function resolveMemberName(memberId, clubMembers) {
+function formatNameEmail(name, email) {
+  const n = String(name ?? '').trim();
+  const e = String(email ?? '').trim();
+  if (n && e) return `${n} (${e})`;
+  return n || e || '—';
+}
+
+function getSquadMemberDirectory(squad) {
+  const raw = squad?.lineup?.members ?? squad?.members ?? [];
+  if (!Array.isArray(raw)) return new Map();
+  const map = new Map();
+  for (const m of raw) {
+    if (!m || typeof m !== 'object') continue;
+    const id = m.user_id?._id ?? m._id ?? m.id ?? m.user_id ?? m.user;
+    if (!id) continue;
+    const fullName = m.fullName ?? m.fullname ?? m.name ?? m.user?.fullName ?? m.user_id?.fullname ?? m.user_id?.name;
+    const email = m.email ?? m.emailId ?? m.user?.email ?? m.user_id?.email ?? m.user_id?.emailId;
+    map.set(String(id), formatNameEmail(fullName, email));
+  }
+  return map;
+}
+
+function resolveMemberName(memberId, clubMembers, squadDirectory) {
   if (!memberId) return '—';
   const sid = String(memberId);
+  const fromSquad = squadDirectory?.get?.(sid);
+  if (fromSquad) return fromSquad;
   const m = (clubMembers || []).find(
     (c) =>
       String(c.user_id?._id ?? c.user_id ?? c._id ?? c.id ?? '') === sid ||
       String(c._id ?? c.id ?? '') === sid
   );
   if (!m) return sid;
-  return m.user?.fullName ?? m.fullname ?? m.user_id?.fullname ?? m.user_id?.name ?? m.name ?? m.user?.email ?? m.emailId ?? m.user_id?.email ?? sid;
+  const name = m.user?.fullName ?? m.fullname ?? m.user_id?.fullname ?? m.user_id?.name ?? m.name;
+  const email = m.user?.email ?? m.emailId ?? m.user_id?.email ?? m.user_id?.emailId;
+  return formatNameEmail(name, email) || sid;
 }
 
 function SquadCard({ squad, clubId, clubMembers = [], onEditSquad, onDeleteSquad, onCardClick, onPayNow }) {
-  const captainName = squad.captain?.fullname || squad.captain?.emailId || '—';
+  const captainName =
+    squad.captain?.fullName ||
+    squad.captain?.fullname ||
+    squad.captain?.name ||
+    squad.captain?.email ||
+    squad.captain?.emailId ||
+    '—';
   const botName = squad.bot?.name || '—';
+  const squadMemberDirectory = React.useMemo(() => getSquadMemberDirectory(squad), [squad?.lineup?.members, squad?.members]);
   const lineupIds = React.useMemo(() => getLineupMemberIds(squad), [squad?.lineup?.members, squad?.members]);
   const memberCount = lineupIds.length;
   const membersForDisplay = React.useMemo(
-    () => lineupIds.map((id) => ({ id, name: resolveMemberName(id, clubMembers) })),
-    [lineupIds, clubMembers]
+    () => lineupIds.map((id) => ({ id, name: resolveMemberName(id, clubMembers, squadMemberDirectory) })),
+    [lineupIds, clubMembers, squadMemberDirectory]
   );
   const memberLabel = React.useMemo(() => {
     if (memberCount === 0) return 'No members';
@@ -264,13 +297,14 @@ function SquadDetailView({
 
   // All hooks must run unconditionally (before any early return)
   const lineupMemberIds = useMemo(() => getLineupMemberIds(squad), [squad?.lineup?.members, squad?.members]);
+  const squadMemberDirectory = useMemo(() => getSquadMemberDirectory(squad), [squad?.lineup?.members, squad?.members]);
 
   const membersForDisplay = useMemo(() => {
     return lineupMemberIds.map((id) => ({
       id,
-      name: resolveMemberName(id, clubMembers),
+      name: resolveMemberName(id, clubMembers, squadMemberDirectory),
     }));
-  }, [lineupMemberIds, clubMembers]);
+  }, [lineupMemberIds, clubMembers, squadMemberDirectory]);
 
   if (loading) {
     return (
@@ -302,8 +336,8 @@ function SquadDetailView({
   const captainId = squad.lineup?.captain_id ?? squad.captain_id ?? null;
   const captainIdStr = captainId != null ? String(typeof captainId === 'object' ? (captainId._id ?? captainId.id ?? captainId.user_id?._id ?? captainId.user_id) : captainId) : null;
   const captainName =
-    squad.captain?.fullname ?? squad.captain?.emailId ?? squad.captain?.name
-      ? (squad.captain?.fullname || squad.captain?.emailId || squad.captain?.name)
+    squad.captain?.fullName ?? squad.captain?.fullname ?? squad.captain?.email ?? squad.captain?.emailId ?? squad.captain?.name
+      ? (squad.captain?.fullName || squad.captain?.fullname || squad.captain?.email || squad.captain?.emailId || squad.captain?.name)
       : captainIdStr
         ? resolveMemberName(captainIdStr, clubMembers)
         : '—';
@@ -312,6 +346,7 @@ function SquadDetailView({
   const statusKey = (squad.status || 'DRAFT').toUpperCase();
   const statusStyle = STATUS_CONFIG[statusKey] || STATUS_CONFIG.DRAFT;
   const StatusIcon = statusStyle.icon;
+  const createdAtText = squad.createdAt ? new Date(squad.createdAt).toLocaleString() : null;
 
   return (
     <div className="bg-slate-900/80 border border-slate-700 rounded-xl overflow-hidden">
@@ -329,7 +364,7 @@ function SquadDetailView({
             <StatusIcon size={12} />
             {statusStyle.label}
           </span>
-          {clubId && onEditSquad && (
+          {/* {clubId && onEditSquad && (
             <button
               type="button"
               onClick={() => onEditSquad(squad, clubId)}
@@ -338,8 +373,8 @@ function SquadDetailView({
               <Edit2 size={16} />
               Edit
             </button>
-          )}
-          {onDeleteSquad && (
+          )} */}
+          {/* {onDeleteSquad && (
             <button
               type="button"
               onClick={() => onDeleteSquad(squad)}
@@ -348,30 +383,19 @@ function SquadDetailView({
               <Trash2 size={16} />
               Delete
             </button>
-          )}
+          )} */}
         </div>
       </div>
       <div className="p-6 space-y-6">
         <div>
-          <h3 className="text-xl font-bold text-white mb-1">{squad.teamName}</h3>
-          {squad.category && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-slate-800 border border-slate-600 text-sm text-slate-300">
-              <Trophy size={14} />
-              {squad.category}
-            </span>
-          )}
+       
+          <h3 className="text-xl font-bold text-white mb-1">  {squad.teamName}</h3>
+         
+       
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex items-center gap-3 p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
-            <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400">
-              <Cpu size={24} />
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">Bot</p>
-              <p className="text-white font-medium">{botName}</p>
-            </div>
-          </div>
+          
           <div className="flex items-center gap-3 p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
             <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
               <Crown size={24} />
@@ -383,37 +407,69 @@ function SquadDetailView({
           </div>
         </div>
 
-        <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
-          <p className="text-xs text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <DollarSign size={14} />
-            Entry fee & payment
-          </p>
-          <p className="text-white font-medium">
-            ₹{Number(squad.entry_fee ?? 0).toLocaleString()}
-          </p>
-          {isPaid ? (
-            <span className="inline-flex items-center gap-1 mt-1 text-sm text-emerald-400">
-              <CheckCircle size={14} />
-              Paid
-            </span>
-          ) : (
-            <div className="flex items-center justify-between gap-3 mt-2">
-              <span className="inline-flex items-center gap-1 text-sm text-amber-400">
-                Pending
-              </span>
-              {typeof onPayNow === 'function' && (
-                <button
-                  type="button"
-                  onClick={() => onPayNow(squad)}
-                  className="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold shadow-sm hover:shadow-md transition-colors"
-                >
-                  <Lock size={16} />
-                  Pay Now
-                </button>
+        {(squad.event || squad.competition) && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
+              <p className="text-xs text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Calendar size={14} />
+                Event
+              </p>
+              {squad.event ? (
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-slate-400">Name</span>
+                    <span className="text-white font-medium text-right">{squad.event?.name ?? '—'}</span>
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-slate-400">Type</span>
+                    <span className="text-slate-200 text-right">{squad.event?.type ?? '—'}</span>
+                  </div>
+                  {/* <div className="flex items-start justify-between gap-3">
+                    <span className="text-slate-400">Zone</span>
+                    <span className="text-slate-200 text-right">{squad.event?.zone ?? '—'}</span>
+                  </div> */}
+                  {/* <div className="flex items-start justify-between gap-3">
+                    <span className="text-slate-400">Location</span>
+                    <span className="text-slate-200 text-right">{squad.event?.location ?? '—'}</span>
+                  </div> */}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">No event info.</p>
               )}
             </div>
-          )}
-        </div>
+
+            <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
+              <p className="text-xs text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Trophy size={14} />
+                Competition
+              </p>
+              {squad.competition ? (
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-slate-400">Name</span>
+                    <span className="text-white font-medium text-right">{squad.competition?.name ?? '—'}</span>
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-slate-400">Category</span>
+                    <span className="text-slate-200 text-right">
+                      {Array.isArray(squad.competition?.category)
+                        ? squad.competition.category.join(', ')
+                        : (squad.competition?.category ?? '—')}
+                    </span>
+                  </div>
+                  {/* <div className="flex items-start justify-between gap-3">
+                    <span className="text-slate-400">Competition ID</span>
+                    <span className="text-slate-200 text-right">{squad.competition?._id ?? '—'}</span>
+                  </div> */}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">No competition info.</p>
+              )}
+            </div>
+          </div>
+        )}
+
+       
 
         <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
           <p className="text-xs text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -562,7 +618,14 @@ export default function MySquadView({
     return squads.filter((s) => {
       const teamName = (s.teamName || s.name || '').toLowerCase();
       const category = (s.category || '').toLowerCase();
-      const captainName = (s.captain?.fullname || s.captain?.emailId || '').toLowerCase();
+      const captainName = (
+        s.captain?.fullName ||
+        s.captain?.fullname ||
+        s.captain?.name ||
+        s.captain?.email ||
+        s.captain?.emailId ||
+        ''
+      ).toLowerCase();
       const botName = (s.bot?.name || '').toLowerCase();
       return teamName.includes(q) || category.includes(q) || captainName.includes(q) || botName.includes(q);
     });

@@ -387,7 +387,7 @@ export const updateSquad = async (clubId, teamId, payload) => {
   const club_id = String(payload.club_id ?? payload.clubId ?? clubId ?? '').trim();
   const teamName = String(payload.teamName ?? payload.name ?? '').trim();
   const captain_id = String(payload.lineup?.captain_id ?? payload.captain_id ?? '').trim();
-  const bot_id = String(payload.bot_id ?? '').trim();
+  // const bot_id = String(payload.bot_id ?? '').trim();
   const rawMembers = Array.isArray(payload.lineup?.members) ? payload.lineup.members : [];
   const members = rawMembers
     .map((m) => (m != null && typeof m === 'object' ? m._id ?? m.id : m))
@@ -400,7 +400,7 @@ export const updateSquad = async (clubId, teamId, payload) => {
     teamName,
     event_id: String(payload.event_id ?? ''),
     competition_id: String(payload.competition_id ?? ''),
-    bot_id,
+    // bot_id,
     lineup: {
       captain_id,
       members,
