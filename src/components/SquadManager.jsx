@@ -68,6 +68,14 @@ export const SquadManager = ({
     if (Number.isNaN(d.getTime())) return s;
     return d.toISOString().slice(0, 10);
   };
+  const normalizeEventStatus = (s) => String(s ?? '').trim().toLowerCase();
+  // const formatEventStatusLabel = (status) => {
+  //   const s = normalizeEventStatus(status);
+  //   if (!s) return '';
+  //   // Common API statuses observed/expected: upcoming, live, completed, cancelled
+  //   const label = s.replace(/_/g, ' ');
+  //   return label.charAt(0).toUpperCase() + label.slice(1);
+  // };
 
   // Use prop user or Redux user
   const user = propUser || reduxUser;
@@ -243,9 +251,16 @@ export const SquadManager = ({
         const res = await axiosInstance.get(`/event/list`);
         const list = res?.data?.data ?? res?.data ?? [];
         const events = Array.isArray(list) ? list : [];
-        const zrcOnly = events.filter((e) => normalizeEventType(e?.type) === 'ZRC');
+        // Hide non-actionable events from Squad Manager selections.
+        // (Frontend architecture) We don't allow squad management for these states.
+        const HIDDEN_EVENT_STATUSES = new Set(['upcoming', 'closed']);
+        const visibleEvents = events.filter((e) => {
+          const status = normalizeEventStatus(e?.status);
+          return !HIDDEN_EVENT_STATUSES.has(status);
+        });
+        const zrcOnly = visibleEvents.filter((e) => normalizeEventType(e?.type) === 'ZRC');
         if (!cancelled) {
-          setAllEvents(events);
+          setAllEvents(visibleEvents);
           setZrcEvents(zrcOnly);
         }
       } catch {
@@ -302,6 +317,34 @@ export const SquadManager = ({
     });
     return grouped;
   }, [competitions]);
+
+  // Event types that are actually actionable in Squad Manager UI.
+  // - For NRC/WRC, only show the card if at least one non-upcoming event exists in /event/list.
+  // - For ZRC, only show the card if at least one non-upcoming ZRC event exists in /event/list.
+  // - For other types, fall back to competitions availability.
+  const selectableEventTypes = useMemo(() => {
+    const hasEventInList = (t) =>
+      (allEvents || []).some((e) => normalizeEventType(e?.type) === t);
+    const hasZrcInList = (zrcEvents || []).length > 0;
+    return (mergedEventTypes || []).filter((t) => {
+      const type = normalizeEventType(t);
+      if (type === 'ZRC') return hasZrcInList;
+      if (type === 'NRC' || type === 'WRC') return hasEventInList(type);
+      return (competitionsByEventType?.[type] || []).length > 0;
+    });
+  }, [allEvents, competitionsByEventType, mergedEventTypes, zrcEvents]);
+
+  // If current selected event type becomes unavailable (e.g. hidden upcoming),
+  // reset to the first selectable type to avoid showing "Managing Now" on a hidden card.
+  useEffect(() => {
+    const current = normalizeEventType(selectedEventType);
+    if (!current) return;
+    if ((selectableEventTypes || []).includes(current)) return;
+    setSelectedEventType(selectableEventTypes?.[0] || null);
+    setSelectedEventInstanceId('');
+    setError('');
+    setSuccess('');
+  }, [selectableEventTypes, selectedEventType]);
 
   // ZRC event instances derived from /event/list (State + Start/End -> event_id)
   const zrcEventInstances = useMemo(() => {
@@ -485,7 +528,11 @@ export const SquadManager = ({
       })
       .map((i) => ({
         value: String(i.eventId),
-        label: `${i.state} (${formatZrcDateRangeLabel(i.start_date, i.end_date)})`,
+        label: (() => {
+          const when = formatZrcDateRangeLabel(i.start_date, i.end_date);
+          // const status = formatEventStatusLabel(i?.raw?.status);
+          return status ? `${i.state} [${status}] (${when})` : `${i.state} (${when})`;
+        })(),
         instance: i,
       }));
   }, [zrcEventInstances]);
@@ -504,9 +551,13 @@ export const SquadManager = ({
         const end = normalizeDateInputValue(e?.end_date ?? e?.endDate ?? '');
         const when = start || end ? formatZrcDateRangeLabel(start, end) : '';
         const labelBase = name || state || `${t} Event`;
+        // const status = formatEventStatusLabel(e?.status);
         return {
           value: id,
-          label: when ? `${labelBase} (${when})` : labelBase,
+          label: (() => {
+            const base = status ? `${labelBase} [${status}]` : labelBase;
+            return when ? `${base} (${when})` : base;
+          })(),
         };
       })
       .filter((o) => o.value)
@@ -651,16 +702,30 @@ export const SquadManager = ({
     return [...new Set(categories)].sort();
   }, [competitions]);
 
-  // Current category for the Category dropdown (derived from selected competition)
+  // Current category for the Category field (derived from selected competition)
   const selectedCategoryValue = useMemo(() => {
-    if (!competitionType || !competitions?.length) return "";
-    const comp = competitions.find(
-      (c) =>
-        (c.name || c.title || "").toString().toLowerCase() ===
-        (competitionType || "").toString().toLowerCase()
-    );
+    if (!competitionType) return "";
+
+    const t = normalizeEventType(selectedEventType);
+
+    // For ZRC/NRC/WRC the competition list comes from /event/list, so use the resolved selected competition objects.
+    if (t === 'ZRC') return selectedZrcCompetition?.category ?? "";
+    if (t === 'NRC' || t === 'WRC') return selectedNrcWrcCompetition?.category ?? "";
+
+    // Default: derive from competitions slice by name/title match.
+    const comp = (competitions || []).find((c) => {
+      const n = (c?.name || c?.title || "").toString().trim().toLowerCase();
+      const v = (competitionType || "").toString().trim().toLowerCase();
+      return n && v && n === v;
+    });
     return comp?.category ?? "";
-  }, [competitions, competitionType]);
+  }, [
+    competitionType,
+    competitions,
+    selectedEventType,
+    selectedNrcWrcCompetition,
+    selectedZrcCompetition,
+  ]);
 
   // Restore active club from localStorage once (owner can play for only one club)
   useEffect(() => {
@@ -2423,8 +2488,8 @@ export const SquadManager = ({
                 <div className="text-right">
                   <p className="text-slate-400 text-sm">
                     <span className="text-white font-bold">
-                      {mergedEventTypes.length}
-                    </span> / {mergedEventTypes.length} event type{mergedEventTypes.length !== 1 ? 's' : ''} available
+                      {selectableEventTypes.length}
+                    </span> / {selectableEventTypes.length} event type{selectableEventTypes.length !== 1 ? 's' : ''} available
                   </p>
                 </div>
               </div>
@@ -2432,7 +2497,7 @@ export const SquadManager = ({
 
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {mergedEventTypes.map((eventType) => {
+                {selectableEventTypes.map((eventType) => {
                   const eventTypeTeams = getTeamsForEventType(eventType);
                   const eventTypeCompetitions = competitionsByEventType[eventType] || [];
                   const firstCompetition = eventTypeCompetitions[0];
@@ -2943,36 +3008,17 @@ export const SquadManager = ({
                         <p className="text-green-400 text-xs font-bold uppercase">Category</p>
                       </div>
                       <div className="relative">
-                        <select
-                          value={selectedCategoryValue}
-                          onChange={(e) => {
-                            const category = e.target.value;
-                            if (!category) {
-                              setCompetitionType("");
-                              return;
-                            }
-                            const firstInCategory = competitions.find(
-                              (c) => (c.category || "").toString() === category
-                            );
-                            if (firstInCategory) {
-                              setCompetitionType(firstInCategory.name || firstInCategory.title || firstInCategory._id);
-                            }
-                          }}
-                          className="bg-slate-800 text-white text-sm font-medium rounded-lg px-4 py-2 border border-slate-600 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 appearance-none cursor-pointer hover:bg-slate-700 transition-colors pr-10 min-w-[200px]"
-                        >
-                          <option value="">Select Category</option>
-                          {competitionsLoading ? (
-                            <option value="" disabled>Loading categories...</option>
-                          ) : uniqueCategories.length > 0 ? (
-                            uniqueCategories.map((cat) => (
-                              <option key={cat} value={cat}>
-                                {cat}
-                              </option>
-                            ))
-                          ) : (
-                            <option value="">No categories available</option>
-                          )}
-                        </select>
+                        <input
+                          value={
+                            competitionsLoading
+                              ? "Loading category..."
+                              : (selectedCategoryValue || (competitionType ? "Category not found" : "Select competition to see category"))
+                          }
+                          readOnly
+                          disabled={competitionsLoading || !competitionType}
+                          className="bg-slate-800 text-white text-sm font-medium rounded-lg px-4 py-2 border border-slate-600 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 hover:bg-slate-700 transition-colors min-w-[200px] disabled:opacity-60 disabled:cursor-not-allowed"
+                          aria-label="Category (derived from competition)"
+                        />
                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                           <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
