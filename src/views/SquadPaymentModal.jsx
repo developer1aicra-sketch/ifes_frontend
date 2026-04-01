@@ -34,7 +34,9 @@ const SquadPaymentModal = ({
   const teamName = squad?.teamName || squad?.name || 'Squad'
   const category = squad?.category || 'Competition'
 
-  const baseCurrency = String(currency || 'INR').toUpperCase()
+  // Source-of-truth currency for `squad.entry_fee` is USD (unless provided explicitly on the squad).
+  // `currency` prop controls the initially selected/display currency, NOT the source currency.
+  const baseCurrency = String(squad?.entry_fee_currency || 'USD').toUpperCase()
   const baseAmount = Number.isFinite(entryFee) && entryFee > 0 ? entryFee : null
   const isCurrencyLocked = Boolean(isProcessing || razorpayInstance || paymentData)
 
@@ -569,8 +571,8 @@ const SquadPaymentModal = ({
                       Pay Now
                       {paymentData?.amount != null && (
                         <span>
-                          — {displayCurrency === 'INR' ? '₹' : '$'}
-                          {displayAmount}
+                          {' '}
+                          — {formattedMoney}
                         </span>
                       )}
                     </>

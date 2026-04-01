@@ -116,6 +116,9 @@ const authSlice = createSlice({
     clearLoginVerified: (state) => {
       state.loginVerified = false;
     },
+    clearAuthError: (state) => {
+      state.error = null;
+    },
   },
 });
 
@@ -137,6 +140,7 @@ export const {
   loginVerifyOtpSuccess,
   loginVerifyOtpFailure,
   clearLoginVerified,
+  clearAuthError,
   loginRequest,
   loginSuccess,
   loginFailure,

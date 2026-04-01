@@ -72,6 +72,14 @@ export const initiateMembership = (data) =>
 export const login = (payload) =>
   axiosInstance.post(endpoints.loginAuth.login, payload);
 
+/** @param {{ email: string }} data */
+export const forgotPassword = (data) =>
+  axiosInstance.post(endpoints.loginAuth.forgotPassword, data);
+
+/** @param {{ email: string, newPassword: string, otp: string }} data */
+export const resetPassword = (data) =>
+  axiosInstance.post(endpoints.loginAuth.resetPassword, data);
+
 /**
  * Get user's membership details
  * 

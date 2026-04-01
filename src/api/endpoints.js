@@ -38,8 +38,10 @@ const endpoints = {
     sendOtp: `/auth/login/send/otp`,
     verifyOtp: `/auth/login/verify/otp`,
     login: `/auth/login`,
-    /** POST with { email } — sends reset link to email */
+    /** POST with { email } — sends OTP / reset instructions */
     forgotPassword: `/auth/forgot/password`,
+    /** POST with { email, newPassword, otp } */
+    resetPassword: `/auth/reset/password`,
   },
   competition: {
     list: '/competition/list',
