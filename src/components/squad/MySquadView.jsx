@@ -25,6 +25,8 @@ import { getSquadsByClub, getSquadById } from '../../api/squadApi';
 import { getClubMembers } from '../../api/clubApi';
 import { SquadPagination } from './SquadPagination';
 import SquadPaymentModal from './SquadPaymentModal';
+import { useDispatch } from 'react-redux';
+import { startGlobalLoading, stopGlobalLoading } from '../../app/ui/uiSlice';
 
 const DEFAULT_PAGE_SIZE = 6;
 const PAGE_SIZE_OPTIONS = [6, 9, 12, 24];
@@ -512,6 +514,7 @@ export default function MySquadView({
   onDeletedSquadIdConsumed,
   className = '',
 }) {
+  const dispatch = useDispatch();
   const [squads, setSquads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -538,8 +541,10 @@ export default function MySquadView({
       return;
     }
     let cancelled = false;
+    let stopped = false;
     setLoading(true);
     setError(null);
+    dispatch(startGlobalLoading());
     getSquadsByClub(effectiveClubId)
       .then((res) => {
         if (cancelled) return;
@@ -554,9 +559,19 @@ export default function MySquadView({
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
+        if (!stopped) {
+          stopped = true;
+          dispatch(stopGlobalLoading());
+        }
       });
-    return () => { cancelled = true; };
-  }, [effectiveClubId, squadsRefreshTrigger]);
+    return () => {
+      cancelled = true;
+      if (!stopped) {
+        stopped = true;
+        dispatch(stopGlobalLoading());
+      }
+    };
+  }, [effectiveClubId, squadsRefreshTrigger, dispatch]);
 
   useEffect(() => {
     if (!effectiveClubId) {
@@ -564,6 +579,8 @@ export default function MySquadView({
       return;
     }
     let cancelled = false;
+    let stopped = false;
+    dispatch(startGlobalLoading());
     getClubMembers(effectiveClubId)
       .then((res) => {
         if (cancelled) return;
@@ -573,9 +590,21 @@ export default function MySquadView({
       })
       .catch(() => {
         if (!cancelled) setClubMembers([]);
+      })
+      .finally(() => {
+        if (!stopped) {
+          stopped = true;
+          dispatch(stopGlobalLoading());
+        }
       });
-    return () => { cancelled = true; };
-  }, [effectiveClubId]);
+    return () => {
+      cancelled = true;
+      if (!stopped) {
+        stopped = true;
+        dispatch(stopGlobalLoading());
+      }
+    };
+  }, [effectiveClubId, dispatch]);
 
   useEffect(() => {
     if (deletedSquadId && selectedSquadId && (selectedSquadId === deletedSquadId || String(selectedSquadId) === String(deletedSquadId))) {
@@ -592,9 +621,11 @@ export default function MySquadView({
       return;
     }
     let cancelled = false;
+    let stopped = false;
     setDetailLoading(true);
     setDetailError(null);
     setDetailSquad(null);
+    dispatch(startGlobalLoading());
     getSquadById(selectedSquadId)
       .then((res) => {
         if (cancelled) return;
@@ -608,9 +639,19 @@ export default function MySquadView({
       })
       .finally(() => {
         if (!cancelled) setDetailLoading(false);
+        if (!stopped) {
+          stopped = true;
+          dispatch(stopGlobalLoading());
+        }
       });
-    return () => { cancelled = true; };
-  }, [selectedSquadId]);
+    return () => {
+      cancelled = true;
+      if (!stopped) {
+        stopped = true;
+        dispatch(stopGlobalLoading());
+      }
+    };
+  }, [selectedSquadId, dispatch]);
 
   const filteredSquads = useMemo(() => {
     const q = (searchQuery || '').trim().toLowerCase();
@@ -665,6 +706,7 @@ export default function MySquadView({
 
   const handlePaymentSuccess = useCallback(
     async () => {
+      dispatch(startGlobalLoading());
       try {
         if (effectiveClubId) {
           setLoading(true);
@@ -694,9 +736,10 @@ export default function MySquadView({
         setLoading(false);
         setIsPaymentModalOpen(false);
         setPaymentSquad(null);
+        dispatch(stopGlobalLoading());
       }
     },
-    [effectiveClubId, selectedSquadId]
+    [effectiveClubId, selectedSquadId, dispatch]
   );
 
   const showSearchInHeader =

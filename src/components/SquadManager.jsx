@@ -90,6 +90,8 @@ export const SquadManager = ({
   // Team management
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [selectedBot, setSelectedBot] = useState(null);
+  // When editing a squad, we may know the bot id before the bots list is loaded.
+  const [editingSquadBotId, setEditingSquadBotId] = useState('');
   const [selectedPilot, setSelectedPilot] = useState(null);
   const [inviteEmail, setInviteEmail] = useState("");
   const [sending, setSending] = useState(false);
@@ -652,7 +654,7 @@ export const SquadManager = ({
           const mappedBots = response.data.data
             .filter(bot => bot.isActive) // Only show active bots
             .map(bot => ({
-              // bot_id: bot._id,
+              bot_id: bot.bot_id ?? bot._id ?? bot.id,
               name: bot.name,
               category: bot.competition_id?.name || 'Unknown',
               image: '🤖', // Default bot emoji, can be customized based on competition type
@@ -679,6 +681,16 @@ export const SquadManager = ({
 
     fetchBots();
   }, []);
+
+  // If edit mode set a bot id before bots arrived, resolve once list loads.
+  useEffect(() => {
+    if (!editingSquadBotId) return;
+    const currentId = String(selectedBot?.bot_id ?? selectedBot?._id ?? selectedBot?.id ?? '').trim();
+    if (currentId && currentId === String(editingSquadBotId)) return;
+    if (!Array.isArray(bots) || bots.length === 0) return;
+    const match = bots.find((b) => String(b?.bot_id ?? b?._id ?? b?.id ?? '') === String(editingSquadBotId));
+    if (match) setSelectedBot(match);
+  }, [bots, editingSquadBotId, selectedBot]);
 
   // Helper function to get competition ID from competitionType name
   const getCompetitionId = (competitionTypeName) => {
@@ -1052,9 +1064,15 @@ export const SquadManager = ({
           ? rawBotId.bot_id ?? rawBotId._id ?? rawBotId.id
           : rawBotId;
 
-      if (botId && bots.length) {
-        const bot = bots.find((b) => String(b.bot_id ?? b._id ?? b.id) === String(botId));
+      const normalizedBotId = botId != null ? String(botId).trim() : '';
+      setEditingSquadBotId(normalizedBotId);
+      if (normalizedBotId) {
+        // Prefer a real bot object, but preserve id even if list isn't loaded yet.
+        const bot = (bots || []).find((b) => String(b?.bot_id ?? b?._id ?? b?.id ?? '') === normalizedBotId);
         if (bot) setSelectedBot(bot);
+        else setSelectedBot({ bot_id: normalizedBotId, name: squad?.bot?.name ?? squad?.bot_name ?? 'Selected bot' });
+      } else {
+        setSelectedBot(null);
       }
 
       const syntheticTeam = {
@@ -1375,7 +1393,7 @@ export const SquadManager = ({
    * { club_id, category, teamName, event_id, competition_id, bot_id, lineup: { captain_id, members }, entry_fee }
    * lineup.members = array of member _id only (strings).
    */
-  const buildSquadAddPayload = () => {
+  const buildSquadAddPayload = ({ isEditMode = false } = {}) => {
     const club_id = String(selectedClub?.id ?? selectedClub?._id ?? '');
     const selectedCompByName = competitions?.find(
       (c) =>
@@ -1407,7 +1425,8 @@ export const SquadManager = ({
     const teamNamePayload = String(
       (teamName ?? selectedTeam?.name ?? selectedTeam?.teamName ?? '').trim() || 'Team'
     );
-    const bot_id = String(selectedBot?.bot_id ?? selectedBot?._id ?? selectedBot?.id ?? '');
+    const selectedBotId = String(selectedBot?.bot_id ?? selectedBot?._id ?? selectedBot?.id ?? '').trim();
+    const bot_id = selectedBotId || (isEditMode ? String(editingSquadBotId || '').trim() : '');
     const captain_id = String(
       captain?.user_id?._id ?? captain?.user_id ?? captain?._id ?? captain?.id ?? ''
     );
@@ -1982,14 +2001,13 @@ export const SquadManager = ({
       setError('Please create or select a team first');
       return;
     }
-    if (!selectedBot) {
+    // Bot is mandatory only for create. Updates should not require bot selection.
+    const selectedBotId = String(selectedBot?.bot_id ?? selectedBot?._id ?? selectedBot?.id ?? '').trim();
+    if (!isEditMode && !selectedBotId) {
       setError('Please select a bot');
       return;
     }
-    if (currentConfig.requiresPilot && !selectedPilot) {
-      setError('This competition requires a pilot');
-      return;
-    }
+   
     if (totalTeamMembers < currentConfig.min) {
       setError(`Minimum ${currentConfig.min} team members required`);
       return;
@@ -2019,7 +2037,7 @@ export const SquadManager = ({
       return;
     }
 
-    const squadPayload = buildSquadAddPayload();
+    const squadPayload = buildSquadAddPayload({ isEditMode });
 
     if (!squadPayload.club_id) {
       setError('Club ID is required. Please select a club.');
@@ -2047,13 +2065,18 @@ export const SquadManager = ({
       setError('Event ID is missing. Please select a valid event.');
       return;
     }
-    if (!squadPayload.bot_id) {
+    // Only enforce bot_id on create; updates keep existing bot on backend.
+    if (!isEditMode && !squadPayload.bot_id) {
       setError('Bot ID is missing. Please reselect the bot.');
       return;
     }
 
     setError('');
     if (isEditMode) {
+      // Frontend architecture: omit bot_id on update so backend retains the existing bot.
+      // (User doesn't want to manage bot during update flow.)
+      const updatePayload = { ...squadPayload };
+      delete updatePayload.bot_id;
       // PUT /squad/update/{_id}: teamId is the squad _id
       const squadId = editingSquad.teamId ?? editingSquad.squadData?._id ?? editingSquad.squadData?.id;
       const clubIdToRefresh = editingSquad.clubId;
@@ -2061,7 +2084,7 @@ export const SquadManager = ({
         updateSquadRequest({
           clubId: editingSquad.clubId,
           teamId: squadId,
-          teamData: squadPayload,
+          teamData: updatePayload,
         })
       );
       setEditingSquad(null);

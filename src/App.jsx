@@ -45,6 +45,7 @@ import { useLocationPrefix } from './hooks/useLocationPrefix';
 import { StoreView } from './views/StoreView';
 import RoboClubAuth from './views/RoboClubAuth';
 import RoboClubDashboard from './views/RoboClub';
+import GlobalLoadingOverlay from './components/GlobalLoadingOverlay';
 
 const viewToPath = (view) => {
   if (!view) return '/';
@@ -380,6 +381,7 @@ const AppContent = ({
         className={`font-sans antialiased text-slate-200 bg-[#0a0f1a] min-h-screen flex flex-col ${getSelectionClasses()}`}
       >
         <ToastContainer />
+        <GlobalLoadingOverlay />
         <PartnerWebsiteRedirect />
       <LocationRouteHandler />
       {/* <LiveTicker tickerText={tickerText} siteConfig={currentSite} /> */}
@@ -450,7 +452,7 @@ const AppContent = ({
               <Route path="/:locationCode/membership" element={<MembershipView setView={setViewRespectingLocation} />} />
               <Route path="/:locationCode/teams" element={<TeamsView />} />
               <Route path="/:locationCode/challenges" element={<TechnoxianView />} />
-              {/* <Route path="/:locationCode/roboclub" element={<RoboClubView />} /> */}
+              <Route path="/:locationCode/roboclub" element={<RoboClubView />} />
               <Route path="/:locationCode/roboclub-dashboard" element={<RoboClubDashboard mode="dashboard" />} />
               <Route path="/:locationCode/about" element={<AboutLayout setView={setViewRespectingLocation} />} />
               <Route path="/:locationCode/governance" element={<AboutLayout setView={setViewRespectingLocation} />} />

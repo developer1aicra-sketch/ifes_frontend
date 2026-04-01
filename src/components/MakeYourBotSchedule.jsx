@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
 import endpoints from '../api/endpoints';
+import { startGlobalLoading, stopGlobalLoading } from '../app/ui/uiSlice';
 
 const DAY_ORDER = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 const DAY_LABEL = {
@@ -53,6 +55,7 @@ export function MakeYourBotSchedule({
   surfaceClassName = 'bg-[#0f172a]',
   scheduleHeading = 'Class Schedule',
 }) {
+  const dispatch = useDispatch();
   const [classSchedule, setClassSchedule] = useState(null);
   const [classLoading, setClassLoading] = useState(false);
   const [classError, setClassError] = useState('');
@@ -63,10 +66,12 @@ export function MakeYourBotSchedule({
 
   const fetchClassSchedule = async () => {
     if (classLoading) return;
+    let stopped = false;
     setClassError('');
     setRegisterSuccessId(null);
     setRegisterError('');
     setClassLoading(true);
+    dispatch(startGlobalLoading());
     try {
       const res = await axiosInstance.get(endpoints.classes.schedule);
       const data = res?.data;
@@ -80,6 +85,10 @@ export function MakeYourBotSchedule({
       setClassSchedule(null);
     } finally {
       setClassLoading(false);
+      if (!stopped) {
+        stopped = true;
+        dispatch(stopGlobalLoading());
+      }
     }
   };
 
@@ -90,9 +99,11 @@ export function MakeYourBotSchedule({
 
   const handleRegisterClass = async (classId) => {
     if (!classId || registeringClassId) return;
+    let stopped = false;
     setRegisterSuccessId(null);
     setRegisterError('');
     setRegisteringClassId(classId);
+    dispatch(startGlobalLoading());
     try {
       await axiosInstance.post(endpoints.classes.register, {
         class_id: classId,
@@ -106,6 +117,10 @@ export function MakeYourBotSchedule({
       );
     } finally {
       setRegisteringClassId(null);
+      if (!stopped) {
+        stopped = true;
+        dispatch(stopGlobalLoading());
+      }
     }
   };
 

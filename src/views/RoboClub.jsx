@@ -12,9 +12,11 @@ import {
 } from 'lucide-react';
 
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { INITIAL_DB } from '../../src/constants/userData'
 import { getMyClubs } from '../api/clubApi';
 import { clearRoboclubAuthToken, getRoboclubAuthToken } from '../api/authToken';
+import { startGlobalLoading, stopGlobalLoading } from '../app/ui/uiSlice';
 // import { getMyMembership } from '../api/membershipApi';
 import { LiveTicker } from '../components/LiveTicker';
 import { StadiumHome } from '../components/StadiumHome';
@@ -44,6 +46,7 @@ export default function TechnoXianApp({ mode = 'public' }) {
   const [membershipPlanName, setMembershipPlanName] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [pendingEditSquad, setPendingEditSquad] = useState(null);
   const [pendingCompetitionId, setPendingCompetitionId] = useState(null);
   const [pendingEventType, setPendingEventType] = useState(null);
@@ -187,6 +190,7 @@ export default function TechnoXianApp({ mode = 'public' }) {
     if (!isDashboardMode || !isAuthenticated) return;
 
     let cancelled = false;
+    dispatch(startGlobalLoading());
 
     getMyClubs()
       .then((res) => {
@@ -221,12 +225,18 @@ export default function TechnoXianApp({ mode = 'public' }) {
       })
       .catch((err) => {
         console.error('Failed to load sidebar profile from /club/my/get:', err);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          dispatch(stopGlobalLoading());
+        }
       });
 
     return () => {
       cancelled = true; 
+      dispatch(stopGlobalLoading());
     };
-  }, [isDashboardMode, isAuthenticated]);
+  }, [isDashboardMode, isAuthenticated, dispatch]);
 
   const captainName =
     clubProfile?.owner?.fullName ||

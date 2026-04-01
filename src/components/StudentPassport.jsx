@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useDispatch } from "react-redux";
 import {
   Activity,
   Award,
@@ -18,6 +19,7 @@ import {
 import { getMyClubs, updateClub } from "../api/clubApi";
 import { updateProfile as updateProfileApi } from "../api/profileApi";
 import { INITIAL_DB } from "../constants/userData";
+import { startGlobalLoading, stopGlobalLoading } from "../app/ui/uiSlice";
 
 import { getRoboclubAuthToken } from "../api/authToken";
 
@@ -142,11 +144,22 @@ function safeJsonParse(value, fallback = null) {
 }
 
 export const StudentPassport = ({ setPage }) => {
+  const dispatch = useDispatch();
   const { isAuthenticated, token, checkAuth } = useAuth();
   const { clubs, loading, error, refetch } = useMyClubs(isAuthenticated);
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [displayClubName, setDisplayClubName] = useState("");
+
+  // App-wide global loader should reflect profile fetch + save operations.
+  useEffect(() => {
+    if (!isAuthenticated) return undefined;
+    if (!loading) return undefined;
+    dispatch(startGlobalLoading());
+    return () => {
+      dispatch(stopGlobalLoading());
+    };
+  }, [isAuthenticated, loading, dispatch]);
 
   const buildProfileFormData = useCallback((payload) => {
     const fd = new FormData();
@@ -235,6 +248,15 @@ export const StudentPassport = ({ setPage }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [profileSnapshot, setProfileSnapshot] = useState(null);
+
+  useEffect(() => {
+    if (!isAuthenticated) return undefined;
+    if (!isSaving) return undefined;
+    dispatch(startGlobalLoading());
+    return () => {
+      dispatch(stopGlobalLoading());
+    };
+  }, [isAuthenticated, isSaving, dispatch]);
 
   const primaryClub = clubs?.[0];
   const tokenEmail = useMemo(() => getEmailFromToken(token), [token]);

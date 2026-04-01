@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useDispatch } from 'react-redux';
 import { getCommunityDirectoryUsers } from '../api/directoryApi';
+import { startGlobalLoading, stopGlobalLoading } from '../app/ui/uiSlice';
 
 const DEFAULT_ACCENT = {
   title: 'text-white',
@@ -164,6 +166,7 @@ function matchSearch(user, query) {
 }
 
 export function StudentCommunityDirectory({ themeAccent }) {
+  const dispatch = useDispatch();
   const accent = themeAccent || DEFAULT_ACCENT;
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(1);
@@ -175,8 +178,10 @@ export function StudentCommunityDirectory({ themeAccent }) {
 
   useEffect(() => {
     let isMounted = true;
+    let stopped = false;
     setLoading(true);
     setError('');
+    dispatch(startGlobalLoading());
     const p = Math.max(1, Number(page) || 1);
     const search = searchQuery.trim();
 
@@ -199,9 +204,19 @@ export function StudentCommunityDirectory({ themeAccent }) {
       })
       .finally(() => {
         if (isMounted) setLoading(false);
+        if (!stopped) {
+          stopped = true;
+          dispatch(stopGlobalLoading());
+        }
       });
-    return () => { isMounted = false; };
-  }, [page, searchQuery]);
+    return () => {
+      isMounted = false;
+      if (!stopped) {
+        stopped = true;
+        dispatch(stopGlobalLoading());
+      }
+    };
+  }, [page, searchQuery, dispatch]);
 
   // Sort within current page for stable UX.
   const sortedUsers = useMemo(() => {
