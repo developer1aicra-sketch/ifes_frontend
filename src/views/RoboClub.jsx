@@ -254,9 +254,16 @@ export default function TechnoXianApp({ mode = 'public' }) {
     sidebarSecondaryId;
   const clubName = clubProfile?.clubName || clubProfile?.club_name || clubProfile?.club || clubProfile?.name || INITIAL_DB.club.name;
 
+  // Prefer backend membership role (e.g. clubProfile.member.role === "CAPTAIN") over token role.
+  const normalizedMemberRole = String(clubProfile?.member?.role || '').trim().toUpperCase();
+  const normalizedUserRole = String(userRole || '').trim().toUpperCase();
+  const effectiveRole = normalizedMemberRole || normalizedUserRole;
+  const isCaptain = effectiveRole === 'CAPTAIN';
+
   const menuItems = useMemo(() => {
     const items = [
       { id: 'dashboard', icon: Activity, label: 'Dashboard' },
+      { id: 'my_squads', icon: Users, label: 'My Squads' },
       { id: 'make_your_bot', icon: CalendarClock, label: 'Make Your Bot' },
       { id: 'national_global_events', icon: Calendar, label: 'Events & Games', isSection: true },
       { id: 'Add Members', icon: Award, label: 'Add Members' },
@@ -265,12 +272,16 @@ export default function TechnoXianApp({ mode = 'public' }) {
       { id: 'diy_offers', icon: Zap, label: 'Offers', isSection: true },
       { id: 'career_growth', icon: Briefcase, label: 'Career Growth', isSection: true },
       { id: 'contact_directory', icon: Globe, label: 'Contact Directory', isSection: true },
-      // { id: 'my_squads', icon: Users, label: 'My Squads' },
       { id: 'user', icon: UserCheck, label: 'Club Profile', action: () => setPage('user') },
       // { id: 'community', icon: MessageSquare, label: 'Community' },
     ];
     if (viewMode === 'admin') {
       items.push({ id: 'admin', icon: Shield, label: 'Admin Console' });
+    }
+
+    // Captains should not see / access "My Squads"
+    if (isCaptain) {
+      return items.filter((item) => item.id !== 'my_squads');
     }
 
     // Restrict certain sections for MEMBER role
@@ -281,7 +292,7 @@ export default function TechnoXianApp({ mode = 'public' }) {
     }
 
     return items;
-  }, [viewMode, userRole]);
+  }, [viewMode, userRole, isCaptain]);
 
   const handleLogout = () => {
     clearRoboclubAuthToken();
@@ -318,10 +329,13 @@ export default function TechnoXianApp({ mode = 'public' }) {
 
   // Prevent MEMBER role from landing on restricted pages even via direct navigation
   const restrictedForMember = new Set(['Add Members', 'squad_manager']);
+  const restrictedForCaptain = new Set(['my_squads']);
   const activePage =
     userRole === 'MEMBER' && restrictedForMember.has(baseActivePage)
       ? 'dashboard'
-      : baseActivePage;
+      : isCaptain && restrictedForCaptain.has(baseActivePage)
+        ? 'dashboard'
+        : baseActivePage;
 
   const activePageTitle =
     menuItems.find((item) => item.id === activePage)?.label ??
