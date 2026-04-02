@@ -12,10 +12,13 @@ import {
 } from '../app/auth/authSlice';
 import RoboClubPasswordRecovery from '../components/roboclub/RoboClubPasswordRecovery';
 import { RoboClubAuthPage, RoboClubAuthPrimaryButton } from '../components/roboclub/RoboClubAuthLayout';
+import { useLocationPrefix } from '../hooks/useLocationPrefix';
+import { pathWithLocationPrefix } from '../utils/locationRoutes';
 
 const RoboClubAuth = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { locationPrefix } = useLocationPrefix();
   const loading = useSelector(selectOtpLoading);
   const error = useSelector(selectOtpError);
   const loginVerified = useSelector(selectLoginVerified);
@@ -32,8 +35,8 @@ const RoboClubAuth = () => {
   useEffect(() => {
     if (!loginVerified) return;
     dispatch(clearLoginVerified());
-    navigate('/roboclub-dashboard', { replace: true });
-  }, [loginVerified, dispatch, navigate]);
+    navigate(pathWithLocationPrefix(locationPrefix, '/roboclub-dashboard'), { replace: true });
+  }, [loginVerified, dispatch, navigate, locationPrefix]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -189,13 +192,13 @@ const RoboClubAuth = () => {
 
       <div className="text-center mt-6 pt-6 border-t border-gray-800">
         <Link
-          to="/"
+          to={pathWithLocationPrefix(locationPrefix, '/')}
           className="text-sm text-gray-400 hover:text-white transition-colors block mb-2"
         >
           ← Back to Home
         </Link>
         <Link
-          to="/roboclub"
+          to={pathWithLocationPrefix(locationPrefix, '/roboclub')}
           className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
         >
           Don&apos;t have an account? Sign up

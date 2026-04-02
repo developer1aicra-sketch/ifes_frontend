@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { addClub } from '../../api/clubApi';
 import { getRoboclubAuthToken } from '../../api/authToken';
+import { useLocationPrefix } from '../../hooks/useLocationPrefix';
+import { pathWithLocationPrefix } from '../../utils/locationRoutes';
 
 // Common countries for dropdown (countryCode, country name)
 const COUNTRY_OPTIONS = [
@@ -79,6 +81,7 @@ const FALLBACK_OTHER_OPTION = 'Other';
 
 const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
   const navigate = useNavigate();
+  const { locationPrefix } = useLocationPrefix();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -252,7 +255,7 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
     handleClose();
     if (onSuccess) onSuccess();
     const roboclubToken = getRoboclubAuthToken();
-    navigate(roboclubToken ? '/roboclub-dashboard' : '/roboclub-login');
+    navigate(pathWithLocationPrefix(locationPrefix, roboclubToken ? '/roboclub-dashboard' : '/roboclub-login'));
   };
 
   if (!showModal) return null;

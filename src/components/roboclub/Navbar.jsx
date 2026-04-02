@@ -1,10 +1,15 @@
 import React from 'react';
 import { Zap, Award } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
+import { useLocationPrefix } from '../../hooks/useLocationPrefix';
+import { pathWithLocationPrefix } from '../../utils/locationRoutes';
 
-const Navbar = ({ onOpenCertificate, onNavigateHome, isAuthenticated }) => (
-  <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex justify-between items-center border-b border-white/10 bg-slate-950/60 backdrop-blur-xl">
-    <NavLink  to="/" className="flex items-center gap-2 cursor-pointer" >
+const Navbar = ({ onOpenCertificate, onNavigateHome, isAuthenticated }) => {
+  const { locationPrefix } = useLocationPrefix();
+
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex justify-between items-center border-b border-white/10 bg-slate-950/60 backdrop-blur-xl">
+    <NavLink to={pathWithLocationPrefix(locationPrefix, '/')} className="flex items-center gap-2 cursor-pointer">
       <div className="w-8 h-8 bg-gradient-to-tr from-cyan-400 to-violet-600 rounded-lg flex items-center justify-center">
         <Zap className="text-white w-5 h-5 fill-current" />
       </div>
@@ -31,14 +36,14 @@ const Navbar = ({ onOpenCertificate, onNavigateHome, isAuthenticated }) => (
 
       {isAuthenticated ? (
         <Link
-          to="/roboclub-dashboard"
+          to={pathWithLocationPrefix(locationPrefix, '/roboclub-dashboard')}
           className="px-5 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-bold rounded-lg shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all text-sm"
         >
           Open Dashboard
         </Link>
       ) : (
         <Link
-          to="/roboclub-login"
+          to={pathWithLocationPrefix(locationPrefix, '/roboclub-login')}
           className="px-5 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all text-sm"
         >
           Login
@@ -46,6 +51,7 @@ const Navbar = ({ onOpenCertificate, onNavigateHome, isAuthenticated }) => (
       )}
     </div>
   </nav>
-);
+  );
+};
 
 export default Navbar;
