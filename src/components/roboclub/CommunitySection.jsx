@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { MessageCircle, Users, Smartphone, ArrowRight } from 'lucide-react';
 
 const CommunitySection = () => (
+  <div>
+{/* 
   <section id="community" className="py-24 bg-slate-950">
     <div className=" mx-auto px-6">
       <div className="text-center mb-16">
@@ -12,7 +14,7 @@ const CommunitySection = () => (
       </div>
 
       <div className="grid md:grid-cols-3 gap-8">
-        {/* Chat Preview Card */}
+      
         <div className="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden relative group">
           <div className="absolute top-0 right-0 p-4 z-10">
             <div className="bg-green-500/20 text-green-400 text-xs font-bold px-3 py-1 rounded-full border border-green-500/20 flex items-center gap-2">
@@ -30,7 +32,7 @@ const CommunitySection = () => (
               </div>
             </div>
             
-            {/* Chat Bubbles Animation */}
+           
             <div className="space-y-4 relative">
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10 h-32 bottom-0 pointer-events-none"></div>
               {[1, 2, 3].map((_, i) => (
@@ -67,7 +69,7 @@ const CommunitySection = () => (
           </div>
         </div>
 
-        {/* Community Stats/Events */}
+       
         <div className="space-y-6">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-violet-500/50 transition-colors">
             <div className="w-10 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center text-violet-400 mb-4">
@@ -88,7 +90,9 @@ const CommunitySection = () => (
         </div>
       </div>
     </div>
-  </section>
+  </section> */}
+  </div>
+
 );
 
 export default CommunitySection;

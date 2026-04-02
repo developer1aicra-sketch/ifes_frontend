@@ -18,11 +18,22 @@ const Navbar = ({ onOpenCertificate, onNavigateHome, isAuthenticated }) => {
       </span>
     </NavLink>
    
-    <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-      <button onClick={onNavigateHome} className="hover:text-cyan-400 transition-colors">Home</button>
-      <a href="#community" className="hover:text-cyan-400 transition-colors">Community</a>
-      <a href="#shop" className="hover:text-cyan-400 transition-colors">Shop</a>
-      <a href="#winners" className="hover:text-cyan-400 transition-colors">Champions</a>
+    <div className="hidden lg:flex items-center gap-5 text-sm font-medium text-slate-300 flex-wrap justify-end max-w-2xl">
+      <button
+        type="button"
+        onClick={() => onNavigateHome?.()}
+        className="hover:text-cyan-400 transition-colors shrink-0"
+      >
+        Home
+      </button>
+      <a href="#about-robo" className="hover:text-cyan-400 transition-colors shrink-0">About</a>
+      <a href="#learning-tracks" className="hover:text-cyan-400 transition-colors shrink-0">Learn</a>
+      <a href="#competitions-events" className="hover:text-cyan-400 transition-colors shrink-0">Events</a>
+      <a href="#project-showcase" className="hover:text-cyan-400 transition-colors shrink-0">Showcase</a>
+      <a href="#testimonials" className="hover:text-cyan-400 transition-colors shrink-0">Stories</a>
+      <a href="#community" className="hover:text-cyan-400 transition-colors shrink-0">Community</a>
+      <a href="#shop" className="hover:text-cyan-400 transition-colors shrink-0">Shop</a>
+      <a href="#winners" className="hover:text-cyan-400 transition-colors shrink-0">Champions</a>
     </div>
 
     <div className="flex items-center gap-4">
