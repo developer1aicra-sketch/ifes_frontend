@@ -356,9 +356,10 @@ export default function TechnoXianApp({ mode = 'public' }) {
             <div className="p-6 border-b border-slate-800 flex items-start justify-between gap-3">
               <div>
                 <NavLink to="/" className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 italic">
-                  TECHNOXIAN
+                  {/* TECHNOXIAN */}
+                  ROBOCLUB 
                 </NavLink>
-                <p className="text-slate-500 text-xs tracking-widest mt-1">FEDERATION PORTAL</p>
+                <p className="text-slate-500 text-xs tracking-widest mt-1">PORTAL</p>
               </div>
               <button
                 type="button"

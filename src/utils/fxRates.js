@@ -36,10 +36,10 @@ async function fetchRatesOpenErApi(base) {
 }
 
 async function fetchRatesFawaz(base) {
-  // CORS-friendly mirror of fawazahmed0/currency-api via jsdelivr.
-  // Example: .../latest/currencies/inr.json -> { date, inr: { usd: 0.012, ... } }
+  // CORS-friendly: rates ship as npm package (the old gh/.../currency-api@1 path 404s).
+  // Example: .../v1/currencies/inr.json -> { date, inr: { usd: 0.012, ... } }
   const lower = String(base || "").toLowerCase();
-  const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/${encodeURIComponent(
+  const url = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${encodeURIComponent(
     lower
   )}.json`;
   const res = await fetch(url, { cache: "no-store" });

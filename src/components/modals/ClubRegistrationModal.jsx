@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import * as CSC from 'country-state-city/lib/cjs/index.js';
 import {
   X,
   Shield,
@@ -21,64 +22,6 @@ import { getRoboclubAuthToken } from '../../api/authToken';
 import { useLocationPrefix } from '../../hooks/useLocationPrefix';
 import { pathWithLocationPrefix } from '../../utils/locationRoutes';
 
-// Common countries for dropdown (countryCode, country name)
-const COUNTRY_OPTIONS = [
-  { code: 'IN', name: 'India' },
-  { code: 'US', name: 'United States' },
-  { code: 'GB', name: 'United Kingdom' },
-  { code: 'AE', name: 'United Arab Emirates' },
-  { code: 'SA', name: 'Saudi Arabia' },
-  { code: 'SG', name: 'Singapore' },
-  { code: 'MY', name: 'Malaysia' },
-  { code: 'PK', name: 'Pakistan' },
-  { code: 'BD', name: 'Bangladesh' },
-  { code: 'NP', name: 'Nepal' },
-  { code: 'LK', name: 'Sri Lanka' },
-  { code: 'CA', name: 'Canada' },
-  { code: 'AU', name: 'Australia' },
-  { code: 'DE', name: 'Germany' },
-  { code: 'FR', name: 'France' },
-  { code: 'JP', name: 'Japan' },
-  { code: 'CN', name: 'China' },
-  { code: 'KR', name: 'South Korea' },
-  { code: 'OTHER', name: 'Other' },
-];
-
-const INDIA_STATE_CITY = {
-  'Andhra Pradesh': ['Visakhapatnam', 'Vijayawada', 'Guntur', 'Tirupati', 'Kurnool', 'Rajahmundry'],
-  'Arunachal Pradesh': ['Itanagar', 'Naharlagun'],
-  Assam: ['Guwahati', 'Silchar', 'Dibrugarh', 'Jorhat'],
-  Bihar: ['Patna', 'Gaya', 'Muzaffarpur', 'Bhagalpur'],
-  Chhattisgarh: ['Raipur', 'Bhilai', 'Bilaspur', 'Korba'],
-  Delhi: ['New Delhi', 'Delhi'],
-  Goa: ['Panaji', 'Margao', 'Vasco da Gama'],
-  Gujarat: ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar'],
-  Haryana: ['Gurugram', 'Faridabad', 'Panipat', 'Ambala'],
-  'Himachal Pradesh': ['Shimla', 'Dharamshala', 'Solan'],
-  'Jammu and Kashmir': ['Srinagar', 'Jammu'],
-  Jharkhand: ['Ranchi', 'Jamshedpur', 'Dhanbad'],
-  Karnataka: ['Bengaluru', 'Mysuru', 'Mangaluru', 'Hubballi', 'Belagavi'],
-  Kerala: ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur'],
-  'Madhya Pradesh': ['Bhopal', 'Indore', 'Jabalpur', 'Gwalior'],
-  Maharashtra: ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Thane'],
-  Manipur: ['Imphal'],
-  Meghalaya: ['Shillong'],
-  Mizoram: ['Aizawl'],
-  Nagaland: ['Kohima', 'Dimapur'],
-  Odisha: ['Bhubaneswar', 'Cuttack', 'Rourkela'],
-  Punjab: ['Chandigarh', 'Ludhiana', 'Amritsar', 'Jalandhar'],
-  Rajasthan: ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota'],
-  Sikkim: ['Gangtok'],
-  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli'],
-  Telangana: ['Hyderabad', 'Warangal', 'Nizamabad'],
-  Tripura: ['Agartala'],
-  'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Varanasi', 'Agra', 'Noida'],
-  Uttarakhand: ['Dehradun', 'Haridwar', 'Rishikesh'],
-  'West Bengal': ['Kolkata', 'Howrah', 'Durgapur', 'Siliguri'],
-};
-
-const FALLBACK_OTHER_OPTION = 'Other';
-
 const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
   const navigate = useNavigate();
   const { locationPrefix } = useLocationPrefix();
@@ -93,6 +36,7 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
     instituteName: '',
     countryCode: 'IN',
     country: 'India',
+    stateCode: '',
     state: '',
     city: '',
     mobile: '',
@@ -100,26 +44,40 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
     password: '',
   });
 
+  const countries = useMemo(() => {
+    const all = CSC.Country.getAllCountries();
+    return [...all].sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
+
+  const states = useMemo(() => {
+    if (!form.countryCode) return [];
+    const all = CSC.State.getStatesOfCountry(form.countryCode);
+    return [...all].sort((a, b) => a.name.localeCompare(b.name));
+  }, [form.countryCode]);
+
+  const cities = useMemo(() => {
+    if (!form.countryCode || !form.stateCode) return [];
+    const all = CSC.City.getCitiesOfState(form.countryCode, form.stateCode);
+    return [...all].sort((a, b) => a.name.localeCompare(b.name));
+  }, [form.countryCode, form.stateCode]);
+
+  const hasStateList = states.length > 0;
+  const hasCityList = cities.length > 0;
+
   const updateForm = (field, value) => {
     setForm((prev) => {
       const next = { ...prev, [field]: value };
       if (field === 'countryCode') {
-        const opt = COUNTRY_OPTIONS.find((c) => c.code === value);
-        if (opt) next.country = opt.name;
-        if (value === 'IN') {
-          next.state = '';
-          next.city = '';
-        } else {
-          next.state = FALLBACK_OTHER_OPTION;
-          next.city = FALLBACK_OTHER_OPTION;
-        }
+        const country = CSC.Country.getCountryByCode(value);
+        next.country = country?.name || '';
+        next.stateCode = '';
+        next.state = '';
+        next.city = '';
       }
-      if (field === 'state') {
-        if (next.countryCode === 'IN') {
-          next.city = '';
-        } else {
-          next.city = FALLBACK_OTHER_OPTION;
-        }
+      if (field === 'stateCode') {
+        const state = CSC.State.getStateByCodeAndCountry(value, next.countryCode);
+        next.state = state?.name || '';
+        next.city = '';
       }
       return next;
     });
@@ -198,9 +156,16 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
       return;
     }
     const mobileClean = mobile.replace(/\D/g, '');
-    if (mobileClean.length !== 10) {
-      setError('Please enter exactly 10 digits for mobile number');
-      return;
+    if (countryCode === 'IN') {
+      if (mobileClean.length !== 10) {
+        setError('Please enter exactly 10 digits for mobile number');
+        return;
+      }
+    } else {
+      if (mobileClean.length < 7 || mobileClean.length > 15) {
+        setError('Please enter a valid mobile number (7 to 15 digits)');
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -243,6 +208,7 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
       instituteName: '',
       countryCode: 'IN',
       country: 'India',
+      stateCode: '',
       state: '',
       city: '',
       mobile: '',
@@ -404,8 +370,8 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
                     onChange={(e) => updateForm('countryCode', e.target.value)}
                     className="w-full bg-slate-800/50 border border-slate-600 text-white px-4 py-3 rounded-lg outline-none focus:border-cyan-400 transition-all"
                   >
-                    {COUNTRY_OPTIONS.map((c) => (
-                      <option key={c.code} value={c.code}>
+                    {countries.map((c) => (
+                      <option key={c.isoCode} value={c.isoCode}>
                         {c.name}
                       </option>
                     ))}
@@ -416,30 +382,29 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
                   <label className="block text-slate-300 text-sm font-medium mb-1">State</label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
-                    {form.countryCode === 'IN' ? (
+                    {hasStateList ? (
                       <select
-                        value={form.state}
-                        onChange={(e) => updateForm('state', e.target.value)}
+                        value={form.stateCode}
+                        onChange={(e) => updateForm('stateCode', e.target.value)}
                         className="w-full bg-slate-800/50 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-lg outline-none focus:border-cyan-400 transition-all"
                       >
                         <option value="" disabled>
                           Select state
                         </option>
-                        {Object.keys(INDIA_STATE_CITY).map((stateName) => (
-                          <option key={stateName} value={stateName}>
-                            {stateName}
+                        {states.map((s) => (
+                          <option key={`${s.countryCode}-${s.isoCode}`} value={s.isoCode}>
+                            {s.name}
                           </option>
                         ))}
                       </select>
                     ) : (
-                      <select
+                      <input
+                        type="text"
                         value={form.state}
                         onChange={(e) => updateForm('state', e.target.value)}
-                        disabled
-                        className="w-full bg-slate-800/50 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-lg outline-none focus:border-cyan-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <option value={FALLBACK_OTHER_OPTION}>{FALLBACK_OTHER_OPTION}</option>
-                      </select>
+                        placeholder="Enter state / region"
+                        className="w-full bg-slate-800/50 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-lg outline-none focus:border-cyan-400 transition-all"
+                      />
                     )}
                   </div>
                 </div>
@@ -448,31 +413,30 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
                   <label className="block text-slate-300 text-sm font-medium mb-1">City</label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
-                    {form.countryCode === 'IN' ? (
+                    {hasCityList ? (
                       <select
                         value={form.city}
                         onChange={(e) => updateForm('city', e.target.value)}
-                        disabled={!form.state}
+                        disabled={!form.stateCode}
                         className="w-full bg-slate-800/50 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-lg outline-none focus:border-cyan-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <option value="" disabled>
-                          {form.state ? 'Select city' : 'Select state first'}
+                          {form.stateCode ? 'Select city' : 'Select state first'}
                         </option>
-                        {(INDIA_STATE_CITY[form.state] || []).map((cityName) => (
-                          <option key={cityName} value={cityName}>
-                            {cityName}
+                        {cities.map((c) => (
+                          <option key={`${c.stateCode}-${c.name}`} value={c.name}>
+                            {c.name}
                           </option>
                         ))}
                       </select>
                     ) : (
-                      <select
+                      <input
+                        type="text"
                         value={form.city}
                         onChange={(e) => updateForm('city', e.target.value)}
-                        disabled
-                        className="w-full bg-slate-800/50 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-lg outline-none focus:border-cyan-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <option value={FALLBACK_OTHER_OPTION}>{FALLBACK_OTHER_OPTION}</option>
-                      </select>
+                        placeholder="Enter city"
+                        className="w-full bg-slate-800/50 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-lg outline-none focus:border-cyan-400 transition-all"
+                      />
                     )}
                   </div>
                 </div>
@@ -484,9 +448,9 @@ const ClubRegistrationModal = ({ showModal, setShowModal, onSuccess }) => {
                     <input
                       type="tel"
                       value={form.mobile}
-                      onChange={(e) => updateForm('mobile', e.target.value.replace(/\D/g, '').slice(0, 10))}
-                      placeholder="e.g. 9876543210"
-                      maxLength={10}
+                      onChange={(e) => updateForm('mobile', e.target.value.replace(/\D/g, '').slice(0, 15))}
+                      placeholder={form.countryCode === 'IN' ? 'e.g. 9876543210' : 'Enter mobile number'}
+                      maxLength={15}
                       className="w-full bg-slate-800/50 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-lg outline-none focus:border-cyan-400 transition-all"
                     />
                   </div>
