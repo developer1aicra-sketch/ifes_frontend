@@ -986,9 +986,9 @@ const AboutLayout = ({ setView }) => {
         const displayAdvisoryMembers = advisoryMembers.length > 0
           ? advisoryMembers.map((m) => ({
               id: m._id || m.id,
-              name: m.name,
+              name: m.name || m.full_name || '',
               designation: m.role || m.designation || 'Advisory Board Member',
-              image: m.image || m.avatar,
+              image: m.image || m.avatar || m.photo,
             }))
           : ADVISORY_BOARD;
         return (

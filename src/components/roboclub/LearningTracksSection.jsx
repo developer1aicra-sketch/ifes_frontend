@@ -147,16 +147,16 @@ const LearningTracksSection = () => (
                   </h3>
                   <p className="text-slate-400 text-sm mt-2 leading-relaxed">{track.tagline}</p>
                   <div className="mt-3">
-                    <div className="flex items-center justify-between gap-4 text-xs">
+                    {/* <div className="flex items-center justify-between gap-4 text-xs">
                       <span className="text-slate-500 font-semibold">{skin.progress.label}</span>
                       <span className="text-slate-400 font-black">{skin.progress.pct}%</span>
-                    </div>
-                    <div className="mt-2 h-2 rounded-full bg-slate-800 border border-slate-700 overflow-hidden">
+                    </div> */}
+                    {/* <div className="mt-2 h-2 rounded-full bg-slate-800 border border-slate-700 overflow-hidden">
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400"
                         style={{ width: `${skin.progress.pct}%` }}
                       />
-                    </div>
+                    </div> */}
                   </div>
                 </div>
                 <div
