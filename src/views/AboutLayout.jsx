@@ -4,42 +4,12 @@ import { Award, Cpu, Shield, Users, Globe2, Map, ClipboardList, Lock, Layers, Ar
 import { useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import endpoints from '../api/endpoints';
-import { getLocationPrefix, getLocationCodeFromPath } from '../utils/locationRoutes';
+import { getLocationPrefix } from '../utils/locationRoutes';
 import { ABOUT_PARTNER_STATIC } from '../data/aboutPartnerStatic';
 import { EXECUTIVE_MEMBERS, ADVISORY_BOARD, REFEREES } from '../data/aboutPeople';
 import PersonCard from '../components/partner/PersonCard';
-import { getPartnerAbout } from '../api/partnerAboutApi';
-import { getAdvisoryBoard, getAdvisoryRefree } from '../api/advisoryApi';
-
-const normalizePartnerAboutItem = (payload) => {
-  if (!payload || typeof payload !== 'object') return null;
-  const heading = String(payload.heading || payload.title || '').trim();
-  const content = String(payload.content || payload.description || '').trim();
-  if (!heading && !content) return null;
-  return {
-    id: payload._id || payload.id || heading,
-    heading: heading || 'About',
-    content,
-    displayOrder: typeof payload.display_order === 'number' ? payload.display_order : Number.MAX_SAFE_INTEGER,
-  };
-};
-
-const normalizePartnerPerson = (payload, fallbackDesignation) => {
-  if (!payload || typeof payload !== 'object') return null;
-  const name = String(payload.name || '').trim();
-  const designation = String(payload.designation || payload.role || fallbackDesignation || '').trim();
-  const image = payload.image || payload.photo || payload.avatar || '';
-  if (!name && !designation && !image) return null;
-  return {
-    id: payload._id || payload.id || `${name}-${designation}`,
-    name: name || 'Member',
-    designation: designation || fallbackDesignation,
-    image,
-    displayOrder: typeof payload.display_order === 'number' ? payload.display_order : Number.MAX_SAFE_INTEGER,
-  };
-};
-
-const sortByDisplayOrder = (a, b) => a.displayOrder - b.displayOrder;
+import AdvisoryBoardGrid from '../components/about/AdvisoryBoardGrid';
+import { usePartnerAboutPageData } from '../hooks/usePartnerAboutPageData';
 
 const AboutLayout = ({ setView }) => {
   const navigate = useNavigate();
@@ -60,27 +30,29 @@ const AboutLayout = ({ setView }) => {
   const tabsContainerRef = useRef(null);
   const tabRefs = useRef({});
 
-  // Advisory Board state
+  // Advisory Board state — `/about#advisory` loads CMS/API via about-worso/people?category=ADVISORY_BOARD
   const [advisoryMembers, setAdvisoryMembers] = useState([]);
   const [advisoryLoading, setAdvisoryLoading] = useState(false);
   const [advisoryError, setAdvisoryError] = useState(null);
+  const advisoryFetchedRef = useRef(false);
 
   // Executive Committee state
   const [boardMembers, setBoardMembers] = useState([]);
   const [boardLoading, setBoardLoading] = useState(false);
   const [boardError, setBoardError] = useState(null);
 
-  // Partner route API state
-  const [partnerAboutSections, setPartnerAboutSections] = useState([]);
-  const [partnerAboutLoading, setPartnerAboutLoading] = useState(false);
-  const [partnerAboutError, setPartnerAboutError] = useState('');
-  const [partnerAdvisoryMembers, setPartnerAdvisoryMembers] = useState([]);
-  const [partnerAdvisoryLoading, setPartnerAdvisoryLoading] = useState(false);
-  const [partnerAdvisoryError, setPartnerAdvisoryError] = useState('');
-  const [partnerReferees, setPartnerReferees] = useState([]);
-  const [partnerRefereesLoading, setPartnerRefereesLoading] = useState(false);
-  const [partnerRefereesError, setPartnerRefereesError] = useState('');
   const [partnerActiveTab, setPartnerActiveTab] = useState('');
+  const {
+    partnerAboutError,
+    partnerAboutLoading,
+    partnerAboutSections,
+    partnerAdvisoryBoard,
+    partnerAdvisoryBoardError,
+    partnerAdvisoryBoardLoading,
+    partnerReferees,
+    partnerRefereesError,
+    partnerRefereesLoading,
+  } = usePartnerAboutPageData(isPartnerAboutRoute, location.pathname);
   
   // Update activeSection when URL hash changes
   useEffect(() => {
@@ -112,104 +84,6 @@ const AboutLayout = ({ setView }) => {
     }
   }, [activeSection]);
 
-  // Partner route: fetch about/advisory/refree content
-  useEffect(() => {
-    if (!isPartnerAboutRoute) return;
-
-    const website = 'worso';
-    const partnerCode = getLocationCodeFromPath(location.pathname) || 'IN';
-    let isMounted = true;
-
-    const loadPartnerContent = async () => {
-      setPartnerAboutLoading(true);
-      setPartnerAdvisoryLoading(true);
-      setPartnerRefereesLoading(true);
-      setPartnerAboutError('');
-      setPartnerAdvisoryError('');
-      setPartnerRefereesError('');
-
-      try {
-        const [aboutRes, boardRes, refreeRes] = await Promise.all([
-          getPartnerAbout(website, partnerCode),
-          getAdvisoryBoard(website, partnerCode),
-          getAdvisoryRefree(website, partnerCode),
-        ]);
-
-        if (!isMounted) return;
-
-        const aboutPayload = aboutRes?.data?.data ?? aboutRes?.data?.about ?? aboutRes?.data ?? [];
-        const normalizedAbout = (Array.isArray(aboutPayload) ? aboutPayload : [aboutPayload])
-          .map(normalizePartnerAboutItem)
-          .filter(Boolean)
-          .sort(sortByDisplayOrder);
-        setPartnerAboutSections(normalizedAbout);
-
-        const advisoryPayload = boardRes?.data?.data ?? boardRes?.data?.advisoryBoard ?? boardRes?.data ?? [];
-        const normalizedAdvisory = (Array.isArray(advisoryPayload) ? advisoryPayload : [])
-          .map((item) => normalizePartnerPerson(item, 'Advisory Board Member'))
-          .filter(Boolean)
-          .sort(sortByDisplayOrder);
-        setPartnerAdvisoryMembers(normalizedAdvisory);
-
-        const refreePayload = refreeRes?.data?.data ?? refreeRes?.data?.advisoryRefree ?? refreeRes?.data ?? [];
-        const normalizedReferees = (Array.isArray(refreePayload) ? refreePayload : [])
-          .map((item) => normalizePartnerPerson(item, 'Referee'))
-          .filter(Boolean)
-          .sort(sortByDisplayOrder);
-        setPartnerReferees(normalizedReferees);
-      } catch (error) {
-        console.error('Failed to load partner about page content', error);
-        if (!isMounted) return;
-        setPartnerAboutError('Unable to load partner about sections right now.');
-        setPartnerAdvisoryError('Unable to load advisory board right now.');
-        setPartnerRefereesError('Unable to load referees right now.');
-      } finally {
-        if (isMounted) {
-          setPartnerAboutLoading(false);
-          setPartnerAdvisoryLoading(false);
-          setPartnerRefereesLoading(false);
-        }
-      }
-    };
-
-    loadPartnerContent();
-    return () => {
-      isMounted = false;
-    };
-  }, [isPartnerAboutRoute, location.pathname]);
-
-  // Fetch Advisory Board members when advisory tab is active
-  useEffect(() => {
-    if (activeSection !== 'advisory' || advisoryMembers.length > 0 || advisoryLoading) {
-      return;
-    }
-
-    const fetchAdvisoryBoard = async () => {
-      setAdvisoryLoading(true);
-      setAdvisoryError(null);
-      try {
-        const response = await axiosInstance.get(endpoints.about.people('ADVISORY_BOARD'));
-        const data = Array.isArray(response?.data?.data) ? response.data.data : [];
-
-        // Sort by display_order if available
-        const sorted = [...data].sort((a, b) => {
-          const aOrder = typeof a.display_order === 'number' ? a.display_order : 0;
-          const bOrder = typeof b.display_order === 'number' ? b.display_order : 0;
-          return aOrder - bOrder;
-        });
-
-        setAdvisoryMembers(sorted);
-      } catch (error) {
-        console.error('Failed to load advisory board members', error);
-        setAdvisoryError('Unable to load Advisory Board at the moment.');
-      } finally {
-        setAdvisoryLoading(false);
-      }
-    };
-
-    fetchAdvisoryBoard();
-  }, [activeSection, advisoryMembers.length, advisoryLoading]);
-  
   // Fetch Executive Committee when board tab is active
   useEffect(() => {
     if (activeSection !== 'board' || boardMembers.length > 0 || boardLoading) {
@@ -347,29 +221,24 @@ const AboutLayout = ({ setView }) => {
   if (isPartnerAboutRoute) {
     const activePartnerTab = partnerTabs.find((tab) => tab.id === partnerActiveTab) || partnerTabs[0];
 
+    const isFirstPartnerAboutTab =
+      activePartnerTab?.type === 'about' && partnerActiveTab === partnerTabs[0]?.id;
+
     const renderPartnerAboutContent = () => {
       if (activePartnerTab?.type === 'advisory') {
-        const members = partnerAdvisoryMembers.length > 0
-          ? partnerAdvisoryMembers
-          : ADVISORY_BOARD.map((item) => ({ ...item, id: item.id || item._id || item.name }));
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Advisory Board</h2>
-            {partnerAdvisoryError && <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">{partnerAdvisoryError}</p>}
-            {partnerAdvisoryLoading ? (
+            {partnerAdvisoryBoardError && (
+              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+                {partnerAdvisoryBoardError}
+              </p>
+            )}
+            {partnerAdvisoryBoardLoading ? (
               <p className="text-slate-500">Loading advisory board...</p>
+            ) : partnerAdvisoryBoard.length === 0 ? (
+              <p className="text-slate-600">No advisory board members are listed for this partner yet.</p>
             ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {members.map((person) => (
-                  <PersonCard
-                    key={person.id}
-                    id={person.id}
-                    name={person.name}
-                    designation={person.designation}
-                    image={person.image}
-                  />
-                ))}
-              </div>
+              <AdvisoryBoardGrid members={partnerAdvisoryBoard} title="Advisory Board" />
             )}
           </div>
         );
@@ -423,6 +292,15 @@ const AboutLayout = ({ setView }) => {
                 {activePartnerTab?.content || 'Content will be published soon.'}
               </div>
             )
+          )}
+          {isFirstPartnerAboutTab && (
+            <div className="pt-10 mt-10 border-t border-slate-200">
+              <AdvisoryBoardGrid
+                members={ADVISORY_BOARD}
+                title="Advisory Board"
+                description="Global advisors supporting our mission and partner programs worldwide."
+              />
+            </div>
           )}
         </div>
       );
@@ -558,6 +436,11 @@ const AboutLayout = ({ setView }) => {
               <p className="text-slate-600 leading-relaxed">
                 With the eSports industry projected to cross a global market size of over $1.5 billion in 2023, the future of competitive gaming looks bright. WORSO is well-positioned to lead the way, continuing to promote the growth and development of eSports on a global scale. By fostering collaboration, advocating for recognition, and addressing key challenges, WORSO is ensuring that eSports reaches its full potential as a sport, entertainment medium, and cultural phenomenon.
               </p>
+            </div>
+
+            {/* Advisory Board — asset-backed members from data/aboutPeople */}
+            <div className="pt-6 border-t border-slate-100">
+              <AdvisoryBoardGrid members={ADVISORY_BOARD} />
             </div>
 
             {/* Join the Movement */}
@@ -982,60 +865,12 @@ const AboutLayout = ({ setView }) => {
           </div>
         );
 
-      case 'advisory': {
-        const displayAdvisoryMembers = advisoryMembers.length > 0
-          ? advisoryMembers.map((m) => ({
-              id: m._id || m.id,
-              name: m.name || m.full_name || '',
-              designation: m.role || m.designation || 'Advisory Board Member',
-              image: m.image || m.avatar || m.photo,
-            }))
-          : ADVISORY_BOARD;
+      case 'advisory':
         return (
           <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">Advisory Board</h2>
-            <p className="text-slate-600 mb-8 max-w-2xl">
-              Global leaders and experts guiding WORSO&apos;s mission, governance, and long-term strategy.
-            </p>
-
-            {advisoryLoading && (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="bg-white rounded-2xl border border-slate-200 p-8 flex flex-col items-center animate-pulse">
-                    <div className="w-40 h-40 rounded-lg bg-slate-200 mb-6" />
-                    <div className="h-5 bg-slate-200 rounded w-3/4 mb-2" />
-                    <div className="h-3 bg-slate-100 rounded w-1/2" />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {!advisoryLoading && advisoryError && (
-              <div className="mb-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
-                {advisoryError} Showing static advisory board.
-              </div>
-            )}
-
-            {!advisoryLoading && displayAdvisoryMembers.length > 0 && (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {displayAdvisoryMembers.map((person) => (
-                  <PersonCard
-                    key={person.id}
-                    id={person.id}
-                    name={person.name}
-                    designation={person.designation}
-                    image={person.image}
-                  />
-                ))}
-              </div>
-            )}
-
-            {!advisoryLoading && displayAdvisoryMembers.length === 0 && (
-              <p className="text-slate-500 text-sm">Advisory Board members will be announced soon.</p>
-            )}
+            <AdvisoryBoardGrid members={ADVISORY_BOARD} />
           </div>
         );
-      }
 
       case 'federation-services':
         return (

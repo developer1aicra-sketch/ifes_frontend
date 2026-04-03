@@ -24,7 +24,10 @@ import { useThemeClasses } from '../hooks/useThemeClasses';
 import { usePartnerHome } from '../hooks/usePartnerHome';
 import { usePartnerEvent } from '../hooks/usePartnerEvent';
 import { usePartnerCompetitions } from '../hooks/usePartnerCompetitions';
+import { useCompetitionList } from '../hooks/useCompetitionList';
 import { useLocationPrefix } from '../hooks/useLocationPrefix';
+import HomeGallerySection from '../components/HomeGallerySection';
+import { galleryImages } from '../assets/gallery';
 import { PARTNER_HOME_STATIC } from '../data/partnerHomeStatic';
 import TrophyVideo from '../assets/technoxian zrc_1.mp4';
 
@@ -71,6 +74,17 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
     loading: partnerCompetitionsLoading,
     error: partnerCompetitionsError,
   } = usePartnerCompetitions(effectivePartnerCode);
+
+  const {
+    competitions: homeCompetitionList,
+    loading: homeCompetitionsLoading,
+    error: homeCompetitionsError,
+  } = useCompetitionList();
+
+  const competitionsForCarousel = useMemo(() => {
+    if (homeCompetitionList.length > 0) return homeCompetitionList;
+    return (partnerCompetitions || []).filter((c) => c && c.isActive !== false);
+  }, [homeCompetitionList, partnerCompetitions]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
@@ -384,22 +398,35 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
         </section>
       )}
       
-      <FeaturedShopSection/>
+      <FeaturedShopSection />
+
+      {/* Global competition list (deduped by name) + carousel nav */}
+      {homeCompetitionsLoading && competitionsForCarousel.length === 0 && (
+        <section className="py-16 bg-white border-t border-slate-100">
+          <div className="container mx-auto px-4 text-center text-slate-500 text-sm">Loading competitions…</div>
+        </section>
+      )}
+      {competitionsForCarousel.length > 0 && (
+        <PartnerCompetitionSection
+          competitions={competitionsForCarousel}
+          title="Competitions"
+          carouselId="home-competition-carousel"
+        />
+      )}
+      {homeCompetitionsError &&
+        competitionsForCarousel.length === 0 &&
+        !partnerCompetitionsLoading &&
+        (!partnerCompetitions || partnerCompetitions.length === 0) && (
+          <div className="container mx-auto px-4 py-6">
+            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+              Unable to load competitions right now.
+            </p>
+          </div>
+        )}
+      <HomeGallerySection images={galleryImages} title="Gallery" carouselId="home-gallery-carousel" />
+
       {(locationCode || partnerHomeData) && (
         <>
-          {!partnerCompetitionsLoading && partnerCompetitions.length > 0 && (
-            <PartnerCompetitionSection
-              competitions={partnerCompetitions}
-              title="Competitions"
-            />
-          )}
-          {partnerCompetitionsError && (
-            <div className="container mx-auto px-4 pt-6">
-              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
-                Unable to load competitions right now.
-              </p>
-            </div>
-          )}
           {featuredVideos.length > 0 && (
             <PartnerVideoSection
               videos={featuredVideos}

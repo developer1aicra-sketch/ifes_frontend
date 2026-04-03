@@ -32,7 +32,10 @@ export const EXECUTIVE_MEMBERS = [
   { id: 'ec-5', name: 'Rahul', designation: 'Member, Executive Committee', image: ecRahul },
 ];
 
-/** Advisory Board members: name, designation, image */
+/**
+ * Advisory Board — single source of truth for public About UIs (`/about#advisory`, partner About).
+ * Not loaded from `/about-worso/people`; update this list and `src/assets/advisoryBoard/` when roster changes.
+ */
 export const ADVISORY_BOARD = [
   { id: 'ab-1', name: 'AJ Beleza', designation: 'Advisory Board Member', image: ajBeleza },
   { id: 'ab-4', name: 'Davoud Jafari', designation: 'Advisory Board Member', image: davoudJafari },

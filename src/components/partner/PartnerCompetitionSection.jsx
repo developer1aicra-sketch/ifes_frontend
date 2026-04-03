@@ -55,8 +55,10 @@ const PartnerCompetitionSection = ({
 
                 <div className="p-5 flex flex-col flex-grow">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold text-slate-700 bg-slate-200">
-                      {item.category || 'Competition'}
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold text-slate-700 bg-slate-200 max-w-full truncate">
+                      {Array.isArray(item.category)
+                        ? item.category.filter(Boolean).join(', ') || 'Competition'
+                        : item.category || 'Competition'}
                     </span>
                   </div>
 
