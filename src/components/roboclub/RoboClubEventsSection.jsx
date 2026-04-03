@@ -163,12 +163,12 @@ const RoboClubEventsSection = () => {
                         <div className="p-6 flex flex-col flex-1 min-h-0">
                           <div className="flex items-start justify-between gap-4 mb-2">
                             <h3 className="text-lg font-black text-white leading-snug">{ev.name}</h3>
-                            <button
+                            {/* <button
                               type="button"
                               className="shrink-0 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xs font-black shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 transition-all"
                             >
                               Register
-                            </button>
+                            </button> */}
                           </div>
                           <p className="text-slate-400 text-sm leading-relaxed mb-5">{ev.summary}</p>
 

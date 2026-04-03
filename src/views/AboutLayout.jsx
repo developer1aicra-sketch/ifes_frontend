@@ -221,9 +221,6 @@ const AboutLayout = ({ setView }) => {
   if (isPartnerAboutRoute) {
     const activePartnerTab = partnerTabs.find((tab) => tab.id === partnerActiveTab) || partnerTabs[0];
 
-    const isFirstPartnerAboutTab =
-      activePartnerTab?.type === 'about' && partnerActiveTab === partnerTabs[0]?.id;
-
     const renderPartnerAboutContent = () => {
       if (activePartnerTab?.type === 'advisory') {
         return (
@@ -292,15 +289,6 @@ const AboutLayout = ({ setView }) => {
                 {activePartnerTab?.content || 'Content will be published soon.'}
               </div>
             )
-          )}
-          {isFirstPartnerAboutTab && (
-            <div className="pt-10 mt-10 border-t border-slate-200">
-              <AdvisoryBoardGrid
-                members={ADVISORY_BOARD}
-                title="Advisory Board"
-                description="Global advisors supporting our mission and partner programs worldwide."
-              />
-            </div>
           )}
         </div>
       );

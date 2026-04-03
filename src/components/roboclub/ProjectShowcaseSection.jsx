@@ -31,13 +31,13 @@ const ProjectCard = ({ p }) => (
       <h3 className="text-lg font-black text-white mb-2 line-clamp-2">{p.title}</h3>
       <p className="text-slate-400 text-sm leading-relaxed mb-2 line-clamp-3 flex-1">{p.description}</p>
       <p className="text-xs text-slate-500 mb-4">{p.author}</p>
-      <button
+      {/* <button
         type="button"
         className="inline-flex items-center gap-2 text-sm font-bold text-fuchsia-400 hover:text-fuchsia-300 mt-auto"
       >
         View details
         <ExternalLink className="w-4 h-4" />
-      </button>
+      </button> */}
     </div>
   </article>
 );
