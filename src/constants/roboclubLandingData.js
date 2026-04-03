@@ -220,6 +220,23 @@ export const SHOWCASE_KITS = [
   },
 ];
 
+/**
+ * World Robotics Championship — published ranking (order = rank).
+ * countryCode: ISO 3166-1 alpha-2 for flag assets (e.g. flagcdn).
+ */
+export const WRC_WINNERS_RANKING = [
+  { id: 'wrc-2025-01', rank: 1, name: 'ROBO ODISHA', country: 'India', countryCode: 'in' },
+  { id: 'wrc-2025-02', rank: 2, name: 'TEAM WARRIORS', country: 'India', countryCode: 'in' },
+  { id: 'wrc-2025-03', rank: 3, name: 'HEAVY DRIVERS', country: 'India', countryCode: 'in' },
+  { id: 'wrc-2025-04', rank: 4, name: 'Robotics and Aviation', country: 'India', countryCode: 'in' },
+  { id: 'wrc-2025-05', rank: 5, name: 'Wrc Azerbaijan', country: 'Azerbaijan', countryCode: 'az' },
+  { id: 'wrc-2025-06', rank: 6, name: 'KARMA YODHA BOTS', country: 'India', countryCode: 'in' },
+  { id: 'wrc-2025-07', rank: 7, name: 'ATOM', country: 'Russia', countryCode: 'ru' },
+  { id: 'wrc-2025-08', rank: 8, name: 'Team Xenon', country: 'India', countryCode: 'in' },
+  { id: 'wrc-2025-09', rank: 9, name: 'Sama Al-Iraq School', country: 'Iraq', countryCode: 'iq' },
+  { id: 'wrc-2025-10', rank: 10, name: 'Harimohan Science Club', country: 'Bangladesh', countryCode: 'bd' },
+];
+
 export const TESTIMONIALS = [
   {
     id: 't1',

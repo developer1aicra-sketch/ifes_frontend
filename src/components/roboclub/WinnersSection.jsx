@@ -1,116 +1,45 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, LayoutGroup, useReducedMotion } from "framer-motion";
 import { Trophy, Star } from "lucide-react";
+import { WRC_WINNERS_RANKING } from "../../constants/roboclubLandingData";
 
-/** Placeholder Hall of Fame entries — swap for API data when ready */
-const WINNERS_PLACEHOLDER = [
-  {
-    id: "w1",
-    name: "Team Iron Giants",
-    country: "India",
-    category: "Robo Soccer",
-    image:
-      "https://images.unsplash.com/photo-1561557944-6e7860d1a7eb?auto=format&fit=crop&q=80&w=300&h=300",
-    points: "12,500",
-    season: "WRC 2025",
-  },
-  {
-    id: "w2",
-    name: "Cyber Strikers",
-    country: "Iran",
-    category: "Bot Combat",
-    image:
-      "https://images.unsplash.com/photo-1535378437323-95288ac9dd5c?auto=format&fit=crop&q=80&w=300&h=300",
-    points: "8,900",
-    season: "WRC 2025",
-  },
-  {
-    id: "w3",
-    name: "Mech Warriors",
-    country: "USA",
-    category: "Drone Race",
-    image:
-      "https://images.unsplash.com/photo-1531746790731-6c087fecd65a?auto=format&fit=crop&q=80&w=300&h=300",
-    points: "7,200",
-    season: "WRC 2025",
-  },
-  {
-    id: "w4",
-    name: "Neon Titans",
-    country: "Germany",
-    category: "Autonomous Arena",
-    image:
-      "https://images.unsplash.com/photo-1526378722484-bd91f4f3f6a4?auto=format&fit=crop&q=80&w=300&h=300",
-    points: "10,250",
-    season: "WRC 2024",
-  },
-  {
-    id: "w5",
-    name: "Quantum Chevrons",
-    country: "Japan",
-    category: "Line Follower",
-    image:
-      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=300&h=300",
-    points: "9,600",
-    season: "WRC 2024",
-  },
-  {
-    id: "w6",
-    name: "Atlas Circuit",
-    country: "Brazil",
-    category: "Maze Runner",
-    image:
-      "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=300&h=300",
-    points: "6,850",
-    season: "WRC 2023",
-  },
-  {
-    id: "w7",
-    name: "Helix Hunters",
-    country: "UK",
-    category: "Obstacle Course",
-    image:
-      "https://images.unsplash.com/photo-1581092795360-fd1ca04f0957?auto=format&fit=crop&q=80&w=300&h=300",
-    points: "7,990",
-    season: "WRC 2023",
-  },
-  {
-    id: "w8",
-    name: "Solar Sabers",
-    country: "Canada",
-    category: "Sumo Robotics",
-    image:
-      "https://images.unsplash.com/photo-1581093458791-9d5b1f1b6c45?auto=format&fit=crop&q=80&w=300&h=300",
-    points: "8,430",
-    season: "WRC 2022",
-  },
-  {
-    id: "w9",
-    name: "Aero Falcons",
-    country: "France",
-    category: "Drone Soccer",
-    image:
-      "https://images.unsplash.com/photo-1520975698519-6bfbd2f9d0f3?auto=format&fit=crop&q=80&w=300&h=300",
-    points: "11,050",
-    season: "WRC 2022",
-  },
-  {
-    id: "w10",
-    name: "Vortex Vanguards",
-    country: "Spain",
-    category: "Tech Challenge",
-    image:
-      "https://images.unsplash.com/photo-1544383835-bb079d2dc8e1?auto=format&fit=crop&q=80&w=300&h=300",
-    points: "5,750",
-    season: "WRC 2021",
-  },
-];
+/** flagcdn.com — lowercase ISO 3166-1 alpha-2 */
+const FLAG_CDN = "https://flagcdn.com";
 
 function mod(n, m) {
   return ((n % m) + m) % m;
 }
 
+function WinnerHeroFlag({ countryCode, label, className = "" }) {
+  const code = (countryCode || "").toLowerCase().trim();
+  const [failed, setFailed] = useState(false);
+
+  if (!code || failed) {
+    return (
+      <div
+        className={`flex items-center justify-center bg-slate-800 text-slate-500 text-sm font-medium ${className}`}
+        title={label}
+      >
+        —
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={`${FLAG_CDN}/w640/${code}.png`}
+      alt=""
+      className={`w-full h-full object-cover ${className}`}
+      loading="lazy"
+      decoding="async"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 function WinnerCard({ winner, slot }) {
+  const rankLabel = winner.rank === 1 ? "Grand Champion" : `Rank ${winner.rank}`;
+
   if (slot === 2) {
     return (
       <>
@@ -122,23 +51,17 @@ function WinnerCard({ winner, slot }) {
             </div>
           </div>
           <div className="h-44 mb-6 overflow-hidden rounded-xl relative">
-            <img
-              src={winner.image}
-              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
-              alt={winner.name}
-            />
+            <WinnerHeroFlag countryCode={winner.countryCode} label={winner.country} />
             <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-4">
-              <p className="text-yellow-400 font-bold text-sm tracking-wider uppercase">
-                Grand Champion
-              </p>
+              <p className="text-yellow-400 font-bold text-sm tracking-wider uppercase">{rankLabel}</p>
             </div>
           </div>
           <div className="text-center">
             <h3 className="text-2xl font-black text-white">{winner.name}</h3>
-            <p className="text-slate-400 mt-1">{winner.category}</p>
-            <p className="text-slate-500 text-sm mt-1">{winner.season}</p>
+            <p className="text-slate-400 mt-1">{winner.country}</p>
+            <p className="text-slate-500 text-sm mt-1">World Robotics Championship</p>
             <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-yellow-400/10 rounded-full border border-yellow-400/20 text-yellow-400 font-bold">
-              <Star size={16} fill="currentColor" /> {winner.points} pts
+              <Star size={16} fill="currentColor" /> #{winner.rank}
             </div>
           </div>
         </div>
@@ -147,8 +70,6 @@ function WinnerCard({ winner, slot }) {
   }
 
   const isInner = slot === 1 || slot === 3;
-  const badgeNumber = slot === 1 ? 2 : slot === 3 ? 3 : slot === 0 ? 4 : 5;
-  const badgeClass = slot < 2 ? "bg-slate-400 text-slate-900" : "bg-orange-700 text-white";
   const paddingClass = isInner ? "p-6" : "p-5";
   const imageHeightClass = isInner ? "h-44" : "h-36";
   const nameClass = isInner ? "text-2xl" : "text-xl";
@@ -163,30 +84,41 @@ function WinnerCard({ winner, slot }) {
           ? "absolute inset-0 bg-slate-800 transform -rotate-1 rounded-2xl opacity-50 group-hover:-rotate-2 transition-transform duration-500 ease-out"
           : "absolute inset-0 bg-slate-800 transform -rotate-2 rounded-2xl opacity-50 group-hover:-rotate-3 transition-transform duration-500 ease-out";
 
+  const badgeClass =
+    winner.rank <= 3 ? "bg-gradient-to-br from-amber-500 to-orange-700 text-white" : "bg-slate-400 text-slate-900";
+
   return (
     <>
       <div className={overlayClass} />
       <div className={`relative bg-slate-900 border border-slate-700 ${paddingClass} rounded-2xl`}>
         <div className={`${imageHeightClass} mb-5 overflow-hidden rounded-xl relative`}>
-          <img
-            src={winner.image}
-            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 ease-out"
-            alt={winner.name}
+          <WinnerHeroFlag
+            countryCode={winner.countryCode}
+            label={winner.country}
+            className="grayscale group-hover:grayscale-0 transition-all duration-500 ease-out"
           />
-          <div className={`absolute top-4 left-4 w-8 h-8 ${badgeClass} font-bold rounded-full flex items-center justify-center`}>
-            {badgeNumber}
+          <div
+            className={`absolute top-4 left-4 min-w-[2rem] h-8 px-2 ${badgeClass} font-bold rounded-full flex items-center justify-center tabular-nums`}
+          >
+            {winner.rank}
           </div>
         </div>
         <h3 className={`${nameClass} font-bold text-white`}>{winner.name}</h3>
-        <p className="text-slate-400">{winner.category}</p>
-        <p className="text-slate-500 text-xs mt-1">{winner.season}</p>
+        <p className="text-slate-400">{winner.country}</p>
+        <p className="text-slate-500 text-xs mt-1">World Robotics Championship</p>
         <div
           className={`mt-4 pt-4 border-t border-slate-800 flex justify-between items-center ${metaTextClass} text-slate-500`}
         >
-          <span>{winner.country}</span>
-          <span className="text-slate-300">
-            {winner.points} pts
+          <span className="inline-flex items-center gap-2">
+            <img
+              src={`${FLAG_CDN}/w40/${(winner.countryCode || "").toLowerCase()}.png`}
+              alt=""
+              className="w-6 h-4 rounded object-cover border border-slate-600/50"
+              loading="lazy"
+            />
+            {winner.country}
           </span>
+          <span className="text-slate-300">#{winner.rank}</span>
         </div>
       </div>
     </>
@@ -206,7 +138,8 @@ function WinnersSection() {
     ? { duration: 0 }
     : { type: "spring", stiffness: 230, damping: 24 };
 
-  const total = WINNERS_PLACEHOLDER.length;
+  const podiumSource = WRC_WINNERS_RANKING;
+  const total = podiumSource.length;
 
   const visibleIndices = useMemo(() => {
     return [
@@ -219,10 +152,9 @@ function WinnersSection() {
   }, [featuredIndex, total]);
 
   const visibleWinners = useMemo(() => {
-    return visibleIndices.map((idx) => WINNERS_PLACEHOLDER[idx]);
-  }, [visibleIndices]);
+    return visibleIndices.map((idx) => podiumSource[idx]);
+  }, [visibleIndices, podiumSource]);
 
-  // Auto-advance the "featured" card so motion is always visible.
   useEffect(() => {
     if (reduceMotion) return;
     if (total <= 5) return;
@@ -241,7 +173,6 @@ function WinnersSection() {
   }, []);
 
   const slotEmphasis = useCallback((slot) => {
-    // slot: 0..4 where 2 is featured center.
     const distance = Math.abs(slot - 2);
     if (distance === 0) return { scale: 1.02, opacity: 1 };
     if (distance === 1) return { scale: 0.98, opacity: 0.95 };

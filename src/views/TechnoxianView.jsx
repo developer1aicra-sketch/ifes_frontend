@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   Users,
   Ticket,
@@ -1562,30 +1562,32 @@ const TechnoxianView = () => {
                             </div>
                           </div>
                           <div className="flex gap-3">
-                            <button
-                              onClick={() =>
-                                window.open(game.registrationLink, "_blank")
-                              }
+                            <NavLink
+                              // onClick={() =>
+                              //   window.open(game.registrationLink, "_blank")
+                              // }
+                              to='/roboclub'
                               className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-blue-700 transition-colors text-sm"
                             >
                               Register to Game
-                            </button>
-                            <button
-                              onClick={() => setActiveTab("register")}
+                            </NavLink>
+                            {/* <NavLink
+                              // onClick={() => setActiveTab("register")}
+to='/roboclub'
                               className="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg font-bold hover:bg-slate-200 transition-colors text-sm"
                             >
                               View Registration
-                            </button>
+                            </NavLink> */}
                           </div>
                         </div>
 
-                        {game.description && (
+                        {/* {game.description && (
                           <div className="mb-8 p-6 bg-blue-50 rounded-xl border border-blue-100">
                             <p className="text-slate-700 leading-relaxed">
                               {game.description}
                             </p>
                           </div>
-                        )}
+                        )} */}
 
                         <h3 className="text-xl font-bold text-slate-900 mb-4">
                           Schedule Details
@@ -1683,18 +1685,17 @@ const TechnoxianView = () => {
                               Ready to compete in {game.name}? Register now to
                               secure your spot in the competition.
                             </p>
-                            <button
-                              onClick={() =>
-                                window.open(game.registrationLink, "_blank")
-                              }
-                              className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors"
+                            <div>
+
+                            <NavLink
+                              className="w-full  px-4 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors"
+                              to='/roboclub'
+                             
                             >
                               Register Now
-                            </button>
-                            <p className="text-xs text-slate-500 mt-3 text-center">
-                              Early registration discounts available until March
-                              31, 2025
-                            </p>
+                            </NavLink>
+                            </div>
+                        
                           </div>
                         </div>
                       </div>
