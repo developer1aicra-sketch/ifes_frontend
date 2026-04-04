@@ -17,6 +17,9 @@ const statusStyles = {
   past: 'bg-slate-700/50 text-slate-400 border-slate-600',
 };
 
+const partnerBadgeClass =
+  'bg-fuchsia-500/15 text-fuchsia-200 border-fuchsia-500/35';
+
 const RoboClubEventsSection = () => {
   const [filter, setFilter] = useState('upcoming');
   const [page, setPage] = useState(0);
@@ -63,7 +66,7 @@ const RoboClubEventsSection = () => {
             <span className="text-cyan-400 font-bold tracking-widest text-xs uppercase">Arena calendar</span>
             <h2 className="text-4xl font-black text-white mt-2 mb-3">Competitions &amp; events</h2>
             <p className="text-slate-400 max-w-xl">
-              Qualifiers, labs, and flagship meets—know what&apos;s next for your squad and how to participate.
+            Participate in exciting robotics competitions and events, showcase innovations, compete globally, and gain recognition through TechnoXian platforms.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -147,17 +150,39 @@ const RoboClubEventsSection = () => {
                           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10" />
                           <img
                             src={ev.image}
-                            alt=""
+                            alt={ev.imageAlt ?? `${ev.name} — event`}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             loading="lazy"
                           />
-                          <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
+                          <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-2 max-w-[calc(100%-2rem)]">
                             <span
                               className={`inline-flex text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${statusStyles[ev.status]}`}
                             >
                               {ev.status}
                             </span>
+                            {ev.partnerEvent ? (
+                              <span
+                                className={`inline-flex text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${partnerBadgeClass}`}
+                              >
+                                Partner event
+                              </span>
+                            ) : null}
                           </div>
+                          {ev.heroBanner ? (
+                            <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-3 pt-12 bg-gradient-to-t from-slate-950 via-slate-950/88 to-transparent border-t border-white/5">
+                              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400/90 mb-1">
+                                {ev.heroBanner.kicker ?? 'Landmark'}
+                              </p>
+                              <p className="text-base font-black text-white leading-snug drop-shadow-sm">
+                                {ev.heroBanner.title}
+                              </p>
+                              {ev.heroBanner.subtitle ? (
+                                <p className="text-xs text-slate-300 mt-1 font-medium">
+                                  {ev.heroBanner.subtitle}
+                                </p>
+                              ) : null}
+                            </div>
+                          ) : null}
                         </div>
 
                         <div className="p-6 flex flex-col flex-1 min-h-0">

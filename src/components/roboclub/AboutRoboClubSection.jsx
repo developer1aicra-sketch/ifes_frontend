@@ -49,7 +49,7 @@ const AboutRoboClubSection = () => (
             grad: 'from-violet-500/20 to-transparent',
           },
           {
-            title: 'Purpose',
+            title: 'Who Can Join',
             body: ROBOCLUB_ABOUT.purpose,
             Icon: Sparkles,
             grad: 'from-fuchsia-500/20 to-transparent',

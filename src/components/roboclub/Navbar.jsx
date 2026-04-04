@@ -29,10 +29,10 @@ const Navbar = ({ onOpenCertificate, onNavigateHome, isAuthenticated }) => {
       <a href="#about-robo" className="hover:text-cyan-400 transition-colors shrink-0">About</a>
       <a href="#learning-tracks" className="hover:text-cyan-400 transition-colors shrink-0">Learn</a>
       <a href="#competitions-events" className="hover:text-cyan-400 transition-colors shrink-0">Events</a>
-      <a href="#project-showcase" className="hover:text-cyan-400 transition-colors shrink-0">Showcase</a>
+      {/* <a href="#project-showcase" className="hover:text-cyan-400 transition-colors shrink-0">Showcase</a>
       <a href="#testimonials" className="hover:text-cyan-400 transition-colors shrink-0">Stories</a>
-      <a href="#community" className="hover:text-cyan-400 transition-colors shrink-0">Community</a>
-      <a href="#shop" className="hover:text-cyan-400 transition-colors shrink-0">Shop</a>
+      <a href="#community" className="hover:text-cyan-400 transition-colors shrink-0">Community</a> */}
+      {/* <a href="#shop" className="hover:text-cyan-400 transition-colors shrink-0">Shop</a> */}
       <a href="#winners" className="hover:text-cyan-400 transition-colors shrink-0">Champions</a>
     </div>
 

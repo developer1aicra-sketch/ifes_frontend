@@ -115,7 +115,7 @@ const ProjectShowcaseSection = () => {
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
           <div>
             <span className="text-fuchsia-400 font-bold tracking-widest text-xs uppercase">Showcase</span>
-            <h2 className="text-3xl md:text-4xl font-black text-white mt-2">Project showcase &amp; RoboClub store</h2>
+            <h2 className="text-3xl md:text-4xl font-black text-white mt-2">Project showcase </h2>
             <p className="text-slate-400 mt-2 max-w-xl">
               Member-built robots and curated kits—explore what squads ship, then gear up with trusted bundles.
             </p>

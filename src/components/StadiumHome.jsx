@@ -27,8 +27,8 @@ export const StadiumHome = ({ setPage, isAuthenticated }) => {
       <AboutRoboClubSection />
       <LearningTracksSection />
       <RoboClubEventsSection />
-      <ProjectShowcaseSection />
-      <TestimonialsCarousel />
+      {/* <ProjectShowcaseSection /> */}
+      {/* <TestimonialsCarousel /> */}
       <DashboardLoginSection />
       <CommunitySection />
       <WinnersSection />

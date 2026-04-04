@@ -1,15 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import {
-  BookOpen,
-  Bot,
-  BrainCircuit,
-  CheckCircle2,
-  ChevronRight,
-  Sparkles,
-  Layers,
-  Cpu,
-} from 'lucide-react';
+import { BookOpen, Bot, BrainCircuit, Sparkles, Layers, Cpu } from 'lucide-react';
 import { LEARNING_TRACKS } from '../../constants/roboclubLandingData';
 
 /** Per-track layout + chrome so the three cards read as different “products”, not copies. */
@@ -41,7 +32,6 @@ const trackSkin = (id) => {
         stepNumClass: 'bg-slate-800/90 border-cyan-500/40 text-cyan-200',
         stepLineClass: 'from-cyan-500/45',
         topicIconMuted: 'text-cyan-500/60',
-        badge: null,
         paceIcon: 'text-cyan-400',
         primaryBtn:
           'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35',
@@ -58,7 +48,6 @@ const trackSkin = (id) => {
           'rounded-lg w-8 h-8 bg-violet-950/65 border-violet-500/50 text-violet-100 text-[11px] font-bold tracking-tight',
         stepLineClass: 'from-violet-500/45',
         topicIconMuted: 'text-violet-400/70',
-        badge: { label: 'Expert path', className: 'bg-violet-500/15 border-violet-500/35 text-violet-200' },
         paceIcon: 'text-violet-400',
         primaryBtn:
           'bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40',
@@ -185,7 +174,13 @@ const LearningTracksSection = () => (
                     </div>
                     <div className="pb-2 min-w-0">
                       <div className="flex items-center gap-2 text-white font-semibold text-sm">
-                        {topicIcon(stepIdx, skin.topicIconMuted)}
+                        {topic.emoji ? (
+                          <span className="text-base leading-none shrink-0" aria-hidden>
+                            {topic.emoji}
+                          </span>
+                        ) : (
+                          topicIcon(stepIdx, skin.topicIconMuted)
+                        )}
                         <span>{topic.title}</span>
                       </div>
                       <p className="text-slate-500 text-[13px] mt-1 leading-relaxed">{topic.detail}</p>

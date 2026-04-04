@@ -26,8 +26,8 @@ export const StadiumHomeView = ({ setPage }) => {
       <AboutRoboClubSection />
       <LearningTracksSection />
       <RoboClubEventsSection />
-      <ProjectShowcaseSection />
-      <TestimonialsCarousel />
+      {/* <ProjectShowcaseSection /> */}
+      {/* <TestimonialsCarousel /> */}
       <DashboardLoginSection />
       <CommunitySection />
       <WinnersSection />

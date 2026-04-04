@@ -5,93 +5,137 @@
 export const ROBOCLUB_ABOUT = {
   headline: 'Build real robots. Learn with mentors. Compete on a global stage.',
   intro:
-    'RoboClub is Technoxian’s school and college robotics hub—where teams level up from first solder joints to arena-ready machines.',
+    'RoboClub by TechnoXian is a dynamic platform designed to nurture innovation, creativity, and hands-on learning in robotics, AI, and emerging technologies, It empowers students and institutions to build, experiment, and compete at national and global levels.',
   mission:
-    'Democratize hands-on robotics: structured learning, safe workshops, and fair paths to national and world competitions.',
+    'To provide practical learning, competitive exposure, and industry connect through robotics programs, events, and real-world challenges.',
   vision:
-    'A planet-wide league where every young maker can prove skill—not privilege—through build quality, teamwork, and sportsmanship.',
+    'To create a global community of future innovators and leaders in robotics and advanced technologies.',
   purpose:
-    'Connect captains, members, and industry mentors so ideas become working bots, documented projects, and measurable outcomes.',
-  gains: [
-    {
-      id: 'skills',
-      title: 'Industry-ready skills',
-      blurb: 'CAD, electronics, coding, and testing workflows used in real products.',
-      icon: 'cpu',
-    },
-    {
-      id: 'network',
-      title: 'Trusted network',
-      blurb: 'Squads, alumni, and partner labs you can collaborate with year-round.',
-      icon: 'users',
-    },
-    {
-      id: 'events',
-      title: 'Competition pipeline',
-      blurb: 'Clear path from club qualifiers to flagship Technoxian arenas.',
-      icon: 'trophy',
-    },
-    {
-      id: 'credentials',
-      title: 'Portfolio & recognition',
-      blurb: 'Showcase builds, certificates, and wins that internship panels understand.',
-      icon: 'badge',
-    },
-  ],
+    'School & College Students Engineering & Tech Enthusiasts Educational Institutions Robotics & STEM Trainers',
+gains: [
+  {
+    id: 'skills',
+    title: '🤖 Hands-on Robotics & Coding',
+    blurb: 'Build real robots, learn AI, IoT, and coding through practical experience.',
+    icon: 'cpu',
+  },
+  {
+    id: 'network',
+    title: '🏆 Compete at TechnoXian',
+    blurb: 'Participate in world-class robotics competitions and showcase your skills.',
+    icon: 'users',
+  },
+  {
+    id: 'events',
+    title: '🌍 Global Exposure & Recognition',
+    blurb: 'Get international visibility, certifications, and industry recognition.',
+    icon: 'trophy',
+  },
+  {
+    id: 'credentials',
+    title: '💼 Career & Startup Opportunities',
+    blurb: 'Unlock internships, career pathways, and opportunities to build your own tech startup.',
+    icon: 'badge',
+  },
+],
 };
 
 export const LEARNING_TRACKS = [
   {
     id: 'beginner',
     level: 'Beginner',
-    tagline: 'First circuits, first code, first rolling chassis.',
+    levelSubtitle: 'Foundation',
+    tagline: 'Core robotics, microcontroller basics, and safe hands-on electronics.',
     featured: false,
     accent: 'from-emerald-500/20 to-cyan-500/10',
     border: 'border-emerald-500/30',
     iconColor: 'text-emerald-400',
     topics: [
-      { title: 'Robotics fundamentals', detail: 'Motors, sensors, power, and safety basics.' },
-      { title: 'Hands-on bot building', detail: 'Assemble a drive base and simple mechanisms.' },
-      { title: 'AI / automation basics', detail: 'Logic, remote control, and intro to autonomy.' },
+      {
+        emoji: '🤖',
+        title: 'Robotics Fundamentals',
+        detail: 'Basics of robots, sensors & components.',
+      },
+      {
+        emoji: '🔌',
+        title: 'Arduino Programming',
+        detail: 'Hands-on microcontroller coding & circuits.',
+      },
+      {
+        emoji: '⚙️',
+        title: 'Electronics & Circuit Design',
+        detail: 'Understanding wiring, motors & basic hardware.',
+      },
     ],
     durationWeeks: '8–10 weeks',
   },
   {
     id: 'intermediate',
     level: 'Intermediate',
-    tagline: 'Iterate fast—reliable drivetrains and contest rules.',
+    levelSubtitle: 'Skill Building',
+    tagline: 'Apply AI, IoT, and control theory to real connected systems.',
     featured: true,
     accent: 'from-cyan-500/20 to-violet-500/10',
     border: 'border-cyan-500/40',
     iconColor: 'text-cyan-400',
     topics: [
-      { title: 'Robotics fundamentals', detail: 'Torque, gearing, and failure modes.' },
-      { title: 'Hands-on bot building', detail: 'Modular frames, pneumatics or combat-ready shells.' },
-      { title: 'AI / automation basics', detail: 'PID, line follow, and simple CV pipelines.' },
+      {
+        emoji: '🧠',
+        title: 'Artificial Intelligence Basics',
+        detail: 'Intro to AI, ML concepts & applications.',
+      },
+      {
+        emoji: '🌐',
+        title: 'Internet of Things (IoT)',
+        detail: 'Smart devices, connectivity & real-world projects.',
+      },
+      {
+        emoji: '⚡',
+        title: 'Automation & Control Systems',
+        detail: 'Build automated systems & logic-based controls.',
+      },
     ],
     durationWeeks: '10–14 weeks',
   },
   {
     id: 'advanced',
     level: 'Advanced',
-    tagline: 'Systems engineering for arena and research bots.',
+    levelSubtitle: 'Innovation & Industry',
+    tagline: 'Autonomy, aerial systems, and industrial robotics at scale.',
     featured: false,
     accent: 'from-violet-500/20 to-fuchsia-500/10',
     border: 'border-violet-500/40',
     iconColor: 'text-violet-400',
     topics: [
-      { title: 'Robotics fundamentals', detail: 'System budgets, EMI, and reliability testing.' },
-      { title: 'Hands-on bot building', detail: 'Custom PCBs, swerve, or drone stacks.' },
-      { title: 'AI / automation basics', detail: 'SLAM, behavior trees, edge ML deployment.' },
+      {
+        emoji: '🚗',
+        title: 'Autonomous Robotics',
+        detail: 'Self-driving bots, navigation & computer vision.',
+      },
+      {
+        emoji: '🚁',
+        title: 'Drone Technology & Programming',
+        detail: 'UAV design, control & applications.',
+      },
+      {
+        emoji: '🏭',
+        title: 'Industry 4.0 & Smart Manufacturing',
+        detail: 'Robotics in industrial automation & smart factories.',
+      },
     ],
     durationWeeks: '14+ weeks',
   },
 ];
 
-/** status: 'upcoming' | 'past' | 'ongoing' */
+/**
+ * Arena calendar — zonal → national → international (2026), plus partner events abroad.
+ * Zonal hero images: Kapaleeshwarar (Chennai), Shaniwar Wada (Pune), Rock Garden (Chandigarh), Howrah Bridge (Kolkata). National: India Gate; international: global finals.
+ * partnerEvent: true shows a “Partner event” chip on the card (see RoboClubEventsSection).
+ * status: 'upcoming' | 'past' | 'ongoing'
+ */
 export const ROBOCLUB_EVENTS = [
   {
-    id: 'ev1',
+    id: 'ev-past-1',
     name: 'RoboClub Winter Qualifier 2026',
     dateLabel: 'Jan 18 – Jan 19, 2026',
     location: 'Hyderabad Expo Arena, India',
@@ -99,10 +143,11 @@ export const ROBOCLUB_EVENTS = [
     summary: 'A fast-paced qualifier with safety checks, bracket matches, and mentor feedback to prepare squads for the season.',
     image:
       'https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?auto=format&fit=crop&q=80&w=1200',
+    imageAlt: 'Hyderabad skyline and cityscape',
     status: 'past',
   },
   {
-    id: 'ev2',
+    id: 'ev-past-2',
     name: 'Make-a-Bot Sprint Weekend',
     dateLabel: 'Mar 7 – Mar 8, 2026',
     location: 'Online + Pune Makerspace',
@@ -110,10 +155,11 @@ export const ROBOCLUB_EVENTS = [
     summary: '48 hours of rapid building: chassis, wiring, test runs, and a demo day you can ship as a portfolio story.',
     image:
       'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=1200',
+    imageAlt: 'Robotics workshop and hands-on assembly',
     status: 'past',
   },
   {
-    id: 'ev3',
+    id: 'ev-ongoing-1',
     name: 'AI Drive Lab — Spring Cohort',
     dateLabel: 'Apr 2 – Apr 30, 2026',
     location: 'Hybrid (IST)',
@@ -121,39 +167,123 @@ export const ROBOCLUB_EVENTS = [
     summary: 'Weekly labs on tuning, autonomy basics, and field testing—designed to make your bot predictable under pressure.',
     image:
       'https://images.unsplash.com/photo-1526378722445-3676ce39b1da?auto=format&fit=crop&q=80&w=1200',
+    imageAlt: 'Technology lab and circuit hardware',
     status: 'ongoing',
   },
   {
-    id: 'ev4',
-    name: 'National Robotics Challenge — Zone North',
-    dateLabel: 'May 15, 2026',
-    location: 'Chandigarh Tech Campus',
-    participation: 'Invitation from qualifiers • Safety inspection on-site',
-    summary: 'Regional showdown for qualified squads—rule checks, arena rounds, and ranking points toward flagship meets.',
+    id: 'ev-zonal-chennai',
+    name: 'Zonal round — Chennai',
+    dateLabel: '19th – 20th June 2026',
+    location: 'Chennai, Tamil Nadu • Venue TBD',
+    participation: 'Regional school & college teams',
+    summary: 'South zone arena: qualifiers, safety checks, and ranking points toward the national championship.',
     image:
-      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1678676136671-07fd6b7cc823?auto=format&fit=crop&q=80&w=1200',
+    imageAlt: 'Sri Kapaleeshwarar Temple gopuram, Mylapore, Chennai, Tamil Nadu',
+    /** Optional hero landmark banner (see RoboClubEventsSection). */
+    heroBanner: {
+      // kicker: 'Chennai',
+      // title: 'Sri Kapaleeshwarar Temple',
+      // subtitle: 'Mylapore • Tamil Nadu',
+    },
     status: 'upcoming',
   },
   {
-    id: 'ev5',
-    name: 'Technoxian World Robotics Championship',
-    dateLabel: 'Aug 21 – Aug 24, 2026',
-    location: 'Delhi NCR',
-    participation: 'Global squads • Multiple game formats',
-    summary: 'The main stage: international brackets, live judging, and high-stakes matches across multiple categories.',
+    id: 'ev-zonal-pune',
+    name: 'Zonal round — Pune',
+    dateLabel: '27th – 28th June 2026',
+    location: 'Pune, Maharashtra • Venue TBD',
+    participation: 'Regional school & college teams',
+    summary: 'West zone showdown with arena matches and mentor feedback ahead of nationals.',
     image:
-      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1589629041152-fb71b9c5dbcd?auto=format&fit=crop&q=80&w=1200',
+    imageAlt: 'Shaniwar Wada fort palace, Pune, Maharashtra',
     status: 'upcoming',
   },
   {
-    id: 'ev6',
-    name: 'RoboClub Mentor Meetup',
-    dateLabel: 'Jun 4, 2026',
-    location: 'Zoom + Bengaluru hub',
-    participation: 'Captains & lead coaches',
-    summary: 'Strategy, build reviews, and planning—meet mentors, share blockers, and align on the next competition milestone.',
+    id: 'ev-zonal-chandigarh',
+    name: 'Zonal round — Chandigarh',
+    dateLabel: '5th – 6th July 2026',
+    location: 'Chandigarh • Venue TBD',
+    participation: 'Regional school & college teams',
+    summary: 'North zone meet: brackets, inspections, and rankings on the road to the national stage.',
     image:
-      'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1716131985076-07350de31afd?auto=format&fit=crop&q=80&w=1200',
+    imageAlt: 'Rock Garden stone sculptures, Chandigarh — famous public monument',
+    status: 'upcoming',
+  },
+  {
+    id: 'ev-zonal-kolkata',
+    name: 'Zonal round — Kolkata',
+    dateLabel: '11th – 12th July 2026',
+    location: 'Kolkata, West Bengal • Venue TBD',
+    participation: 'Regional school & college teams',
+    summary: 'East zone battles for the last seats at the National Robotics Championship.',
+    image:
+      'https://images.unsplash.com/photo-1742325646212-f917ba1feeaa?auto=format&fit=crop&q=80&w=1200',
+    imageAlt: 'Howrah Bridge over the Hooghly River, Kolkata, West Bengal',
+    status: 'upcoming',
+  },
+  {
+    id: 'ev-national-2026',
+    name: 'National Robotics Championship',
+    dateLabel: '24th – 26th July 2026',
+    location: 'India • Venue TBD',
+    participation: 'Top teams from all zonal rounds',
+    summary: 'The national finale: elite squads from every zone compete for the international finals.',
+    image:
+      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&q=80&w=1200',
+    imageAlt: 'India Gate, New Delhi — national landmark',
+    status: 'upcoming',
+  },
+  {
+    id: 'ev-international-2026',
+    name: 'International finals',
+    dateLabel: 'October 2026',
+    location: 'Venue TBD',
+    participation: '4 days of world-class competition',
+    summary: 'The world stage: multi-day international brackets, live judging, and top-tier matches across categories.',
+    image:
+      'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&q=80&w=1200',
+    imageAlt: 'International city skyline — global finals stage',
+    status: 'upcoming',
+  },
+  {
+    id: 'ev-partner-azerbaijan-2026',
+    name: 'Partner event — Azerbaijan',
+    dateLabel: '27th – 28th June 2026',
+    location: 'Azerbaijan • Venue TBD',
+    participation: 'Invited squads • Hosted with international partner organisations',
+    summary:
+      'A two-day partner programme in Azerbaijan: showcases, collaboration, and arena-format robotics alongside global peers.',
+    image:
+      'https://images.unsplash.com/photo-1689188930114-6a6824a21390?auto=format&fit=crop&q=80&w=1200',
+    imageAlt: 'Flame Towers skyline, Baku, Azerbaijan',
+    partnerEvent: true,
+    heroBanner: {
+      kicker: 'Baku',
+      title: 'Flame Towers',
+      subtitle: 'Azerbaijan',
+    },
+    status: 'upcoming',
+  },
+  {
+    id: 'ev-partner-ghana-2027',
+    name: 'Partner event — Ghana',
+    dateLabel: 'January 2027',
+    location: 'Accra, Ghana • Kwame Nkrumah Memorial Park',
+    participation: 'Invited teams • Partner pathway & cultural showcase',
+    summary:
+      'Opening partner meet in Ghana at the Kwame Nkrumah Memorial Park — ceremonies, STEM exchange, and robotics showcase.',
+    image:
+      'https://images.unsplash.com/photo-1733141175074-d373ff3baae9?auto=format&fit=crop&q=80&w=1200',
+    imageAlt: 'Walkway and monument at Kwame Nkrumah Memorial Park, Accra, Ghana',
+    partnerEvent: true,
+    heroBanner: {
+      kicker: 'Accra',
+      title: 'Kwame Nkrumah Memorial Park',
+      subtitle: 'Ghana',
+    },
     status: 'upcoming',
   },
 ];

@@ -19,6 +19,7 @@ import { clearRoboclubAuthToken, getRoboclubAuthToken } from '../api/authToken';
 import { startGlobalLoading, stopGlobalLoading } from '../app/ui/uiSlice';
 // import { getMyMembership } from '../api/membershipApi';
 import { LiveTicker } from '../components/LiveTicker';
+import Footer from '../components/Footer';
 import { StadiumHome } from '../components/StadiumHome';
 import { ChampionshipDetail } from '../components/ChampionshipDetail';
 import { SquadManager } from '../components/SquadManager';
@@ -38,7 +39,12 @@ import CareerGrowth from '../components/CareerGrowth';
 import TechConferences from '../components/TechConferences';
 import { MakeYourBotSchedule } from '../components/MakeYourBotSchedule';
 
-export default function TechnoXianApp({ mode = 'public' }) {
+export default function TechnoXianApp({
+  mode = 'public',
+  setView,
+  switchSite,
+  currentSite,
+}) {
   const [page, setPage] = useState('home');
   const [viewMode, setViewMode] = useState('user'); // 'user' or 'admin'
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -308,12 +314,17 @@ export default function TechnoXianApp({ mode = 'public' }) {
   // --- Public layout: always for /roboclub ---
   if (!isDashboardMode) {
     return (
-      <div className="min-h-screen bg-black text-slate-200 font-sans">
-        {page === 'championship_detail' ? (
-          <ChampionshipDetail setPage={setPage} />
-        ) : (
-          <StadiumHome setPage={setPage} isAuthenticated={isAuthenticated} />
-        )}
+      <div className="min-h-screen bg-black text-slate-200 font-sans flex flex-col">
+        <div className="flex-1">
+          {page === 'championship_detail' ? (
+            <ChampionshipDetail setPage={setPage} />
+          ) : (
+            <StadiumHome setPage={setPage} isAuthenticated={isAuthenticated} />
+          )}
+        </div>
+        {setView && currentSite ? (
+          <Footer setView={setView} switchSite={switchSite} currentSite={currentSite} />
+        ) : null}
       </div>
     );
   }

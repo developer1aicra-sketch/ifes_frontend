@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, LayoutGroup, useReducedMotion } from "framer-motion";
 import { Trophy, Star } from "lucide-react";
 import { WRC_WINNERS_RANKING } from "../../constants/roboclubLandingData";
+import { WRC_CLUB_LOGO_BY_WINNER_ID } from "../../constants/wrcClubLogos";
 
 /** flagcdn.com — lowercase ISO 3166-1 alpha-2 */
 const FLAG_CDN = "https://flagcdn.com";
@@ -37,8 +38,29 @@ function WinnerHeroFlag({ countryCode, label, className = "" }) {
   );
 }
 
+/** Club mark when bundled; otherwise country flag hero. */
+function WinnerHeroVisual({ clubLogoSrc, countryCode, label, className = "" }) {
+  const [logoFailed, setLogoFailed] = useState(false);
+
+  if (clubLogoSrc && !logoFailed) {
+    return (
+      <img
+        src={clubLogoSrc}
+        alt=""
+        className={`w-full h-full object-contain object-center bg-slate-900/95 p-5 sm:p-6 ${className}`}
+        loading="lazy"
+        decoding="async"
+        onError={() => setLogoFailed(true)}
+      />
+    );
+  }
+
+  return <WinnerHeroFlag countryCode={countryCode} label={label} className={className} />;
+}
+
 function WinnerCard({ winner, slot }) {
   const rankLabel = winner.rank === 1 ? "Grand Champion" : `Rank ${winner.rank}`;
+  const clubLogoSrc = WRC_CLUB_LOGO_BY_WINNER_ID[winner.id];
 
   if (slot === 2) {
     return (
@@ -51,7 +73,11 @@ function WinnerCard({ winner, slot }) {
             </div>
           </div>
           <div className="h-44 mb-6 overflow-hidden rounded-xl relative">
-            <WinnerHeroFlag countryCode={winner.countryCode} label={winner.country} />
+            <WinnerHeroVisual
+              clubLogoSrc={clubLogoSrc}
+              countryCode={winner.countryCode}
+              label={winner.country}
+            />
             <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-4">
               <p className="text-yellow-400 font-bold text-sm tracking-wider uppercase">{rankLabel}</p>
             </div>
@@ -92,7 +118,8 @@ function WinnerCard({ winner, slot }) {
       <div className={overlayClass} />
       <div className={`relative bg-slate-900 border border-slate-700 ${paddingClass} rounded-2xl`}>
         <div className={`${imageHeightClass} mb-5 overflow-hidden rounded-xl relative`}>
-          <WinnerHeroFlag
+          <WinnerHeroVisual
+            clubLogoSrc={clubLogoSrc}
             countryCode={winner.countryCode}
             label={winner.country}
             className="grayscale group-hover:grayscale-0 transition-all duration-500 ease-out"
@@ -110,12 +137,21 @@ function WinnerCard({ winner, slot }) {
           className={`mt-4 pt-4 border-t border-slate-800 flex justify-between items-center ${metaTextClass} text-slate-500`}
         >
           <span className="inline-flex items-center gap-2">
-            <img
-              src={`${FLAG_CDN}/w40/${(winner.countryCode || "").toLowerCase()}.png`}
-              alt=""
-              className="w-6 h-4 rounded object-cover border border-slate-600/50"
-              loading="lazy"
-            />
+            {clubLogoSrc ? (
+              <img
+                src={clubLogoSrc}
+                alt=""
+                className="w-7 h-7 rounded-md object-contain bg-slate-800 border border-slate-600/50"
+                loading="lazy"
+              />
+            ) : (
+              <img
+                src={`${FLAG_CDN}/w40/${(winner.countryCode || "").toLowerCase()}.png`}
+                alt=""
+                className="w-6 h-4 rounded object-cover border border-slate-600/50"
+                loading="lazy"
+              />
+            )}
             {winner.country}
           </span>
           <span className="text-slate-300">#{winner.rank}</span>

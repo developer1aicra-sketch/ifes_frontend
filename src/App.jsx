@@ -411,7 +411,16 @@ const AppContent = ({
               <Route path="/" element={<HomeView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
               <Route path="/teams" element={<TeamsView />} />
               <Route path="/challenges" element={<TechnoxianView />} />
-              <Route path="/roboclub" element={<RoboClubDashboard />} />
+              <Route
+                path="/roboclub"
+                element={
+                  <RoboClubDashboard
+                    setView={setViewRespectingLocation}
+                    switchSite={switchSite}
+                    currentSite={currentSite}
+                  />
+                }
+              />
               <Route path="/roboclub-login" element={<RoboClubAuth />} />
               <Route path="/roboclub-dashboard" element={<RoboClubDashboard mode="dashboard" />} />
 
@@ -452,7 +461,16 @@ const AppContent = ({
               <Route path="/:locationCode/membership" element={<MembershipView setView={setViewRespectingLocation} />} />
               <Route path="/:locationCode/teams" element={<TeamsView />} />
               <Route path="/:locationCode/challenges" element={<TechnoxianView />} />
-              <Route path="/:locationCode/roboclub" element={<RoboClubDashboard />} />
+              <Route
+                path="/:locationCode/roboclub"
+                element={
+                  <RoboClubDashboard
+                    setView={setViewRespectingLocation}
+                    switchSite={switchSite}
+                    currentSite={currentSite}
+                  />
+                }
+              />
               <Route path="/:locationCode/roboclub-dashboard" element={<RoboClubDashboard mode="dashboard" />} />
               <Route path="/:locationCode/about" element={<AboutLayout setView={setViewRespectingLocation} />} />
               <Route path="/:locationCode/governance" element={<AboutLayout setView={setViewRespectingLocation} />} />
