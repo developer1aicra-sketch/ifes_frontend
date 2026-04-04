@@ -47,7 +47,7 @@ function WinnerHeroVisual({ clubLogoSrc, countryCode, label, className = "" }) {
       <img
         src={clubLogoSrc}
         alt=""
-        className={`w-full h-full object-contain object-center bg-slate-900/95 p-5 sm:p-6 ${className}`}
+        className={`w-full h-full object-contain object-center bg-slate-900/95  ${className}`}
         loading="lazy"
         decoding="async"
         onError={() => setLogoFailed(true)}

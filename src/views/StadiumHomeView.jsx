@@ -3,6 +3,7 @@ import CertificateDrawer from "../components/roboclub/CertificateDrawer";
 import CommunitySection from "../components/roboclub/CommunitySection";
 import DashboardLoginSection from "../components/roboclub/DashboardLoginSection";
 import HeroSection from "../components/roboclub/HeroSection";
+import { MakersSocialProofSection } from "../components/roboclub/MakersSocialProof";
 import ShopSection from "../components/roboclub/ShopSection";
 import WinnersSection from "../components/roboclub/WinnersSection";
 import Navbar from "../components/roboclub/Navbar";
@@ -22,7 +23,8 @@ export const StadiumHomeView = ({ setPage }) => {
         onNavigateHome={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       />
  
-      <HeroSection  setPage={setPage} />
+      <HeroSection setPage={setPage} />
+      <MakersSocialProofSection />
       <AboutRoboClubSection />
       <LearningTracksSection />
       <RoboClubEventsSection />

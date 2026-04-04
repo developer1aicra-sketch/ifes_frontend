@@ -132,6 +132,13 @@ export const LEARNING_TRACKS = [
  * Zonal hero images: Kapaleeshwarar (Chennai), Shaniwar Wada (Pune), Rock Garden (Chandigarh), Howrah Bridge (Kolkata). National: India Gate; international: global finals.
  * partnerEvent: true shows a “Partner event” chip on the card (see RoboClubEventsSection).
  * status: 'upcoming' | 'past' | 'ongoing'
+ * famousPlace (optional): { name, region?, image?, imageAlt?, theme?, gallery?, galleryHeading?, galleries? } —
+ *   overlay + FamousPlaceDetail; `theme` replaces “Famous place” kicker;
+ *   `galleries` is { heading, items: { src, alt }[] }[] for stacked FamousPlaceGallery blocks (preferred for multiple themes);
+ *   legacy: single `gallery` + `galleryHeading` still works; omit `image` to reuse card hero.
+ * Egypt/Venezuela card images use Wikimedia Commons (stable URLs); some Unsplash `photo-*` ids have been returning 404.
+ * Thailand 2026: Sumo / Bots Combat etc. — use `famousPlace.theme` + `galleries` (e.g. Beaches & Islands).
+ * heroBanner (optional): { kicker?, title, subtitle? } — legacy caption when famousPlace is omitted.
  */
 export const ROBOCLUB_EVENTS = [
   {
@@ -159,6 +166,35 @@ export const ROBOCLUB_EVENTS = [
     status: 'past',
   },
   {
+    id: 'ev-thailand-2026-01',
+    name: 'Technoxian Thailand — Sumo Bots & Fastest Line Follower',
+    dateLabel: '24th – 25th January 2026',
+    location: 'Thailand • Venue TBD',
+    participation: 'School & college teams • Thailand-only programme',
+    summary:
+      'Two-day arena in Thailand: sumo robotics and fastest line-follower ',
+    image:
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Templo_Wat_Arun%2C_Bangkok%2C_Tailandia%2C_2013-08-22%2C_DD_30.jpg/1280px-Templo_Wat_Arun%2C_Bangkok%2C_Tailandia%2C_2013-08-22%2C_DD_30.jpg',
+    imageAlt: 'Wat Arun (Temple of Dawn) — Bangkok, Thailand',
+    partnerEvent: true,
+
+    status: 'past',
+  },
+  {
+    id: 'ev-thailand-2026-02',
+    name: 'Technoxian Thailand — Robo Soccer & Robo Race',
+    dateLabel: '7th – 8th March 2026',
+    location: 'Thailand • Venue TBD',
+    participation: 'School & college teams • Thailand-only programme',
+    summary:
+      'Weekend of robo soccer and robo race categories: brackets, pit lanes, and rankings for teams competing exclusively in Thailand.',
+    image:
+      'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&q=80&w=1200',
+    imageAlt: 'Ornate temple architecture — Thailand',
+    partnerEvent: true,
+    status: 'past',
+  },
+  {
     id: 'ev-ongoing-1',
     name: 'AI Drive Lab — Spring Cohort',
     dateLabel: 'Apr 2 – Apr 30, 2026',
@@ -169,6 +205,21 @@ export const ROBOCLUB_EVENTS = [
       'https://images.unsplash.com/photo-1526378722445-3676ce39b1da?auto=format&fit=crop&q=80&w=1200',
     imageAlt: 'Technology lab and circuit hardware',
     status: 'ongoing',
+  },
+  {
+    id: 'ev-thailand-2026-03',
+    name: 'Technoxian Thailand — Drone, Maze Solver & Innovation',
+    dateLabel: '9th – 10th May 2026',
+    location: 'Thailand • Venue TBD',
+    participation: 'School & college teams • Thailand-only programme',
+    summary:
+      'Drone challenges, maze-solving robots, and an innovation showcase—three tracks over one weekend, open only to teams in Thailand.',
+    image:
+      'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&q=80&w=1200',
+    imageAlt: 'Tropical beach and longtail boats — Southern Thailand',
+    partnerEvent: true,
+ 
+    status: 'upcoming',
   },
   {
     id: 'ev-zonal-chennai',
@@ -186,6 +237,21 @@ export const ROBOCLUB_EVENTS = [
       // title: 'Sri Kapaleeshwarar Temple',
       // subtitle: 'Mylapore • Tamil Nadu',
     },
+    status: 'upcoming',
+  },
+  {
+    id: 'ev-thailand-2026-04',
+    name: 'Technoxian Thailand — Bots Combat',
+    dateLabel: '20th – 21st June 2026',
+    location: 'Thailand • Venue TBD',
+    participation: 'School & college teams • Thailand-only programme',
+    summary:
+      'Combat robotics weekend in Thailand: weight-class checks, arena safety, and elimination brackets for bots combat—Thailand venue only.',
+    image:
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Isla_Phi_Phi_Lay%2C_Tailandia%2C_2013-08-19%2C_DD_04.JPG/1280px-Isla_Phi_Phi_Lay%2C_Tailandia%2C_2013-08-19%2C_DD_04.JPG',
+    imageAlt: 'Phi Phi Leh limestone cliffs and Andaman Sea — Krabi, Thailand',
+    partnerEvent: true,
+ 
     status: 'upcoming',
   },
   {
@@ -227,7 +293,7 @@ export const ROBOCLUB_EVENTS = [
   {
     id: 'ev-national-2026',
     name: 'National Robotics Championship',
-    dateLabel: '24th – 26th July 2026',
+    dateLabel: '23th – 25th October 2026',
     location: 'India • Venue TBD',
     participation: 'Top teams from all zonal rounds',
     summary: 'The national finale: elite squads from every zone compete for the international finals.',
@@ -238,7 +304,7 @@ export const ROBOCLUB_EVENTS = [
   },
   {
     id: 'ev-international-2026',
-    name: 'International finals',
+    name: 'International finals 2027',
     dateLabel: 'October 2026',
     location: 'Venue TBD',
     participation: '4 days of world-class competition',
@@ -261,9 +327,47 @@ export const ROBOCLUB_EVENTS = [
     imageAlt: 'Flame Towers skyline, Baku, Azerbaijan',
     partnerEvent: true,
     heroBanner: {
-      kicker: 'Baku',
-      title: 'Flame Towers',
-      subtitle: 'Azerbaijan',
+      // kicker: 'Baku',
+      // title: 'Flame Towers',
+      // subtitle: 'Azerbaijan',
+    },
+    status: 'upcoming',
+  },
+  {
+    id: 'ev-partner-egypt-2026',
+    name: 'Technoxian Egypt',
+    dateLabel: 'June 2026',
+    location: 'Egypt',
+    participation: 'School teams • STEM & robotics tracks',
+    summary:
+      'Regional Technoxian competition in Egypt focused on STEM excellence, hands-on robotics challenges, and innovation for school students.',
+    image:
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/All_Gizah_Pyramids.jpg/1280px-All_Gizah_Pyramids.jpg',
+    imageAlt: 'Great Pyramid of Giza and ancient monuments — Egypt',
+    partnerEvent: true,
+    famousPlace: {
+      // name: 'Ancient Wonders',
+      // region: 'Egypt',
+      // imageAlt: 'Great Pyramid of Giza — Ancient Wonders, Egypt',
+    },
+    status: 'upcoming',
+  },
+  {
+    id: 'ev-partner-venezuela-2026',
+    name: 'Technoxian International Championship – Venezuela',
+    dateLabel: 'July 9 – July 11, 2026',
+    location: 'Bicentennial University of Aragua, Venezuela',
+    participation: 'Latin America & international squads',
+    summary:
+      'International robotics and innovation championship at the Bicentennial University of Aragua, uniting teams from across Latin America and beyond.',
+    image:
+      'https://upload.wikimedia.org/wikipedia/commons/3/33/Angel_falls_in_Venezuela_001.JPG',
+    imageAlt: 'Angel Falls — tepuis and waterfalls, Venezuela',
+    partnerEvent: true,
+    famousPlace: {
+      // name: 'Angel Falls',
+      // region: 'Venezuela',
+      // imageAlt: "Angel Falls — world's highest uninterrupted waterfall, Venezuela",
     },
     status: 'upcoming',
   },
@@ -280,9 +384,9 @@ export const ROBOCLUB_EVENTS = [
     imageAlt: 'Walkway and monument at Kwame Nkrumah Memorial Park, Accra, Ghana',
     partnerEvent: true,
     heroBanner: {
-      kicker: 'Accra',
-      title: 'Kwame Nkrumah Memorial Park',
-      subtitle: 'Ghana',
+      // kicker: 'Accra',
+      // title: 'Kwame Nkrumah Memorial Park',
+      // subtitle: 'Ghana',
     },
     status: 'upcoming',
   },

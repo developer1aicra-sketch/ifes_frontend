@@ -89,8 +89,8 @@ const viewToPath = (view) => {
       return '/news';
     case 'partners':
       return '/partners';
-    case 'become-partner':
-      return '/become-partner';
+    case 'partner-with-us':
+      return '/partner-with-us';
     case 'login':
     case 'member-login':
       return '/member/login';
@@ -430,7 +430,7 @@ const AppContent = ({
               <Route path="/associates/list" element={<AssociationsListView />} />
               {/* <Route path="/careers" element={<CareersView />} /> */}
               <Route path="/partners" element={<PartnersView />} />
-              <Route path="/become-partner" element={<BecomePartnerView />} />
+              <Route path="/partner-with-us" element={<BecomePartnerView />} />
         {/* <Route path="/shop" element={<StoreView />} /> */}
         
 
@@ -478,7 +478,7 @@ const AppContent = ({
               <Route path="/:locationCode/associates/list" element={<AssociationsListView />} />
               {/* <Route path="/:locationCode/careers" element={<CareersView />} /> */}
               <Route path="/:locationCode/partners" element={<PartnersView />} />
-              <Route path="/:locationCode/become-partner" element={<BecomePartnerView />} />
+              <Route path="/:locationCode/partner-with-us" element={<BecomePartnerView />} />
               <Route path="/:locationCode/member/login" element={<MemberLoginRoute user={user} setView={setViewRespectingLocation} setUser={setUser} currentSite={currentSite} locationPrefix={locationPrefix} />} />
               <Route path="/:locationCode/login" element={<Navigate to={pathWithLocationPrefix(locationPrefix, '/member/login')} replace />} />
               <Route path="/:locationCode/staff-login" element={<AdminLoginView setView={setViewRespectingLocation} setUser={setUser} user={user} />} />

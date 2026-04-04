@@ -14,6 +14,7 @@ const FEATURED_EVENTS = [
     host: "Technoxian in collaboration with local partners",
     description:
       "International robotics and innovation championship hosted at the Bicentennial University of Aragua, bringing together teams from across Latin America and beyond.",
+    landmark: { title: "Angel Falls", subtitle: "Venezuela" },
   },
   {
     name: "Ivy STEM International Schools – Egypt Championship",
@@ -22,6 +23,7 @@ const FEATURED_EVENTS = [
     host: "Technoxian x Ivy STEM International Schools",
     description:
       "Regional Technoxian competition in Egypt focused on STEM excellence, hands‑on robotics challenges, and innovation for school students.",
+    landmark: { title: "Ancient Wonders", subtitle: "Egypt" },
   },
 ];
 
@@ -343,6 +345,13 @@ export function EventsPage({ events = [], themeAccent }) {
                   <Globe size={12} className="text-green-400" />
                   <span>{event.host}</span>
                 </p>
+                {event.landmark ? (
+                  <p className="text-xs text-amber-300/90 mt-1.5">
+                    <span className="text-slate-500">Iconic destination: </span>
+                    {event.landmark.title}
+                    {event.landmark.subtitle ? ` • ${event.landmark.subtitle}` : ""}
+                  </p>
+                ) : null}
               </div>
               <span className="bg-slate-800 text-slate-500 text-xs px-4 py-2 rounded cursor-not-allowed">
                 COMING SOON
@@ -449,6 +458,22 @@ export function EventsPage({ events = [], themeAccent }) {
                 <Calendar size={16} className="mr-2 flex-shrink-0" />
                 <span>{selectedEvent.date}</span>
               </div>
+              {selectedEvent.landmark ? (
+                <div className="flex items-start text-sm text-slate-300">
+                  <MapPin size={16} className="mr-2 flex-shrink-0 text-amber-400 mt-0.5" />
+                  <div>
+                    <span className="text-slate-400 block text-xs uppercase tracking-wide mb-0.5">
+                      Iconic destination
+                    </span>
+                    <span>
+                      {selectedEvent.landmark.title}
+                      {selectedEvent.landmark.subtitle
+                        ? ` • ${selectedEvent.landmark.subtitle}`
+                        : ""}
+                    </span>
+                  </div>
+                </div>
+              ) : null}
               <div className="bg-slate-700/50 p-4 rounded-lg mt-4">
                 <h3 className="font-bold text-white mb-2">Event Details</h3>
                 <p className="text-sm text-slate-300">

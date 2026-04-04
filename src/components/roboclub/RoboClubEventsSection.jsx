@@ -2,6 +2,45 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ROBOCLUB_EVENTS } from '../../constants/roboclubLandingData';
+import { FamousPlaceDetail } from './FamousPlaceDetail';
+import { FamousPlaceGallery } from './FamousPlaceGallery';
+import { RoboClubRemoteImage } from './RoboClubRemoteImage';
+
+/** Bottom gradient caption on the card hero: `famousPlace` wins; else `heroBanner`. */
+function EventHeroCaption({ ev }) {
+  const fp = ev.famousPlace;
+  if (fp?.name) {
+    const heroKicker = fp.theme || 'Famous place';
+    return (
+      <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-3 pt-12 bg-gradient-to-t from-slate-950 via-slate-950/88 to-transparent border-t border-white/5">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-300/90 mb-1">
+          {heroKicker}
+        </p>
+        <p className="text-base font-black text-white leading-snug drop-shadow-sm">{fp.name}</p>
+        {fp.region ? (
+          <p className="text-xs text-slate-300 mt-1 font-medium">{fp.region}</p>
+        ) : null}
+      </div>
+    );
+  }
+  const hb = ev.heroBanner;
+  if (hb?.title) {
+    return (
+      <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-3 pt-12 bg-gradient-to-t from-slate-950 via-slate-950/88 to-transparent border-t border-white/5">
+        {hb.kicker ? (
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400/90 mb-1">
+            {hb.kicker}
+          </p>
+        ) : null}
+        <p className="text-base font-black text-white leading-snug drop-shadow-sm">{hb.title}</p>
+        {hb.subtitle ? (
+          <p className="text-xs text-slate-300 mt-1 font-medium">{hb.subtitle}</p>
+        ) : null}
+      </div>
+    );
+  }
+  return null;
+}
 
 const PER_PAGE = 2;
 
@@ -148,11 +187,10 @@ const RoboClubEventsSection = () => {
                       <div className="group rounded-2xl overflow-hidden border border-slate-800 bg-slate-900/60 hover:border-cyan-500/35 transition-colors h-full flex flex-col">
                         <div className="relative h-52 overflow-hidden shrink-0">
                           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent z-10" />
-                          <img
+                          <RoboClubRemoteImage
                             src={ev.image}
                             alt={ev.imageAlt ?? `${ev.name} — event`}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            loading="lazy"
                           />
                           <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-2 max-w-[calc(100%-2rem)]">
                             <span
@@ -168,22 +206,37 @@ const RoboClubEventsSection = () => {
                               </span>
                             ) : null}
                           </div>
-                          {ev.heroBanner ? (
-                            <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-3 pt-12 bg-gradient-to-t from-slate-950 via-slate-950/88 to-transparent border-t border-white/5">
-                              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400/90 mb-1">
-                                {ev.heroBanner.kicker ?? 'Landmark'}
-                              </p>
-                              <p className="text-base font-black text-white leading-snug drop-shadow-sm">
-                                {ev.heroBanner.title}
-                              </p>
-                              {ev.heroBanner.subtitle ? (
-                                <p className="text-xs text-slate-300 mt-1 font-medium">
-                                  {ev.heroBanner.subtitle}
-                                </p>
-                              ) : null}
-                            </div>
-                          ) : null}
+                          <EventHeroCaption ev={ev} />
                         </div>
+
+                        {ev.famousPlace?.name ? (
+                          <>
+                            <FamousPlaceDetail
+                              theme={ev.famousPlace.theme}
+                              name={ev.famousPlace.name}
+                              region={ev.famousPlace.region}
+                              image={ev.famousPlace.image ?? ev.image}
+                              imageAlt={ev.famousPlace.imageAlt ?? ev.imageAlt}
+                            />
+                            {(ev.famousPlace.galleries?.length
+                              ? ev.famousPlace.galleries
+                              : ev.famousPlace.gallery?.length
+                                ? [
+                                    {
+                                      heading: ev.famousPlace.galleryHeading ?? 'Image highlights',
+                                      items: ev.famousPlace.gallery,
+                                    },
+                                  ]
+                                : []
+                            ).map((block, idx) => (
+                              <FamousPlaceGallery
+                                key={`${ev.id}-fp-gal-${idx}`}
+                                heading={block.heading}
+                                items={block.items}
+                              />
+                            ))}
+                          </>
+                        ) : null}
 
                         <div className="p-6 flex flex-col flex-1 min-h-0">
                           <div className="flex items-start justify-between gap-4 mb-2">

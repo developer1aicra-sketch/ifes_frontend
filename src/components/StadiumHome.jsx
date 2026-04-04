@@ -3,6 +3,7 @@ import CertificateDrawer from "./roboclub/CertificateDrawer";
 import CommunitySection from "./roboclub/CommunitySection";
 import DashboardLoginSection from "./roboclub/DashboardLoginSection";
 import HeroSection from "./roboclub/HeroSection";
+import { MakersSocialProofSection } from "./roboclub/MakersSocialProof";
 import ShopSection from "./roboclub/ShopSection";
 import WinnersSection from "./roboclub/WinnersSection";
 import Navbar from "./roboclub/Navbar";
@@ -23,7 +24,8 @@ export const StadiumHome = ({ setPage, isAuthenticated }) => {
         isAuthenticated={isAuthenticated}
       />
  
-      <HeroSection  setPage={setPage} />
+      <HeroSection setPage={setPage} />
+      <MakersSocialProofSection />
       <AboutRoboClubSection />
       <LearningTracksSection />
       <RoboClubEventsSection />

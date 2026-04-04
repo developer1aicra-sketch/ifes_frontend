@@ -3,14 +3,14 @@
  * Keys are WRC_WINNERS_RANKING[].id so filenames can change without touching UI.
  */
 import logoAtom from '../assets/clublogo/ATOM.jpg';
-import logoHarimohan from '../assets/clublogo/Harimohan Science Club.png';
-import logoHeavyDrivers from '../assets/clublogo/HEAVY DRIVERS.jpeg';
-import logoKarmayodha from '../assets/clublogo/KarmayodhaBots.png';
-import logoRoboOdisha from '../assets/clublogo/RoboOdisha.png';
-import logoRoboticsAviation from '../assets/clublogo/Robotics and AviationClub.png';
-import logoTeamWarriors from '../assets/clublogo/Team Warriors.jpeg';
-import logoTeamXenon from '../assets/clublogo/Team Xenon.png';
-import logoWrcAze from '../assets/clublogo/wrc_aze.jpeg';
+import logoHarimohan from '../assets/clublogo/Harimohan Science Club.jpg';
+import logoHeavyDrivers from '../assets/clublogo/HEAVY DRIVERS.jpg';
+import logoKarmayodha from '../assets/clublogo/KarmayodhaBots.jpg';
+import logoRoboOdisha from '../assets/clublogo/RoboOdisha.jpg';
+import logoRoboticsAviation from '../assets/clublogo/Robotics and AviationClub.jpg';
+import logoTeamWarriors from '../assets/clublogo/Team Warriors.jpg';
+import logoTeamXenon from '../assets/clublogo/Team Xenon.jpg';
+import logoWrcAze from '../assets/clublogo/wrc_aze.jpg';
 
 export const WRC_CLUB_LOGO_BY_WINNER_ID = {
   'wrc-2025-01': logoRoboOdisha,

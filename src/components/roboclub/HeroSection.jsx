@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Hexagon, Cpu, ChevronRight } from 'lucide-react';
 import { FloatingElement } from './AnimationComponents';
+import MakersSocialProof from './MakersSocialProof';
 import ClubRegistrationModal from '../modals/ClubRegistrationModal';
 import heroTeamImage from '../../assets/b12.jpg.jpeg';
 
@@ -12,7 +13,7 @@ const HeroSection = ({setPage}) => {
     setPage('dashboard');
   };
   return (
-    <section className="relative min-h-screen flex items-center justify-center pt-24 overflow-hidden bg-slate-950">
+    <section className="relative box-border flex min-h-[100dvh] flex-col overflow-hidden bg-slate-950 pt-24 pb-4 sm:pb-6">
       {/* Intrinsic-size photo: natural dimensions when they fit; scale down only to stay inside hero (no cover crop) */}
       <div
         className="absolute inset-0 flex items-center justify-center overflow-auto bg-slate-950"
@@ -56,8 +57,10 @@ const HeroSection = ({setPage}) => {
         <Cpu size={80} strokeWidth={1} />
       </FloatingElement>
 
-      <div className="mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-16 items-center">
-        <div className="space-y-8 relative">
+      {/* Fills space below fixed nav; min-h-0 allows shrink + optional scroll on very short viewports */}
+      <div className="relative z-10 flex min-h-0 w-full flex-1 items-center overflow-y-auto overscroll-y-contain">
+        <div className="hero-main-section mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 px-6 py-2 sm:gap-10 sm:py-0 lg:grid-cols-2 lg:gap-12 xl:gap-16">
+          <div className="relative space-y-4 sm:space-y-5 lg:space-y-8">
           {/* Decorative Line */}
           <div className="absolute -left-8 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-cyan-500/50 to-transparent hidden lg:block"></div>
 
@@ -66,17 +69,17 @@ const HeroSection = ({setPage}) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/30 border border-cyan-500/30 text-cyan-400 text-xs font-bold uppercase tracking-widest mb-6">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-950/30 px-3 py-1 text-xs font-bold uppercase tracking-widest text-cyan-400 lg:mb-6">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-400"></span>
               Technoxian 2026
             </div>
-            <h1 className="text-5xl font-black leading-[1.1] tracking-tight text-white drop-shadow-[0_2px_32px_rgba(0,0,0,0.75)] lg:text-7xl">
+            <h1 className="text-4xl font-black leading-[1.08] tracking-tight text-white drop-shadow-[0_2px_32px_rgba(0,0,0,0.75)] sm:text-5xl lg:text-6xl xl:text-7xl">
               WHERE <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.5)]">
                 LEGENDS ARE FORGED.
               </span>
             </h1>
-            <p className="mt-6 max-w-lg border-l-2 border-white/20 pl-6 text-lg leading-relaxed text-slate-200/90 drop-shadow-[0_1px_12px_rgba(0,0,0,0.6)]">
+            <p className="mt-4 max-w-lg border-l-2 border-white/20 pl-4 text-base leading-relaxed text-slate-200/90 drop-shadow-[0_1px_12px_rgba(0,0,0,0.6)] sm:pl-6 sm:text-lg lg:mt-6">
               Join the elite league of robotics. Connect, compete, and claim your glory in the world's largest robotics championship ecosystem.
             </p>
           </motion.div>
@@ -85,32 +88,21 @@ const HeroSection = ({setPage}) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="flex flex-wrap gap-4"
+            className="flex flex-wrap gap-3 sm:gap-4"
           >
-            <button onClick={() => setShowInvitationModal(true)} className="group px-8 py-4 bg-white text-slate-950 font-bold text-lg rounded-xl shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_-10px_rgba(255,255,255,0.5)] transition-all flex items-center gap-2">
+            <button onClick={() => setShowInvitationModal(true)} className="group flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-bold text-slate-950 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] transition-all hover:shadow-[0_0_60px_-10px_rgba(255,255,255,0.5)] sm:px-8 sm:py-4 sm:text-lg">
               Start Your Journey
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </button>
-            <button  onClick={() => setShowInvitationModal(true)} className="px-8 py-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 text-white font-semibold rounded-xl backdrop-blur-md transition-all flex items-center gap-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            <button  onClick={() => setShowInvitationModal(true)} className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/50 px-6 py-3 font-semibold text-white backdrop-blur-md transition-all hover:bg-slate-800 sm:px-8 sm:py-4">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-red-500"></div>
               Register Your RoboClub
             </button>
           </motion.div>
-
-          <div className="flex items-center gap-6  border-white/10 py-8">
-            <div className="flex -space-x-4">
-               {[1,2,3,4].map(i => (
-                 <div key={i} className="z-0 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-slate-950 bg-slate-800 text-xs font-bold text-white ring-2 ring-white/10 transition-all hover:z-10 hover:scale-110 hover:ring-cyan-400">
-                   <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="User" className="w-full h-full object-cover" />
-                 </div>
-               ))}
-            </div>
-            <div className="text-sm drop-shadow-[0_1px_8px_rgba(0,0,0,0.5)]">
-              <p className="font-bold text-white">12,000+ Makers</p>
-              <p className="text-slate-400">Joined this season</p>
-            </div>
-          </div>
         </div>
+
+        </div>
+        
       </div>
 
       {/* Club Registration Modal (email → OTP → club form → /club/add) */}

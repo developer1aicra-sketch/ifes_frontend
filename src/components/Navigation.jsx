@@ -24,7 +24,7 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
     if (!isMemberAuthenticated) {
       setView('member-login');
       return;
-    }
+    } 
     setUser?.((prev) => (prev?.type === 'member' ? prev : { type: 'member', email: prev?.email }));
     setView('member-dashboard');
   };
@@ -110,7 +110,7 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
             <Trophy className="w-3 h-3 text-yellow-500" />
             {siteConfig.is_partner ? 'Local Events' : 'Challenges'}
           </Link>
-          <Link to={path('/become-partner')} className="hover:text-white transition-colors">
+          <Link to={path('/partner-with-us')} className="hover:text-white transition-colors">
             Become a Partner
           </Link>
           {/* {!siteConfig.is_partner && (
@@ -179,7 +179,7 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
                 <Trophy className="w-3 h-3 text-yellow-500 flex-shrink-0" />
                 {siteConfig.is_partner ? 'Local Events' : 'WRC Challenges'}
               </Link>
-              <Link to={path('/become-partner')} onClick={closeAnd()} className="px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
+              <Link to={path('/partner-with-us')} onClick={closeAnd()} className="px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
                 Become a Partner
               </Link>
               <div className="mt-4 pt-4 border-t border-white/10 px-6">
