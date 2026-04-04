@@ -2262,21 +2262,21 @@ const AdminView = ({ setSites, sites, setView, defaultMode, user, setUser }) => 
                       <div className="text-xs font-bold text-slate-500 uppercase mb-3">Partner profile</div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                          <span className="text-slate-500 block">Academy</span>
+                          <span className="text-slate-500 block">Partner Name</span>
                           <span className="font-semibold text-slate-900">{partner.academyName ?? '—'}</span>
                         </div>
                         <div>
-                          <span className="text-slate-500 block">Partner code</span>
+                          <span className="text-slate-500 block">Country code</span>
                           <span className="font-semibold text-slate-900">{partner.partnerCode ?? '—'}</span>
                         </div>
                         {/* <div>
                           <span className="text-slate-500 block">Status</span>
                           <span className="font-semibold text-slate-900">{partner.status ?? '—'}</span>
                         </div> */}
-                        <div>
+                        {/* <div>
                           <span className="text-slate-500 block">Theme</span>
                           <span className="font-semibold text-slate-900">{partner.themeColor ?? '—'}</span>
-                        </div>
+                        </div> */}
                         <div>
                           <span className="text-slate-500 block">Country</span>
                           <span className="font-semibold text-slate-900">

@@ -13,12 +13,15 @@ const HeroSection = ({setPage}) => {
   };
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-24 overflow-hidden bg-slate-950">
-      {/* Full-bleed photography */}
-      <div className="absolute inset-0" aria-hidden>
+      {/* Intrinsic-size photo: natural dimensions when they fit; scale down only to stay inside hero (no cover crop) */}
+      <div
+        className="absolute inset-0 flex items-center justify-center overflow-auto bg-slate-950"
+        aria-hidden
+      >
         <img
           src={heroTeamImage}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover object-[center_30%] lg:object-[center_25%] scale-105 motion-reduce:scale-100"
+          alt="Robotics competition and teams at Technoxian"
+          className="block h-auto w-auto max-h-full max-w-full"
           loading="eager"
           decoding="async"
           fetchPriority="high"
@@ -94,7 +97,7 @@ const HeroSection = ({setPage}) => {
             </button>
           </motion.div>
 
-          <div className="flex items-center gap-6 border-t border-white/10 pt-8">
+          <div className="flex items-center gap-6  border-white/10 py-8">
             <div className="flex -space-x-4">
                {[1,2,3,4].map(i => (
                  <div key={i} className="z-0 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-slate-950 bg-slate-800 text-xs font-bold text-white ring-2 ring-white/10 transition-all hover:z-10 hover:scale-110 hover:ring-cyan-400">
