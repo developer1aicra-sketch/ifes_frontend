@@ -1,6 +1,8 @@
 import React from 'react';
 import { ArrowLeft, Globe, Users, Trophy, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { pathWithLocationPrefix } from '../utils/locationRoutes';
+import { useLocationPrefix } from '../hooks/useLocationPrefix';
 
 // Mock data for associations - replace with real data from your backend
 const ASSOCIATIONS_DATA = [
@@ -140,6 +142,7 @@ const ASSOCIATIONS_DATA = [
 
 const AssociationsListView = () => {
   const navigate = useNavigate();
+  const { locationPrefix } = useLocationPrefix();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [filterCategory, setFilterCategory] = React.useState('all');
 
@@ -158,7 +161,7 @@ const AssociationsListView = () => {
       <div className="container mx-auto px-4 max-w-7xl">
         {/* Back button */}
         <button
-          onClick={() => navigate('/governance#associates')}
+          onClick={() => navigate(pathWithLocationPrefix(locationPrefix || '', '/about/mission-vision'))}
           className="flex items-center gap-2 text-slate-600 hover:text-blue-600 mb-8 transition-colors"
         >
           <ArrowLeft size={20} />

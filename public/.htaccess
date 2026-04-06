@@ -1,0 +1,19 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+    
+  # Client-side routes that often collide with empty folders on shared hosting:
+  # if a real directory exists at the same path, !-d below never rewrites → 403.
+  RewriteRule ^roboclub/?$ /index.html [L]
+  RewriteRule ^roboclub-login/?$ /index.html [L]
+  RewriteRule ^roboclub-dashboard/?$ /index.html [L]
+  # Location-prefixed RoboClub (e.g. /AE/roboclub)
+  RewriteRule ^[A-Za-z0-9_-]+/roboclub/?$ /index.html [L]
+  RewriteRule ^[A-Za-z0-9_-]+/roboclub-login/?$ /index.html [L]
+  RewriteRule ^[A-Za-z0-9_-]+/roboclub-dashboard/?$ /index.html [L]
+
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>

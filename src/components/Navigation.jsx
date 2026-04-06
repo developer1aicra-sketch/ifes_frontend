@@ -1,15 +1,23 @@
-import { Trophy, Menu, X, User, LogOut, Star } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Trophy, Menu, X, User, LogOut, Star, ChevronDown } from 'lucide-react';
 import logo from '../assets/logo.png';
 import { Link, useLocation } from 'react-router-dom';
 import { useThemeClasses } from '../hooks/useThemeClasses';
 import { pathWithLocationPrefix } from '../utils/locationRoutes';
+import { useEffectiveLocationPrefix } from '../hooks/useEffectiveLocationPrefix';
+import { usePartnerAboutMegaMenuItems } from '../hooks/usePartnerAboutMegaMenuItems';
 import { partnerLogout, clearPartnerAuth, getPartnerAuth } from '../utils/api';
 import { clearAuthToken, getAuthToken } from '../api/authToken';
+import { AboutWorsoDesktopMegaMenu, AboutWorsoMobileLinks } from './AboutWorsoMegaMenu';
 
-const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user, setUser, locationPrefix = '' }) => {
+const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user, setUser }) => {
+  const [aboutMobileOpen, setAboutMobileOpen] = useState(false);
   const theme = useThemeClasses();
   const location = useLocation();
-  const path = (p) => pathWithLocationPrefix(locationPrefix, p);
+  const effectiveLocationPrefix = useEffectiveLocationPrefix(siteConfig);
+  const path = (p) => pathWithLocationPrefix(effectiveLocationPrefix, p);
+  const { isRegionalChapter, partnerTabs, loading: partnerAboutNavLoading } =
+    usePartnerAboutMegaMenuItems(effectiveLocationPrefix);
   const partnerSession = getPartnerAuth();
   const isPartnerAuthenticated = Boolean(partnerSession?.token && partnerSession?.partner);
   /** Member portal: when member token exists */
@@ -73,6 +81,10 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
     fn?.();
   };
 
+  useEffect(() => {
+    if (!isMobileMenuOpen) setAboutMobileOpen(false);
+  }, [isMobileMenuOpen]);
+
   return (
     <nav className={`sticky top-0 z-40 transition-all duration-300 ${theme.bgGradient || 'bg-[#0a0f1a]'} border-b border-white/10`}>
       <div className="container mx-auto px-4 sm:px-6 py-2 md:py-2.5 flex justify-between items-center max-w-[1600px]">
@@ -89,13 +101,29 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
         </div>
 
         <div className="hidden md:flex items-center gap-6 lg:gap-8 font-bold text-[11px] uppercase tracking-widest text-slate-300">
-          {(
-            <div className="relative group">
-              <button onClick={() => setView('about')} className="hover:text-white transition-colors py-2 flex items-center gap-1">
-                {(locationPrefix || siteConfig.is_partner) ? 'About' : 'About Worso'}
-              </button>
-            </div>
-          )}
+          <div className="relative group/about">
+            <button
+              type="button"
+              onClick={() => setView('about')}
+              className="hover:text-white transition-colors py-2 flex items-center gap-1 text-inherit"
+            >
+              {(effectiveLocationPrefix || siteConfig.is_partner) ? 'About' : 'About Worso'}
+              <ChevronDown
+                size={14}
+                className="opacity-70 shrink-0 transition-transform duration-200 group-hover/about:rotate-180"
+                aria-hidden
+              />
+            </button>
+            <AboutWorsoDesktopMegaMenu
+              pathWithPrefix={path}
+              pathname={location.pathname}
+              search={location.search}
+              siteConfig={siteConfig}
+              isRegionalChapter={isRegionalChapter}
+              partnerTabs={partnerTabs}
+              partnerNavLoading={partnerAboutNavLoading}
+            />
+          </div>
          
           <Link to={path('/membership')}>Membership</Link>
           <Link to={path('/roboclub')} className="flex gap-2 items-center">
@@ -162,9 +190,34 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
               </button>
             </div>
             <div className="flex flex-col py-4 font-bold text-[11px] uppercase tracking-widest text-slate-300">
-              <button onClick={closeAnd(() => setView('about'))} className="text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
-                {(locationPrefix || siteConfig.is_partner) ? 'About' : 'About Worso'}
+              <button
+                type="button"
+                onClick={() => setAboutMobileOpen((o) => !o)}
+                className={`text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors flex items-center justify-between gap-2 ${
+                  aboutMobileOpen ? 'bg-white/5 text-white' : ''
+                }`}
+                aria-expanded={aboutMobileOpen}
+              >
+                <span>{(effectiveLocationPrefix || siteConfig.is_partner) ? 'About' : 'About Worso'}</span>
+                <ChevronDown
+                  size={16}
+                  className={`shrink-0 opacity-80 transition-transform ${aboutMobileOpen ? 'rotate-180' : ''}`}
+                  aria-hidden
+                />
               </button>
+              {aboutMobileOpen && (
+                <div className="px-4 pb-2">
+                  <AboutWorsoMobileLinks
+                    pathWithPrefix={path}
+                    pathname={location.pathname}
+                    search={location.search}
+                    siteConfig={siteConfig}
+                    isRegionalChapter={isRegionalChapter}
+                    partnerTabs={partnerTabs}
+                    onNavigate={closeAnd()}
+                  />
+                </div>
+              )}
               <Link to={path('/membership')} onClick={closeAnd()} className="px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
                 Membership
               </Link>

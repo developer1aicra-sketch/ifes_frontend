@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Upload, Globe, Building, User, Mail, Phone, Calendar, Users, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { pathWithLocationPrefix } from '../utils/locationRoutes';
+import { useLocationPrefix } from '../hooks/useLocationPrefix';
 
 const JoinWorsoView = () => {
   const navigate = useNavigate();
+  const { locationPrefix } = useLocationPrefix();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     // Organization Details
@@ -124,7 +127,7 @@ const JoinWorsoView = () => {
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Back button */}
         <button
-          onClick={() => navigate('/governance#associates')}
+          onClick={() => navigate(pathWithLocationPrefix(locationPrefix || '', '/about/mission-vision'))}
           className="flex items-center gap-2 text-slate-600 hover:text-blue-600 mb-8 transition-colors"
         >
           <ArrowLeft size={20} />

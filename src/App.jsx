@@ -17,6 +17,7 @@ import HomeView from './views/HomeView';
 import JoinWorsoView from './views/JoinWorsoView';
 import AssociationsListView from './views/AssociationsListView';
 import AboutLayout from './views/AboutLayout';
+import { ABOUT_PAGE_ROUTES } from './views/about/aboutPageRoutes';
 import TeamsView from './views/TeamsView';
 // import CareersView from './views/CareersView';
 import MemberLoginView from './views/MemberLoginView';
@@ -42,6 +43,7 @@ import { getPartnerAuth } from './utils/api';
 import { getAuthToken, clearAuthToken } from './api/authToken';
 import { getMyMembership } from './app/membership/membershipApi';
 import { useLocationPrefix } from './hooks/useLocationPrefix';
+import { useEffectiveLocationPrefix } from './hooks/useEffectiveLocationPrefix';
 import { StoreView } from './views/StoreView';
 import RoboClubAuth from './views/RoboClubAuth';
 import RoboClubDashboard from './views/RoboClub';
@@ -76,7 +78,7 @@ const viewToPath = (view) => {
     case 'about':
       return '/about';
     case 'governance':
-      return '/governance';
+      return '/about/mission-vision';
     case 'associates':
       return '/associates';
     case 'join-worso':
@@ -118,6 +120,11 @@ const viewToPath = (view) => {
 const NewsArticleRoute = (props) => {
   const { id, locationCode } = useParams();
   return <NewsArticleView articleId={id} locationCode={locationCode || null} {...props} />;
+};
+
+const GovernanceLocationRedirect = () => {
+  const { locationCode } = useParams();
+  return <Navigate to={`/${locationCode}/about/mission-vision`} replace />;
 };
 
 const getPartnerSession = () => {
@@ -339,6 +346,7 @@ const AppContent = ({
 }) => {
   const { themeConfig } = useTheme();
   const { locationPrefix } = useLocationPrefix();
+  const effectiveLocationPrefix = useEffectiveLocationPrefix(currentSite);
   const hideGlobalChrome = useMemo(() => {
     const path = (location?.pathname || '').toLowerCase();
     // RoboClub and partner portal pages have their own layout;
@@ -352,8 +360,11 @@ const AppContent = ({
     );
   }, [location?.pathname]);
   const setViewRespectingLocation = useCallback(
-    (view, options) => (locationPrefix ? setViewWithPrefix(view, locationPrefix, options) : setView(view, options)),
-    [locationPrefix, setViewWithPrefix, setView]
+    (view, options) =>
+      effectiveLocationPrefix
+        ? setViewWithPrefix(view, effectiveLocationPrefix, options)
+        : setView(view, options),
+    [effectiveLocationPrefix, setViewWithPrefix, setView]
   );
   const newsPropsWithPrefix = useMemo(
     () => ({ ...newsProps, setView: setViewRespectingLocation }),
@@ -388,7 +399,6 @@ const AppContent = ({
       {!hideGlobalChrome && (
         <Navigation
           setView={setViewRespectingLocation}
-          locationPrefix={locationPrefix}
           toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           isMobileMenuOpen={isMobileMenuOpen}
           siteConfig={currentSite}
@@ -424,8 +434,14 @@ const AppContent = ({
               <Route path="/roboclub-login" element={<RoboClubAuth />} />
               <Route path="/roboclub-dashboard" element={<RoboClubDashboard mode="dashboard" />} />
 
-              <Route path="/about" element={<AboutLayout setView={setViewRespectingLocation} />} />
-              <Route path="/governance" element={<AboutLayout setView={setViewRespectingLocation} />} />
+              <Route path="/about" element={<AboutLayout setView={setViewRespectingLocation} />}>
+                <Route index element={<Navigate to="about-worso" replace />} />
+                {ABOUT_PAGE_ROUTES.map(({ path, Component }) => (
+                  <Route key={path} path={path} element={<Component />} />
+                ))}
+                <Route path="*" element={<Navigate to="about-worso" replace />} />
+              </Route>
+              <Route path="/governance" element={<Navigate to="/about/mission-vision" replace />} />
               <Route path="/associates/join-worso" element={<JoinWorsoView />} />
               <Route path="/associates/list" element={<AssociationsListView />} />
               {/* <Route path="/careers" element={<CareersView />} /> */}
@@ -472,8 +488,14 @@ const AppContent = ({
                 }
               />
               <Route path="/:locationCode/roboclub-dashboard" element={<RoboClubDashboard mode="dashboard" />} />
-              <Route path="/:locationCode/about" element={<AboutLayout setView={setViewRespectingLocation} />} />
-              <Route path="/:locationCode/governance" element={<AboutLayout setView={setViewRespectingLocation} />} />
+              <Route path="/:locationCode/about" element={<AboutLayout setView={setViewRespectingLocation} />}>
+                <Route index element={<Navigate to="about-worso" replace />} />
+                {ABOUT_PAGE_ROUTES.map(({ path, Component }) => (
+                  <Route key={`loc-${path}`} path={path} element={<Component />} />
+                ))}
+                <Route path="*" element={<Navigate to="about-worso" replace />} />
+              </Route>
+              <Route path="/:locationCode/governance" element={<GovernanceLocationRedirect />} />
               <Route path="/:locationCode/associates/join-worso" element={<JoinWorsoView />} />
               <Route path="/:locationCode/associates/list" element={<AssociationsListView />} />
               {/* <Route path="/:locationCode/careers" element={<CareersView />} /> */}

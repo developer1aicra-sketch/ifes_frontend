@@ -265,7 +265,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
                         {siteConfig.is_partner ? 'Next Local Event' : 'Upcoming Championship'}
                       </div>
                       <h2 className="text-2xl font-bold text-white">
-                        {partnerEvent?.name || partnerHomeData?.event?.title || 'Technoxian World Cup \'26'}
+                        {partnerEvent?.name || partnerHomeData?.event?.title || 'Technoxian World Cup'}
                       </h2>
                     </div>
                     <Trophy size={32} className="text-white/30 group-hover:text-yellow-400 transition-colors" />
@@ -295,7 +295,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
                     )}
                     {!partnerEvent?.start_date && !partnerHomeData?.event?.date && (
                       <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
-                        <Calendar size={12} /> OCT 2026
+                        <Calendar size={12} />  2027
                       </div>
                     )}
                   </div>

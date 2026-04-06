@@ -23,11 +23,11 @@ const DEFAULT_FOOTER = {
 };
 
 const ABOUT_SECTION_LINKS = [
-  { id: 'advisory', label: 'ADVISORY BOARD' },
-  { id: 'board', label: 'EXECUTIVE COMMITTEE' },
-  { id: 'federation-services', label: 'FEDERATION SERVICES' },
-  { id: 'tech-for-good', label: 'TECH FOR GOOD' },
-  { id: 'working-at-worso', label: 'WORKING AT WORSO' },
+  { segment: 'advisory-board', label: 'ADVISORY BOARD' },
+  { segment: 'executive-committee', label: 'EXECUTIVE COMMITTEE' },
+  { segment: 'federation-services', label: 'FEDERATION SERVICES' },
+  { segment: 'tech-for-good', label: 'TECH FOR GOOD' },
+  { segment: 'working-at-worso', label: 'WORKING AT WORSO' },
 ];
 
 const Footer = ({ setView, switchSite, currentSite }) => {
@@ -143,19 +143,26 @@ const Footer = ({ setView, switchSite, currentSite }) => {
     }
   }, [partners, routeCountryCode, selectedLocation, updateTheme]);
 
+  const aboutBasePath = useMemo(
+    () => pathWithLocationPrefix(locationPrefix || '', '/about'),
+    [locationPrefix],
+  );
+
   const isOnAboutPage = useMemo(() => {
     const p = routerLocation.pathname || '';
-    return p.endsWith('/about') || p.endsWith('/governance') || p === '/about' || p === '/governance';
-  }, [routerLocation.pathname]);
+    if (p.endsWith('/governance') || p === '/governance') return true;
+    return p === aboutBasePath || p.startsWith(`${aboutBasePath}/`);
+  }, [routerLocation.pathname, aboutBasePath]);
 
   const activeAboutSection = useMemo(() => {
-    const hash = (routerLocation.hash || '').replace('#', '');
-    return ABOUT_SECTION_LINKS.some((l) => l.id === hash) ? hash : null;
-  }, [routerLocation.hash]);
+    const p = routerLocation.pathname || '';
+    if (!p.startsWith(`${aboutBasePath}/`)) return null;
+    const seg = p.slice(aboutBasePath.length + 1);
+    return ABOUT_SECTION_LINKS.some((l) => l.segment === seg) ? seg : null;
+  }, [routerLocation.pathname, aboutBasePath]);
 
-  const handleAboutSectionClick = (sectionId) => {
-    const basePath = pathWithLocationPrefix(locationPrefix || '', '/about');
-    navigate(`${basePath}#${sectionId}`, { replace: true });
+  const handleAboutSectionClick = (segment) => {
+    navigate(`${aboutBasePath}/${segment}`, { replace: true });
     window.scrollTo(0, 0);
   };
 
@@ -269,11 +276,11 @@ const Footer = ({ setView, switchSite, currentSite }) => {
             <h4 className="text-white font-bold mb-6 text-sm uppercase tracking-wider">Governance</h4>
             <ul className="space-y-3 text-sm">
               {ABOUT_SECTION_LINKS.map((link) => {
-                const isActive = isOnAboutPage && activeAboutSection === link.id;
+                const isActive = isOnAboutPage && activeAboutSection === link.segment;
                 return (
-                  <li key={link.id}>
+                  <li key={link.segment}>
                     <button
-                      onClick={() => handleAboutSectionClick(link.id)}
+                      onClick={() => handleAboutSectionClick(link.segment)}
                       className={`text-sm capitalize hover:text-white transition-colors text-left w-full py-1 ${
                         isActive
                           ? `${themeConfig?.colors?.textLight || 'text-blue-400'}`
