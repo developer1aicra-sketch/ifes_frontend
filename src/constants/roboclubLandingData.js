@@ -2,6 +2,15 @@
  * Dummy content for public /roboclub landing — replace with CMS or API when ready.
  */
 
+/** Hero CTA: who RoboClub is for (chips above primary action). */
+export const HERO_AUDIENCE_TAGS = [
+  'University',
+  'School',
+  'College',
+  'Vocational institute',
+  'Group',
+];
+
 export const ROBOCLUB_ABOUT = {
   headline: 'Build real robots. Learn with mentors. Compete on a global stage.',
   intro:

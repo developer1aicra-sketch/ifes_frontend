@@ -4,6 +4,7 @@ import { Hexagon, Cpu, ChevronRight } from 'lucide-react';
 import { FloatingElement } from './AnimationComponents';
 import MakersSocialProof from './MakersSocialProof';
 import ClubRegistrationModal from '../modals/ClubRegistrationModal';
+import { HERO_AUDIENCE_TAGS } from '../../constants/roboclubLandingData';
 import heroTeamImage from '../../assets/b12.jpg.jpeg';
 
 const HeroSection = ({setPage}) => {
@@ -88,16 +89,33 @@ const HeroSection = ({setPage}) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="flex flex-wrap gap-3 sm:gap-4"
+            className="space-y-4 sm:space-y-5"
           >
+            <div>
+             
+              <ul
+                className="flex flex-wrap gap-2 sm:gap-2.5"
+                aria-label="Institution types RoboClub serves"
+              >
+                {HERO_AUDIENCE_TAGS.map((label) => (
+                  <li key={label}>
+                    <span className="inline-flex items-center rounded-full border border-white/15 bg-slate-950/50 px-3 py-1.5 text-xs font-medium text-slate-200 shadow-sm backdrop-blur-sm sm:text-[13px]">
+                      {label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex flex-wrap gap-3 sm:gap-4">
             <button onClick={() => setShowInvitationModal(true)} className="group flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-bold text-slate-950 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] transition-all hover:shadow-[0_0_60px_-10px_rgba(255,255,255,0.5)] sm:px-8 sm:py-4 sm:text-lg">
               Start Your Journey
               <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </button>
-            <button  onClick={() => setShowInvitationModal(true)} className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/50 px-6 py-3 font-semibold text-white backdrop-blur-md transition-all hover:bg-slate-800 sm:px-8 sm:py-4">
+            {/* <button  onClick={() => setShowInvitationModal(true)} className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/50 px-6 py-3 font-semibold text-white backdrop-blur-md transition-all hover:bg-slate-800 sm:px-8 sm:py-4">
               <div className="h-2 w-2 animate-pulse rounded-full bg-red-500"></div>
               Register Your RoboClub
-            </button>
+            </button> */}
+            </div>
           </motion.div>
         </div>
 

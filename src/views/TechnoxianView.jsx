@@ -1581,13 +1581,13 @@ to='/roboclub'
                           </div>
                         </div>
 
-                        {/* {game.description && (
+                        {game.description && (
                           <div className="mb-8 p-6 bg-blue-50 rounded-xl border border-blue-100">
                             <p className="text-slate-700 leading-relaxed">
                               {game.description}
                             </p>
                           </div>
-                        )} */}
+                        )}
 
                         <h3 className="text-xl font-bold text-slate-900 mb-4">
                           Schedule Details
