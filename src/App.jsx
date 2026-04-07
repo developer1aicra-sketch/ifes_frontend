@@ -50,6 +50,7 @@ import { useLocationPrefix } from './hooks/useLocationPrefix';
 import { useEffectiveLocationPrefix } from './hooks/useEffectiveLocationPrefix';
 import { StoreView } from './views/StoreView';
 import RoboClubAuth from './views/RoboClubAuth';
+
 import RoboClubDashboard from './views/RoboClub';
 import GlobalLoadingOverlay from './components/GlobalLoadingOverlay';
 const viewToPath = (view) => {
