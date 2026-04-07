@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 
 # Local build bundles (often exceed GitHub's 100 MB blob limit)
+worso-build-version-*.zip
 worso-build-version-five.zip
 worso-build-version-six.zip
 worso-build-version-seven.zip
