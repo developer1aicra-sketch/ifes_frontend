@@ -3,7 +3,7 @@ import {
   ArrowRight,
   Loader2
 } from "lucide-react";
-import { PaymentSection, ShippingInfoForm, PersonalInfoForm, PlanCard, CategoryCard, ProgressSteps, HeroSection } from "../components/membership";
+import { PaymentSection, ShippingInfoForm, PersonalInfoForm, PlanCard, CategoryCard, ProgressSteps, HeroSection, StudentMembershipComparisonSection } from "../components/membership";
 
 // Import constants
 import {
@@ -16,6 +16,7 @@ import { useMembershipForm } from "../hooks/useMembershipForm";
 // Import icons
 import * as Icons from "lucide-react";
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategoriesRequest, fetchCategoryRequest, selectCategories, selectCategoriesLoading, selectHasCategoriesLoaded, selectSingleCategory } from "../app/categories/categoriesSlice";
 
@@ -35,7 +36,8 @@ const SimpleLoading = () => (
   </div>
 );
 
-const MembershipPage = () => {
+const MembershipPage = ({ setView }) => {
+  const location = useLocation();
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [selectedPaymentGateway, setSelectedPaymentGateway] = useState('razorpay'); // payment method only; never use for category_id
@@ -47,27 +49,8 @@ const MembershipPage = () => {
   const categoriesLoading = useSelector(selectCategoriesLoading);
   const memberShipPlanData = useSelector(selectSingleCategory);
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(fetchCategoriesRequest());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (selectedCategoryId) {
-      dispatch(fetchCategoryRequest(selectedCategoryId));
-    }
-  }, [selectedCategoryId]);
-
-  useEffect(() => {
-    // Only set loading to false once when categories are loaded
-    if (hasCategoriesLoaded && isLoading) {
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-        setHasShownLoading(true);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [hasCategoriesLoaded, isLoading]);
+  const navState = location?.state || null;
+  const [hasAppliedNavState, setHasAppliedNavState] = useState(false);
 
   const {
     isRoboClub,
@@ -82,6 +65,98 @@ const MembershipPage = () => {
     prevStepCategory,
     handlePayment
   } = useMembershipForm();
+
+  useEffect(() => {
+    dispatch(fetchCategoriesRequest());
+  }, [dispatch]);
+
+  // Apply navigation state (e.g. coming from /student-membership CTA)
+  useEffect(() => {
+    if (hasAppliedNavState) return;
+    if (!navState) return;
+    if (!memberShipCategory?.data?.length) return;
+
+    const desiredCategoryName = (navState.autoCategoryName || "").toLowerCase();
+    if (!desiredCategoryName) {
+      setHasAppliedNavState(true);
+      return;
+    }
+
+    const foundCategory =
+      memberShipCategory.data.find((c) => (c?.name || "").toLowerCase().includes(desiredCategoryName)) || null;
+
+    if (foundCategory?._id) {
+      setSelectedCategoryId(foundCategory._id);
+    }
+
+    setHasAppliedNavState(true);
+  }, [hasAppliedNavState, navState, memberShipCategory?.data]);
+
+  useEffect(() => {
+    if (selectedCategoryId) {
+      dispatch(fetchCategoryRequest(selectedCategoryId));
+    }
+  }, [selectedCategoryId]);
+
+  // After category plans load, optionally auto-select plan + jump to Details step
+  useEffect(() => {
+    if (!navState) return;
+    if (!hasAppliedNavState) return;
+    if (!memberShipPlanData?.plans?.length) return;
+
+    // Auto select plan once
+    if (!selectedPlanId && navState.autoPlanName) {
+      const desiredPlanName = String(navState.autoPlanName).toLowerCase();
+      const foundPlan =
+        memberShipPlanData.plans.find((p) => (p?.name || "").toLowerCase().includes(desiredPlanName)) ||
+        memberShipPlanData.plans[0];
+
+      if (foundPlan?._id) {
+        setSelectedPlanId(foundPlan._id);
+        updateFormData("categoryId", selectedCategoryId);
+        updateFormData("planId", foundPlan._id);
+      }
+    }
+
+    // Jump to Personal & Contact Information (Details step)
+    // Important: only jump forward to step 2. Never pull the user back from later steps.
+    if (navState.jumpToStep === 2 && currentStep < 2) {
+      setCurrentStep(2);
+    }
+  }, [
+    navState,
+    hasAppliedNavState,
+    memberShipPlanData?.plans,
+    selectedPlanId,
+    selectedCategoryId,
+    currentStep,
+    setCurrentStep,
+    updateFormData,
+  ]);
+
+  // Scroll to Personal & Contact Information when requested
+  useEffect(() => {
+    if (!navState?.scrollTo) return;
+    if (currentStep !== 2) return;
+
+    const el = document.getElementById(navState.scrollTo);
+    if (!el) return;
+    const t = setTimeout(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 150);
+    return () => clearTimeout(t);
+  }, [navState?.scrollTo, currentStep]);
+
+  useEffect(() => {
+    // Only set loading to false once when categories are loaded
+    if (hasCategoriesLoaded && isLoading) {
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+        setHasShownLoading(true);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [hasCategoriesLoaded, isLoading]);
 
   // Removed auto-navigation to shipping form - user stays on step 1 after signup
   // User can manually proceed to shipping form when ready
@@ -107,6 +182,35 @@ const MembershipPage = () => {
 
   const handlePlanSelect = (id) => {
     setSelectedPlanId(id);
+  };
+
+  const handleContinueFromCategory = () => {
+    const selectedCategoryName =
+      memberShipCategory?.data?.find((c) => c._id === selectedCategoryId)?.name ?? "";
+    const lower = selectedCategoryName.toLowerCase();
+    const isStudentCategory = lower.includes("student");
+    const isProfessionalCategory = lower.includes("professional");
+    const isInstituteCategory = lower.includes("institute") || lower.includes("institution");
+    const isCorporateCategory = lower.includes("corporate");
+
+    if (isStudentCategory && typeof setView === "function") {
+      setView("student-membership");
+      return;
+    }
+    if (isProfessionalCategory && typeof setView === "function") {
+      setView("professional-membership");
+      return;
+    }
+    if (isInstituteCategory && typeof setView === "function") {
+      setView("institute-membership");
+      return;
+    }
+    if (isCorporateCategory && typeof setView === "function") {
+      setView("corporate-membership");
+      return;
+    }
+
+    handleContinue();
   };
 
   const handleContinueToDetails = () => {
@@ -158,7 +262,7 @@ const MembershipPage = () => {
                   <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={handleContinue}
+                    onClick={handleContinueFromCategory}
                     disabled={!selectedCategoryId}
                     className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-10 rounded-xl flex items-center transition-all duration-300 shadow-lg hover:shadow-xl ${
                       !selectedCategoryId ? 'opacity-50 cursor-not-allowed' : ''
@@ -174,6 +278,9 @@ const MembershipPage = () => {
         );
 
       case 1:
+        const selectedCategoryName =
+          memberShipCategory?.data?.find((c) => c._id === selectedCategoryId)?.name ?? "";
+        const isStudentCategory = selectedCategoryName.toLowerCase().includes("student");
         return (
           <motion.div
             className="bg-white rounded-2xl shadow-xl p-8 max-w-6xl mx-auto border border-gray-200"
@@ -185,6 +292,12 @@ const MembershipPage = () => {
               <h2 className="text-3xl font-bold text-black mb-3">Select your Membership Plan</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">Unlock exclusive benefits tailored for your robotics journey.</p>
             </div>
+
+            {isStudentCategory && (
+              <div className="mb-10">
+                <StudentMembershipComparisonSection />
+              </div>
+            )}
 
             {memberShipPlanData ? (
               <div className={`grid ${selectedCategoryId ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'} gap-8 mb-12`}>
@@ -258,12 +371,14 @@ const MembershipPage = () => {
               </div>
 
               {formData.currentFormStep === 1 ? (
-                <PersonalInfoForm
-                  formData={formData}
-                  updateFormData={updateFormData}
-                  onNext={nextStep}
-                  onBack={prevStepCategory}
-                />
+                <div id="personal-contact-info">
+                  <PersonalInfoForm
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    onNext={nextStep}
+                    onBack={prevStepCategory}
+                  />
+                </div>
               ) : (
                 <ShippingInfoForm
                   formData={formData}

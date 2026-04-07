@@ -31,6 +31,10 @@ import NewsListView from './views/NewsListView';
 import PrivacyPolicyView from './views/PrivacyPolicyView';
 import TermsOfUseView from './views/TermsOfUseView';
 import MembershipView from './views/MembershipView'; // ✅ NEW
+import StudentMembershipView from './views/StudentMembershipView';
+import ProfessionalMembershipView from './views/ProfessionalMembershipView';
+import InstituteMembershipView from './views/InstituteMembershipView';
+import CorporateMembershipView from './views/CorporateMembershipView';
 import LocationView from './views/LocationView';
 import BecomePartnerView from './views/BecomePartnerView';
 import PartnersView from './views/PartnersView';
@@ -112,6 +116,16 @@ const viewToPath = (view) => {
       return '/terms-of-use';
     case 'compare-membership': // ✅ NEW
       return '/compare-membership';
+    case 'student-membership':
+      return '/student-membership';
+    case 'professional-membership':
+      return '/professional-membership';
+    case 'institute-membership':
+      return '/institute-membership';
+    case 'corporate-membership':
+      return '/corporate-membership';
+    case 'membership':
+      return '/membership';
     default:
       return '/';
   }
@@ -451,6 +465,10 @@ const AppContent = ({
         
 
               <Route path="/membership" element={<MembershipView setView={setViewRespectingLocation} />} /> {/* ✅ NEW */}
+              <Route path="/student-membership" element={<StudentMembershipView setView={setViewRespectingLocation} />} />
+              <Route path="/professional-membership" element={<ProfessionalMembershipView setView={setViewRespectingLocation} />} />
+              <Route path="/institute-membership" element={<InstituteMembershipView setView={setViewRespectingLocation} />} />
+              <Route path="/corporate-membership" element={<CorporateMembershipView setView={setViewRespectingLocation} />} />
 
               <Route path="/member/login" element={<MemberLoginRoute user={user} setView={setViewRespectingLocation} setUser={setUser} currentSite={currentSite} locationPrefix={locationPrefix} />} />
               <Route path="/login" element={<Navigate to="/member/login" replace />} />
@@ -475,6 +493,10 @@ const AppContent = ({
 
               {/* Location-prefixed routes: /AE/membership, /AE/teams, etc. - more specific first */}
               <Route path="/:locationCode/membership" element={<MembershipView setView={setViewRespectingLocation} />} />
+              <Route path="/:locationCode/student-membership" element={<StudentMembershipView setView={setViewRespectingLocation} />} />
+              <Route path="/:locationCode/professional-membership" element={<ProfessionalMembershipView setView={setViewRespectingLocation} />} />
+              <Route path="/:locationCode/institute-membership" element={<InstituteMembershipView setView={setViewRespectingLocation} />} />
+              <Route path="/:locationCode/corporate-membership" element={<CorporateMembershipView setView={setViewRespectingLocation} />} />
               <Route path="/:locationCode/teams" element={<TeamsView />} />
               <Route path="/:locationCode/challenges" element={<TechnoxianView />} />
               <Route

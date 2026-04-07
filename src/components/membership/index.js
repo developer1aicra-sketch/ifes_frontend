@@ -5,6 +5,9 @@ import { PlanCard } from "./PlanCard";
 import { PersonalInfoForm } from "./PersonalInfoForm";
 import { ShippingInfoForm } from "./ShippingInfoForm";
 import { PaymentSection } from "./PaymentSection";
+import { StudentMembershipComparisonSection } from "./StudentMembershipComparisonSection";
+import { WorsoOrgMembershipComparisonSection } from "./WorsoOrgMembershipComparisonSection";
+import { WorsoOrgMembershipTierSection } from "./WorsoOrgMembershipComparisonSection";
 
 export {
   HeroSection,
@@ -13,5 +16,8 @@ export {
   PlanCard,
   PersonalInfoForm,
   ShippingInfoForm,
-  PaymentSection
+  PaymentSection,
+  StudentMembershipComparisonSection,
+  WorsoOrgMembershipComparisonSection,
+  WorsoOrgMembershipTierSection
 };

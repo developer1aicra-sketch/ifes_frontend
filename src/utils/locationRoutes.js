@@ -8,6 +8,10 @@ const KNOWN_NON_LOCATION_SEGMENTS = [
   'associates', 'careers', 'partners', 'membership', 'login', 'member',
   'partner', 'portal', 'staff-login', 'login-partner-admin', 'member-dashboard',
   'admin-dashboard', 'privacy-policy', 'terms-of-use', 'news',
+  'student-membership',
+  'professional-membership',
+  'institute-membership',
+  'corporate-membership',
 ];
 
 /**
