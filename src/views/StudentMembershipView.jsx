@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+
 import { ArrowRight, GraduationCap } from "lucide-react";
 import { HeroSection, StudentMembershipComparisonSection } from "../components/membership";
 
