@@ -15,7 +15,7 @@ import { useMembershipForm } from "../hooks/useMembershipForm";
 
 // Import icons
 import * as Icons from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategoriesRequest, fetchCategoryRequest, selectCategories, selectCategoriesLoading, selectHasCategoriesLoaded, selectSingleCategory } from "../app/categories/categoriesSlice";
@@ -158,6 +158,60 @@ const MembershipPage = ({ setView }) => {
     }
   }, [hasCategoriesLoaded, isLoading]);
 
+  const categoryAdvanceLockRef = useRef(false);
+
+  useEffect(() => {
+    categoryAdvanceLockRef.current = false;
+  }, [currentStep]);
+
+  /** Advance from step 0 using a concrete category (avoids stale state vs. setState batching). */
+  const proceedFromCategory = useCallback(
+    (category) => {
+      if (!category?._id || categoryAdvanceLockRef.current) return;
+      categoryAdvanceLockRef.current = true;
+
+      setSelectedCategoryId(category._id);
+      updateFormData("categoryId", category._id);
+
+      const name = category.name ?? "";
+      const lower = name.toLowerCase();
+      const isStudentCategory = lower.includes("student");
+      const isProfessionalCategory = lower.includes("professional");
+      const isInstituteCategory = lower.includes("institute") || lower.includes("institution");
+      const isCorporateCategory = lower.includes("corporate");
+
+      const releaseLock = () => {
+        queueMicrotask(() => {
+          categoryAdvanceLockRef.current = false;
+        });
+      };
+
+      if (isStudentCategory && typeof setView === "function") {
+        setView("student-membership");
+        releaseLock();
+        return;
+      }
+      if (isProfessionalCategory && typeof setView === "function") {
+        setView("professional-membership");
+        releaseLock();
+        return;
+      }
+      if (isInstituteCategory && typeof setView === "function") {
+        setView("institute-membership");
+        releaseLock();
+        return;
+      }
+      if (isCorporateCategory && typeof setView === "function") {
+        setView("corporate-membership");
+        releaseLock();
+        return;
+      }
+
+      handleContinue();
+    },
+    [handleContinue, setView, updateFormData]
+  );
+
   // Removed auto-navigation to shipping form - user stays on step 1 after signup
   // User can manually proceed to shipping form when ready
 
@@ -184,35 +238,6 @@ const MembershipPage = ({ setView }) => {
     setSelectedPlanId(id);
   };
 
-  const handleContinueFromCategory = () => {
-    const selectedCategoryName =
-      memberShipCategory?.data?.find((c) => c._id === selectedCategoryId)?.name ?? "";
-    const lower = selectedCategoryName.toLowerCase();
-    const isStudentCategory = lower.includes("student");
-    const isProfessionalCategory = lower.includes("professional");
-    const isInstituteCategory = lower.includes("institute") || lower.includes("institution");
-    const isCorporateCategory = lower.includes("corporate");
-
-    if (isStudentCategory && typeof setView === "function") {
-      setView("student-membership");
-      return;
-    }
-    if (isProfessionalCategory && typeof setView === "function") {
-      setView("professional-membership");
-      return;
-    }
-    if (isInstituteCategory && typeof setView === "function") {
-      setView("institute-membership");
-      return;
-    }
-    if (isCorporateCategory && typeof setView === "function") {
-      setView("corporate-membership");
-      return;
-    }
-
-    handleContinue();
-  };
-
   const handleContinueToDetails = () => {
     // Capture categoryId and planId and add them to formData
     if (selectedCategoryId && selectedPlanId) {
@@ -227,7 +252,7 @@ const MembershipPage = ({ setView }) => {
       case 0:
         return (
           <motion.div
-            className="bg-white rounded-2xl shadow-xl p-8 max-w-5xl mx-auto border border-gray-200"
+            className="bg-white rounded-2xl shadow-xl p-8 max-w-5x mx-auto border border-gray-200"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -246,31 +271,17 @@ const MembershipPage = ({ setView }) => {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {categoriesWithIcons?.map((category, index) => (
                     <CategoryCard
                       key={category._id}
                       category={category}
                       index={index}
                       selectedCategoryId={selectedCategoryId}
-                      onClick={() => handleCategorySelect(category._id)}
+                      onSelectCategory={() => handleCategorySelect(category._id)}
+                      onViewDetails={proceedFromCategory}
                     />
                   ))}
-                </div>
-
-                <div className="flex justify-center">
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleContinueFromCategory}
-                    disabled={!selectedCategoryId}
-                    className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-10 rounded-xl flex items-center transition-all duration-300 shadow-lg hover:shadow-xl ${
-                      !selectedCategoryId ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                  >
-                    Continue to Next Step
-                    <ArrowRight className="ml-3" size={20} />
-                  </motion.button>
                 </div>
               </>
             )}
