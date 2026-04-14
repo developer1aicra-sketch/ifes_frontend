@@ -32,7 +32,7 @@ const deleteRequestHeader = (headers, key) => {
 
 // Create axios instance
 const axiosInstance = axios.create({
-  baseURL: "https://worso-backend-rm6w.vercel.app/api/",
+  baseURL: "https://api.worso.org/api",
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

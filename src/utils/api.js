@@ -5,7 +5,7 @@ import { getPartnerCode } from '../api/partnerCode';
 import { getAuthToken, getRoboclubAuthToken } from '../api/authToken';
 import { getLocationCodeFromPath } from './locationRoutes';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://worso-backend-rm6w.vercel.app/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.worso.org/api';
 
 const getPartnerCodeForRequest = () => {
   const fromStore = getPartnerCode();

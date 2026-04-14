@@ -295,7 +295,7 @@ export const ShippingInfoForm = ({
         affiliation
       });
       console.log('API Endpoint:', '/signup/step3');
-      console.log('Full URL will be:', 'https://worso-backend-rm6w.vercel.app/api/signup/step3');
+      console.log('Full URL will be:', 'https://api.worso.org/api/signup/step3');
 
       // Call API
       const response = await signUpStep2(formDataToSend);
