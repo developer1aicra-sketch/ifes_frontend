@@ -269,7 +269,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
                   <div className="flex justify-between items-start mb-4 relative z-10">
                     <div>
                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-indigo-400">
-                        <span className="w-2 h-2 bg-red-600 rounded-full animate-ping shadow-[0_0_10px_#dc2626]"></span>
+                        <span className="w-2 h-2 rounded-full animate-ping shadow-[0_0_10px_#dc2626]"></span>
                         {siteConfig.is_partner ? 'Next Local Event' : 'Upcoming Championship'}
                       </div>
                       <h2 className="text-2xl font-black text-white tracking-tight drop-shadow-md">
