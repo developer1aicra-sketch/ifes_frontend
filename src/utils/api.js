@@ -5,7 +5,7 @@ import { getPartnerCode } from '../api/partnerCode';
 import { getAuthToken, getRoboclubAuthToken } from '../api/authToken';
 import { getLocationCodeFromPath } from './locationRoutes';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.worso.org/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ifes-backend.vercel.app/api';
 
 const getPartnerCodeForRequest = () => {
   const fromStore = getPartnerCode();
@@ -15,7 +15,7 @@ const getPartnerCodeForRequest = () => {
 };
 
 /**
- * fetch() wrapper for WORSO API calls.
+ * fetch() wrapper for WORSO API calls.//
  * Ensures `x-website` + `x-partner-code` are always sent.
  * Injects Authorization: Bearer <token> when a token exists (from authToken) and no Authorization was passed in options.
  */
