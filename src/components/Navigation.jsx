@@ -90,14 +90,14 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
       <div className="container mx-auto px-4 sm:px-6 py-2 md:py-2.5 flex justify-between items-center max-w-[1600px]">
         <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group min-w-0" onClick={() => setView('home')}>
           <img
-            src={logo}
+            src="https://ifes.in/images/logo.png"
             alt="WORSO Logo"
             className="h-10 w-auto object-contain sm:h-12"
           />
-          <div className="flex flex-col min-w-0">
+          {/* <div className="flex flex-col min-w-0">
             <span className="font-bold text-base sm:text-xl leading-none text-white tracking-wide truncate">{siteConfig.logo_text}</span>
             <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-slate-400 font-semibold mt-0.5 sm:mt-1">{siteConfig.sub_text}</span>
-          </div>
+          </div> */}
         </div>
 
         <div className="hidden md:flex items-center gap-6 lg:gap-8 font-bold text-[11px] uppercase tracking-widest text-slate-300">

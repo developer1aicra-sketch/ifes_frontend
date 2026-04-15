@@ -30,7 +30,7 @@ import NewsArticleView from './views/NewsArticleView';
 import NewsListView from './views/NewsListView';
 import PrivacyPolicyView from './views/PrivacyPolicyView';
 import TermsOfUseView from './views/TermsOfUseView';
-import MembershipView from './views/MembershipView'; // ✅ NEW
+import MembershipView from './views/MembershipView'; 
 import StudentMembershipView from './views/StudentMembershipView';
 import ProfessionalMembershipView from './views/ProfessionalMembershipView';
 import InstituteMembershipView from './views/InstituteMembershipView';
@@ -113,7 +113,7 @@ const viewToPath = (view) => {
       return '/privacy-policy';
     case 'terms-of-use':
       return '/terms-of-use';
-    case 'compare-membership': // ✅ NEW
+    case 'compare-membership': 
       return '/compare-membership';
     case 'student-membership':
       return '/student-membership';

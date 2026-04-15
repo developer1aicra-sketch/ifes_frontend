@@ -35,7 +35,7 @@ const MissionVisionPage = () => (
     <div className="space-y-4 pt-6 border-t border-slate-100">
       <h3 className="text-2xl font-bold text-slate-900">Our Vision</h3>
       <p className="text-lg text-slate-600 leading-relaxed">
-        To be the recognized global leader in eSport, driving its growth and development as a legitimate and respected sport, fostering a thriving professional landscape, and promoting its positive impact on society.
+       Our vision is to forge a global esports community where passion, innovation, and opportunity converge to redefine competitive gaming. We aspire to position India as the epicenter of esports excellence, fostering a dynamic ecosystem that empowers creators, athletes, and visionaries to transcend borders and inspire millions. By championing inclusivity and cutting-edge education, IFES seeks to build a legacy where esports is a universal language of unity and progress.
       </p>
     </div>
 

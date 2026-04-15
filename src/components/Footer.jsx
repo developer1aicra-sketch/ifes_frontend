@@ -11,14 +11,14 @@ import LocationSwitcher, { DEFAULT_LOCATION_CODES } from './LocationSwitcher';
 
 // Default footer contact & social when NOT on a partner route (/XX or /XX/...)
 const DEFAULT_FOOTER = {
-  email: 'info@worso.in',
-  phone: '+91 7835053333',
+  email: 'info@ifes.in',
+  phone: '+91 9555022200',
   address: '',
   social: {
-    facebook: 'https://www.facebook.com/WORSOcommunity',
-    instagram: 'https://www.instagram.com/worsoassociation',
-    linkedin: 'https://in.linkedin.com/company/worso',
-    youtube: 'https://www.youtube.com/@WORSOassociation',
+    facebook: 'https://www.facebook.com/IFEScommunity',
+    instagram: 'https://www.instagram.com/ifesassociation',
+    linkedin: 'https://in.linkedin.com/company/ifes',
+    youtube: 'https://www.youtube.com/@IFESassociation',
   },
 };
 
@@ -188,12 +188,12 @@ const Footer = ({ setView, switchSite, currentSite }) => {
           <div className="flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <img
-                src={logo}
-                alt="WORSO Logo"
+                src="https://ifes.in/images/logo.png"
+                alt="IFES Logo"
                 className="h-10 w-auto object-contain sm:h-12"
               />
               <span className="text-white font-bold text-xl tracking-tight">
-                {currentSite.is_partner ? "TECHNOXIAN" : "WORSO"}
+                {currentSite.is_partner ? "TECHNOXIAN" : "IFES"}
               </span>
             </div>
             <p className="max-w-md mb-6 leading-relaxed text-sm text-slate-400">

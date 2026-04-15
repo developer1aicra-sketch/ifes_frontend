@@ -14,7 +14,7 @@ export const HeroSection = ({ isRoboClub }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          Join Our <span className="text-blue-600">Robotics</span> Community
+          Join Our <span className="text-blue-600">IFES</span> Community
         </motion.h1>
         <motion.p
           className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto mb-8"
