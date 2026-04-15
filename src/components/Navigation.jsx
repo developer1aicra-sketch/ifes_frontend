@@ -87,12 +87,12 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
 
   return (
     <nav className={`sticky top-0 z-40 transition-all duration-300 ${theme.bgGradient || 'bg-[#0a0f1a]'} border-b border-white/10`}>
-      <div className="container mx-auto px-4 sm:px-6 py-2 md:py-2.5 flex justify-between items-center max-w-[1600px]">
+      <div className="container mx-auto px-4 sm:px-6 py-2 md:py-1 flex justify-between items-center max-w-[1600px]">
         <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group min-w-0" onClick={() => setView('home')}>
           <img
             src="https://ifes.in/images/logo.png"
             alt="WORSO Logo"
-            className="h-10 w-auto object-contain sm:h-12"
+            className="h-10 w-auto object-contain sm:h-20"
           />
           {/* <div className="flex flex-col min-w-0">
             <span className="font-bold text-base sm:text-xl leading-none text-white tracking-wide truncate">{siteConfig.logo_text}</span>

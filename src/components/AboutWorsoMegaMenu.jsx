@@ -100,7 +100,7 @@ export function AboutWorsoDesktopMegaMenu({
   if (isRegionalChapter) {
     return (
       <div
-        className="absolute left-1/2 -translate-x-1/2 top-full z-[100] w-[min(calc(100vw-2rem),52rem)] pt-3
+        className="absolute bg-red-500 left-1/2 -translate-x-1/2 top-full z-[100] w-[min(calc(100vw-2rem),52rem)] pt-3
         opacity-0 invisible pointer-events-none translate-y-1
         group-hover/about:opacity-100 group-hover/about:visible group-hover/about:pointer-events-auto group-hover/about:translate-y-0
         group-focus-within/about:opacity-100 group-focus-within/about:visible group-focus-within/about:pointer-events-auto group-focus-within/about:translate-y-0
@@ -136,7 +136,7 @@ export function AboutWorsoDesktopMegaMenu({
 
   return (
     <div
-      className="absolute left-1/2 -translate-x-1/2 top-full z-[100] w-[min(calc(100vw-2rem),52rem)] pt-3
+      className="absolute left-1/2 -translate-x-1/2 top-full z-[100] md:pl-56 w-[min(calc(100vw-2rem),52rem)] pt-3
         opacity-0 invisible pointer-events-none translate-y-1
         group-hover/about:opacity-100 group-hover/about:visible group-hover/about:pointer-events-auto group-hover/about:translate-y-0
         group-focus-within/about:opacity-100 group-focus-within/about:visible group-focus-within/about:pointer-events-auto group-focus-within/about:translate-y-0
