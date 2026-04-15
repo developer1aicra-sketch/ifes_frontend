@@ -15,7 +15,7 @@ const getPartnerCodeForRequest = () => {
 };
 
 /**
- * fetch() wrapper for WORSO API calls.
+ * fetch() wrapper for WORSO API calls.//
  * Ensures `x-website` + `x-partner-code` are always sent.
  * Injects Authorization: Bearer <token> when a token exists (from authToken) and no Authorization was passed in options.
  */
