@@ -232,12 +232,17 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
               <div className="flex flex-wrap gap-4 pt-6">
 
                 <>
-                  <button
-                    onClick={() => setView('technoxian')}
-                    className={`${theme.bgPrimary || siteConfig.colors.primary} px-8 py-4 rounded-lg font-bold text-base transition-all shadow-lg flex items-center gap-2 hover:-translate-y-1`}
-                  >
-                    {siteConfig.is_partner ? 'View Local Events' : 'Explore WRC Challenges'} <ArrowRight size={18} />
-                  </button>
+               <button
+  onClick={() => setView('technoxian')}
+  className="px-8 py-4 rounded-lg font-bold text-base text-white 
+  bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500
+  shadow-[0_10px_30px_-10px_rgba(59,130,246,0.7)]
+  hover:shadow-[0_15px_40px_-10px_rgba(59,130,246,0.9)]
+  hover:-translate-y-1 transition-all duration-300 flex items-center gap-2"
+>
+  {siteConfig.is_partner ? 'View Local Events' : 'Explore WRC Challenges'}
+  <ArrowRight size={18} />
+</button>
                   <button onClick={() => setView('teams')} className="bg-transparent border border-white/20 hover:bg-white/10 px-8 py-4 rounded-lg font-bold text-base transition-all flex items-center gap-2">
                     <Users size={18} /> Teams & Rankings
                   </button>
@@ -246,76 +251,81 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
               </div>
             </div>
 
-            <div className="md:col-span-5 relative perspective-1000">
-              <div
-                className="bg-[#0a0a0c] backdrop-blur-2xl border border-white/5 rounded-2xl p-6 shadow-[0_0_40px_-15px_rgba(59,130,246,0.3)] relative z-20 transform transition-all duration-500 hover:scale-[1.02] hover:shadow-indigo-500/20 group cursor-pointer overflow-hidden"
-                onClick={() => setView('technoxian')}
-              >
-                {/* Background Glow Effect */}
-                <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-600/10 blur-[100px] rounded-full group-hover:bg-indigo-600/20 transition-all duration-700"></div>
 
-                <div
-                  className={`rounded-xl p-6 mb-4 bg-gradient-to-br ${theme.hasTheme
-                      ? `from-slate-900 via-${theme.themeName}-900 to-black`
-                      : 'from-gray-900 via-indigo-950 to-black'
-                    } relative overflow-hidden border border-white/10 shadow-inner`}
-                >
-                  {/* Animated Scanner Beam */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out"></div>
 
-                  {/* Subtle Grid Overlay */}
-                  <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+{/* hero section comment code 
 
-                  <div className="flex justify-between items-start mb-4 relative z-10">
-                    <div>
-                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-indigo-400">
-                        <span className="w-2 h-2 bg-red-600 rounded-full animate-ping shadow-[0_0_10px_#dc2626]"></span>
-                        {siteConfig.is_partner ? 'Next Local Event' : 'Upcoming Championship'}
-                      </div>
-                      <h2 className="text-2xl font-black text-white tracking-tight drop-shadow-md">
-                        {partnerEvent?.name || partnerHomeData?.event?.title || 'Technoxian World Cup'}
-                      </h2>
-                    </div>
-                    <Trophy size={32} className="text-white/20 group-hover:text-yellow-400 group-hover:scale-110 group-hover:drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] transition-all duration-500" />
-                  </div>
+<div className="md:col-span-5 relative perspective-1000">
+  <div
+    className="bg-[#0a0a0c] backdrop-blur-2xl border border-white/5 rounded-2xl p-6 shadow-[0_0_40px_-15px_rgba(59,130,246,0.3)] relative z-20 transform transition-all duration-500 hover:scale-[1.02] hover:shadow-indigo-500/20 group cursor-pointer overflow-hidden"
+    onClick={() => setView('technoxian')}
+  >
+    <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-600/10 blur-[100px] rounded-full group-hover:bg-indigo-600/20 transition-all duration-700"></div>
 
-                  <div className="flex gap-4 text-[11px] font-bold text-slate-300 relative z-10">
-                    {(partnerEvent?.venue || partnerHomeData?.event?.location) && (
-                      <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 backdrop-blur-md px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors">
-                        <MapPin size={12} className="text-indigo-400" /> {partnerEvent?.venue || partnerHomeData?.event?.location}
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 backdrop-blur-md px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors">
-                      <Calendar size={12} className="text-indigo-400" />
-                      {partnerEvent?.start_date
-                        ? new Date(partnerEvent.start_date).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })
-                        : partnerHomeData?.event?.date || '2027'}
-                    </div>
-                  </div>
-                </div>
+    <div
+      className={`rounded-xl p-6 mb-4 bg-gradient-to-br ${
+        theme.hasTheme
+          ? `from-slate-900 via-${theme.themeName}-900 to-black`
+          : 'from-gray-900 via-indigo-950 to-black'
+      } relative overflow-hidden border border-white/10 shadow-inner`}
+    >
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out"></div>
 
-                {/* Registration Bar - Re-styled for Pro-Gaming look */}
-                <div className="bg-white/[0.03] rounded-xl p-4 flex items-center justify-between border border-white/5 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all duration-300 cursor-pointer group/item relative overflow-hidden">
-                  <div className="flex items-center gap-3 relative z-10">
-                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-700 flex items-center justify-center font-black text-white shadow-lg shadow-indigo-500/20`}>
-                      R
-                    </div>
-                    <div>
-                      <div className="font-bold text-white text-sm group-hover/item:text-indigo-300 transition-colors">Register Team</div>
-                      <div className="text-[10px] text-slate-500 uppercase tracking-widest font-medium">Visitor & Exhibitor Passes</div>
-                    </div>
-                  </div>
-                  <ChevronRight size={18} className="text-slate-600 group-hover/item:text-white group-hover/item:translate-x-1 transition-all" />
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
 
-                  {/* Hover Glow for Bottom Bar */}
-                  <div className="absolute inset-0 translate-y-full group-hover/item:translate-y-0 bg-gradient-to-t from-indigo-500/5 to-transparent transition-transform duration-500"></div>
-                </div>
-              </div>
-            </div>
+      <div className="flex justify-between items-start mb-4 relative z-10">
+        <div>
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-indigo-400">
+            <span className="w-2 h-2 bg-red-600 rounded-full animate-ping shadow-[0_0_10px_#dc2626]"></span>
+            {siteConfig.is_partner ? 'Next Local Event' : 'Upcoming Championship'}
+          </div>
+          <h2 className="text-2xl font-black text-white tracking-tight drop-shadow-md">
+            {partnerEvent?.name || partnerHomeData?.event?.title || 'Technoxian World Cup'}
+          </h2>
+        </div>
+        <Trophy size={32} className="text-white/20 group-hover:text-yellow-400 group-hover:scale-110 group-hover:drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] transition-all duration-500" />
+      </div>
+
+      <div className="flex gap-4 text-[11px] font-bold text-slate-300 relative z-10">
+        {(partnerEvent?.venue || partnerHomeData?.event?.location) && (
+          <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 backdrop-blur-md px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors">
+            <MapPin size={12} className="text-indigo-400" /> {partnerEvent?.venue || partnerHomeData?.event?.location}
+          </div>
+        )}
+        <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 backdrop-blur-md px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors">
+          <Calendar size={12} className="text-indigo-400" />
+          {partnerEvent?.start_date
+            ? new Date(partnerEvent.start_date).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })
+            : partnerHomeData?.event?.date || '2027'}
+        </div>
+      </div>
+    </div>
+
+    <div className="bg-white/[0.03] rounded-xl p-4 flex items-center justify-between border border-white/5 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all duration-300 cursor-pointer group/item relative overflow-hidden">
+      <div className="flex items-center gap-3 relative z-10">
+        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-700 flex items-center justify-center font-black text-white shadow-lg shadow-indigo-500/20">
+          R
+        </div>
+        <div>
+          <div className="font-bold text-white text-sm group-hover/item:text-indigo-300 transition-colors">
+            Register Team
+          </div>
+          <div className="text-[10px] text-slate-500 uppercase tracking-widest font-medium">
+            Visitor & Exhibitor Passes
+          </div>
+        </div>
+      </div>
+      <ChevronRight size={18} className="text-slate-600 group-hover/item:text-white group-hover/item:translate-x-1 transition-all" />
+
+      <div className="absolute inset-0 translate-y-full group-hover/item:translate-y-0 bg-gradient-to-t from-indigo-500/5 to-transparent transition-transform duration-500"></div>
+    </div>
+  </div>
+</div>
+ */}
           </div>
         </div>
       </div>
@@ -344,62 +354,301 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
         </div>
       </div>
 
-      {!siteConfig.is_partner && (
-        <section className="py-20 container mx-auto px-4">
-          {/* Main Card: Neon Border aur Dark Background */}
-          <div className="bg-[#0f172a] rounded-[2rem] p-8 md:p-14 shadow-2xl border border-slate-800 flex flex-col md:flex-row items-center gap-12 transition-all duration-500 hover:border-cyan-500/30">
+<div className="container mx-auto px-6 lg:px-10 mt-16">
 
-            {/* Left Content Area */}
-            <div className="flex-1">
-              {/* Glow Text for Heading */}
-              <span className="text-cyan-400 font-black tracking-[0.25em] text-[10px] md:text-xs uppercase block mb-3">
-                Global Reach
-              </span>
+  <div className="grid md:grid-cols-12 gap-10 items-center">
 
-              <h2 className="text-4xl md:text-5xl font-black text-white mt-2 mb-6 leading-tight">
-                A <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Federated</span> Network
-              </h2>
+    {/* LEFT SIDE CONTENT */}
+    <div className="md:col-span-7 space-y-6 max-w-2xl">
 
-              <p className="text-slate-400 text-lg leading-relaxed mb-8 font-medium">
-                IFES operates through a federated network of <span className="text-cyan-300">national partners</span> who host local chapters of the <span className="text-purple-400 italic">TechnoXian World Cup</span>.
-              </p>
+      {/* Tagline */}
+      <div className="text-xs uppercase tracking-[0.35em] text-indigo-400 font-semibold">
+        Global eSports Championship
+      </div>
 
-              {/* Gaming Style Action Button */}
-              <button className="group relative px-8 py-4 bg-cyan-600 text-white font-bold rounded-xl overflow-hidden transition-all hover:bg-cyan-500 hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] active:scale-95">
-                <span className="relative z-10 flex items-center gap-2">
-                  Explore Partner Directory <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </span>
-              </button>
+
+      {/* Description */}
+      <p className="text-slate-400 text-base md:text-lg leading-relaxed">
+        Step into the future of robotics & esports at{" "}
+        <span className="text-indigo-400 font-semibold">
+          Technoxian World Cup
+        </span>.
+        Compete with global innovators, showcase your talent, and be part of the
+        world’s biggest robotics championship platform powered by IFES.
+      </p>
+
+      {/* Buttons */}
+      <div className="flex flex-col sm:flex-row gap-4 pt-4">
+        <button
+          onClick={() => setView('technoxian')}
+          className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-lg font-semibold text-white shadow-lg hover:scale-105 transition-all duration-300"
+        >
+          🚀 Explore Event
+        </button>
+
+        <button className="px-6 py-3 border border-white/20 rounded-lg text-white hover:bg-white/10 transition-all duration-300">
+          Learn More
+        </button>
+      </div>
+    </div>
+
+    {/* RIGHT SIDE CARD */}
+    <div className="md:col-span-5 relative">
+
+      <div
+        className="relative rounded-3xl p-[1.5px] bg-gradient-to-br from-indigo-500/40 via-blue-500/20 to-transparent group cursor-pointer"
+        onClick={() => setView('technoxian')}
+      >
+        <div className="relative bg-[#07070a]/90 backdrop-blur-2xl rounded-3xl p-6 border border-white/5 shadow-[0_20px_60px_-15px_rgba(59,130,246,0.35)] transition-all duration-500 hover:scale-[1.03] overflow-hidden">
+
+          {/* Glow */}
+          <div className="absolute -top-32 -right-32 w-72 h-72 bg-indigo-500/10 blur-[120px] rounded-full group-hover:bg-indigo-500/20 transition-all duration-700"></div>
+
+          {/* EVENT */}
+          <div className="relative rounded-2xl p-6 mb-5 bg-gradient-to-br from-slate-900 via-indigo-950 to-black border border-white/10 overflow-hidden">
+
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+
+            <div className="flex justify-between items-start relative z-10">
+              <div>
+                <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-400 mb-2">
+                  <span className="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
+                  Upcoming Championship
+                </div>
+
+                <h2 className="text-xl md:text-2xl font-bold text-white">
+                  {partnerEvent?.name || 'Technoxian World Cup'}
+                </h2>
+              </div>
+
+              <Trophy className="text-white/20 group-hover:text-yellow-400 group-hover:scale-110 transition-all duration-500" size={28} />
             </div>
 
-            {/* Right Side Stats Grid */}
-            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-
-              {/* Box 1: National Partners */}
-              <div className="group bg-slate-900/50 p-8 rounded-3xl border border-slate-800 transition-all hover:bg-slate-800 hover:-translate-y-2">
-                <div className="mb-4 inline-block p-3 bg-cyan-500/10 rounded-2xl group-hover:bg-cyan-500/20">
-                  <Globe className="text-cyan-400 transition-transform group-hover:rotate-12" size={32} />
-                </div>
-                <div className="text-4xl font-black text-white tracking-tighter">25+</div>
-                <div className="text-xs font-bold text-cyan-400/60 uppercase mt-2 tracking-widest">National Partners</div>
+            <div className="flex gap-3 mt-4 text-[11px] text-slate-300 flex-wrap">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-white/5 border border-white/10">
+                <MapPin size={12} className="text-indigo-400" />
+                {partnerEvent?.venue || 'India'}
               </div>
 
-              {/* Box 2: Cities/Events */}
-              <div className="group bg-slate-900/50 p-8 rounded-3xl border border-slate-800 transition-all hover:bg-slate-800 hover:-translate-y-2">
-                <div className="mb-4 inline-block p-3 bg-purple-500/10 rounded-2xl group-hover:bg-purple-500/20">
-                  <Building className="text-purple-400 transition-transform group-hover:-rotate-12" size={32} />
-                </div>
-                <div className="text-4xl font-black text-white tracking-tighter">82+</div>
-                <div className="text-xs font-bold text-purple-400/60 uppercase mt-2 tracking-widest">Cities & Events</div>
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-white/5 border border-white/10">
+                <Calendar size={12} className="text-indigo-400" />
+                {partnerEvent?.start_date
+                  ? new Date(partnerEvent.start_date).toLocaleDateString()
+                  : '2027'}
               </div>
-
             </div>
           </div>
-        </section>
+
+          {/* CTA */}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-indigo-600/10 to-blue-600/10 border border-indigo-500/20 hover:border-indigo-400/40 transition-all duration-300">
+
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-white font-black">
+                R
+              </div>
+
+              <div>
+                <div className="text-white font-semibold text-sm">
+                  Register Team
+                </div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-widest">
+                  Visitor & Exhibitor Passes
+                </div>
+              </div>
+            </div>
+
+            <ChevronRight className="text-slate-400 group-hover:text-white group-hover:translate-x-1 transition" />
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+
+{/* dusara code  */}
+      {!siteConfig.is_partner && (
+   <section className="py-20 container mx-auto px-4">
+  <div className="relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 rounded-[2rem] p-8 md:p-14 shadow-2xl border border-white/5 flex flex-col md:flex-row items-center gap-12 transition-all duration-500 hover:border-cyan-400/30 overflow-hidden">
+
+    {/* Background Glow */}
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.08),transparent_40%),radial-gradient(circle_at_80%_30%,rgba(168,85,247,0.08),transparent_40%)]" />
+
+    {/* LEFT CONTENT */}
+    <div className="flex-1 relative z-10">
+      
+      {/* Label */}
+      <span className="text-cyan-400/80 font-semibold tracking-[0.35em] text-[11px] uppercase block mb-4">
+        Global Reach
+      </span>
+
+      {/* Heading */}
+      <h2 className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-6">
+        A{" "}
+        <span className="relative inline-block">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500">
+            Federated
+          </span>
+          <span className="absolute left-0 bottom-0 w-full h-[6px] bg-gradient-to-r from-cyan-400/40 to-purple-500/40 blur-sm"></span>
+        </span>{" "}
+        Network
+      </h2>
+
+      {/* Paragraph */}
+      <p className="text-slate-400 text-[17px] leading-relaxed mb-8 max-w-xl">
+        IFES operates through a federated network of{" "}
+        <span className="text-cyan-300 font-medium">
+          national partners
+        </span>{" "}
+        who host local chapters of the{" "}
+        <span className="text-purple-400 italic font-medium">
+          TechnoXian World Cup
+        </span>.
+      </p>
+
+      {/* Button */}
+      <button className="group relative px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:shadow-[0_0_25px_rgba(34,211,238,0.4)] active:scale-95">
+        <span className="relative z-10 flex items-center gap-2 tracking-wide">
+          Explore Partner Directory
+          <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+        </span>
+      </button>
+    </div>
+
+    {/* RIGHT SIDE */}
+    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-6 w-full relative z-10">
+
+      {/* Box 1 */}
+      <div className="group bg-slate-900/60 backdrop-blur-lg p-8 rounded-3xl border border-white/5 transition-all duration-500 hover:bg-slate-800/70 hover:-translate-y-2">
+        <div className="mb-4 inline-block p-3 bg-cyan-500/10 rounded-2xl group-hover:bg-cyan-500/20 transition">
+          <Globe className="text-cyan-400 transition-transform group-hover:rotate-6" size={32} />
+        </div>
+
+        <div className="text-4xl font-extrabold text-white tracking-tight">
+          25+
+        </div>
+
+        <div className="text-xs font-semibold text-cyan-400/70 uppercase mt-2 tracking-widest">
+          National Partners
+        </div>
+      </div>
+
+      {/* Box 2 */}
+      <div className="group bg-slate-900/60 backdrop-blur-lg p-8 rounded-3xl border border-white/5 transition-all duration-500 hover:bg-slate-800/70 hover:-translate-y-2">
+        <div className="mb-4 inline-block p-3 bg-purple-500/10 rounded-2xl group-hover:bg-purple-500/20 transition">
+          <Building className="text-purple-400 transition-transform group-hover:-rotate-6" size={32} />
+        </div>
+
+        <div className="text-4xl font-extrabold text-white tracking-tight">
+          82+
+        </div>
+
+        <div className="text-xs font-semibold text-purple-400/70 uppercase mt-2 tracking-widest">
+          Cities & Events
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
       )}
+
+       <HomeGallerySection images={galleryImages} title="Gallery" carouselId="home-gallery-carousel" />
+
+  {/* updated code */}
+    <section className="py-20 mt-10 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-t border-slate-700">
+  <div className="container mx-auto px-4">
+    
+    {/* Cards Grid */}
+    <div className="grid md:grid-cols-3 gap-8">
+
+      {/* Card 1 */}
+      <div className="group relative p-[1.5px] rounded-2xl bg-gradient-to-r from-cyan-500/40 via-blue-500/30 to-transparent">
+        <div className="relative p-7 bg-slate-900/80 backdrop-blur-lg rounded-2xl border border-white/5 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-cyan-500/10 overflow-hidden">
+
+          {/* Soft Glow */}
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-500 rounded-2xl" />
+
+          {/* Top Accent */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 to-blue-500 opacity-70" />
+
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2.5 text-xs font-bold uppercase tracking-widest text-cyan-400 mb-4 px-3 py-1.5 bg-cyan-500/10 rounded-md border border-cyan-500/20 group-hover:border-cyan-400/40 transition">
+              <Network size={16} className="group-hover:rotate-6 transition duration-300" />
+              Federated Control
+            </div>
+
+            <h3 className="font-semibold text-xl text-white mb-3 group-hover:text-cyan-300 transition">
+              Root Governance
+            </h3>
+
+            <p className="text-sm text-slate-400 leading-relaxed group-hover:text-slate-300 transition">
+              IFES Global sets the laws of the sport and synchronizes updates to every partner subdomain in real time—no fragmented rulebooks.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Card 2 */}
+      <div className="group relative p-[1.5px] rounded-2xl bg-gradient-to-r from-purple-500/40 via-pink-500/30 to-transparent">
+        <div className="relative p-7 bg-slate-900/80 backdrop-blur-lg rounded-2xl border border-white/5 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-purple-500/10 overflow-hidden">
+
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-500 rounded-2xl" />
+
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-purple-400 to-pink-500 opacity-70" />
+
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2.5 text-xs font-bold uppercase tracking-widest text-purple-400 mb-4 px-3 py-1.5 bg-purple-500/10 rounded-md border border-purple-500/20 group-hover:border-purple-400/40 transition">
+              <ServerCog size={16} className="group-hover:rotate-6 transition duration-300" />
+              Micro-Website Shell
+            </div>
+
+            <h3 className="font-semibold text-xl text-white mb-3 group-hover:text-purple-300 transition">
+              Multi-tenant React
+            </h3>
+
+            <p className="text-sm text-slate-400 leading-relaxed group-hover:text-slate-300 transition">
+              One codebase; many subdomains. Middleware detects `*.ifes.org`, injects logos, language packs, and partner content JSON—instantly themed for UAE, India, Korea, and beyond.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Card 3 */}
+      <div className="group relative p-[1.5px] rounded-2xl bg-gradient-to-r from-pink-500/40 via-rose-500/30 to-transparent">
+        <div className="relative p-7 bg-slate-900/80 backdrop-blur-lg rounded-2xl border border-white/5 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-pink-500/10 overflow-hidden">
+
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-500 rounded-2xl" />
+
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-pink-400 to-rose-500 opacity-70" />
+
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2.5 text-xs font-bold uppercase tracking-widest text-pink-400 mb-4 px-3 py-1.5 bg-pink-500/10 rounded-md border border-pink-500/20 group-hover:border-pink-400/40 transition">
+              <LayoutDashboard size={16} className="group-hover:rotate-6 transition duration-300" />
+              Two-tier CMS
+            </div>
+
+            <h3 className="font-semibold text-xl text-white mb-3 group-hover:text-pink-300 transition">
+              HQ vs Partner Roles
+            </h3>
+
+            <p className="text-sm text-slate-400 leading-relaxed group-hover:text-slate-300 transition">
+              Super Admins create partners, assign subdomains, and push global rules. Partner Admins edit welcome messages, galleries, registrations—never the core IFES brand.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 
       {/* Supporting Organizations & Think Tanks: global home only, not partner home */}
       {!siteConfig.is_partner && !locationCode && <LogoTicker />}
+
 
       {/* Quick Links Section */}
       {partnerHomeData?.quickLinks && partnerHomeData.quickLinks.length > 0 && (
@@ -451,7 +700,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
             </p>
           </div>
         )}
-      <HomeGallerySection images={galleryImages} title="Gallery" carouselId="home-gallery-carousel" />
+     
 
       {(locationCode || partnerHomeData) && (
         <>
@@ -522,7 +771,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
           title="Our Supporters"
         />
       )}
-
+{/* 
       <section className="py-16 bg-white border-t border-slate-100">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-6">
@@ -555,172 +804,330 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
+
+    
 
 
       {/* Headline / Latest News / Most Read - global home only, hidden on partner pages */}
       {!(locationCode || partnerHomeData) && (
-        <section className="py-20 bg-white border-t border-slate-100">
-          <div className="container mx-auto px-4 max-w-7xl">
-            {newsError && <div className="text-sm text-red-500 mb-4">{newsError}</div>}
-            <div className="grid md:grid-cols-5 gap-6">
-              {/* Headline Section */}
-              <div className="md:col-span-3">
-                <div className="flex items-center gap-2 mb-4">
-                  <h2 className="text-xl font-bold text-slate-900">Headline</h2>
-                  <button onClick={() => setView('news-list-headline')} className="p-1 rounded hover:bg-slate-100">
-                    <ChevronRight size={18} className="text-slate-400" />
-                  </button>
+        // <section className="py-20 bg-white border-t border-slate-100">
+        //   <div className="container mx-auto px-4 max-w-7xl">
+        //     {newsError && <div className="text-sm text-red-500 mb-4">{newsError}</div>}
+        //     <div className="grid md:grid-cols-5 gap-6">
+        //       {/* Headline Section */}
+        //       <div className="md:col-span-3">
+        //         <div className="flex items-center gap-2 mb-4">
+        //           <h2 className="text-xl font-bold text-slate-900">Headline</h2>
+        //           <button onClick={() => setView('news-list-headline')} className="p-1 rounded hover:bg-slate-100">
+        //             <ChevronRight size={18} className="text-slate-400" />
+        //           </button>
+        //         </div>
+        //         <div className="bg-gradient-to-br from-white via-slate-50 to-white rounded-xl shadow-lg border border-slate-200 p-5 h-[440px] flex flex-col overflow-hidden">
+        //           {newsLoading && !headline && <div className="text-sm text-slate-500">Loading latest news…</div>}
+        //           {!newsLoading && !headline && <div className="text-sm text-slate-500">No news available right now.</div>}
+        //           {headline && (
+        //             <article key={headline.id} className="flex flex-col h-full space-y-3">
+        //               {headline.featuredImage && (
+        //                 <div className="rounded-lg overflow-hidden shadow-md">
+        //                   <img
+        //                     src={headline.featuredImage}
+        //                     alt={headline.title}
+        //                     className="w-full h-[180px] object-cover"
+        //                   />
+        //                 </div>
+        //               )}
+        //               <div className="flex items-center gap-3">
+        //                 <span className="text-xs font-bold text-slate-600 uppercase">{headline.category}</span>
+        //                 <span className="text-xs text-slate-400">{headline.date}</span>
+        //               </div>
+        //               <h3
+        //                 className="text-xl font-extrabold text-slate-900 hover:text-blue-600 transition-colors cursor-pointer leading-snug line-clamp-2"
+        //                 onClick={() => setView(`news-${headline.id}`)}
+        //               >
+        //                 {headline.title}
+        //               </h3>
+        //               <p className="text-sm text-slate-600 leading-relaxed flex-grow line-clamp-3">{headline.body || headline.desc}</p>
+        //               <div>
+        //                 <button
+        //                   onClick={() => setView(`news-${headline.id}`)}
+        //                   className="text-sm text-blue-600 font-medium hover:underline inline-flex items-center gap-1 self-start"
+        //                 >
+        //                   Continue Reading
+        //                   <ArrowRight size={14} />
+        //                 </button>
+        //               </div>
+        //             </article>
+        //           )}
+        //         </div>
+        //       </div>
+
+        //       {/* Latest News Section */}
+        //       <div className="md:col-span-1">
+        //         <div className="flex items-center gap-2 mb-4">
+        //           <h2 className="text-xl font-bold text-slate-900">Latest News</h2>
+        //           <button onClick={() => setView('news-list-latest')} className="p-1 rounded hover:bg-slate-100">
+        //             <ChevronRight size={18} className="text-slate-400" />
+        //           </button>
+        //         </div>
+        //         <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-4 h-[440px] overflow-hidden">
+        //           {newsLoading && !latestPool.length ? (
+        //             <div className="text-xs text-slate-500">Loading latest news…</div>
+        //           ) : latestPool.length === 0 ? (
+        //             <div className="text-xs text-slate-500">No updates yet.</div>
+        //           ) : (
+        //             <motion.div
+        //               key={latestNewsIndex}
+        //               initial={{ opacity: 0, y: 24 }}
+        //               animate={{ opacity: 1, y: 0 }}
+        //               exit={{ opacity: 0, y: -24 }}
+        //               transition={{ duration: 0.45, ease: 'easeOut' }}
+        //               className="space-y-3"
+        //             >
+        //               {(() => {
+        //                 const extended = [...latestPool, ...latestPool];
+        //                 const start = latestNewsIndex % latestPool.length;
+        //                 const windowItems = extended.slice(start, start + 3);
+        //                 return windowItems.map((news, i) => (
+        //                   <article key={`${news.id}-latest-${start}-${i}`} className="border border-slate-200 rounded-lg p-3 shadow-sm bg-white">
+        //                     <div className="flex items-center gap-2 mb-2">
+        //                       <span className="text-[11px] font-bold text-slate-600 uppercase">{news.category}</span>
+        //                       <span className="text-[11px] text-slate-400">{news.date}</span>
+        //                     </div>
+        //                     <h3
+        //                       className="text-sm font-bold text-slate-900 mb-2 hover:text-blue-600 transition-colors cursor-pointer line-clamp-2"
+        //                       onClick={() => setView(`news-${news.id}`)}
+        //                     >
+        //                       {news.title}
+        //                     </h3>
+        //                     <p className="text-xs text-slate-600 leading-relaxed mb-2 line-clamp-3">{news.body || news.desc}</p>
+        //                     <button
+        //                       onClick={() => setView(`news-${news.id}`)}
+        //                       className="text-[11px] text-blue-600 font-medium hover:underline inline-flex items-center gap-1"
+        //                     >
+        //                       Continue Reading
+        //                       <ArrowRight size={12} />
+        //                     </button>
+        //                   </article>
+        //                 ));
+        //               })()}
+        //             </motion.div>
+        //           )}
+        //         </div>
+        //       </div>
+
+        //       {/* Most Read Section */}
+        //       <div className="md:col-span-1">
+        //         <div className="flex items-center gap-2 mb-4">
+        //           <h2 className="text-xl font-bold text-slate-900">Most Read</h2>
+        //           <button onClick={() => setView('news-list-most')} className="p-1 rounded hover:bg-slate-100">
+        //             <ChevronRight size={18} className="text-slate-400" />
+        //           </button>
+        //         </div>
+        //         <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-4 h-[440px] overflow-hidden">
+        //           {newsLoading && !mostReadPool.length ? (
+        //             <div className="text-xs text-slate-500">Loading most read…</div>
+        //           ) : mostReadPool.length === 0 ? (
+        //             <div className="text-xs text-slate-500">No reads yet.</div>
+        //           ) : (
+        //             <motion.div
+        //               key={mostReadIndex}
+        //               initial={{ opacity: 0, y: 24 }}
+        //               animate={{ opacity: 1, y: 0 }}
+        //               exit={{ opacity: 0, y: -24 }}
+        //               transition={{ duration: 0.45, ease: 'easeOut' }}
+        //               className="space-y-3"
+        //             >
+        //               {(() => {
+        //                 const extended = [...mostReadPool, ...mostReadPool];
+        //                 const start = mostReadIndex % mostReadPool.length;
+        //                 const windowItems = extended.slice(start, start + 3);
+        //                 return windowItems.map((news, i) => (
+        //                   <article key={`${news.id}-most-${start}-${i}`} className="border border-slate-200 rounded-lg p-3 shadow-sm bg-white">
+        //                     <div className="flex items-center gap-2 mb-2">
+        //                       <span className="text-[11px] font-bold text-slate-600 uppercase">{news.category}</span>
+        //                       <span className="text-[11px] text-slate-400">{news.date}</span>
+        //                     </div>
+        //                     <h3
+        //                       className="text-sm font-bold text-slate-900 mb-2 hover:text-blue-600 transition-colors cursor-pointer line-clamp-2"
+        //                       onClick={() => setView(`news-${news.id}`)}
+        //                     >
+        //                       {news.title}
+        //                     </h3>
+        //                     <p className="text-xs text-slate-600 leading-relaxed mb-2 line-clamp-3">{news.body || news.desc}</p>
+        //                     <button
+        //                       onClick={() => setView(`news-${news.id}`)}
+        //                       className="text-[11px] text-blue-600 font-medium hover:underline inline-flex items-center gap-1"
+        //                     >
+        //                       Continue Reading
+        //                       <ArrowRight size={12} />
+        //                     </button>
+        //                   </article>
+        //                 ));
+        //               })()}
+        //             </motion.div>
+        //           )}
+        //         </div>
+        //       </div>
+        //     </div>
+        //   </div>
+        // </section>
+
+
+        // update code 
+        <section className="py-20 mt-10 bg-gradient-to-b from-slate-950 via-slate-900 to-black border-t border-white/5">
+  <div className="container mx-auto px-4 max-w-7xl">
+
+    {newsError && <div className="text-sm text-red-400 mb-4">{newsError}</div>}
+
+    <div className="grid md:grid-cols-5 gap-6">
+
+      {/* Headline */}
+      <div className="md:col-span-3">
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="text-xl font-bold text-white tracking-wide">Headline</h2>
+          <button onClick={() => setView('news-list-headline')} className="p-1 rounded hover:bg-white/10">
+            <ChevronRight size={18} className="text-slate-400" />
+          </button>
+        </div>
+
+        <div className="bg-slate-900/70 backdrop-blur-xl rounded-xl shadow-xl border border-white/5 p-5 h-[440px] flex flex-col overflow-hidden hover:shadow-cyan-500/10 transition">
+
+          {headline && (
+            <article key={headline.id} className="flex flex-col h-full space-y-3">
+
+              {headline.featuredImage && (
+                <div className="rounded-lg overflow-hidden">
+                  <img
+                    src={headline.featuredImage}
+                    alt={headline.title}
+                    className="w-full h-[180px] object-cover transition duration-500 hover:scale-105"
+                  />
                 </div>
-                <div className="bg-gradient-to-br from-white via-slate-50 to-white rounded-xl shadow-lg border border-slate-200 p-5 h-[440px] flex flex-col overflow-hidden">
-                  {newsLoading && !headline && <div className="text-sm text-slate-500">Loading latest news…</div>}
-                  {!newsLoading && !headline && <div className="text-sm text-slate-500">No news available right now.</div>}
-                  {headline && (
-                    <article key={headline.id} className="flex flex-col h-full space-y-3">
-                      {headline.featuredImage && (
-                        <div className="rounded-lg overflow-hidden shadow-md">
-                          <img
-                            src={headline.featuredImage}
-                            alt={headline.title}
-                            className="w-full h-[180px] object-cover"
-                          />
-                        </div>
-                      )}
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-slate-600 uppercase">{headline.category}</span>
-                        <span className="text-xs text-slate-400">{headline.date}</span>
-                      </div>
-                      <h3
-                        className="text-xl font-extrabold text-slate-900 hover:text-blue-600 transition-colors cursor-pointer leading-snug line-clamp-2"
-                        onClick={() => setView(`news-${headline.id}`)}
-                      >
-                        {headline.title}
-                      </h3>
-                      <p className="text-sm text-slate-600 leading-relaxed flex-grow line-clamp-3">{headline.body || headline.desc}</p>
-                      <div>
-                        <button
-                          onClick={() => setView(`news-${headline.id}`)}
-                          className="text-sm text-blue-600 font-medium hover:underline inline-flex items-center gap-1 self-start"
-                        >
-                          Continue Reading
-                          <ArrowRight size={14} />
-                        </button>
-                      </div>
-                    </article>
-                  )}
-                </div>
+              )}
+
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-semibold text-cyan-400 uppercase">{headline.category}</span>
+                <span className="text-xs text-slate-500">{headline.date}</span>
               </div>
 
-              {/* Latest News Section */}
-              <div className="md:col-span-1">
-                <div className="flex items-center gap-2 mb-4">
-                  <h2 className="text-xl font-bold text-slate-900">Latest News</h2>
-                  <button onClick={() => setView('news-list-latest')} className="p-1 rounded hover:bg-slate-100">
-                    <ChevronRight size={18} className="text-slate-400" />
-                  </button>
-                </div>
-                <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-4 h-[440px] overflow-hidden">
-                  {newsLoading && !latestPool.length ? (
-                    <div className="text-xs text-slate-500">Loading latest news…</div>
-                  ) : latestPool.length === 0 ? (
-                    <div className="text-xs text-slate-500">No updates yet.</div>
-                  ) : (
-                    <motion.div
-                      key={latestNewsIndex}
-                      initial={{ opacity: 0, y: 24 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -24 }}
-                      transition={{ duration: 0.45, ease: 'easeOut' }}
-                      className="space-y-3"
-                    >
-                      {(() => {
-                        const extended = [...latestPool, ...latestPool];
-                        const start = latestNewsIndex % latestPool.length;
-                        const windowItems = extended.slice(start, start + 3);
-                        return windowItems.map((news, i) => (
-                          <article key={`${news.id}-latest-${start}-${i}`} className="border border-slate-200 rounded-lg p-3 shadow-sm bg-white">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-[11px] font-bold text-slate-600 uppercase">{news.category}</span>
-                              <span className="text-[11px] text-slate-400">{news.date}</span>
-                            </div>
-                            <h3
-                              className="text-sm font-bold text-slate-900 mb-2 hover:text-blue-600 transition-colors cursor-pointer line-clamp-2"
-                              onClick={() => setView(`news-${news.id}`)}
-                            >
-                              {news.title}
-                            </h3>
-                            <p className="text-xs text-slate-600 leading-relaxed mb-2 line-clamp-3">{news.body || news.desc}</p>
-                            <button
-                              onClick={() => setView(`news-${news.id}`)}
-                              className="text-[11px] text-blue-600 font-medium hover:underline inline-flex items-center gap-1"
-                            >
-                              Continue Reading
-                              <ArrowRight size={12} />
-                            </button>
-                          </article>
-                        ));
-                      })()}
-                    </motion.div>
-                  )}
-                </div>
-              </div>
+              <h3
+                className="text-xl font-extrabold text-white hover:text-cyan-300 transition cursor-pointer leading-snug line-clamp-2"
+                onClick={() => setView(`news-${headline.id}`)}
+              >
+                {headline.title}
+              </h3>
 
-              {/* Most Read Section */}
-              <div className="md:col-span-1">
-                <div className="flex items-center gap-2 mb-4">
-                  <h2 className="text-xl font-bold text-slate-900">Most Read</h2>
-                  <button onClick={() => setView('news-list-most')} className="p-1 rounded hover:bg-slate-100">
-                    <ChevronRight size={18} className="text-slate-400" />
-                  </button>
+              <p className="text-sm text-slate-400 leading-relaxed flex-grow line-clamp-3">
+                {headline.body || headline.desc}
+              </p>
+
+              <button
+                onClick={() => setView(`news-${headline.id}`)}
+                className="text-sm text-cyan-400 font-medium hover:text-cyan-300 inline-flex items-center gap-1"
+              >
+                Continue Reading <ArrowRight size={14} />
+              </button>
+            </article>
+          )}
+        </div>
+      </div>
+
+      {/* Latest News */}
+      <div className="md:col-span-1">
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="text-xl font-bold text-white">Latest</h2>
+          <button onClick={() => setView('news-list-latest')} className="p-1 rounded hover:bg-white/10">
+            <ChevronRight size={18} className="text-slate-400" />
+          </button>
+        </div>
+
+        <div className="bg-slate-900/70 backdrop-blur-xl rounded-xl shadow-xl border border-white/5 p-4 h-[440px] overflow-hidden">
+
+          <motion.div
+            key={latestNewsIndex}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="space-y-3"
+          >
+            {latestPool.slice(0, 3).map((news) => (
+              <article key={news.id} className="rounded-lg p-3 border border-white/5 bg-slate-800/60 hover:bg-slate-800 transition">
+
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[11px] font-semibold text-purple-400 uppercase">{news.category}</span>
+                  <span className="text-[11px] text-slate-500">{news.date}</span>
                 </div>
-                <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-4 h-[440px] overflow-hidden">
-                  {newsLoading && !mostReadPool.length ? (
-                    <div className="text-xs text-slate-500">Loading most read…</div>
-                  ) : mostReadPool.length === 0 ? (
-                    <div className="text-xs text-slate-500">No reads yet.</div>
-                  ) : (
-                    <motion.div
-                      key={mostReadIndex}
-                      initial={{ opacity: 0, y: 24 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -24 }}
-                      transition={{ duration: 0.45, ease: 'easeOut' }}
-                      className="space-y-3"
-                    >
-                      {(() => {
-                        const extended = [...mostReadPool, ...mostReadPool];
-                        const start = mostReadIndex % mostReadPool.length;
-                        const windowItems = extended.slice(start, start + 3);
-                        return windowItems.map((news, i) => (
-                          <article key={`${news.id}-most-${start}-${i}`} className="border border-slate-200 rounded-lg p-3 shadow-sm bg-white">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-[11px] font-bold text-slate-600 uppercase">{news.category}</span>
-                              <span className="text-[11px] text-slate-400">{news.date}</span>
-                            </div>
-                            <h3
-                              className="text-sm font-bold text-slate-900 mb-2 hover:text-blue-600 transition-colors cursor-pointer line-clamp-2"
-                              onClick={() => setView(`news-${news.id}`)}
-                            >
-                              {news.title}
-                            </h3>
-                            <p className="text-xs text-slate-600 leading-relaxed mb-2 line-clamp-3">{news.body || news.desc}</p>
-                            <button
-                              onClick={() => setView(`news-${news.id}`)}
-                              className="text-[11px] text-blue-600 font-medium hover:underline inline-flex items-center gap-1"
-                            >
-                              Continue Reading
-                              <ArrowRight size={12} />
-                            </button>
-                          </article>
-                        ));
-                      })()}
-                    </motion.div>
-                  )}
+
+                <h3
+                  className="text-sm font-bold text-white mb-2 hover:text-purple-300 transition cursor-pointer line-clamp-2"
+                  onClick={() => setView(`news-${news.id}`)}
+                >
+                  {news.title}
+                </h3>
+
+                <button
+                  onClick={() => setView(`news-${news.id}`)}
+                  className="text-[11px] text-purple-400 hover:text-purple-300 inline-flex items-center gap-1"
+                >
+                  Read <ArrowRight size={12} />
+                </button>
+              </article>
+            ))}
+          </motion.div>
+
+        </div>
+      </div>
+
+      {/* Most Read */}
+      <div className="md:col-span-1">
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="text-xl font-bold text-white">Popular</h2>
+          <button onClick={() => setView('news-list-most')} className="p-1 rounded hover:bg-white/10">
+            <ChevronRight size={18} className="text-slate-400" />
+          </button>
+        </div>
+
+        <div className="bg-slate-900/70 backdrop-blur-xl rounded-xl shadow-xl border border-white/5 p-4 h-[440px] overflow-hidden">
+
+          <motion.div
+            key={mostReadIndex}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="space-y-3"
+          >
+            {mostReadPool.slice(0, 3).map((news) => (
+              <article key={news.id} className="rounded-lg p-3 border border-white/5 bg-slate-800/60 hover:bg-slate-800 transition">
+
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[11px] font-semibold text-pink-400 uppercase">{news.category}</span>
+                  <span className="text-[11px] text-slate-500">{news.date}</span>
                 </div>
-              </div>
-            </div>
-          </div>
-        </section>
+
+                <h3
+                  className="text-sm font-bold text-white mb-2 hover:text-pink-300 transition cursor-pointer line-clamp-2"
+                  onClick={() => setView(`news-${news.id}`)}
+                >
+                  {news.title}
+                </h3>
+
+                <button
+                  onClick={() => setView(`news-${news.id}`)}
+                  className="text-[11px] text-pink-400 hover:text-pink-300 inline-flex items-center gap-1"
+                >
+                  Read <ArrowRight size={12} />
+                </button>
+              </article>
+            ))}
+          </motion.div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
       )}
     </div>
   );
