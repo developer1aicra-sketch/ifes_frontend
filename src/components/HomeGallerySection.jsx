@@ -56,17 +56,23 @@ export default function HomeGallerySection({
 
 
     // updated code 
-    <section className="relative py-16 bg-gradient-to-br from-[#020617] via-[#0f172a] to-black border-t border-cyan-500/10 overflow-hidden" aria-labelledby="home-gallery-title">
+ <section className="relative py-16 mt-10 bg-gradient-to-br from-slate-950 via-slate-900 to-black border-t border-white/5 overflow-hidden" aria-labelledby="home-gallery-title">
   
-  {/* 🔥 Glow Effect Background */}
-  <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(0,255,255,0.08),transparent_40%)]"></div>
+  {/* Soft Glow Background */}
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(34,211,238,0.08),transparent_40%),radial-gradient(circle_at_75%_30%,rgba(168,85,247,0.08),transparent_40%)]" />
 
   <div className="container mx-auto px-4 relative z-10">
     
     {/* Header */}
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-      <h2 id="home-gallery-title" className="text-3xl font-bold text-white tracking-wide">
-        {title}
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
+      
+      <h2
+        id="home-gallery-title"
+        className="text-3xl md:text-4xl font-extrabold text-white tracking-tight"
+      >
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500">
+          {title}
+        </span>
       </h2>
 
       <div className="text-white">
@@ -85,20 +91,24 @@ export default function HomeGallerySection({
         {images.map((img, i) => (
           <figure
             key={`${img.src}-${i}`}
-            className={`${partnerCarouselCardClassName} group rounded-xl overflow-hidden border border-cyan-500/10 shadow-lg bg-slate-900/60 backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-cyan-400/40`}
+            className={`${partnerCarouselCardClassName} group relative rounded-xl overflow-hidden border border-white/5 shadow-lg bg-slate-900/60 backdrop-blur-lg transition-all duration-500 hover:scale-[1.04] hover:shadow-xl hover:shadow-cyan-500/10`}
           >
             
+            {/* Image */}
             <div className="relative pt-[65%]">
               <img
                 src={img.src}
                 alt={img.alt || `Gallery ${i + 1}`}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 loading="lazy"
               />
             </div>
 
-            {/* 🔥 Hover Overlay */}
-            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition duration-300"></div>
+            {/* Gradient Overlay (better than plain black) */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition duration-500"></div>
+
+            {/* Glow Border Effect */}
+            <div className="absolute inset-0 rounded-xl border border-transparent group-hover:border-cyan-400/40 transition duration-500"></div>
 
           </figure>
         ))}
