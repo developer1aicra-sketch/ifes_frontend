@@ -212,9 +212,10 @@ const normalizePartnerNews = (item) => ({
   source: 'partner',
 });
 
-/** Normalize ESCOM API news item */
+/** Normalize ESCOM API news item from list or single endpoint */
 const normalizeEscomNews = (item) => ({
   id: item.id,
+  slug: item.slug,
   title: item.title,
   body: item.content?.replace(/<[^>]*>/g, '').substring(0, 500) || '',
   desc: item.content?.replace(/<[^>]*>/g, '').substring(0, 200) || '',
@@ -230,10 +231,11 @@ const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, news
   void motion;
   const { data: partnerHomeData, loading: partnerLoading } = usePartnerHome(locationCode);
   
-  // ESCOM single article state
+  // ESCOM state
   const [escomArticle, setEscomArticle] = useState(null);
   const [escomLoading, setEscomLoading] = useState(false);
   const [escomError, setEscomError] = useState(null);
+  const [escomNewsList, setEscomNewsList] = useState([]);
 
   const safeItems = useMemo(() => newsItems.filter(Boolean), [newsItems]);
   const partnerItems = useMemo(() => {
@@ -243,21 +245,40 @@ const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, news
       .map(normalizePartnerNews);
   }, [partnerHomeData?.news]);
 
-  // Determine if articleId belongs to ESCOM (numeric IDs from API)
-  const isEscomArticle = useMemo(() => {
-    return articleId && /^\d+$/.test(String(articleId));
-  }, [articleId]);
-
-  // Fetch ESCOM single article when needed
+  // Fetch ESCOM news list on mount
   useEffect(() => {
-    if (!isEscomArticle || !articleId) return;
+    const fetchEscomNewsList = async () => {
+      try {
+        const response = await axios.get('https://app.aicra.org/api/escomapi/escom-news-feed.php');
+        if (response.data && response.data.status === true && response.data.posts) {
+          const normalizedList = response.data.posts.map(normalizeEscomNews);
+          setEscomNewsList(normalizedList);
+        }
+      } catch (err) {
+        console.error('Failed to fetch ESCOM news list:', err);
+      }
+    };
+    fetchEscomNewsList();
+  }, []);
+
+  // Check if articleId belongs to ESCOM (numeric ID that exists in ESCOM list)
+  const escomArticleFromList = useMemo(() => {
+    if (!articleId || !escomNewsList.length) return null;
+    return escomNewsList.find(item => String(item.id) === String(articleId));
+  }, [articleId, escomNewsList]);
+
+  const isEscomArticle = !!escomArticleFromList;
+
+  // Fetch ESCOM single article using slug when needed
+  useEffect(() => {
+    if (!isEscomArticle || !escomArticleFromList?.slug) return;
     
     const fetchEscomArticle = async () => {
       setEscomLoading(true);
       setEscomError(null);
       try {
         const response = await axios.get('https://app.aicra.org/api/escomapi/escom-news-feed-single.php', {
-          params: { slug: articleId }
+          params: { slug: escomArticleFromList.slug }
         });
         
         if (response.data && response.data.status === true && response.data.post) {
@@ -274,28 +295,39 @@ const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, news
     };
     
     fetchEscomArticle();
-  }, [articleId, isEscomArticle]);
+  }, [isEscomArticle, escomArticleFromList?.slug]);
 
-  const mergedItems = useMemo(
-    () => (locationCode && partnerItems.length > 0 ? [...partnerItems, ...safeItems] : safeItems),
-    [locationCode, partnerItems, safeItems]
-  );
+  // Merge all news items for related news
+  const allNewsItems = useMemo(() => {
+    const items = [...partnerItems, ...safeItems];
+    if (escomNewsList.length > 0) {
+      return [...items, ...escomNewsList];
+    }
+    return items;
+  }, [partnerItems, safeItems, escomNewsList]);
 
-  // Get article from local sources (partner or props)
+  // Get article from local sources (partner or props) - for non-ESCOM articles
   const localArticle = useMemo(() => {
-    if (isEscomArticle) return null; // ESCOM articles handled separately
-    return mergedItems.find(
+    if (isEscomArticle) return null;
+    return allNewsItems.find(
       (item) => String(item.id) === String(articleId) || String(item._id) === String(articleId)
     ) ?? null;
-  }, [mergedItems, articleId, isEscomArticle]);
+  }, [allNewsItems, articleId, isEscomArticle]);
 
   // Final article: ESCOM API result or local article
   const article = isEscomArticle ? escomArticle : localArticle;
 
-  const relatedNews = useMemo(
-    () => mergedItems.filter((item) => String(item.id) !== String(articleId) && String(item._id) !== String(articleId)).slice(0, 4),
-    [mergedItems, articleId]
-  );
+  // Related news from all items (excluding current article)
+  const relatedNews = useMemo(() => {
+    if (!article) return [];
+    return allNewsItems
+      .filter((item) => {
+        const itemId = String(item.id || item._id);
+        const currentId = isEscomArticle ? String(article.id) : String(articleId);
+        return itemId !== currentId;
+      })
+      .slice(0, 4);
+  }, [allNewsItems, article, articleId, isEscomArticle]);
 
   // Track read count for local articles only
   useEffect(() => {
@@ -425,14 +457,21 @@ const NewsArticleView = ({ articleId, setView, newsItems = [], newsLoading, news
             <div className="grid md:grid-cols-2 gap-6">
               {relatedNews.map((news) => (
                 <motion.article
-                  key={news.id}
-                  onClick={() => setView(`news-${news.id}`)}
+                  key={news.id || news._id}
+                  onClick={() => {
+                    // Use ID for navigation (works for both ESCOM and partner)
+                    // The component will detect and fetch appropriately
+                    setView(`news-${news.id || news._id}`);
+                  }}
                   className="border border-slate-800 rounded-xl p-6 hover:shadow-lg hover:shadow-cyan-500/10 transition-all cursor-pointer group bg-slate-900/50 backdrop-blur-sm"
                   whileHover={{ y: -4 }}
                 >
                   <div className="flex items-center gap-3 mb-3 flex-wrap">
                     <span className="text-xs font-bold text-cyan-400 uppercase">{news.category}</span>
                     <span className="text-xs text-slate-500">{news.date}</span>
+                    {news.source === 'escom' && (
+                      <span className="text-[9px] bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 rounded-full">ESCOM</span>
+                    )}
                   </div>
                   <h3 className="text-lg font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors line-clamp-2">
                     {news.title}
