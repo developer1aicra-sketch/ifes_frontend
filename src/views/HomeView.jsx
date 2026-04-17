@@ -395,45 +395,44 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
     <section className="py-10 px-5 md:px-10 lg:px-20">
   <div className="max-w-7xl mx-auto">
 
-    {/* CARDS */}
     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
 
       {/* CARD 1 */}
-      <div className="glow-card rounded-2xl p-6 min-h-[180px] flex flex-col justify-between hover:scale-[1.02] transition-transform">
-        <div className="border-b border-white/10 pb-2">
+      <div className="glow-card rounded-2xl p-6 min-h-[180px] flex flex-col gap-2 hover:scale-[1.02] transition-transform">
+        <div className="border-b border-white/10 pb-1">
           <span className="font-semibold text-cyan-400 text-sm">🎮 COMPETITION</span>
         </div>
-        <p className="mt-4 text-sm text-gray-300 leading-relaxed">
+        <p className="text-sm text-gray-300 leading-relaxed">
           World-class tournaments and global championships
         </p>
       </div>
 
       {/* CARD 2 */}
-      <div className="glow-card rounded-2xl p-6 min-h-[180px] flex flex-col justify-between hover:scale-[1.02] transition-transform">
-        <div className="border-b border-white/10 pb-2">
+      <div className="glow-card rounded-2xl p-6 min-h-[180px] flex flex-col gap-2 hover:scale-[1.02] transition-transform">
+        <div className="border-b border-white/10 pb-1">
           <span className="font-semibold text-cyan-400 text-sm">⚖️ GOVERNANCE</span>
         </div>
-        <p className="mt-4 text-sm text-gray-300 leading-relaxed">
+        <p className="text-sm text-gray-300 leading-relaxed">
           Standardization, integrity, and fair play frameworks
         </p>
       </div>
 
       {/* CARD 3 */}
-      <div className="glow-card rounded-2xl p-6 min-h-[180px] flex flex-col justify-between hover:scale-[1.02] transition-transform">
-        <div className="border-b border-white/10 pb-2">
+      <div className="glow-card rounded-2xl p-6 min-h-[180px] flex flex-col gap-2 hover:scale-[1.02] transition-transform">
+        <div className="border-b border-white/10 pb-1">
           <span className="font-semibold text-cyan-400 text-sm">🎓 DEVELOPMENT</span>
         </div>
-        <p className="mt-4 text-sm text-gray-300 leading-relaxed">
+        <p className="text-sm text-gray-300 leading-relaxed">
           Talent, education, and career pathways
         </p>
       </div>
 
       {/* CARD 4 */}
-      <div className="glow-card rounded-2xl p-6 min-h-[180px] flex flex-col justify-between hover:scale-[1.02] transition-transform">
-        <div className="border-b border-white/10 pb-2">
+      <div className="glow-card rounded-2xl p-6 min-h-[180px] flex flex-col gap-2 hover:scale-[1.02] transition-transform">
+        <div className="border-b border-white/10 pb-1">
           <span className="font-semibold text-cyan-400 text-sm">🌐 COLLABORATION</span>
         </div>
-        <p className="mt-4 text-sm text-gray-300 leading-relaxed">
+        <p className="text-sm text-gray-300 leading-relaxed">
           Global partnerships across industry and governments
         </p>
       </div>
