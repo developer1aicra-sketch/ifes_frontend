@@ -32,7 +32,7 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
     if (!isMemberAuthenticated) {
       setView('member-login');
       return;
-    } 
+    }
     setUser?.((prev) => (prev?.type === 'member' ? prev : { type: 'member', email: prev?.email }));
     setView('member-dashboard');
   };
@@ -107,7 +107,7 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
               onClick={() => setView('about')}
               className="hover:text-white transition-colors py-2 flex items-center gap-1 text-inherit"
             >
-              {(effectiveLocationPrefix || siteConfig.is_partner) ? 'About' : 'About Worso'}
+              {(effectiveLocationPrefix || siteConfig.is_partner) ? 'About' : 'Ifes'}
               <ChevronDown
                 size={14}
                 className="opacity-70 shrink-0 transition-transform duration-200 group-hover/about:rotate-180"
@@ -124,23 +124,88 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
               partnerNavLoading={partnerAboutNavLoading}
             />
           </div>
-         
-          <Link to={path('/membership')}>Membership</Link>
-          <Link to={path('/roboclub')} className="flex gap-2 items-center">
-            <Star size={14} className={location.pathname.endsWith('/roboclub') ? 'text-yellow-400' : 'text-yellow-500'} /> roboclub
+
+          <Link
+            to={path('/membership')}
+            className="normal-case"
+          >
+            Membership
+          </Link>
+          <Link to={path('/roboclub')} className="flex gap-2 items-center normal-case">
+            <Star size={14} className={location.pathname.endsWith('/roboclub') ? 'text-yellow-400' : 'text-yellow-500'} /> EX Clubs
           </Link>
 
           {/* <button onClick={() => setView('teams')} className="hover:text-white transition-colors">
             Teams / Players
           </button> */}
-          
-          <Link to={path('/challenges')} className="hover:text-white transition-colors flex items-center gap-1">
+
+          {/* <Link to={path('/challenges')} className="hover:text-white transition-colors flex items-center gap-1">
             <Trophy className="w-3 h-3 text-yellow-500" />
-            {siteConfig.is_partner ? 'Local Events' : 'Challenges'}
-          </Link>
-          <Link to={path('/partner-with-us')} className="hover:text-white transition-colors">
+            {siteConfig.is_partner ? 'Local Events' : 'e-Sport'}
+          </Link> */}
+
+          <div className="relative group">
+            <a
+              href="https://ifes.in/esportsworldcup/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors flex items-center gap-1 normal-case"
+            >
+              <Trophy className="w-3 h-3 text-yellow-500" />
+              {siteConfig.is_partner ? 'Local Events' : 'E-Sport'}
+            </a>
+          </div>
+
+
+          {/* <Link to={path('/partner-with-us')} className="hover:text-white transition-colors">
             Become a Partner
-          </Link>
+          </Link> */}
+
+          {/* updated code */}
+          <div className="relative group">
+            <button className="hover:text-white transition-colors">
+              Event
+            </button>
+
+            {/* Dropdown */}
+            <div className="absolute left-0 mt-2 w-44 bg-slate-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+
+              <a
+                href="https://www.escom.ifes.in/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white"
+              >
+                ESCOM-2.0
+              </a>
+
+            </div>
+          </div>
+
+          {/* Partner Dropdown */}
+          <div className="relative group">
+            <button className="hover:text-white transition-colors flex items-center gap-1">
+              Partner
+              <ChevronDown size={14} className="opacity-70 shrink-0 transition-transform duration-200 group-hover:rotate-180" />
+            </button>
+
+            {/* Dropdown */}
+            <div className="absolute left-0 mt-2 w-44 bg-slate-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+              <Link
+                to={path('/nep-nea')}
+                className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white"
+              >
+                NEP/NEA
+              </Link>
+              <Link
+                to={path('/ifes-tv-ott')}
+                className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white"
+              >
+                IFES TV - OTT
+              </Link>
+            </div>
+          </div>
+
           {/* {!siteConfig.is_partner && (
             <button onClick={() => setView('partners')} className="hover:text-white transition-colors">
               Partners
@@ -150,22 +215,20 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
           <div className="flex items-center gap-2">
             <button
               onClick={openMemberPortal}
-              className={`flex items-center gap-1.5 text-[10px] py-2 px-2.5 rounded transition-colors hover:text-white ${
-                isMemberPortalActive
-                  ? `text-white ${activePortalButtonClass}`
-                  : 'text-slate-300'
-              }`}
+              className={`flex items-center gap-1.5 text-[10px] py-2 px-2.5 rounded transition-colors hover:text-white ${isMemberPortalActive
+                ? `text-white ${activePortalButtonClass}`
+                : 'text-slate-300'
+                }`}
             >
               <User size={12} />
               {isMemberAuthenticated ? 'Member Portal' : 'Member Login'}
             </button>
             <button
               onClick={openPartnerPortal}
-              className={`flex items-center gap-1.5 text-[10px] py-2 px-2.5 rounded transition-colors hover:text-white ${
-                isPartnerPortalActive
-                  ? `text-white ${activePortalButtonClass}`
-                  : 'text-slate-300'
-              }`}
+              className={`flex items-center gap-1.5 text-[10px] py-2 px-2.5 rounded transition-colors hover:text-white ${isPartnerPortalActive
+                ? `text-white ${activePortalButtonClass}`
+                : 'text-slate-300'
+                }`}
             >
               <User size={12} />
               {isPartnerAuthenticated ? 'Partner Portal' : 'Partner Login'}
@@ -193,12 +256,11 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
               <button
                 type="button"
                 onClick={() => setAboutMobileOpen((o) => !o)}
-                className={`text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors flex items-center justify-between gap-2 ${
-                  aboutMobileOpen ? 'bg-white/5 text-white' : ''
-                }`}
+                className={`text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors flex items-center justify-between gap-2 ${aboutMobileOpen ? 'bg-white/5 text-white' : ''
+                  }`}
                 aria-expanded={aboutMobileOpen}
               >
-                <span>{(effectiveLocationPrefix || siteConfig.is_partner) ? 'About' : 'About Worso'}</span>
+                <span>{(effectiveLocationPrefix || siteConfig.is_partner) ? 'About' : 'Ifes'}</span>
                 <ChevronDown
                   size={16}
                   className={`shrink-0 opacity-80 transition-transform ${aboutMobileOpen ? 'rotate-180' : ''}`}
@@ -221,6 +283,7 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
               <Link to={path('/membership')} onClick={closeAnd()} className="px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
                 Membership
               </Link>
+
               <button onClick={closeAnd(() => setView('teams'))} className="text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
                 Teams / Players
               </button>
@@ -238,22 +301,20 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
               <div className="mt-4 pt-4 border-t border-white/10 px-6">
                 <button
                   onClick={closeAnd(openMemberPortal)}
-                  className={`text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 ${
-                    isMemberPortalActive
-                      ? activePortalButtonClass
-                      : `${theme.bgPrimary || siteConfig.colors.primary}`
-                  }`}
+                  className={`text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 ${isMemberPortalActive
+                    ? activePortalButtonClass
+                    : `${theme.bgPrimary || siteConfig.colors.primary}`
+                    }`}
                 >
                   <User size={16} />
                   {isMemberAuthenticated ? 'Member Portal' : 'Member Login'}
                 </button>
                 <button
                   onClick={closeAnd(openPartnerPortal)}
-                  className={`text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 mt-3 border ${
-                    isPartnerPortalActive
-                      ? activePortalButtonClass
-                      : 'bg-slate-700/70 border-slate-500/50'
-                  }`}
+                  className={`text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 mt-3 border ${isPartnerPortalActive
+                    ? activePortalButtonClass
+                    : 'bg-slate-700/70 border-slate-500/50'
+                    }`}
                 >
                   <User size={16} />
                   {isPartnerAuthenticated ? 'Partner Portal' : 'Partner Login'}
@@ -275,4 +336,3 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
 };
 
 export default Navigation;
-

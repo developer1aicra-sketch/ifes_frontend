@@ -144,13 +144,13 @@ export function AboutWorsoDesktopMegaMenu({
     >
       <div className="rounded-[1.25rem] bg-white text-slate-800 shadow-2xl shadow-black/20 border border-slate-100/80 overflow-hidden">
         <div className="px-6 py-5 md:px-8 md:py-6 border-b border-slate-100 flex flex-wrap items-center gap-3">
-          <h2 className={`text-lg md:text-xl font-bold tracking-tight ${titleClass}`}>About WORSO</h2>
+          <h2 className={`text-lg md:text-xl font-bold tracking-tight ${titleClass}`}>Ifes</h2>
           {/* <span className={`text-[10px] md:text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-md ${badgeClass}`}>
             All pages
           </span> */}
         </div>
         <div className="px-6 py-5 md:px-8 md:py-7">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-10 gap-y-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-1">
             {worsoColumns.map((col, colIndex) => (
               <ul key={colIndex} className="space-y-0.5">
                 {col.map(({ segment, label }) => {
