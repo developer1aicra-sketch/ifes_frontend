@@ -3,7 +3,7 @@
  * Legacy hash IDs (pre–split routes) map for redirects.
  */
 export const ABOUT_NAV = [
-  { segment: 'about-worso', label: 'About WORSO' },
+  { segment: 'about-worso', label: 'About Ifes' },
   { segment: 'mission-vision', label: 'Mission & Vision' },
   { segment: 'strategy', label: 'Strategy' },
   { segment: 'presidents-message', label: "President's Message" },
