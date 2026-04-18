@@ -59,7 +59,9 @@
 
 
 
-//latest code
+import React, { useEffect, useRef } from "react";
+
+// Auto import logos
 const logoModules = import.meta.glob(
   "../assets/log/*.{png,PNG,jpg,JPG,jpeg,JPEG,svg,SVG,webp,WEBP}",
   {
@@ -68,6 +70,7 @@ const logoModules = import.meta.glob(
   }
 );
 
+// Convert to array
 const logos = Object.entries(logoModules)
   .sort(([a], [b]) => a.localeCompare(b))
   .map(([, url]) => url)
@@ -84,22 +87,50 @@ const LogoTicker = ({
   className = "",
   logos: logosProp,
 }) => {
+  const containerRef = useRef(null);
+
   const sourceLogos =
     Array.isArray(logosProp) && logosProp.length > 0 ? logosProp : logos;
 
-  if (sourceLogos.length === 0) return null;
+  if (!sourceLogos.length) return null;
 
-  const loop = [...sourceLogos, ...sourceLogos, ...sourceLogos];
+  // 🔥 Duplicate logos (important)
+  const loop = [...sourceLogos, ...sourceLogos];
+
   const sizeClass = SIZE_CLASSES[size] ?? SIZE_CLASSES.md;
+
+  useEffect(() => {
+    let animationFrame;
+    let x = 0;
+
+    const speed = 1; // 🔥 speed control
+
+    const animate = () => {
+      if (!containerRef.current) return;
+
+      x -= speed;
+
+      const width = containerRef.current.scrollWidth / 2;
+
+      // 🔥 reset when half passed
+      if (Math.abs(x) >= width) {
+        x = 0;
+      }
+
+      containerRef.current.style.transform = `translateX(${x}px)`;
+
+      animationFrame = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, []);
 
   return (
     <section
       aria-label={title}
-      className={[
-        // 🎨 Updated color theme (cyan + purple consistent)
-        "relative mt-10 py-8 overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-black border-t border-cyan-500/20",
-        className,
-      ].join(" ")}
+      className={`relative mt-10 py-8 overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-black border-t border-cyan-500/20 ${className}`}
     >
       {/* Title */}
       <div className="container mx-auto px-4 mb-6 text-center">
@@ -108,24 +139,28 @@ const LogoTicker = ({
         </span>
       </div>
 
-      {/* Marquee */}
-      <div className="flex gap-14 md:gap-16 animate-marquee whitespace-nowrap items-center w-[200%]">
-        {loop.map((logo, i) => (
-          <img
-            key={i}
-            src={logo}
-            alt="Partner logo"
-            className={`${sizeClass} w-auto object-contain transition-all duration-300 opacity-80 hover:opacity-100`}
-            loading="lazy"
-          />
-        ))}
+      {/* ✅ Infinite Scroll */}
+      <div className="overflow-hidden w-full">
+        <div
+          ref={containerRef}
+          className="flex gap-14 md:gap-16 items-center whitespace-nowrap"
+        >
+          {loop.map((logo, i) => (
+            <img
+              key={i}
+              src={logo}
+              alt="Partner logo"
+              className={`${sizeClass} w-auto object-contain opacity-80 hover:opacity-100 transition-all duration-300`}
+              loading="lazy"
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Subtle glow overlay (matches site theme) */}
+      {/* Glow */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.05),transparent_40%),radial-gradient(circle_at_80%_30%,rgba(168,85,247,0.05),transparent_40%)]" />
     </section>
   );
 };
 
 export default LogoTicker;
-

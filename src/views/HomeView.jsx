@@ -523,7 +523,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
             <div className="space-y-5">
 
               {/* MAIN HEADING */}
-              <h1 className="text-3xl md:text-4xl lg:text-4xl font-semibold text-white leading-tight">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-white leading-tight">
                 Shaping the Future of <br />
                 <span className="text-cyan-400">Global Esports</span>
               </h1>
