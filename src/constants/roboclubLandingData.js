@@ -14,7 +14,7 @@ export const HERO_AUDIENCE_TAGS = [
 export const ROBOCLUB_ABOUT = {
   headline: 'Build real robots. Learn with mentors. Compete on a global stage.',
   intro:
-    'RoboClub by TechnoXian is a dynamic platform designed to nurture innovation, creativity, and hands-on learning in robotics, AI, and emerging technologies, It empowers students and institutions to build, experiment, and compete at national and global levels.',
+    'ExClub by TechnoXian is a dynamic platform designed to nurture innovation, creativity, and hands-on learning in robotics, AI, and emerging technologies, It empowers students and institutions to build, experiment, and compete at national and global levels.',
   mission:
     'To provide practical learning, competitive exposure, and industry connect through robotics programs, events, and real-world challenges.',
   vision:
@@ -152,7 +152,7 @@ export const LEARNING_TRACKS = [
 export const ROBOCLUB_EVENTS = [
   {
     id: 'ev-past-1',
-    name: 'RoboClub Winter Qualifier 2026',
+    name: 'ExClub Winter Qualifier 2026',
     dateLabel: 'Jan 18 – Jan 19, 2026',
     location: 'Hyderabad Expo Arena, India',
     participation: 'Registered squads • Junior & Open tracks',
@@ -167,7 +167,7 @@ export const ROBOCLUB_EVENTS = [
     name: 'Make-a-Bot Sprint Weekend',
     dateLabel: 'Mar 7 – Mar 8, 2026',
     location: 'Online + Pune Makerspace',
-    participation: 'Open to all RoboClub members • Kits optional',
+    participation: 'Open to all ExClub members • Kits optional',
     summary: '48 hours of rapid building: chassis, wiring, test runs, and a demo day you can ship as a portfolio story.',
     image:
       'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=1200',

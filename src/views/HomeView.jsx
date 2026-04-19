@@ -1037,7 +1037,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
           <div className="bg-gradient-to-r from-cyan-950/20 via-black/70 to-fuchsia-950/20 rounded-2xl p-8 md:p-10 border border-cyan-500/30 backdrop-blur-md shadow-[0_0_25px_rgba(0,255,255,0.12)]">
             <Handshake size={36} className="text-cyan-400 mx-auto mb-3" />
             <h2 className="text-2xl md:text-4xl font-extrabold text-white leading-tight">BUILD YOUR <span className="text-cyan-400">LEGACY</span></h2>
-            <p className="text-slate-400 text-sm md:text-base max-w-xl mx-auto mt-3">Become a WORSO Partner Federation or register your robotics squad for upcoming global qualifiers.</p>
+            <p className="text-slate-400 text-sm md:text-base max-w-xl mx-auto mt-3">Become a IFSE Partner Federation or register your robotics squad for upcoming global qualifiers.</p>
             <div className="flex flex-wrap justify-center gap-4 mt-6">
               <button className="bg-gradient-to-r from-cyan-600 to-blue-500 hover:brightness-110 px-6 py-2.5 rounded-full text-sm font-semibold transition shadow-md shadow-cyan-500/20"><Building size={14} className="inline mr-2" /> PARTNER WITH US</button>
               <button className="border border-white/20 px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-white/10 transition"><FileText size={14} className="inline mr-2" /> RULEBOOK & KIT</button>

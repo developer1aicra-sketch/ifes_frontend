@@ -26,7 +26,7 @@ const AboutRoboClubSection = () => (
       >
         <span className="inline-flex items-center gap-2 text-cyan-400 font-bold tracking-[0.2em] text-xs uppercase">
           <Sparkles className="w-4 h-4" />
-          About RoboClub
+          About ExClub
         </span>
         <h2 className="text-4xl md:text-5xl font-black text-white mt-4 leading-tight">
           {ROBOCLUB_ABOUT.headline}
