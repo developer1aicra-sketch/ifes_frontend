@@ -10,7 +10,7 @@ const ExecutiveCommitteePage = () => (
         <h2 className="text-3xl font-bold text-slate-900">Executive Committee</h2>
       </div>
       <p className="text-lg text-slate-600 leading-relaxed">
-        The Executive Committee of the World Robotics Sports Organization (WORSO) is composed of esteemed leaders in the esports industry, tasked with guiding the federation&apos;s strategic vision and policies. They oversee global initiatives, drive the growth of competitive gaming, and ensure fair, inclusive practices. By fostering collaboration with national organizations, governments, and stakeholders, the committee plays a pivotal role in shaping the future of esports worldwide and ensuring its sustainable development.
+        The Executive Committee of the World Robotics Sports Organization (IFSE) is composed of esteemed leaders in the esports industry, tasked with guiding the federation&apos;s strategic vision and policies. They oversee global initiatives, drive the growth of competitive gaming, and ensure fair, inclusive practices. By fostering collaboration with national organizations, governments, and stakeholders, the committee plays a pivotal role in shaping the future of esports worldwide and ensuring its sustainable development.
       </p>
     </div>
 
@@ -34,7 +34,7 @@ const ExecutiveCommitteePage = () => (
             <h3 className="text-xl font-bold text-slate-900">Board Meetings</h3>
           </div>
           <p className="text-slate-600 mb-4">
-            The Executive Committee convenes quarterly to review progress, set strategic direction, and make key decisions for WORSO&apos;s global operations.
+            The Executive Committee convenes quarterly to review progress, set strategic direction, and make key decisions for IFSE&apos;s global operations.
           </p>
           <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
             <Calendar size={16} />

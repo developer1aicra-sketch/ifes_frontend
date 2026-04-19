@@ -27,7 +27,7 @@ const ABOUT_SECTION_LINKS = [
   { segment: 'executive-committee', label: 'EXECUTIVE COMMITTEE' },
   { segment: 'federation-services', label: 'FEDERATION SERVICES' },
   { segment: 'tech-for-good', label: 'TECH FOR GOOD' },
-  { segment: 'working-at-worso', label: 'WORKING AT WORSO' },
+  { segment: 'working-at-worso', label: 'WORKING AT IFSE' },
 ];
 
 const Footer = ({ setView, switchSite, currentSite }) => {
@@ -231,10 +231,10 @@ const Footer = ({ setView, switchSite, currentSite }) => {
             <div>
               <h4 className="text-white font-bold mb-3 text-sm uppercase tracking-wider">Follow Us</h4>
               <div className="flex gap-3 text-lg">
-                <a href={social.facebook || "https://www.facebook.com/WORSOcommunity"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="Facebook"><FaFacebookF /></a>
-                <a href={social.instagram || "https://www.instagram.com/worsoassociation"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="Instagram"><FaInstagram /></a>
-                <a href={social.linkedin || "https://in.linkedin.com/company/worso"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="LinkedIn"><FaLinkedinIn /></a>
-                <a href={social.youtube || "https://www.youtube.com/@WORSOassociation"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="YouTube"><FaYoutube /></a>
+                <a href={social.facebook || "https://www.facebook.com/IFSEcommunity"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="Facebook"><FaFacebookF /></a>
+                <a href={social.instagram || "https://www.instagram.com/ifseassociation"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="Instagram"><FaInstagram /></a>
+                <a href={social.linkedin || "https://in.linkedin.com/company/ifse"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="LinkedIn"><FaLinkedinIn /></a>
+                <a href={social.youtube || "https://www.youtube.com/@IFSEassociation"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="YouTube"><FaYoutube /></a>
               </div>
             </div>
           </div>

@@ -14,7 +14,7 @@ const Navbar = ({ onOpenCertificate, onNavigateHome, isAuthenticated }) => {
         <Zap className="text-white w-5 h-5 fill-current" />
       </div>
       <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-        ROBOCLUB<span className="text-cyan-400">.</span>
+        EXCLUB<span className="text-cyan-400">.</span>
       </span>
     </NavLink>
    

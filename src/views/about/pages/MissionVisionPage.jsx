@@ -27,7 +27,7 @@ const MissionVisionPage = () => (
         <h2 className="text-3xl font-bold text-slate-900">Our Mission</h2>
       </div>
       <p className="text-lg text-slate-600 leading-relaxed">
-        WORSO is the global regulatory root for the sport of robotics—writing the laws of play, publishing safety protocols, and certifying every affiliated event. Federation over
+        IFSE is the global regulatory root for the sport of robotics—writing the laws of play, publishing safety protocols, and certifying every affiliated event. Federation over
         centralization keeps local context alive while the core stays immutable.
       </p>
     </div>
@@ -89,7 +89,7 @@ const MissionVisionPage = () => (
         ))}
       </div>
       <p className="text-sm text-slate-500 italic mt-4">
-        Through these core values, WORSO aims to establish eSport as a mainstream sport, recognized for its athleticism, competitive spirit, and positive impact on society.
+        Through these core values, IFSE aims to establish eSport as a mainstream sport, recognized for its athleticism, competitive spirit, and positive impact on society.
       </p>
     </div>
   </div>

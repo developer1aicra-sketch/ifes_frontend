@@ -8,7 +8,7 @@ const FederationServicesPage = () => (
         <h2 className="text-3xl font-bold text-slate-900">Federation Services</h2>
       </div>
       <p className="text-lg text-slate-600 leading-relaxed">
-        The World Robotics Sports Organization (WORSO) plays a multifaceted role in fostering the growth and development of esports on a global scale. Here&apos;s a breakdown of potential services the IFES could offer to its members.
+        The World Robotics Sports Organization (IFSE) plays a multifaceted role in fostering the growth and development of esports on a global scale. Here&apos;s a breakdown of potential services the IFES could offer to its members.
       </p>
     </div>
 
