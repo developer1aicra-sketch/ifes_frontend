@@ -1,12 +1,12 @@
-import { Link } from 'react-router-dom';
-import { ABOUT_NAV } from '../views/about/aboutRouteConfig';
-import { splitMenuItemsIntoColumns } from '../utils/partnerAboutTabs';
+import { Link } from "react-router-dom";
+import { ABOUT_NAV } from "../views/about/aboutRouteConfig";
+import { splitMenuItemsIntoColumns } from "../utils/partnerAboutTabs";
 
 /** Split 10 WORSO items into 4 + 3 + 3 */
 const WORSO_COLUMN_COUNTS = [4, 3, 3];
 
 function normalizePath(p) {
-  return (p || '').replace(/\/$/, '') || '/';
+  return (p || "").replace(/\/$/, "") || "/";
 }
 
 export function getAboutWorsoColumns() {
@@ -19,19 +19,15 @@ export function getAboutWorsoColumns() {
   return columns;
 }
 
-function PartnerMegaColumns({
-  partnerTabs,
-  pathWithPrefix,
-  pathname,
-  search,
-}) {
-  const partnerAboutBase = pathWithPrefix('/about');
-  const params = new URLSearchParams(search || '');
-  const currentTab = params.get('tab');
+function PartnerMegaColumns({ partnerTabs, pathWithPrefix, pathname, search }) {
+  const partnerAboutBase = pathWithPrefix("/about");
+  const params = new URLSearchParams(search || "");
+  const currentTab = params.get("tab");
   const columns = splitMenuItemsIntoColumns(partnerTabs, 3);
 
   const isPartnerTabActive = (tab) => {
-    if (normalizePath(pathname) !== normalizePath(partnerAboutBase)) return false;
+    if (normalizePath(pathname) !== normalizePath(partnerAboutBase))
+      return false;
     if (currentTab) return currentTab === tab.id;
     return partnerTabs[0]?.id === tab.id;
   };
@@ -49,8 +45,8 @@ function PartnerMegaColumns({
                   to={href}
                   className={`block py-2.5 text-[13px] md:text-sm font-semibold tracking-wide transition-colors rounded-lg px-2 -mx-2 uppercase ${
                     active
-                      ? 'text-emerald-700 bg-emerald-50'
-                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
+                      ? "text-emerald-700 bg-emerald-50"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
                   {tab.label}
@@ -75,7 +71,7 @@ function PartnerMegaColumns({
 export function AboutWorsoDesktopMegaMenu({
   pathWithPrefix,
   pathname,
-  search = '',
+  search = "",
   siteConfig,
   isRegionalChapter = false,
   partnerTabs = [],
@@ -83,14 +79,18 @@ export function AboutWorsoDesktopMegaMenu({
 }) {
   const worsoColumns = getAboutWorsoColumns();
   const isPartnerTheme = Boolean(siteConfig?.is_partner) || isRegionalChapter;
-  const titleClass = isPartnerTheme ? 'font-serif text-emerald-700' : 'font-serif text-red-700';
-  const badgeClass = isPartnerTheme ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white';
+  const titleClass = isPartnerTheme
+    ? "font-serif text-emerald-700"
+    : "font-serif text-red-700";
+  const badgeClass = isPartnerTheme
+    ? "bg-emerald-600 text-white"
+    : "bg-red-600 text-white";
   const headingText =
     isRegionalChapter && siteConfig?.logo_text
       ? String(siteConfig.logo_text)
       : isRegionalChapter
-        ? 'About'
-        : 'About WORSO';
+        ? "About"
+        : "About WORSO";
 
   const isActive = (segment) => {
     const href = pathWithPrefix(`/about/${segment}`);
@@ -100,7 +100,7 @@ export function AboutWorsoDesktopMegaMenu({
   if (isRegionalChapter) {
     return (
       <div
-        className="absolute bg-red-500 left-1/2 -translate-x-1/2 top-full z-[100] w-[min(calc(100vw-2rem),52rem)] pt-3
+        className="absolute  left-1/2 -translate-x-1/2 top-full z-[100] w-[min(calc(100vw-2rem),52rem)] pt-3
         opacity-0 invisible pointer-events-none translate-y-1
         group-hover/about:opacity-100 group-hover/about:visible group-hover/about:pointer-events-auto group-hover/about:translate-y-0
         group-focus-within/about:opacity-100 group-focus-within/about:visible group-focus-within/about:pointer-events-auto group-focus-within/about:translate-y-0
@@ -108,11 +108,15 @@ export function AboutWorsoDesktopMegaMenu({
       >
         <div
           className={`rounded-[1.25rem] bg-white text-slate-800 shadow-2xl shadow-black/20 border border-slate-100/80 overflow-hidden ${
-            partnerNavLoading ? 'opacity-90' : ''
+            partnerNavLoading ? "opacity-90" : ""
           }`}
         >
           <div className="px-6 py-5 md:px-8 md:py-6 border-b border-slate-100 flex flex-wrap items-center gap-3">
-            <h2 className={`text-lg md:text-xl font-bold tracking-tight ${titleClass}`}>{headingText}</h2>
+            <h2
+              className={`text-lg md:text-xl font-bold tracking-tight ${titleClass}`}
+            >
+              {headingText}
+            </h2>
             {/* <span className={`text-[10px] md:text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-md ${badgeClass}`}>
               Chapter pages
             </span> */}
@@ -143,36 +147,49 @@ export function AboutWorsoDesktopMegaMenu({
         transition-all duration-200 ease-out"
     >
       <div className="rounded-[1.25rem] bg-white text-slate-800 shadow-2xl shadow-black/20 border border-slate-100/80 overflow-hidden">
-        <div className="px-6 py-5 md:px-8 md:py-6 border-b border-slate-100 flex flex-wrap items-center gap-3">
-          <h2 className={`text-lg md:text-xl font-bold tracking-tight ${titleClass}`}>Ifes</h2>
-          {/* <span className={`text-[10px] md:text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-md ${badgeClass}`}>
-            All pages
-          </span> */}
+        {/* Header */}
+        <div className="px-6 py-5 md:px-8 md:py-6 border-b border-slate-100 flex items-center gap-3">
+          <h2
+            className={`text-lg md:text-xl font-bold tracking-tight ${titleClass}`}
+          >
+            IFES
+          </h2>
         </div>
+
+        {/* Content */}
         <div className="px-6 py-5 md:px-8 md:py-7">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-1">
-            {worsoColumns.map((col, colIndex) => (
-              <ul key={colIndex} className="space-y-0.5">
-                {col.map(({ segment, label }) => {
-                  const href = pathWithPrefix(`/about/${segment}`);
-                  const active = isActive(segment);
-                  return (
-                    <li key={segment}>
-                      <Link
-                        to={href}
-                        className={`block py-2.5 text-[13px] md:text-sm font-semibold tracking-wide transition-colors rounded-lg px-2 -mx-2 uppercase ${
-                          active
-                            ? 'text-red-700 bg-red-50'
-                            : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
-                        }`}
-                      >
-                        {label}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            ))}
+            {(() => {
+              const items = worsoColumns.flat(); // sab items ek array me
+              const mid = Math.ceil(items.length / 2); // half
+
+              const firstHalf = items.slice(0, mid);
+              const secondHalf = items.slice(mid);
+
+              return [firstHalf, secondHalf].map((col, colIndex) => (
+                <ul key={colIndex} className="space-y-0.5">
+                  {col.map(({ segment, label }) => {
+                    const href = pathWithPrefix(`/about/${segment}`);
+                    const active = isActive(segment);
+
+                    return (
+                      <li key={segment}>
+                        <Link
+                          to={href}
+                          className={`block py-2.5 text-[13px] md:text-sm font-semibold tracking-wide transition-colors rounded-lg px-2 -mx-2 uppercase ${
+                            active
+                              ? "text-red-700 bg-red-50"
+                              : "text-slate-700 hover:text-slate-900 hover:bg-slate-50"
+                          }`}
+                        >
+                          {label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ));
+            })()}
           </div>
         </div>
       </div>
@@ -186,7 +203,7 @@ export function AboutWorsoDesktopMegaMenu({
 export function AboutWorsoMobileLinks({
   pathWithPrefix,
   pathname,
-  search = '',
+  search = "",
   onNavigate,
   siteConfig,
   isRegionalChapter = false,
@@ -194,15 +211,16 @@ export function AboutWorsoMobileLinks({
 }) {
   const activeClass =
     Boolean(siteConfig?.is_partner) || isRegionalChapter
-      ? 'text-emerald-400 bg-white/10'
-      : 'text-red-300 bg-white/10';
+      ? "text-emerald-400 bg-white/10"
+      : "text-red-300 bg-white/10";
 
-  const partnerAboutBase = pathWithPrefix('/about');
-  const params = new URLSearchParams(search || '');
-  const currentTab = params.get('tab');
+  const partnerAboutBase = pathWithPrefix("/about");
+  const params = new URLSearchParams(search || "");
+  const currentTab = params.get("tab");
 
   const isPartnerTabActive = (tab) => {
-    if (normalizePath(pathname) !== normalizePath(partnerAboutBase)) return false;
+    if (normalizePath(pathname) !== normalizePath(partnerAboutBase))
+      return false;
     if (currentTab) return currentTab === tab.id;
     return partnerTabs[0]?.id === tab.id;
   };
@@ -223,7 +241,9 @@ export function AboutWorsoMobileLinks({
                 to={href}
                 onClick={onNavigate}
                 className={`block text-left py-2.5 px-2 text-[11px] font-bold uppercase tracking-wider rounded-md transition-colors ${
-                  isPartnerTabActive(tab) ? activeClass : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  isPartnerTabActive(tab)
+                    ? activeClass
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
                 }`}
               >
                 {tab.label}
@@ -245,7 +265,9 @@ export function AboutWorsoMobileLinks({
               to={href}
               onClick={onNavigate}
               className={`block text-left py-2.5 px-2 text-[11px] font-bold uppercase tracking-wider rounded-md transition-colors ${
-                isActive(segment) ? activeClass : 'text-slate-400 hover:text-white hover:bg-white/5'
+                isActive(segment)
+                  ? activeClass
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
               }`}
             >
               {label}

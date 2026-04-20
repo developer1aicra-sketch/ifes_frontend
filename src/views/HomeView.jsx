@@ -523,10 +523,10 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
             <div className="space-y-5">
 
               {/* MAIN HEADING */}
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-white leading-tight">
-                Shaping the Future of <br />
-                <span className="text-cyan-400">Global Esports</span>
-              </h1>
+              <h1 className="text-3xl md:text-4xl lg:text-4xl font-semibold text-white leading-tight uppercase">
+  SHAPING THE FUTURE OF <br />
+  <span className="text-cyan-400">GLOBAL ESPORTS</span>
+</h1>
 
               {/* SUB HEADING */}
               <p className="text-base italic text-slate-400">
@@ -967,65 +967,218 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
             {escomNewsError && <div className="text-xs text-red-400 mb-4 text-center">Could not load latest news.</div>}
 
             {!escomNewsLoading && !escomNewsError && (
-              <div className="grid md:grid-cols-5 gap-5">
-                {/* HEADLINE */}
-                <div className="md:col-span-3">
-                  <div className="flex items-center gap-2 mb-3">
-                    <h2 className="text-lg md:text-xl font-semibold text-white tracking-tight">Headline</h2>
-                    <button onClick={() => setView('news-list-headline')} className="p-1 rounded hover:bg-white/10"><ChevronRight size={16} className="text-slate-400" /></button>
-                  </div>
-                  <div className="bg-slate-900/70 backdrop-blur-md rounded-xl border border-white/5 p-4 h-[420px] flex flex-col overflow-hidden hover:shadow-md hover:shadow-cyan-500/10 transition">
-                    {headline && (
-                      <article className="flex flex-col h-full space-y-3">
-                        {headline.featuredImage && (
-                          <div className="rounded-lg overflow-hidden">
-                            <img src={headline.featuredImage} alt={headline.title} className="w-full h-[160px] object-cover transition duration-500 hover:scale-105" />
-                          </div>
-                        )}
-                        <div className="flex items-center gap-3 text-[11px]">
-                          <span className="font-medium text-cyan-400 uppercase">{headline.category}</span>
-                          <span className="text-slate-500">{headline.date}</span>
-                        </div>
-                        <h3 className="text-lg font-semibold text-white hover:text-cyan-300 transition cursor-pointer leading-snug line-clamp-2" onClick={() => setView(`news-${headline.id}`)}>{headline.title}</h3>
-                        <p className="text-xs text-slate-400 leading-relaxed flex-grow line-clamp-3">{headline.body || headline.desc}</p>
-                        <button onClick={() => setView(`news-${headline.id}`)} className="text-xs text-cyan-400 font-medium hover:text-cyan-300 inline-flex items-center gap-1">Continue Reading <ArrowRight size={12} /></button>
-                      </article>
-                    )}
-                  </div>
-                </div>
+              // <div className="grid md:grid-cols-5 gap-5">
+              //   {/* HEADLINE */}
+              //   <div className="md:col-span-3">
+              //     <div className="flex items-center gap-2 mb-3">
+              //       <h2 className="text-lg md:text-xl font-semibold text-white tracking-tight">Headline</h2>
+              //       <button onClick={() => setView('news-list-headline')} className="p-1 rounded hover:bg-white/10"><ChevronRight size={16} className="text-slate-400" /></button>
+              //     </div>
+              //     <div className="bg-slate-900/70 backdrop-blur-md rounded-xl border border-white/5 p-4 h-[420px] flex flex-col overflow-hidden hover:shadow-md hover:shadow-cyan-500/10 transition">
+              //       {headline && (
+              //         <article className="flex flex-col h-full space-y-3">
+              //           {headline.featuredImage && (
+              //             <div className="rounded-lg overflow-hidden">
+              //               <img src={headline.featuredImage} alt={headline.title} className="w-full h-[160px] object-cover transition duration-500 hover:scale-105" />
+              //             </div>
+              //           )}
+              //           <div className="flex items-center gap-3 text-[11px]">
+              //             <span className="font-medium text-cyan-400 uppercase">{headline.category}</span>
+              //             <span className="text-slate-500">{headline.date}</span>
+              //           </div>
+              //           <h3 className="text-lg font-semibold text-white hover:text-cyan-300 transition cursor-pointer leading-snug line-clamp-2" onClick={() => setView(`news-${headline.id}`)}>{headline.title}</h3>
+              //           <p className="text-xs text-slate-400 leading-relaxed flex-grow line-clamp-3">{headline.body || headline.desc}</p>
+              //           <button onClick={() => setView(`news-${headline.id}`)} className="text-xs text-cyan-400 font-medium hover:text-cyan-300 inline-flex items-center gap-1">Continue Reading <ArrowRight size={12} /></button>
+              //         </article>
+              //       )}
+              //     </div>
+              //   </div>
 
-                {/* LATEST */}
-                <div className="md:col-span-1">
-                  <div className="flex items-center gap-2 mb-3"><h2 className="text-lg font-semibold text-white">Latest</h2><button onClick={() => setView('news-list-latest')} className="p-1 rounded hover:bg-white/10"><ChevronRight size={16} className="text-slate-400" /></button></div>
-                  <div className="bg-slate-900/70 backdrop-blur-md rounded-xl border border-white/5 p-3 h-[420px] overflow-hidden">
-                    <motion.div key={latestNewsIndex} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-2">
-                      {latestPool.slice(0, 3).map((news) => (
-                        <article key={news.id} className="rounded-lg p-2.5 border border-white/5 bg-slate-800/60 hover:bg-slate-800 transition">
-                          <div className="flex items-center gap-2 mb-1 text-[10px]"><span className="font-medium text-purple-400 uppercase">{news.category}</span><span className="text-slate-500">{news.date}</span></div>
-                          <h3 className="text-xs font-semibold text-white mb-1 hover:text-purple-300 transition cursor-pointer line-clamp-2" onClick={() => setView(`news-${news.id}`)}>{news.title}</h3>
-                          <button onClick={() => setView(`news-${news.id}`)} className="text-[10px] text-purple-400 hover:text-purple-300 inline-flex items-center gap-1">Read <ArrowRight size={10} /></button>
-                        </article>
-                      ))}
-                    </motion.div>
-                  </div>
-                </div>
+              //   {/* LATEST */}
+              //   <div className="md:col-span-1">
+              //     <div className="flex items-center gap-2 mb-3"><h2 className="text-lg font-semibold text-white">Latest</h2><button onClick={() => setView('news-list-latest')} className="p-1 rounded hover:bg-white/10"><ChevronRight size={16} className="text-slate-400" /></button></div>
+              //     <div className="bg-slate-900/70 backdrop-blur-md rounded-xl border border-white/5 p-3 h-[420px] overflow-hidden">
+              //       <motion.div key={latestNewsIndex} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-2">
+              //         {latestPool.slice(0, 3).map((news) => (
+              //           <article key={news.id} className="rounded-lg p-2.5 border border-white/5 bg-slate-800/60 hover:bg-slate-800 transition">
+              //             <div className="flex items-center gap-2 mb-1 text-[10px]"><span className="font-medium text-purple-400 uppercase">{news.category}</span><span className="text-slate-500">{news.date}</span></div>
+              //             <h3 className="text-xs font-semibold text-white mb-1 hover:text-purple-300 transition cursor-pointer line-clamp-2" onClick={() => setView(`news-${news.id}`)}>{news.title}</h3>
+              //             <button onClick={() => setView(`news-${news.id}`)} className="text-[10px] text-purple-400 hover:text-purple-300 inline-flex items-center gap-1">Read <ArrowRight size={10} /></button>
+              //           </article>
+              //         ))}
+              //       </motion.div>
+              //     </div>
+              //   </div>
 
-                {/* POPULAR */}
-                <div className="md:col-span-1">
-                  <div className="flex items-center gap-2 mb-3"><h2 className="text-lg font-semibold text-white">Popular</h2><button onClick={() => setView('news-list-most')} className="p-1 rounded hover:bg-white/10"><ChevronRight size={16} className="text-slate-400" /></button></div>
-                  <div className="bg-slate-900/70 backdrop-blur-md rounded-xl border border-white/5 p-3 h-[420px] overflow-hidden">
-                    <motion.div key={mostReadIndex} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-2">
-                      {mostReadPool.slice(0, 3).map((news) => (
-                        <article key={news.id} className="rounded-lg p-2.5 border border-white/5 bg-slate-800/60 hover:bg-slate-800 transition">
-                          <div className="flex items-center gap-2 mb-1 text-[10px]"><span className="font-medium text-pink-400 uppercase">{news.category}</span><span className="text-slate-500">{news.date}</span></div>
-                          <h3 className="text-xs font-semibold text-white mb-1 hover:text-pink-300 transition cursor-pointer line-clamp-2" onClick={() => setView(`news-${news.id}`)}>{news.title}</h3>
-                          <button onClick={() => setView(`news-${news.id}`)} className="text-[10px] text-pink-400 hover:text-pink-300 inline-flex items-center gap-1">Read <ArrowRight size={10} /></button>
-                        </article>
-                      ))}
-                    </motion.div>
-                  </div>
-                </div>
-              </div>
+              //   {/* POPULAR */}
+              //   <div className="md:col-span-1">
+              //     <div className="flex items-center gap-2 mb-3"><h2 className="text-lg font-semibold text-white">Popular</h2><button onClick={() => setView('news-list-most')} className="p-1 rounded hover:bg-white/10"><ChevronRight size={16} className="text-slate-400" /></button></div>
+              //     <div className="bg-slate-900/70 backdrop-blur-md rounded-xl border border-white/5 p-3 h-[420px] overflow-hidden">
+              //       <motion.div key={mostReadIndex} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-2">
+              //         {mostReadPool.slice(0, 3).map((news) => (
+              //           <article key={news.id} className="rounded-lg p-2.5 border border-white/5 bg-slate-800/60 hover:bg-slate-800 transition">
+              //             <div className="flex items-center gap-2 mb-1 text-[10px]"><span className="font-medium text-pink-400 uppercase">{news.category}</span><span className="text-slate-500">{news.date}</span></div>
+              //             <h3 className="text-xs font-semibold text-white mb-1 hover:text-pink-300 transition cursor-pointer line-clamp-2" onClick={() => setView(`news-${news.id}`)}>{news.title}</h3>
+              //             <button onClick={() => setView(`news-${news.id}`)} className="text-[10px] text-pink-400 hover:text-pink-300 inline-flex items-center gap-1">Read <ArrowRight size={10} /></button>
+              //           </article>
+              //         ))}
+              //       </motion.div>
+              //     </div>
+              //   </div>
+              // </div>
+
+
+              // updated code 
+              <div className="grid md:grid-cols-5 gap-5 items-stretch">
+  
+  {/* HEADLINE */}
+  <div className="md:col-span-3 flex flex-col">
+    <div className="flex items-center gap-2 mb-3">
+      <h2 className="text-lg md:text-xl font-semibold text-white tracking-tight">Headline</h2>
+      <button onClick={() => setView('news-list-headline')} className="p-1 rounded hover:bg-white/10">
+        <ChevronRight size={16} className="text-slate-400" />
+      </button>
+    </div>
+
+    <div className="bg-slate-900/70 backdrop-blur-md rounded-xl border border-white/5 p-4 flex flex-col flex-1 hover:shadow-md hover:shadow-cyan-500/10 transition">
+      
+      {headline && (
+        <article className="flex flex-col h-full space-y-3">
+          
+          {/* IMAGE HEIGHT INCREASED */}
+          {headline.featuredImage && (
+            <div className="rounded-lg overflow-hidden">
+              <img
+                src={headline.featuredImage}
+                alt={headline.title}
+                className="w-full h-[240px] object-cover transition duration-500 hover:scale-105"
+              />
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 text-[11px]">
+            <span className="font-medium text-cyan-400 uppercase">{headline.category}</span>
+            <span className="text-slate-500">{headline.date}</span>
+          </div>
+
+          <h3
+            className="text-lg font-semibold text-white hover:text-cyan-300 transition cursor-pointer leading-snug line-clamp-2"
+            onClick={() => setView(`news-${headline.id}`)}
+          >
+            {headline.title}
+          </h3>
+
+          <p className="text-xs text-slate-400 leading-relaxed flex-grow line-clamp-4">
+            {headline.body || headline.desc}
+          </p>
+
+          <button
+            onClick={() => setView(`news-${headline.id}`)}
+            className="text-xs text-cyan-400 font-medium hover:text-cyan-300 inline-flex items-center gap-1 mt-auto"
+          >
+            Continue Reading <ArrowRight size={12} />
+          </button>
+
+        </article>
+      )}
+    </div>
+  </div>
+
+  {/* LATEST */}
+  <div className="md:col-span-1 flex flex-col">
+    <div className="flex items-center gap-2 mb-3">
+      <h2 className="text-lg font-semibold text-white">Latest</h2>
+      <button onClick={() => setView('news-list-latest')} className="p-1 rounded hover:bg-white/10">
+        <ChevronRight size={16} className="text-slate-400" />
+      </button>
+    </div>
+
+    {/* GAP FIX */}
+    <div className="bg-slate-900/70 backdrop-blur-md rounded-xl border border-white/5 p-3 flex flex-col justify-between flex-1">
+      
+      <motion.div
+        key={latestNewsIndex}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="space-y-2 flex flex-col h-full"
+      >
+        {latestPool.slice(0, 3).map((news) => (
+          <article key={news.id} className="rounded-lg p-2.5 border border-white/5 bg-slate-800/60 hover:bg-slate-800 transition flex flex-col flex-1">
+            
+            <div className="flex items-center gap-2 mb-1 text-[10px]">
+              <span className="font-medium text-purple-400 uppercase">{news.category}</span>
+              <span className="text-slate-500">{news.date}</span>
+            </div>
+
+            <h3
+              className="text-xs font-semibold text-white mb-1 hover:text-purple-300 transition cursor-pointer line-clamp-2"
+              onClick={() => setView(`news-${news.id}`)}
+            >
+              {news.title}
+            </h3>
+
+            <button
+              onClick={() => setView(`news-${news.id}`)}
+              className="text-[10px] text-purple-400 hover:text-purple-300 inline-flex items-center gap-1 mt-auto"
+            >
+              Read <ArrowRight size={10} />
+            </button>
+
+          </article>
+        ))}
+      </motion.div>
+    </div>
+  </div>
+
+  {/* POPULAR */}
+  <div className="md:col-span-1 flex flex-col">
+    <div className="flex items-center gap-2 mb-3">
+      <h2 className="text-lg font-semibold text-white">Popular</h2>
+      <button onClick={() => setView('news-list-most')} className="p-1 rounded hover:bg-white/10">
+        <ChevronRight size={16} className="text-slate-400" />
+      </button>
+    </div>
+
+    {/* GAP FIX */}
+    <div className="bg-slate-900/70 backdrop-blur-md rounded-xl border border-white/5 p-3 flex flex-col justify-between flex-1">
+      
+      <motion.div
+        key={mostReadIndex}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="space-y-2 flex flex-col h-full"
+      >
+        {mostReadPool.slice(0, 3).map((news) => (
+          <article key={news.id} className="rounded-lg p-2.5 border border-white/5 bg-slate-800/60 hover:bg-slate-800 transition flex flex-col flex-1">
+            
+            <div className="flex items-center gap-2 mb-1 text-[10px]">
+              <span className="font-medium text-pink-400 uppercase">{news.category}</span>
+              <span className="text-slate-500">{news.date}</span>
+            </div>
+
+            <h3
+              className="text-xs font-semibold text-white mb-1 hover:text-pink-300 transition cursor-pointer line-clamp-2"
+              onClick={() => setView(`news-${news.id}`)}
+            >
+              {news.title}
+            </h3>
+
+            <button
+              onClick={() => setView(`news-${news.id}`)}
+              className="text-[10px] text-pink-400 hover:text-pink-300 inline-flex items-center gap-1 mt-auto"
+            >
+              Read <ArrowRight size={10} />
+            </button>
+
+          </article>
+        ))}
+      </motion.div>
+    </div>
+  </div>
+
+</div>
             )}
           </div>
         </section>
