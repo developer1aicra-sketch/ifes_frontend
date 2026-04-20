@@ -434,7 +434,7 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
   return (
     <>
       {/* Thin Top Bar */}
-      <div className="sticky top-0 z-50 bg-gradient-to-r from-gray-900/95 via-gray-900/90 to-gray-900/95 backdrop-blur-sm border-b border-white/10">
+      <div className="sticky top-0 bg-red-500 z-50 bg-gradient-to-r from-gray-900/95 via-gray-900/90 to-gray-900/95 backdrop-blur-sm border-b border-white/10">
         <div className="container mx-auto px-4 sm:px-6 py-1 max-w-[1600px]">
           <div className="flex justify-end items-center gap-2">
             <button
@@ -540,28 +540,40 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
             </div>
 
             {/* Partner Dropdown */}
-            <div className="relative group">
-              <button className="hover:text-white transition-colors flex items-center gap-1">
-                Partner
-                <ChevronDown size={14} className="opacity-70 shrink-0 transition-transform duration-200 group-hover:rotate-180" />
-              </button>
+           <div className="relative group">
+  
+  {/* Button */}
+  <button className="hover:text-white transition-colors flex items-center gap-1">
+    Partner
+    <ChevronDown
+      size={14}
+      className="opacity-70 shrink-0 transition-transform duration-200 group-hover:rotate-180"
+    />
+  </button>
 
-              {/* Dropdown */}
-              <div className="absolute left-0 mt-2 w-44 bg-slate-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                <Link
-                  to={path('/nep-nea')}
-                  className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white"
-                >
-                  NEP/NEA
-                </Link>
-                <Link
-                  to={path('/ifes-tv-ott')}
-                  className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white"
-                >
-                  IFES TV - OTT
-                </Link>
-              </div>
-            </div>
+  {/* Dropdown */}
+  <div className="absolute left-1/2 -translate-x-1/2 mt-3 w-48 
+                  bg-slate-800/95 backdrop-blur-md 
+                  rounded-lg shadow-xl border border-white/10
+                  opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                  transition-all duration-200 z-50">
+
+    <Link
+      to={path('/nep-nea')}
+      className="block px-4 py-2.5 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-t-lg transition"
+    >
+      NEP/NEA
+    </Link>
+
+    <Link
+      to={path('/ifes-tv-ott')}
+      className="block px-4 py-2.5 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-b-lg transition"
+    >
+      IFES TV - OTT
+    </Link>
+
+  </div>
+</div>
           </div>
 
           <button className="md:hidden text-white p-2 -m-2 touch-manipulation" onClick={toggleMobileMenu} aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}>
