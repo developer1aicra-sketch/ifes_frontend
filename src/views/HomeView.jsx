@@ -797,7 +797,7 @@ const HomeView = ({ setView, siteConfig, newsItems = [], newsLoading, newsError,
             {/* RIGHT SECTION - FutureTech media with API */}
             <div className="glow-card rounded-2xl p-5">
               <h3 className="text-sm md:text-base font-semibold text-cyan-400 flex gap-2 items-center">
-                <FileText size={14} /> FutureTech media
+                <FileText size={14} /> Breaking News
               </h3>
 
               <p className="text-[11px] md:text-sm text-cyan-300 mt-2">

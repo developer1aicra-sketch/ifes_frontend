@@ -57,8 +57,6 @@
 
 // export default LogoTicker;
 
-
-
 import React, { useEffect, useRef } from "react";
 
 // Auto import logos
@@ -67,7 +65,7 @@ const logoModules = import.meta.glob(
   {
     eager: true,
     import: "default",
-  }
+  },
 );
 
 // Convert to array
@@ -146,11 +144,18 @@ const LogoTicker = ({
           className="flex gap-14 md:gap-16 items-center whitespace-nowrap"
         >
           {loop.map((logo, i) => (
+            // <img
+            //   key={i}
+            //   src={logo}
+            //   alt="Partner logo"
+            //   className={`${sizeClass} w-auto object-contain opacity-80 hover:opacity-100 transition-all duration-300`}
+            //   loading="lazy"
+            // />
             <img
               key={i}
               src={logo}
               alt="Partner logo"
-              className={`${sizeClass} w-auto object-contain opacity-80 hover:opacity-100 transition-all duration-300`}
+              className={`${sizeClass} w-auto aspect-square object-cover rounded-full border border-white/10 p-2 bg-slate-800/40 opacity-80 hover:opacity-100 transition-all duration-300`}
               loading="lazy"
             />
           ))}
