@@ -90,7 +90,7 @@ export function AboutWorsoDesktopMegaMenu({
       ? String(siteConfig.logo_text)
       : isRegionalChapter
         ? "About"
-        : "About WORSO";
+        : "About IFeS";
 
   const isActive = (segment) => {
     const href = pathWithPrefix(`/about/${segment}`);
@@ -151,8 +151,9 @@ export function AboutWorsoDesktopMegaMenu({
         <div className="px-6 py-5 md:px-8 md:py-6 border-b border-slate-100 flex items-center gap-3">
           <h2
             className={`text-lg md:text-xl font-bold tracking-tight ${titleClass}`}
+            style={{ textTransform: "none" }}
           >
-            IFES
+            IFeS
           </h2>
         </div>
 

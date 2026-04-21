@@ -9,7 +9,7 @@ const StrategyPage = () => (
       </div>
     </div>
     <p className="text-lg text-slate-600 leading-relaxed">
-      The World Robotics Sports Organization (IFSE) stands at the forefront of competitive tech-sports, aiming to foster its development and recognition as a legitimate sport on a global stage. To achieve this ambitious goal, the IFSE has outlined a comprehensive strategy for global growth, focusing on several key pillars:
+      The World Robotics Sports Organization (IFeS) stands at the forefront of competitive tech-sports, aiming to foster its development and recognition as a legitimate sport on a global stage. To achieve this ambitious goal, the IFeS has outlined a comprehensive strategy for global growth, focusing on several key pillars:
     </p>
 
     <div className="space-y-4 pt-4 border-t border-slate-100">
@@ -19,10 +19,10 @@ const StrategyPage = () => (
       </h2>
       <ul className="space-y-2 text-slate-600 pl-2">
         <li className="flex items-start gap-2">
-          <span className="font-semibold text-slate-700">Strengthening National eSports Federations:</span> IFSE actively supports existing National eSports Federations or Associations and encourages the formation of new ones in countries where eSports is gaining traction. This network of local organizations provides crucial infrastructure for grassroots development and talent identification.
+          <span className="font-semibold text-slate-700">Strengthening National eSports Federations:</span> IFeS actively supports existing National eSports Federations or Associations and encourages the formation of new ones in countries where eSports is gaining traction. This network of local organizations provides crucial infrastructure for grassroots development and talent identification.
         </li>
         <li className="flex items-start gap-2">
-          <span className="font-semibold text-slate-700">Strategic Partnerships:</span> Collaborating with major stakeholders like game publishers, event organizers, and educational institutions can amplify IFSE&apos;s reach and influence. Partnerships can involve hosting joint tournaments, developing educational programs, and promoting ethical practices within the industry.
+          <span className="font-semibold text-slate-700">Strategic Partnerships:</span> Collaborating with major stakeholders like game publishers, event organizers, and educational institutions can amplify IFeS&apos;s reach and influence. Partnerships can involve hosting joint tournaments, developing educational programs, and promoting ethical practices within the industry.
         </li>
       </ul>
     </div>
@@ -34,13 +34,13 @@ const StrategyPage = () => (
       </h2>
       <ul className="space-y-2 text-slate-600 pl-2">
         <li className="flex items-start gap-2">
-          <span className="font-semibold text-slate-700">Standardized Regulations and Tournaments:</span> Establishing clear and consistent rules for competitive play ensures fair competition and fosters trust among players and organizers. IFSE&apos;s World Championship serves as a prime example of a high-caliber event adhering to rigorous standards.
+          <span className="font-semibold text-slate-700">Standardized Regulations and Tournaments:</span> Establishing clear and consistent rules for competitive play ensures fair competition and fosters trust among players and organizers. IFeS&apos;s World Championship serves as a prime example of a high-caliber event adhering to rigorous standards.
         </li>
         <li className="flex items-start gap-2">
-          <span className="font-semibold text-slate-700">Anti-Doping and Integrity:</span> Protecting the integrity of eSports is paramount. IFSE implements a strict anti-doping policy and advocates for ethical conduct within the community.
+          <span className="font-semibold text-slate-700">Anti-Doping and Integrity:</span> Protecting the integrity of eSports is paramount. IFeS implements a strict anti-doping policy and advocates for ethical conduct within the community.
         </li>
         <li className="flex items-start gap-2">
-          <span className="font-semibold text-slate-700">Talent Development and Training:</span> Investing in training programs and initiatives for players, coaches, and administrators is crucial for long-term success. IFSE provides resources and expertise to empower the next generation of eSports professionals.
+          <span className="font-semibold text-slate-700">Talent Development and Training:</span> Investing in training programs and initiatives for players, coaches, and administrators is crucial for long-term success. IFeS provides resources and expertise to empower the next generation of eSports professionals.
         </li>
       </ul>
     </div>
@@ -52,13 +52,13 @@ const StrategyPage = () => (
       </h2>
       <ul className="space-y-2 text-slate-600 pl-2">
         <li className="flex items-start gap-2">
-          <span className="font-semibold text-slate-700">Gaining Recognition from Traditional Sports Bodies:</span> IFSE actively engages with the International Robotics Committees and other major eSports organizations to advocate for the inclusion of eSports in prestigious events like other sports.
+          <span className="font-semibold text-slate-700">Gaining Recognition from Traditional Sports Bodies:</span> IFeS actively engages with the International Robotics Committees and other major eSports organizations to advocate for the inclusion of eSports in prestigious events like other sports.
         </li>
         <li className="flex items-start gap-2">
           <span className="font-semibold text-slate-700">Highlighting the Physical and Mental Demands of eSports:</span> Educating the public about the athleticism, strategic thinking, and mental fortitude required for competitive gaming is essential for gaining wider recognition as a legitimate sport.
         </li>
         <li className="flex items-start gap-2">
-          <span className="font-semibold text-slate-700">Showcasing the Positive Impact of eSports:</span> eSports can be a powerful tool for promoting social good, fostering community engagement, and encouraging inclusivity. IFSE champions initiatives that leverage the power of gaming for positive social impact.
+          <span className="font-semibold text-slate-700">Showcasing the Positive Impact of eSports:</span> eSports can be a powerful tool for promoting social good, fostering community engagement, and encouraging inclusivity. IFeS champions initiatives that leverage the power of gaming for positive social impact.
         </li>
       </ul>
     </div>
@@ -70,7 +70,7 @@ const StrategyPage = () => (
       </h2>
       <ul className="space-y-2 text-slate-600 pl-2">
         <li className="flex items-start gap-2">
-          <span className="font-semibold text-slate-700">Exploring New Formats and Platforms:</span> IFSE is constantly seeking ways to innovate and adapt to the evolving landscape of eSports. This includes exploring new game titles, formats, and platforms to cater to diverse audiences and preferences.
+          <span className="font-semibold text-slate-700">Exploring New Formats and Platforms:</span> IFeS is constantly seeking ways to innovate and adapt to the evolving landscape of eSports. This includes exploring new game titles, formats, and platforms to cater to diverse audiences and preferences.
         </li>
         <li className="flex items-start gap-2">
           <span className="font-semibold text-slate-700">Leveraging Technology for Enhanced Experiences:</span> Utilizing cutting-edge technologies like virtual reality, augmented reality, and artificial intelligence can enhance the viewing experience for fans and further elevate the overall spectacle of eSports events.
@@ -85,20 +85,20 @@ const StrategyPage = () => (
       </h2>
       <ul className="space-y-2 text-slate-600 pl-2">
         <li className="flex items-start gap-2">
-          <span className="font-semibold text-slate-700">Engaging with Players and Fans:</span> IFSE prioritizes open communication and engagement with the eSports community. This includes hosting online forums, organizing fan events, and actively listening to the needs and concerns of players and fans.
+          <span className="font-semibold text-slate-700">Engaging with Players and Fans:</span> IFeS prioritizes open communication and engagement with the eSports community. This includes hosting online forums, organizing fan events, and actively listening to the needs and concerns of players and fans.
         </li>
         <li className="flex items-start gap-2">
-          <span className="font-semibold text-slate-700">Promoting Diversity and Inclusion:</span> IFSE champions inclusivity and diversity within the eSports community, ensuring that everyone has the opportunity to participate and thrive in the competitive gaming scene.
+          <span className="font-semibold text-slate-700">Promoting Diversity and Inclusion:</span> IFeS champions inclusivity and diversity within the eSports community, ensuring that everyone has the opportunity to participate and thrive in the competitive gaming scene.
         </li>
       </ul>
     </div>
 
     <div className="p-6 bg-slate-50 rounded-xl border border-slate-200 mt-8">
       <p className="text-slate-600 leading-relaxed">
-        By implementing these strategic initiatives, the IFSE can solidify its position as the leading organization driving the global growth of eSports. By fostering a sustainable ecosystem, promoting its sporting legitimacy, and embracing innovation, IFSE can pave the way for a future where competitive gaming flourishes on a global stage.
+        By implementing these strategic initiatives, the IFeS can solidify its position as the leading organization driving the global growth of eSports. By fostering a sustainable ecosystem, promoting its sporting legitimacy, and embracing innovation, IFeS can pave the way for a future where competitive gaming flourishes on a global stage.
       </p>
       <p className="text-slate-600 leading-relaxed mt-4">
-        Remember, this is just a starting point, and the specific strategies IFSE implements will need to adapt and evolve based on the ever-changing landscape of eSports. However, by focusing on these core principles, the IFSE can ensure that eSports continues to grow and thrive in the years to come.
+        Remember, this is just a starting point, and the specific strategies IFeS implements will need to adapt and evolve based on the ever-changing landscape of eSports. However, by focusing on these core principles, the IFeS can ensure that eSports continues to grow and thrive in the years to come.
       </p>
     </div>
   </div>

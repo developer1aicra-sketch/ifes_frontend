@@ -480,7 +480,7 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
                 onClick={() => setView('about')}
                 className="hover:text-white transition-colors py-2 flex items-center gap-1 text-inherit"
               >
-                {(effectiveLocationPrefix || siteConfig.is_partner) ? 'About' : 'Ifes'}
+                {(effectiveLocationPrefix || siteConfig.is_partner) ? 'About' : 'IFeS'}
                 <ChevronDown
                   size={14}
                   className="opacity-70 shrink-0 transition-transform duration-200 group-hover/about:rotate-180"

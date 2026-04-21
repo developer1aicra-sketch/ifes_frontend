@@ -15,10 +15,10 @@ const DEFAULT_FOOTER = {
   phone: '+91 9555022200',
   address: '',
   social: {
-    facebook: 'https://www.facebook.com/IFEScommunity',
+    facebook: 'https://www.facebook.com/IFeScommunity',
     instagram: 'https://www.instagram.com/ifesassociation',
-    linkedin: 'https://in.linkedin.com/company/ifes',
-    youtube: 'https://www.youtube.com/@IFESassociation',
+    linkedin: 'https://in.linkedin.com/company/IFeS',
+    youtube: 'https://www.youtube.com/@IFeSassociation',
   },
 };
 
@@ -26,8 +26,8 @@ const ABOUT_SECTION_LINKS = [
   { segment: 'advisory-board', label: 'ADVISORY BOARD' },
   { segment: 'executive-committee', label: 'EXECUTIVE COMMITTEE' },
   { segment: 'federation-services', label: 'FEDERATION SERVICES' },
-  { segment: 'tech-for-good', label: 'TECH FOR GOOD' },
-  { segment: 'working-at-worso', label: 'WORKING AT IFSE' },
+  { segment: 'tech-for-good', label: 'Gaming For Robotics' },
+  { segment: 'working-at-worso', label: 'WORKING AT IFeS' },
 ];
 
 const Footer = ({ setView, switchSite, currentSite }) => {
@@ -189,11 +189,11 @@ const Footer = ({ setView, switchSite, currentSite }) => {
             <div className="flex items-center gap-3 mb-4">
               <img
                 src="https://ifes.in/images/logo.png"
-                alt="IFES Logo"
+                alt="IFeS Logo"
                 className="h-10 w-auto object-contain sm:h-12"
               />
               <span className="text-white font-bold text-xl tracking-tight">
-                {currentSite.is_partner ? "TECHNOXIAN" : "IFES"}
+                {currentSite.is_partner ? "TECHNOXIAN" : "IFeS"}
               </span>
             </div>
             <p className="max-w-md mb-6 leading-relaxed text-sm text-slate-400">
@@ -231,10 +231,10 @@ const Footer = ({ setView, switchSite, currentSite }) => {
             <div>
               <h4 className="text-white font-bold mb-3 text-sm uppercase tracking-wider">Follow Us</h4>
               <div className="flex gap-3 text-lg">
-                <a href={social.facebook || "https://www.facebook.com/IFSEcommunity"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="Facebook"><FaFacebookF /></a>
-                <a href={social.instagram || "https://www.instagram.com/ifseassociation"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="Instagram"><FaInstagram /></a>
-                <a href={social.linkedin || "https://in.linkedin.com/company/ifse"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="LinkedIn"><FaLinkedinIn /></a>
-                <a href={social.youtube || "https://www.youtube.com/@IFSEassociation"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="YouTube"><FaYoutube /></a>
+                <a href={social.facebook || "https://www.facebook.com/IFeScommunity"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="Facebook"><FaFacebookF /></a>
+                <a href={social.instagram || "https://www.instagram.com/iFeSassociation"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="Instagram"><FaInstagram /></a>
+                <a href={social.linkedin || "https://in.linkedin.com/company/IFeS"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="LinkedIn"><FaLinkedinIn /></a>
+                <a href={social.youtube || "https://www.youtube.com/@IFeSassociation"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="YouTube"><FaYoutube /></a>
               </div>
             </div>
           </div>

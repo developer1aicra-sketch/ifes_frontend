@@ -10,9 +10,9 @@ export const ABOUT_NAV = [
   { segment: 'advisory-board', label: 'Advisory Board' },
   { segment: 'executive-committee', label: 'Executive Committee' },
   { segment: 'federation-services', label: 'Federation Services' },
-  { segment: 'tech-for-good', label: 'Tech for Good' },
-  { segment: 'working-at-worso', label: 'Working at WORSO' },
-  { segment: 'referees', label: 'Referees' },
+  { segment: 'tech-for-good', label: 'Gaming For Robotics' },
+  { segment: 'working-at-worso', label: 'Working at IFeS' },
+  // { segment: 'referees', label: 'Referees' },
 ];
 
 export const ABOUT_SEGMENTS = ABOUT_NAV.map((item) => item.segment);

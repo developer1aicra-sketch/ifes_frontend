@@ -30,7 +30,7 @@
 //           whileTap={{ scale: 0.98 }}
 //         >
 //           <Crown className="mr-2" size={20} />
-//           Join 1800+ Industry Experts & Ifse Masters
+//           Join 1800+ Industry Experts & IFeS Masters
 //         </motion.button>
 //       </div>
 //     </div>
@@ -83,7 +83,7 @@ export const HeroSection = ({ isRoboClub }) => {
         >
           Join Our{" "}
           <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 bg-clip-text text-transparent">
-            IFES Community
+            IFeS Community
           </span>
         </motion.h1>
 
@@ -95,7 +95,7 @@ export const HeroSection = ({ isRoboClub }) => {
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           From beginners to experts, we have a place for everyone passionate about 
-          <span className="text-white font-medium"> robotics and technology</span>. 
+          <span className="text-white font-medium"> Gaming And E-Sport</span>. 
           Uniting innovators to shape the future of tech.
         </motion.p>
 
