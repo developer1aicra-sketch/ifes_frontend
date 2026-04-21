@@ -5,7 +5,7 @@ const TechForGoodPage = () => (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <Target className="text-blue-600" />
-        <h2 className="text-3xl font-bold text-slate-900">Tech for Good</h2>
+        <h2 className="text-3xl font-bold text-slate-900">Gaming For Robotics</h2>
       </div>
       <p className="text-lg text-slate-600 leading-relaxed">
         The world of eSports has exploded onto the global stage, captivating audiences and fostering communities like never before. But beyond the thrill of competition and the roar of packed arenas, a powerful potential lies dormant: the ability to harness the power of gaming for positive change. This is the realm of Technology Sports for Good, where eSports becomes a platform for social impact and a force for good in the world.
@@ -48,9 +48,9 @@ const TechForGoodPage = () => (
     </div>
 
     <div className="space-y-6 pt-6 border-t border-slate-100">
-      <h3 className="text-2xl font-bold text-slate-900">The World Robotics Sports Organization (IFSE) at the Forefront</h3>
+      <h3 className="text-2xl font-bold text-slate-900">The World Robotics Sports Organization (IFeS) at the Forefront</h3>
       <p className="text-lg text-slate-600 leading-relaxed">
-        The IFSE recognizes the immense potential of Technology Sports for Good and is actively leading the charge. Through initiatives like the TechnoXian World Championship for Development, the organization promotes sustainable development and social impact through esports. IFSE also collaborates with NGOs and educational institutions to leverage the power of gaming for positive change.
+        The IFeS recognizes the immense potential of Technology Sports for Good and is actively leading the charge. Through initiatives like the TechnoXian World Championship for Development, the organization promotes sustainable development and social impact through esports. IFeS also collaborates with NGOs and educational institutions to leverage the power of gaming for positive change.
       </p>
     </div>
 

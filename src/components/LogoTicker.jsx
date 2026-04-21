@@ -148,14 +148,23 @@ const LogoTicker = ({
             //   key={i}
             //   src={logo}
             //   alt="Partner logo"
-            //   className={`${sizeClass} w-auto object-contain opacity-80 hover:opacity-100 transition-all duration-300`}
+            //   className={`${sizeClass} w-auto rounded-10 object-contain opacity-80 hover:opacity-100 transition-all duration-300`}
             //   loading="lazy"
             // />
+
+            // <img
+            //   key={i}
+            //   src={logo}
+            //   alt="Partner logo"
+            //   className={`${sizeClass} w-auto aspect-square object-cover rounded-full border border-white/10 p-2 bg-slate-800/40 opacity-80 hover:opacity-100 transition-all duration-300`}
+            //   loading="lazy"
+            // />
+
             <img
               key={i}
               src={logo}
               alt="Partner logo"
-              className={`${sizeClass} w-auto aspect-square object-cover rounded-full border border-white/10 p-2 bg-slate-800/40 opacity-80 hover:opacity-100 transition-all duration-300`}
+              className={`${sizeClass} w-auto rounded-[10px] p-[10px] object-contain opacity-80 hover:opacity-100 transition-all duration-300`}
               loading="lazy"
             />
           ))}

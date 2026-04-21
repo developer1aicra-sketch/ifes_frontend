@@ -23,7 +23,7 @@ const PresidentMessagePage = () => (
 
       <div className="md:w-3/4 space-y-6">
         <div>
-          <h2 className="text-3xl font-bold text-slate-900 mb-2">IFSE Leadership</h2>
+          <h2 className="text-3xl font-bold text-slate-900 mb-2">IFeS Leadership</h2>
           <div className="w-16 h-1 bg-blue-600 mb-6"></div>
         </div>
 
@@ -44,7 +44,7 @@ const PresidentMessagePage = () => (
         </p>
 
         <p className="text-slate-600 leading-relaxed">
-          But this, my friends, is just the beginning. As the International Federation of Esports (IFSE), We are committed to nurturing this momentum and propelling esports to even greater heights. In the coming year, we will strive to:
+          But this, my friends, is just the beginning. As the International Federation of Esports (IFeS), We are committed to nurturing this momentum and propelling esports to even greater heights. In the coming year, we will strive to:
         </p>
 
         <ul className="space-y-3 list-disc pl-5 text-slate-600">
@@ -82,7 +82,7 @@ const PresidentMessagePage = () => (
 
     <div className="p-6 bg-slate-50 rounded-xl border border-slate-200 mt-8">
       <h4 className="font-bold mb-2">Global Mandate</h4>
-      <p className="text-slate-600">As the International Federation of Esports, IFSE is committed to governing and promoting esports worldwide, ensuring fair play, integrity, and the continued growth of our sport.</p>
+      <p className="text-slate-600">As the International Federation of Esports, IFeS is committed to governing and promoting esports worldwide, ensuring fair play, integrity, and the continued growth of our sport.</p>
     </div>
   </div>
 );

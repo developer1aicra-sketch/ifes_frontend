@@ -606,7 +606,7 @@ const HomeView = ({
               <p className="text-base md:text-lg text-slate-400 leading-relaxed max-w-xl">
                 The{" "}
                 <span className="text-white font-semibold">
-                  International Federation of Esports (IFES)
+                  International Federation of Esports (IFeS)
                 </span>{" "}
                 is a global governing platform committed to building a
                 <span className="text-white font-semibold">
@@ -617,7 +617,7 @@ const HomeView = ({
               </p>
 
               <p className="text-base md:text-lg text-slate-400 leading-relaxed max-w-xl">
-                From international tournaments to policy development, IFES is
+                From international tournaments to policy development, IFeS is
                 transforming esports into a
                 <span className="text-white font-semibold">
                   {" "}
@@ -972,17 +972,13 @@ const HomeView = ({
 
       {/* Federation Partners Marquee */}
       <div className="overflow-hidden py-4 border-b border-cyan-500/30 bg-black/30">
-        <div className="flex w-max animate-marquee">
-          {/* 
-      Duplicate the content 3-4 times to ensure seamless looping 
-      when the animation resets
-    */}
-          {[1, 2, 3, 4].map((_, i) => (
+        <div className="flex animate-marquee whitespace-nowrap">
+          {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className="flex gap-10 text-xs md:text-sm font-semibold uppercase px-4 tracking-wide text-slate-300"
+              className="flex gap-10 text-xs md:text-sm font-semibold uppercase px-6 tracking-wide text-slate-300 min-w-max"
             >
-              <span className="text-cyan-300">IFES ESPORTS WORLD CUP</span>
+              <span className="text-cyan-300">IFeS ESPORTS WORLD CUP</span>
               <span className="opacity-80">ESCOM 2.0</span>
               <span className="text-fuchsia-300">CATEGORY GAMES</span>
               <span className="opacity-80">GOVT-INDUSTRY ROUNDTABLES</span>
@@ -1019,14 +1015,12 @@ const HomeView = ({
                   QUARTERFINALS
                 </span>
               </div>
-
               {/* Subtitle */}
               <p className="text-[11px] md:text-sm text-cyan-300 mt-2">
-                IFES connects every stakeholder shaping the future of esports
+                IFeS connects every stakeholder shaping the future of esports
               </p>
-
               {/* Boxes */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6 text-xs md:text-sm text-center">
+              {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 text-xs md:text-sm text-center">
                 <div className="border border-cyan-500/30 px-4 py-3 rounded-2xl bg-black/50 backdrop-blur-md hover:bg-cyan-500/10 hover:border-cyan-400 transition-all duration-200">
                   🎮 Game Publishers & Developers
                 </div>
@@ -1050,6 +1044,30 @@ const HomeView = ({
                 <div className="border border-cyan-500/30 px-4 py-3 rounded-2xl bg-black/50 backdrop-blur-md hover:bg-cyan-500/10 hover:border-cyan-400 transition-all duration-200">
                   🌍 National Federations & Governments
                 </div>
+              </div> */}
+
+
+               {/* updated latest code */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 text-xs md:text-sm text-center">
+                {[
+                  "🎮 Game Publishers & Developers",
+                  "🏆 Tournament Organizers",
+                  "🎥 Content Creators & Influencers",
+                  "💼 Brands & Sponsors",
+                  "🎓 Universities & Training Institutes",
+                  "🌍 National Federations & Governments",
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className="h-[90px] flex items-center justify-center text-center
+      border border-cyan-500/30 px-4 rounded-2xl 
+      bg-black/50 backdrop-blur-md 
+      hover:bg-cyan-500/10 hover:border-cyan-400 
+      transition-all duration-200"
+                  >
+                    {item}
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -1126,7 +1144,7 @@ const HomeView = ({
                 Network
               </h2>
               <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-md">
-                IFES operates through a federated network of{" "}
+                IFeS operates through a federated network of{" "}
                 <span className="text-cyan-300 font-medium">
                   national partners
                 </span>{" "}
@@ -1200,7 +1218,7 @@ const HomeView = ({
                     Root Governance
                   </h3>
                   <p className="text-xs text-slate-400 leading-relaxed group-hover:text-slate-300 transition">
-                    IFES Global sets the laws of the sport and synchronizes
+                    IFeS Global sets the laws of the sport and synchronizes
                     updates to every partner subdomain in real time—no
                     fragmented rulebooks.
                   </p>
@@ -1224,7 +1242,7 @@ const HomeView = ({
                   </h3>
                   <p className="text-xs text-slate-400 leading-relaxed group-hover:text-slate-300 transition">
                     One codebase; many subdomains. Middleware detects
-                    `*.ifes.org`, injects logos, language packs, and partner
+                    `*.IFeS.org`, injects logos, language packs, and partner
                     content JSON.
                   </p>
                 </div>
@@ -1570,7 +1588,7 @@ const HomeView = ({
               BUILD YOUR <span className="text-cyan-400">LEGACY</span>
             </h2>
             <p className="text-slate-400 text-sm md:text-base max-w-xl mx-auto mt-3">
-              Become a IFSE Partner Federation or register your robotics squad
+              Become a IFeS Partner Federation or register your robotics squad
               for upcoming global qualifiers.
             </p>
             <div className="flex flex-wrap justify-center gap-4 mt-6">

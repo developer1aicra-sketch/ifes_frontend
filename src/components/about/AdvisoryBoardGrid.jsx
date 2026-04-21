@@ -8,7 +8,7 @@ import PersonCard from '../partner/PersonCard';
 const AdvisoryBoardGrid = ({
   members,
   title = 'Advisory Board',
-  description = "Global leaders and experts guiding IFSE's mission, governance, and long-term strategy.",
+  description = "Global leaders and experts guiding IFeS's mission, governance, and long-term strategy.",
   className = '',
 }) => {
   if (!Array.isArray(members) || members.length === 0) return null;

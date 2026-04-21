@@ -16,7 +16,7 @@ import {
 
 const ORG_MEMBERSHIPS = {
   header: {
-    title: "WORSO Membership",
+    title: "IFeS Membership",
     subtitle:
       "Compare Institute, Professional, and Corporate memberships across visibility, infrastructure, events, talent access, and global collaboration.",
     tiers: [
@@ -68,21 +68,21 @@ const ORG_MEMBERSHIPS = {
       rows: [
         {
           label: "Official badge for credibility",
-          institute: "Official WORSO Institutional Member Badge for branding & promotions",
-          professional: "WORSO Certified Professional Member badge",
-          corporate: "Official WORSO Corporate Member Badge for brand credibility",
+          institute: "Official IFeS Institutional Member Badge for branding & promotions",
+          professional: "IFeS Certified Professional Member badge",
+          corporate: "Official IFeS Corporate Member Badge for brand credibility",
         },
         {
           label: "Global directory listing",
-          institute: "Global listing in the WORSO Certified Experts Directory",
-          professional: "Listing on WORSO Global Directory as an officially recognized partner",
-          corporate: "Recognition on the global WORSO website & partner directories",
+          institute: "Global listing in the IFeS Certified Experts Directory",
+          professional: "Listing on IFeS Global Directory as an officially recognized partner",
+          corporate: "Recognition on the global IFeS website & partner directories",
         },
         {
           label: "Brand exposure via media",
           institute: false,
-          professional: "Use of WORSO branding for personal workshops & training programs",
-          corporate: "Brand exposure across WORSO social media, newsletters & press releases*",
+          professional: "Use of IFeS branding for personal workshops & training programs",
+          corporate: "Brand exposure across IFeS social media, newsletters & press releases*",
         },
       ],
     },
@@ -94,17 +94,17 @@ const ORG_MEMBERSHIPS = {
           label: "Labs, clubs, and centers set-up",
           institute: "Support to set up Robotics Labs, STEM Labs & AI Labs and RoboClubs",
           professional:
-            "Authorized Trainer status for operating WORSO-certified training centers",
+            "Authorized Trainer status for operating IFeS-certified training centers",
           corporate: "Priority selection to set up Robotics Clubs, Training Labs & STEM Centers",
         },
         {
           label: "Training & competition center eligibility",
           institute:
-            "Eligibility to become a WORSO Authorized Training & Competition Center",
+            "Eligibility to become a IFeS Authorized Training & Competition Center",
           professional:
             "Priority access to implement Robotics Labs, STEM Labs & AI Innovation Centers",
           corporate:
-            "Ability to co-establish WORSO-branded Maker Spaces in institutions",
+            "Ability to co-establish IFeS-branded Maker Spaces in institutions",
         },
       ],
     },
@@ -118,14 +118,14 @@ const ORG_MEMBERSHIPS = {
           professional:
             "Visibility among schools/colleges seeking robotics coaches & mentors",
           corporate:
-            "Priority access to top student innovators from Technoxian & WORSO leagues",
+            "Priority access to top student innovators from Technoxian & IFeS leagues",
         },
         {
           label: "Talent drives & campus outreach",
           institute: false,
           professional: "Opportunity to build high-performing robotics teams and portfolios",
           corporate:
-            "Participation in WORSO talent drives & internship fairs; campus outreach programs coordinated by WORSO",
+            "Participation in IFeS talent drives & internship fairs; campus outreach programs coordinated by IFeS",
         },
         {
           label: "Mentoring & placement support",
@@ -145,8 +145,8 @@ const ORG_MEMBERSHIPS = {
         {
           label: "Championship access",
           institute:
-            "Access to WORSO Championships including Technoxian (entries via RoboClub)",
-          professional: "Priority access to WORSO and Partner events",
+            "Access to IFeS Championships including Technoxian (entries via RoboClub)",
+          professional: "Priority access to IFeS and Partner events",
           corporate:
             "Priority invitations to: Technoxian World Cup, other national/international tournaments",
         },
@@ -185,7 +185,7 @@ const ORG_MEMBERSHIPS = {
           label: "CSR expert-led sessions",
           institute: false,
           professional:
-            "Opportunity to run CSR-funded STEM sessions led by WORSO experts",
+            "Opportunity to run CSR-funded STEM sessions led by IFeS experts",
           corporate:
             "Priority involvement in government & NGO-backed training initiatives for underprivileged students & innovation teams",
         },
@@ -209,7 +209,7 @@ const ORG_MEMBERSHIPS = {
           institute:
             "Business linkage support for robotics procurement, training & facility set-up",
           professional:
-            "Opportunity to become WORSO Certified Trainer",
+            "Opportunity to become IFeS Certified Trainer",
           corporate:
             "Opportunity to partner on innovation labs, training centers, and R&D projects",
         },
@@ -217,7 +217,7 @@ const ORG_MEMBERSHIPS = {
           label: "Learning platform and B2B matchmaking",
           institute: false,
           professional:
-            "Ability to create and publish modules in the WORSO Learning Platform",
+            "Ability to create and publish modules in the IFeS Learning Platform",
           corporate:
             "B2B matchmaking with robotics manufacturers, trainers & solution providers",
         },
@@ -232,7 +232,7 @@ const ORG_MEMBERSHIPS = {
           institute:
             "Collaboration opportunities with industry, research labs, and universities",
           professional:
-            "Eligibility to register projects under WORSO Innovation Network",
+            "Eligibility to register projects under IFeS Innovation Network",
           corporate:
             "Joint R&D programs with universities and labs",
         },
@@ -243,7 +243,7 @@ const ORG_MEMBERSHIPS = {
           professional:
             "Access to industry connections & technology hubs",
           corporate:
-            "Opportunity to submit whitepapers or research with WORSO Innovation Council",
+            "Opportunity to submit whitepapers or research with IFeS Innovation Council",
         },
       ],
     },
@@ -285,11 +285,11 @@ const ORG_MEMBERSHIPS = {
         {
           label: "Certification discounts",
           institute:
-            "Student & faculty discounts on WORSO and Partner certifications",
+            "Student & faculty discounts on IFeS and Partner certifications",
           professional:
-            "Discounted certification programs by WORSO and its Partners",
+            "Discounted certification programs by IFeS and its Partners",
           corporate:
-            "Corporate discounts on WORSO and Partner training & certification programs",
+            "Corporate discounts on IFeS and Partner training & certification programs",
         },
         {
           label: "Year-round training and modules",
@@ -321,12 +321,12 @@ const ORG_MEMBERSHIPS = {
           professional:
             "Chance to contribute to framework development for Robotics Sports globally",
           corporate:
-            "Access to WORSO policy discussions related to robotics sports/industry standards",
+            "Access to IFeS policy discussions related to robotics sports/industry standards",
         },
         {
           label: "Boards and governance participation",
           institute:
-            "Opportunity to join WORSO’s Academic Advisory Board",
+            "Opportunity to join IFeS’s Academic Advisory Board",
           professional:
             "Chance to contribute to framework development for Robotics Sports globally",
           corporate: false,
@@ -340,18 +340,18 @@ const ORG_MEMBERSHIPS = {
         {
           label: "Regional partnership eligibility",
           institute:
-            "Eligibility to become a District/State WORSO Partner Institution",
+            "Eligibility to become a District/State IFeS Partner Institution",
           professional:
-            "Eligibility to become District/State WORSO Partner",
+            "Eligibility to become District/State IFeS Partner",
           corporate:
-            "Eligibility to become: WORSO Technology Partner / Event Partner / Regional Partner",
+            "Eligibility to become: IFeS Technology Partner / Event Partner / Regional Partner",
         },
         {
           label: "Hosting rights",
           institute:
             "Rights to host district/state-level robotics competitions",
           professional:
-            "Recognition as WORSO Ambassador for your region",
+            "Recognition as IFeS Ambassador for your region",
           corporate:
             "Opportunity to host state/district robotics leagues",
         },
@@ -483,7 +483,7 @@ export const WorsoOrgMembershipTierSection = ({ tierId = "professional", onJoin 
             <Users className="w-4 h-4" />
           </span>
           <span>
-            Note: Items marked with * in the source spec may depend on WORSO’s publishing schedule and partner programs.
+            Note: Items marked with * in the source spec may depend on IFeS’s publishing schedule and partner programs.
           </span>
         </div>
       </div>
@@ -641,7 +641,7 @@ export const WorsoOrgMembershipComparisonSection = ({ onSelectTier }) => {
             <Users className="w-4 h-4" />
           </span>
           <span>
-            Note: Items marked with * in the source spec may depend on WORSO’s publishing schedule and partner programs.
+            Note: Items marked with * in the source spec may depend on IFeS’s publishing schedule and partner programs.
           </span>
         </div>
       </div>

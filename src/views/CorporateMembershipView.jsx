@@ -20,7 +20,7 @@ const CorporateMembershipView = ({ setView }) => {
           </div>
 
           <h2 className="text-3xl md:text-4xl font-extrabold text-black mt-5">
-            Partner with WORSO for talent, visibility, and innovation
+            Partner with IFeS for talent, visibility, and innovation
           </h2>
           <p className="text-gray-600 mt-3">
             For companies, NGOs, and startups looking to collaborate and scale impact globally.
