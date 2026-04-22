@@ -203,23 +203,23 @@ const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user,
           <div className="flex justify-end items-center gap-2">
             <button
               onClick={openMemberPortal}
-              className={`flex items-center gap-1.5 text-[11px] font-medium py-1 px-2.5 rounded-md transition-all duration-200 ${isMemberPortalActive
+              className={`flex items-center gap-1.5 text-[13px] font-medium py-1 px-2.5 rounded-md transition-all duration-200 ${isMemberPortalActive
                   ? `text-white ${activePortalButtonClass}`
                   : 'text-gray-400 hover:text-white hover:bg-white/10'
                 }`}
             >
-              <User size={11} className="shrink-0" />
+              <User size={13} className="shrink-0" />
               <span>{isMemberAuthenticated ? 'Member Portal' : 'Member Login'}</span>
             </button>
             <div className="w-px h-3 bg-white/20" aria-hidden="true" />
             <button
               onClick={openPartnerPortal}
-              className={`flex items-center gap-1.5 text-[11px] font-medium py-1 px-2.5 rounded-md transition-all duration-200 ${isPartnerPortalActive
+              className={`flex items-center gap-1.5 text-[13px] font-medium py-1 px-2.5 rounded-md transition-all duration-200 ${isPartnerPortalActive
                   ? `text-white ${activePortalButtonClass}`
                   : 'text-gray-400 hover:text-white hover:bg-white/10'
                 }`}
             >
-              <User size={11} className="shrink-0" />
+              <User size={13} className="shrink-0" />
               <span>{isPartnerAuthenticated ? 'Partner Portal' : 'Partner Login'}</span>
             </button>
           </div>
@@ -242,7 +242,7 @@ const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user,
           </div>
 
           {/* Navigation Items */}
-          <div className="hidden md:flex items-center gap-6 lg:gap-8 font-bold text-[11px] uppercase tracking-widest text-slate-300">
+          <div className="hidden md:flex items-center gap-6 lg:gap-8 font-bold text-[14px] uppercase tracking-widest text-slate-300">
             <div className="relative group/about">
               <button
                 type="button"
@@ -354,7 +354,7 @@ const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user,
                   <X size={24} />
                 </button>
               </div>
-              <div className="flex flex-col py-4 font-bold text-[11px] uppercase tracking-widest text-slate-300">
+              <div className="flex flex-col py-4 font-bold text-[13px] uppercase tracking-widest text-slate-300">
                 <button
                   type="button"
                   onClick={() => setAboutMobileOpen((o) => !o)}

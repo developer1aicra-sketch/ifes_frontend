@@ -4,8 +4,8 @@ const MissionVisionPage = () => (
   <div className="space-y-8">
     <div className="container mx-auto px-4 py-10">
       <div className="bg-[#0f172a] rounded-3xl text-white p-12 md:p-14 shadow-2xl relative overflow-hidden">
-        <div className="text-yellow-400 font-bold tracking-widest text-xs uppercase mb-4">Root Governance</div>
-        <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">Governance</h1>
+        <div className="text-yellow-400 font-bold tracking-widest text-xs uppercase mb-4">Our Mission</div>
+        <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">Our Mission</h1>
         <p className="text-slate-200 text-lg max-w-3xl mb-6">
           Mission, mandate, affiliation, data, and the federated partner network that powers the sport of robotics.
         </p>
