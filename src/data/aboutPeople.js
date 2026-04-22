@@ -26,7 +26,7 @@ import waelAbbasKadhim from '../assets/advisoryBoard/WaelAbbasKadhim.jpg';
 /** Executive Committee members: name, designation, image */
 export const EXECUTIVE_MEMBERS = [
   { id: 'ec-1', name: 'Raj Kumar Sharma', designation: 'President', image: ecRajkumar },
-  { id: 'ec-2', name: 'Ajay Pratap Singh', designation: 'Member, Executive Committee', image: ecAjayPratapSingh },
+  { id: 'ec-2', name: 'Swarjeet', designation: 'Member, Executive Committee', image: ecAjayPratapSingh },
   { id: 'ec-3', name: 'Nidhi Maheshwari', designation: 'Member, Executive Committee', image: ecHoma },
   { id: 'ec-4', name: 'Navin', designation: 'Member, Executive Committee', image: ecNavin },
   { id: 'ec-5', name: 'Rahul', designation: 'Member, Executive Committee', image: ecRahul },
