@@ -54,6 +54,8 @@ import { galleryImages } from "../assets/gallery";
 import { PARTNER_HOME_STATIC } from "../data/partnerHomeStatic";
 import TrophyVideo from "../assets/technoxian zrc_1.mp4";
 import { useNavigate } from "react-router-dom";
+import homologo1 from "../assets/homelogo/escom.png"
+import homologo2 from "../assets/homelogo/escom2.png"
 
 // Countdown Timer Component - Updated for 07-08 August 2026
 const CountdownTimer = () => {
@@ -781,7 +783,7 @@ const HomeView = ({
                 IFES <span className="text-cyan-400 ml-1">EVENTS</span>
               </h2>
               <p className="text-slate-400 text-xs mt-1">
-                Deliver global tournaments, industry summits, and grassroots programs, connecting players, federations, and brands to grow competitive esports worldwide.
+                Ongoing Robotics Clashes · Global Scoreboard
               </p>
             </div>
             <div className="bg-black/50 border border-cyan-500/40 rounded-full px-3 py-1 text-[10px] font-mono">
@@ -1058,38 +1060,37 @@ const HomeView = ({
 
               {/* updated latest code */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 text-sm md:text-base">
-                {[
-                  { icon: "🎮", text: "Game Publishers & Developers" },
-                  { icon: "🏆", text: "Tournament Organizers" },
-                  { icon: "🎥", text: "Content Creators & Influencers" },
-                  { icon: "💼", text: "Brands & Sponsors" },
-                  { icon: "🎓", text: "Universities & Training Institutes" },
-                  { icon: "🌍", text: "National Federations & Governments" },
-                ].map((item, i) => (
-                  <div
-                    key={i}
-                    className="h-[90px] flex items-center
+  {[
+    { icon: "🎮", text: "Game Publishers & Developers" },
+    { icon: "🏆", text: "Tournament Organizers" },
+    { icon: "🎥", text: "Content Creators & Influencers" },
+    { icon: "💼", text: "Brands & Sponsors" },
+    { icon: "🎓", text: "Universities & Training Institutes" },
+    { icon: "🌍", text: "National Federations & Governments" },
+  ].map((item, i) => (
+    <div
+      key={i}
+      className="h-[90px] flex items-center
       border border-cyan-500/30 px-4 rounded-2xl 
       bg-black/50 backdrop-blur-md 
       hover:bg-cyan-500/10 hover:border-cyan-400 
       transition-all duration-200"
-                  >
-                    <div className="flex items-center gap-2 text-left w-full">
-                      <span className="text-base">{item.icon}</span>
-                      <span className="leading-snug text-white/90">
-                        {item.text}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+    >
+      <div className="flex items-center gap-2 text-left w-full">
+        <span className="text-base">{item.icon}</span>
+        <span className="leading-snug text-white/90">
+          {item.text}
+        </span>
+      </div>
+    </div>
+  ))}
 
-              {/* CTA LINE (without box) */}
-              <p className="mt-6 text-sm md:text-base text-slate-300 leading-relaxed text-left">
-                Join International Federation of Esports—connect, collaborate,
-                and shape the global esports ecosystem. Inquire or partner
-                today.
-              </p>
+  {/* SIRF YEH MOVE KIYA HAI */}
+  <p className="col-span-2 flex items-center text-sm md:text-base text-slate-300 leading-relaxed text-left">
+    Join International Federation of Esports—connect, collaborate,
+    and shape the global esports ecosystem. Inquire or partner today.
+  </p>
+</div>
             </div>
 
             {/* RIGHT SECTION - FutureTech media with API */}

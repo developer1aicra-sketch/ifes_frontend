@@ -367,7 +367,7 @@ const AppContent = ({
     const isMemberPortal =
       path === '/member/portal' || path.endsWith('/member/portal');
     return (
-      // path.includes('roboclub') ||
+      path.includes('roboclub') ||
       path.endsWith('/partner/portal') ||
       isMemberPortal
     );
