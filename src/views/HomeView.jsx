@@ -598,12 +598,12 @@ const HomeView = ({
               </h1>
 
               {/* SUB HEADING */}
-              <p className="text-lg italic text-slate-300">
+              <p className="text-[22px] md:text-[25px] italic text-slate-300 leading-relaxed max-w-3xl">
                 Uniting Nations. Empowering Athletes. Elevating Esports.
               </p>
 
               {/* DESCRIPTION */}
-              <p className="text-base md:text-lg text-slate-400 leading-relaxed max-w-xl">
+              <p className="text-[13px] md:text-[14.5px] text-slate-400 leading-relaxed max-w-xl">
                 The{" "}
                 <span className="text-white font-semibold">
                   International Federation of Esports (IFeS)
@@ -628,9 +628,15 @@ const HomeView = ({
 
               {/* CTA */}
               <div className="pt-4">
-                <button className="bg-gradient-to-r from-purple-600 to-purple-500 px-7 py-3 text-base font-semibold text-white rounded-lg hover:brightness-110 transition shadow-lg shadow-purple-500/20">
-                  Join the Movement
-                </button>
+                <a
+                  href="https://www.escom.ifes.in/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <button className="bg-gradient-to-r from-purple-600 to-purple-500 px-7 py-3 text-base font-semibold text-white rounded-lg hover:brightness-110 transition shadow-lg shadow-purple-500/20">
+                    Join the Movement
+                  </button>
+                </a>
               </div>
             </div>
 
@@ -658,9 +664,13 @@ const HomeView = ({
 
                   <CountdownTimer />
 
-                  <div className="flex justify-between items-center text-base bg-black/40 border border-cyan-500/20 rounded-lg px-4 py-3 mt-5">
-                    <span className="text-slate-400">Prize Pool</span>
-                    <span className="text-cyan-400 font-semibold">$2.5M</span>
+                  <div className="flex justify-between items-center bg-black/40 border border-cyan-500/20 rounded-lg px-4 py-3 mt-5">
+                    <span className="text-slate-400 text-[13px] whitespace-nowrap overflow-hidden text-ellipsis">
+                      Sponsorship & Expo Booking Window Open
+                    </span>
+                    <span className="text-cyan-400 font-semibold text-[14px]">
+                      $2.5M
+                    </span>
                   </div>
 
                   {/* <button className="w-full mt-6 py-3 rounded-lg text-base font-semibold text-white bg-gradient-to-r from-cyan-600 to-purple-600 hover:brightness-110 transition shadow-lg shadow-cyan-500/20">
@@ -673,7 +683,7 @@ const HomeView = ({
                     }
                     className="w-full mt-6 py-3 rounded-lg text-base font-semibold text-white bg-gradient-to-r from-cyan-600 to-purple-600 hover:brightness-110 transition shadow-lg shadow-cyan-500/20"
                   >
-                    REGISTER ESCOM
+                    SECURE YOUR PASS
                   </button>
                 </div>
               </div>
@@ -768,10 +778,10 @@ const HomeView = ({
                 />
               </svg>
               <h2 className="text-2xl md:text-3xl font-extrabold inline-block ml-2 tracking-tight">
-                ESCOM<span className="text-cyan-400">2.O</span>
+                IFES <span className="text-cyan-400 ml-1">EVENTS</span>
               </h2>
               <p className="text-slate-400 text-xs mt-1">
-                Ongoing Robotics Clashes · Global Scoreboard
+                Deliver global tournaments, industry summits, and grassroots programs, connecting players, federations, and brands to grow competitive esports worldwide.
               </p>
             </div>
             <div className="bg-black/50 border border-cyan-500/40 rounded-full px-3 py-1 text-[10px] font-mono">
@@ -791,7 +801,7 @@ const HomeView = ({
               <div className="flex-1 text-center md:text-left">
                 <div className="inline-block bg-red-600/40 px-3 py-1 rounded-full text-[10px] font-semibold tracking-wide">
                   <Clock size={10} className="inline mr-1" />
-                  LIVE NOW · 2nd ROUND
+                  STEAMING ON 07-08 AUG - 2nd EDITION
                 </div>
                 <p className="text-xs text-slate-300 mt-2">
                   The eSports Community and Industry Summit (ESCOM) is a premier
@@ -1046,29 +1056,40 @@ const HomeView = ({
                 </div>
               </div> */}
 
-
-               {/* updated latest code */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 text-xs md:text-sm text-center">
+              {/* updated latest code */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 text-sm md:text-base">
                 {[
-                  "🎮 Game Publishers & Developers",
-                  "🏆 Tournament Organizers",
-                  "🎥 Content Creators & Influencers",
-                  "💼 Brands & Sponsors",
-                  "🎓 Universities & Training Institutes",
-                  "🌍 National Federations & Governments",
+                  { icon: "🎮", text: "Game Publishers & Developers" },
+                  { icon: "🏆", text: "Tournament Organizers" },
+                  { icon: "🎥", text: "Content Creators & Influencers" },
+                  { icon: "💼", text: "Brands & Sponsors" },
+                  { icon: "🎓", text: "Universities & Training Institutes" },
+                  { icon: "🌍", text: "National Federations & Governments" },
                 ].map((item, i) => (
                   <div
                     key={i}
-                    className="h-[90px] flex items-center justify-center text-center
+                    className="h-[90px] flex items-center
       border border-cyan-500/30 px-4 rounded-2xl 
       bg-black/50 backdrop-blur-md 
       hover:bg-cyan-500/10 hover:border-cyan-400 
       transition-all duration-200"
                   >
-                    {item}
+                    <div className="flex items-center gap-2 text-left w-full">
+                      <span className="text-base">{item.icon}</span>
+                      <span className="leading-snug text-white/90">
+                        {item.text}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
+
+              {/* CTA LINE (without box) */}
+              <p className="mt-6 text-sm md:text-base text-slate-300 leading-relaxed text-left">
+                Join International Federation of Esports—connect, collaborate,
+                and shape the global esports ecosystem. Inquire or partner
+                today.
+              </p>
             </div>
 
             {/* RIGHT SECTION - FutureTech media with API */}
@@ -1120,7 +1141,7 @@ const HomeView = ({
       {/* Gallery Section */}
       <HomeGallerySection
         images={galleryImages}
-        title="CYBER ARENA SNAPSHOTS"
+        title="GLOBAL ESPORTS IN ACTION"
         carouselId="home-gallery-carousel"
       />
 
@@ -1144,25 +1165,21 @@ const HomeView = ({
                 Network
               </h2>
               <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-md">
-                IFeS operates through a federated network of{" "}
-                <span className="text-cyan-300 font-medium">
-                  national partners
-                </span>{" "}
-                who host local chapters of the{" "}
-                <span className="text-purple-400 italic font-medium">
-                  TechnoXian World Cup
-                </span>
-                .
+                The IFeS federated network unites national bodies, partners, and
+                communities worldwide to standardize, collaborate, and grow
+                esports sustainably together.
               </p>
-              <button className="group relative px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-semibold rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_18px_rgba(34,211,238,0.35)] active:scale-95">
-                <span className="relative z-10 flex items-center gap-2">
-                  Explore Partner Directory{" "}
-                  <ArrowRight
-                    size={16}
-                    className="group-hover:translate-x-1 transition-transform"
-                  />
-                </span>
-              </button>
+              <a href="http://localhost:5173/partner-with-us">
+                <button className="group relative px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-semibold rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_18px_rgba(34,211,238,0.35)] active:scale-95">
+                  <span className="relative z-10 flex items-center gap-2">
+                    Explore Partner Directory{" "}
+                    <ArrowRight
+                      size={16}
+                      className="group-hover:translate-x-1 transition-transform"
+                    />
+                  </span>
+                </button>
+              </a>
             </div>
             <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-5 w-full relative z-10">
               <div className="group bg-slate-900/60 backdrop-blur-md p-6 rounded-2xl border border-white/5 transition-all duration-500 hover:bg-slate-800/60 hover:-translate-y-1">
@@ -1199,7 +1216,7 @@ const HomeView = ({
       )}
 
       {/* Core Platform Cards */}
-      <section className="py-16 mt-10 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-t border-slate-700">
+      {/* <section className="py-16 mt-10 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-t border-slate-700">
         <div className="max-w-7xl mx-auto px-5">
           <div className="grid md:grid-cols-3 gap-6">
             <div className="group relative p-[1px] rounded-xl bg-gradient-to-r from-cyan-500/40 via-blue-500/30 to-transparent">
@@ -1268,6 +1285,94 @@ const HomeView = ({
                     global rules. Partner Admins manage local content only.
                   </p>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section> */}
+
+      {/* updated code  */}
+      <section className="py-16 mt-10 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-t border-slate-700">
+        <div className="max-w-7xl mx-auto px-5">
+          {/* HEADING */}
+          <h2 className="text-3xl md:text-4xl font-bold text-cyan-400 mb-10">
+            Testimonials
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* CARD 1 */}
+            <div className="group relative p-[1px] rounded-xl bg-gradient-to-r from-cyan-500/40 via-blue-500/30 to-transparent">
+              <div className="relative p-8 min-h-[260px] bg-slate-900/80 backdrop-blur-md rounded-xl border border-white/5 flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-cyan-500/10">
+                {/* IMAGE */}
+                <img
+                  src="https://i.pravatar.cc/80?img=12"
+                  alt="user"
+                  className="w-20 h-20 rounded-full object-cover mb-4 border-2 border-cyan-400/30"
+                />
+
+                {/* NAME + DESIGNATION */}
+                <div className="mb-4">
+                  <h4 className="text-white text-sm font-semibold">
+                    Rahul Sharma
+                  </h4>
+                  <p className="text-xs text-slate-400">CEO, TechNova</p>
+                </div>
+
+                {/* STATEMENT (OLD CONTENT) */}
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  IFeS Global sets the laws of the sport and synchronizes
+                  updates to every partner subdomain in real time—no fragmented
+                  rulebooks.
+                </p>
+              </div>
+            </div>
+
+            {/* CARD 2 */}
+            <div className="group relative p-[1px] rounded-xl bg-gradient-to-r from-purple-500/40 via-pink-500/30 to-transparent">
+              <div className="relative p-8 min-h-[260px] bg-slate-900/80 backdrop-blur-md rounded-xl border border-white/5 flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/10">
+                <img
+                  src="https://i.pravatar.cc/80?img=32"
+                  alt="user"
+                  className="w-20 h-20 rounded-full object-cover mb-4 border-2 border-purple-400/30"
+                />
+
+                <div className="mb-4">
+                  <h4 className="text-white text-sm font-semibold">
+                    Priya Mehta
+                  </h4>
+                  <p className="text-xs text-slate-400">
+                    Product Manager, NexaSoft
+                  </p>
+                </div>
+
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  One codebase; many subdomains. Middleware detects
+                  `*.IFeS.org`, injects logos, language packs, and partner
+                  content JSON.
+                </p>
+              </div>
+            </div>
+
+            {/* CARD 3 */}
+            <div className="group relative p-[1px] rounded-xl bg-gradient-to-r from-pink-500/40 via-rose-500/30 to-transparent">
+              <div className="relative p-8 min-h-[260px] bg-slate-900/80 backdrop-blur-md rounded-xl border border-white/5 flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-pink-500/10">
+                <img
+                  src="https://i.pravatar.cc/80?img=45"
+                  alt="user"
+                  className="w-20 h-20 rounded-full object-cover mb-4 border-2 border-pink-400/30"
+                />
+
+                <div className="mb-4">
+                  <h4 className="text-white text-sm font-semibold">
+                    Aman Verma
+                  </h4>
+                  <p className="text-xs text-slate-400">Founder, StartEdge</p>
+                </div>
+
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  Super Admins create partners, assign subdomains, and push
+                  global rules. Partner Admins manage local content only.
+                </p>
               </div>
             </div>
           </div>
@@ -1588,12 +1693,16 @@ const HomeView = ({
               BUILD YOUR <span className="text-cyan-400">LEGACY</span>
             </h2>
             <p className="text-slate-400 text-sm md:text-base max-w-xl mx-auto mt-3">
-              Become a IFeS Partner Federation or register your robotics squad
-              for upcoming global qualifiers.
+              Partner with International Federation of Esports to expand global
+              reach, collaborate on initiatives, and shape the future of esports
+              worldwide.
             </p>
             <div className="flex flex-wrap justify-center gap-4 mt-6">
               <button
-                onClick={() => navigate("/partner/login")}
+                onClick={() =>
+                  (window.location.href =
+                    "http://localhost:5173/partner-with-us")
+                }
                 className="bg-gradient-to-r from-cyan-600 to-blue-500 hover:brightness-110 px-6 py-2.5 rounded-full text-sm font-semibold transition shadow-md shadow-cyan-500/20"
               >
                 <Building size={14} className="inline mr-2" /> PARTNER WITH US
