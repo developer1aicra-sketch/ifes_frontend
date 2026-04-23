@@ -201,9 +201,9 @@ const AboutRoboClubSection = () => (
       </div>
 
       {/* ⚡ Gains Grid */}
-      <div className="pt-16 border-t border-white/5">
-        <h3 className="text-center text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 mb-14">
-          What you gain by joining
+      {/* <div className="pt-16 border-t border-white/5">
+        <h3 className="text-center text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 mb-14text-center text-sm font-black uppercase tracking-[0.5em] text-slate-500 mb-14">
+          Benefits of Becoming an EX Club
         </h3>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {ROBOCLUB_ABOUT.gains.map((item, i) => {
@@ -226,7 +226,60 @@ const AboutRoboClubSection = () => (
             );
           })}
         </div>
-      </div>
+      </div> */}
+
+      {/* updated code */}
+      <div className="pt-16 border-t border-white/5">
+  <h3 className="text-center text-sm font-black uppercase tracking-[0.5em] text-slate-500 mb-14">
+    Benefits of Becoming an EX Club
+  </h3>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+    {ROBOCLUB_ABOUT.gains.map((item, i) => {
+      const Icon = iconMap[item.icon] || Cpu;
+
+      return (
+        <motion.div
+          key={item.id}
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: i * 0.06 }}
+          className="group relative h-full min-h-[220px] rounded-2xl border border-white/5 bg-[#0a1219]/50 p-6 hover:bg-white/[0.03] hover:border-cyan-500/30 transition-all duration-300"
+        >
+          {/* ICON */}
+          <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-cyan-400 mb-5 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-500 shadow-inner">
+            <Icon className="w-6 h-6" />
+          </div>
+
+          {/* TITLE */}
+          <h4 className="text-white font-black text-sm mb-3 uppercase tracking-wide">
+            {item.title}
+          </h4>
+
+          {/* DESCRIPTION */}
+          {Array.isArray(item.blurb) ? (
+            <ul className="space-y-2 text-[13px] text-slate-400">
+              {item.blurb.map((point, idx) => (
+                <li
+                  key={idx}
+                  className="flex items-start gap-2 group-hover:text-slate-300 transition"
+                >
+                  <span className="text-cyan-400 mt-[2px]">•</span>
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-slate-500 text-[13px] leading-relaxed group-hover:text-slate-400 transition-colors">
+              {item.blurb}
+            </p>
+          )}
+        </motion.div>
+      );
+    })}
+  </div>
+</div>
     </div>
   </section>
 );
