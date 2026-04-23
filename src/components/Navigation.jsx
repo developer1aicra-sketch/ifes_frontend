@@ -504,8 +504,8 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
             >
               Membership
             </Link>
-            <Link to={path('/roboclub')} className="flex gap-2 items-center normal-case">
-              <Star size={14} className={location.pathname.endsWith('/roboclub') ? 'text-yellow-400' : 'text-yellow-500'} /> EX Clubs
+            <Link to={path('/exclubs')} className="flex gap-2 items-center normal-case">
+              <Star size={14} className={location.pathname.endsWith('/exclubs') ? 'text-yellow-400' : 'text-yellow-500'} /> EX Clubs
             </Link>
 
             <div className="relative group">

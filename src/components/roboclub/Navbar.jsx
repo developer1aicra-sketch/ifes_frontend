@@ -312,13 +312,13 @@ const Navbar = ({
             </Link>
 
             <Link
-              to={path("/roboclub")}
+              to={path("/exclubs")}
               className="flex gap-2 items-center normal-case hover:text-white transition-colors"
             >
               <Star
                 size={14}
                 className={
-                  location.pathname.endsWith("/roboclub")
+                  location.pathname.endsWith("/exclubs")
                     ? "text-yellow-400"
                     : "text-yellow-500"
                 }
