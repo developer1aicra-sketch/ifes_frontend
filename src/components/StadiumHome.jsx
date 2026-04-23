@@ -13,6 +13,7 @@ import RoboClubEventsSection from "./roboclub/RoboClubEventsSection";
 import ProjectShowcaseSection from "./roboclub/ProjectShowcaseSection";
 import TestimonialsCarousel from "./roboclub/TestimonialsCarousel";
 
+
 export const StadiumHome = ({ setPage, isAuthenticated }) => {
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
 // const  [page,setPage] = useState("home")

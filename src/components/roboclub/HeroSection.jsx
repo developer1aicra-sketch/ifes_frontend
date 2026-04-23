@@ -333,32 +333,43 @@ const HeroSection = ({ setPage }) => {
               </div>
             </motion.div>
 
-            {/* Main Heading */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7, delay: 0.1 }}
-            >
-              <h1 className="text-5xl font-black leading-[1.1] tracking-tighter text-white sm:text-6xl md:text-7xl lg:text-8xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
-                WHERE{" "}
-                <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-fuchsia-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(34,211,238,0.5)]">
-                  LEGENDS
-                </span>
-                <br />
-                ARE FORGED.
-              </h1>
-            </motion.div>
+          
+           {/* Main Heading */}
+<motion.div
+  initial={{ opacity: 0, x: -30 }}
+  animate={{ opacity: 1, x: 0 }}
+  transition={{ duration: 0.7, delay: 0.1 }}
+>
+ <h1 className="font-black leading-[1.1] tracking-tight text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]">
+  
+  {/* Top Line */}
+  <span className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-slate-200">
+    WHERE GAMERS BECOME
+  </span>
 
-            {/* Description */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="max-w-lg border-l-2 border-cyan-500/50 pl-5 text-base leading-relaxed text-slate-200 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]"
-            >
-              Join the elite league of robotics. Connect, compete, and claim your glory in the world's largest robotics championship ecosystem.
-            </motion.p>
+  {/* Highlight Line */}
+  <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl mt-2 bg-gradient-to-r from-cyan-400 via-blue-500 to-fuchsia-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(34,211,238,0.5)]">
+    GLOBAL CHAMPIONS
+  </span>
 
+  {/* Sub Line */}
+ <span className="block mt-3 text-base sm:text-lg md:text-xl lg:text-2xl font-semibold italic text-slate-300 tracking-wide">
+  Build. <span className="text-white">Compete.</span>{" "}
+  <span className="text-cyan-400">Belong.</span>
+</span>
+
+</h1>
+</motion.div>
+
+{/* Description */}
+<motion.p
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6, delay: 0.2 }}
+  className="max-w-lg border-l-2 border-cyan-500/50 pl-5 text-base leading-relaxed text-slate-200 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]"
+>
+  Build your gaming community, gain recognition, and grow within the global esports ecosystem.
+</motion.p>
             {/* Audience Tags */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}

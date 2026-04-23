@@ -130,7 +130,8 @@ const StrategyPage = () => {
             "Tournament organizers",
             "Educational institutions",
             "Technology and media companies"
-          ]
+          ],
+          extraText: "These partnerships enhance reach, co-create opportunities, and accelerate the growth of esports ecosystems across regions."
         }
       ]
     },
@@ -150,7 +151,8 @@ const StrategyPage = () => {
             "Anti-doping",
             "Ethical conduct",
             "Competitive integrity"
-          ]
+          ],
+          extraText: "Ensuring trust and professionalism across the esports ecosystem."
         },
         {
           subtitle: "Talent Development & Training",
@@ -160,7 +162,8 @@ const StrategyPage = () => {
             "Coaches",
             "Referees",
             "Administrators"
-          ]
+          ],
+          extraText: "Empowering the next generation of esports professionals and leaders."
         }
       ]
     },
@@ -184,7 +187,8 @@ const StrategyPage = () => {
             "Community engagement",
             "Youth empowerment",
             "Equal participation"
-          ]
+          ],
+          extraText: "Positioning esports as a force for positive global impact."
         }
       ]
     },
@@ -200,7 +204,8 @@ const StrategyPage = () => {
             "Game titles",
             "Tournament formats",
             "Digital platforms"
-          ]
+          ],
+          extraText: "To engage diverse audiences and stay aligned with industry evolution."
         },
         {
           subtitle: "Technology-Driven Experiences",
@@ -209,7 +214,8 @@ const StrategyPage = () => {
             "Artificial Intelligence (AI)",
             "Virtual Reality (VR)",
             "Augmented Reality (AR)"
-          ]
+          ],
+          extraText: "To enhance gameplay, fan engagement, and the overall esports experience."
         }
       ]
     },
@@ -226,7 +232,8 @@ const StrategyPage = () => {
             "Fans",
             "Teams",
             "Industry stakeholders"
-          ]
+          ],
+          extraText: "Through events, forums, and collaborative platforms that encourage participation and feedback."
         },
         {
           subtitle: "Diversity & Inclusion",
@@ -235,7 +242,8 @@ const StrategyPage = () => {
             "Equal opportunities",
             "Gender diversity",
             "Global representation"
-          ]
+          ],
+          extraText: "Creating a welcoming environment for all participants."
         }
       ]
     }
@@ -263,32 +271,24 @@ const StrategyPage = () => {
             esports ecosystem. As competitive gaming continues to evolve rapidly, IFES has developed a forward-looking strategy 
             focused on governance, growth, innovation, and global collaboration.
           </p>
-          <div className="flex flex-wrap gap-3 mt-6">
-            <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
-              <span className="text-xs uppercase tracking-wider text-slate-300">Strategic Pillars</span>
-              <div className="text-2xl font-bold text-emerald-300">5</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
-              <span className="text-xs uppercase tracking-wider text-slate-300">Global Reach</span>
-              <div className="text-2xl font-bold text-emerald-300">95+ Nations</div>
-            </div>
-          </div>
         </div>
       </div>
 
       {/* Strategic Framework Intro */}
-      <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
-        <div className="flex items-center gap-3 mb-3">
-          <Handshake className="text-blue-600" size={24} />
-          <h2 className="text-xl md:text-2xl font-bold text-slate-800">Our Strategic Framework</h2>
+      <div className="container mx-auto px-4">
+        <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
+          <div className="flex items-center gap-3 mb-3">
+            <Handshake className="text-blue-600" size={24} />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-800">Our Strategic Framework</h2>
+          </div>
+          <p className="text-slate-600 leading-relaxed">
+            Our strategic framework is built on five key pillars that drive long-term impact and international expansion.
+          </p>
         </div>
-        <p className="text-slate-600 leading-relaxed">
-          Our strategic framework is built on five key pillars that drive long-term impact and international expansion.
-        </p>
       </div>
 
       {/* Strategy Pillars */}
-      <div className="space-y-6">
+      <div className="container mx-auto px-4 space-y-6">
         {strategyPillars.map((pillar) => (
           <div key={pillar.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
             <div className="bg-slate-50 px-6 py-4 border-b border-slate-200">
@@ -319,6 +319,11 @@ const StrategyPage = () => {
                       ))}
                     </ul>
                   )}
+                  {subsection.extraText && (
+                    <p className="text-slate-600 leading-relaxed ml-4 mt-2">
+                      {subsection.extraText}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
@@ -327,30 +332,32 @@ const StrategyPage = () => {
       </div>
 
       {/* Driving the Future Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-8 text-white">
-        <div className="flex items-center gap-3 mb-6">
-          <TrendingUp size={24} />
-          <h3 className="text-2xl font-bold">Driving the Future of Esports</h3>
+      <div className="container mx-auto px-4">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-8 text-white">
+          <div className="flex items-center gap-3 mb-6">
+            <TrendingUp size={24} />
+            <h3 className="text-2xl font-bold">Driving the Future of Esports</h3>
+          </div>
+          <p className="text-blue-100 mb-6">
+            Through these strategic pillars, the International Federation of Esports aims to:
+          </p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {futureGoals.map((goal, index) => (
+              <div key={index} className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                <div className="text-2xl font-bold mb-1">✓</div>
+                <div className="text-sm font-medium">{goal}</div>
+              </div>
+            ))}
+          </div>
+          <p className="text-blue-100 mt-6 text-sm italic">
+            As the esports landscape continues to evolve, IFES remains agile and forward-thinking—adapting strategies 
+            to meet emerging trends while staying committed to its core mission.
+          </p>
         </div>
-        <p className="text-blue-100 mb-6">
-          Through these strategic pillars, the International Federation of Esports aims to:
-        </p>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {futureGoals.map((goal, index) => (
-            <div key={index} className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="text-2xl font-bold mb-1">✓</div>
-              <div className="text-sm font-medium">{goal}</div>
-            </div>
-          ))}
-        </div>
-        <p className="text-blue-100 mt-6 text-sm italic">
-          As the esports landscape continues to evolve, IFES remains agile and forward-thinking—adapting strategies 
-          to meet emerging trends while staying committed to its core mission.
-        </p>
       </div>
 
-      {/* Footer CTA */}
-      <div className="text-center pt-4 pb-6">
+      {/* Footer CTA - exactly as provided */}
+      <div className="container mx-auto px-4 text-center pt-4 pb-6">
         <div className="inline-flex items-center gap-2 bg-slate-100 rounded-full px-6 py-3">
           <span className="text-xl">🎯</span>
           <span className="text-slate-700 font-medium">

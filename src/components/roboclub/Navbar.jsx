@@ -4,7 +4,6 @@
 // import { useLocationPrefix } from '../../hooks/useLocationPrefix';
 // import { pathWithLocationPrefix } from '../../utils/locationRoutes';
 
-
 // const Navbar = ({ onOpenCertificate, onNavigateHome, isAuthenticated }) => {
 //   const { locationPrefix } = useLocationPrefix();
 
@@ -18,7 +17,7 @@
 //         EXCLUB<span className="text-cyan-400">.</span>
 //       </span>
 //     </NavLink>
-   
+
 //     <div className="hidden lg:flex items-center gap-5 text-sm font-medium text-slate-300 flex-wrap justify-end max-w-2xl">
 //       <button
 //         type="button"
@@ -68,21 +67,38 @@
 
 // export default Navbar;
 
-
 // latest updated code
-import { useState, useEffect } from 'react';
-import { Trophy, Menu, X, User, LogOut, Star, ChevronDown } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useThemeClasses } from '../../hooks/useThemeClasses';
-import { pathWithLocationPrefix } from '../../utils/locationRoutes';
-import { useEffectiveLocationPrefix } from '../../hooks/useEffectiveLocationPrefix';
-import { usePartnerAboutMegaMenuItems } from '../../hooks/usePartnerAboutMegaMenuItems';
-import { partnerLogout, clearPartnerAuth, getPartnerAuth } from '../../utils/api';
-import { clearAuthToken, getAuthToken } from '../../api/authToken';
-import { AboutWorsoDesktopMegaMenu, AboutWorsoMobileLinks } from '../AboutWorsoMegaMenu';
-import { useLocationPrefix } from '../../hooks/useLocationPrefix';
+import { useState, useEffect } from "react";
+import { Trophy, Menu, X, User, LogOut, Star, ChevronDown } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useThemeClasses } from "../../hooks/useThemeClasses";
+import { pathWithLocationPrefix } from "../../utils/locationRoutes";
+import { useEffectiveLocationPrefix } from "../../hooks/useEffectiveLocationPrefix";
+import { usePartnerAboutMegaMenuItems } from "../../hooks/usePartnerAboutMegaMenuItems";
+import {
+  partnerLogout,
+  clearPartnerAuth,
+  getPartnerAuth,
+} from "../../utils/api";
+import { clearAuthToken, getAuthToken } from "../../api/authToken";
+import {
+  AboutWorsoDesktopMegaMenu,
+  AboutWorsoMobileLinks,
+} from "../AboutWorsoMegaMenu";
+import { useLocationPrefix } from "../../hooks/useLocationPrefix";
+import exclub from "../../assets/exclublogo/exclub.png";
 
-const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user, setUser, onOpenCertificate, onNavigateHome, isAuthenticated }) => {
+const Navbar = ({
+  setView,
+  toggleMobileMenu,
+  isMobileMenuOpen,
+  siteConfig,
+  user,
+  setUser,
+  onOpenCertificate,
+  onNavigateHome,
+  isAuthenticated,
+}) => {
   const [aboutMobileOpen, setAboutMobileOpen] = useState(false);
   const theme = useThemeClasses();
   const location = useLocation();
@@ -90,62 +106,73 @@ const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user,
   const effectiveLocationPrefix = useEffectiveLocationPrefix(siteConfig);
   const { locationPrefix } = useLocationPrefix();
   const path = (p) => pathWithLocationPrefix(effectiveLocationPrefix, p);
-  const { isRegionalChapter, partnerTabs, loading: partnerAboutNavLoading } =
-    usePartnerAboutMegaMenuItems(effectiveLocationPrefix);
+  const {
+    isRegionalChapter,
+    partnerTabs,
+    loading: partnerAboutNavLoading,
+  } = usePartnerAboutMegaMenuItems(effectiveLocationPrefix);
   const partnerSession = getPartnerAuth();
-  const isPartnerAuthenticated = Boolean(partnerSession?.token && partnerSession?.partner);
+  const isPartnerAuthenticated = Boolean(
+    partnerSession?.token && partnerSession?.partner,
+  );
   const isMemberAuthenticated = Boolean(getAuthToken());
-  
+
   const isMemberPortalActive =
-    location.pathname === '/member/portal' || location.pathname.endsWith('/member/portal');
+    location.pathname === "/member/portal" ||
+    location.pathname.endsWith("/member/portal");
   const isPartnerPortalActive =
-    location.pathname === '/partner/portal' || location.pathname.endsWith('/partner/portal');
-  const activePortalButtonClass = 'bg-blue-600 ring-2 ring-blue-300/80 border-blue-300/70';
+    location.pathname === "/partner/portal" ||
+    location.pathname.endsWith("/partner/portal");
+  const activePortalButtonClass =
+    "bg-blue-600 ring-2 ring-blue-300/80 border-blue-300/70";
 
   const openMemberPortal = () => {
-    console.log('Member Login clicked');
+    console.log("Member Login clicked");
     if (!isMemberAuthenticated) {
       if (setView) {
-        setView('member-login');
+        setView("member-login");
       } else {
-        navigate('/member/login');
+        navigate("/member/login");
       }
       return;
     }
-    setUser?.((prev) => (prev?.type === 'member' ? prev : { type: 'member', email: prev?.email }));
+    setUser?.((prev) =>
+      prev?.type === "member" ? prev : { type: "member", email: prev?.email },
+    );
     if (setView) {
-      setView('member-dashboard');
+      setView("member-dashboard");
     } else {
-      navigate('/member/dashboard');
+      navigate("/member/dashboard");
     }
   };
 
   const openPartnerPortal = () => {
-    console.log('Partner Login clicked');
+    console.log("Partner Login clicked");
     if (!isPartnerAuthenticated) {
       if (setView) {
-        setView('partner-login');
+        setView("partner-login");
       } else {
-        navigate('/partner/login');
+        navigate("/partner/login");
       }
       return;
     }
     setUser?.({
-      type: 'admin',
-      role: 'partner',
+      type: "admin",
+      role: "partner",
       email: partnerSession.partner.contactEmail ?? partnerSession.email,
       token: partnerSession.token,
       partner: partnerSession.partner,
     });
     if (setView) {
-      setView('partner-dashboard');
+      setView("partner-dashboard");
     } else {
-      navigate('/partner/dashboard');
+      navigate("/partner/dashboard");
     }
   };
 
   const logout = async () => {
-    const shouldLogoutPartner = Boolean(partnerSession?.token) && user?.type !== 'member';
+    const shouldLogoutPartner =
+      Boolean(partnerSession?.token) && user?.type !== "member";
     const shouldLogoutMember = Boolean(getAuthToken()) && !shouldLogoutPartner;
     try {
       if (shouldLogoutPartner && partnerSession?.token) {
@@ -158,9 +185,9 @@ const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user,
       if (shouldLogoutPartner) clearPartnerAuth();
       setUser?.(null);
       if (setView) {
-        setView('home');
+        setView("home");
       } else {
-        navigate('/');
+        navigate("/");
       }
     }
   };
@@ -186,11 +213,11 @@ const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user,
 
   // Handle home navigation separately
   const handleHomeClick = () => {
-    console.log('Home/Logo clicked');
+    console.log("Home/Logo clicked");
     if (setView) {
-      setView('home');
+      setView("home");
     } else {
-      navigate('/');
+      navigate("/");
     }
     toggleMobileMenu?.();
   };
@@ -203,40 +230,48 @@ const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user,
           <div className="flex justify-end items-center gap-2">
             <button
               onClick={openMemberPortal}
-              className={`flex items-center gap-1.5 text-[13px] font-medium py-1 px-2.5 rounded-md transition-all duration-200 ${isMemberPortalActive
+              className={`flex items-center gap-1.5 text-[13px] font-medium py-1 px-2.5 rounded-md transition-all duration-200 ${
+                isMemberPortalActive
                   ? `text-white ${activePortalButtonClass}`
-                  : 'text-gray-400 hover:text-white hover:bg-white/10'
-                }`}
+                  : "text-gray-400 hover:text-white hover:bg-white/10"
+              }`}
             >
               <User size={13} className="shrink-0" />
-              <span>{isMemberAuthenticated ? 'Member Portal' : 'Member Login'}</span>
+              <span>
+                {isMemberAuthenticated ? "Member Portal" : "Member Login"}
+              </span>
             </button>
             <div className="w-px h-3 bg-white/20" aria-hidden="true" />
             <button
               onClick={openPartnerPortal}
-              className={`flex items-center gap-1.5 text-[13px] font-medium py-1 px-2.5 rounded-md transition-all duration-200 ${isPartnerPortalActive
+              className={`flex items-center gap-1.5 text-[13px] font-medium py-1 px-2.5 rounded-md transition-all duration-200 ${
+                isPartnerPortalActive
                   ? `text-white ${activePortalButtonClass}`
-                  : 'text-gray-400 hover:text-white hover:bg-white/10'
-                }`}
+                  : "text-gray-400 hover:text-white hover:bg-white/10"
+              }`}
             >
               <User size={13} className="shrink-0" />
-              <span>{isPartnerAuthenticated ? 'Partner Portal' : 'Partner Login'}</span>
+              <span>
+                {isPartnerAuthenticated ? "Partner Portal" : "Partner Login"}
+              </span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Main Navigation */}
-      <nav className={`sticky top-0 z-40 transition-all duration-300 ${theme.bgGradient || 'bg-[#0a0f1a]'} border-b border-white/10`}>
+      <nav
+        className={`sticky top-0 z-40 transition-all duration-300 ${theme.bgGradient || "bg-[#0a0f1a]"} border-b border-white/10`}
+      >
         <div className="container mx-auto px-4 sm:px-6 py-2 md:py-1 flex justify-between items-center max-w-[1600px]">
           {/* Logo - Fixed home navigation */}
-          <div 
-            className="flex items-center gap-2 sm:gap-3 cursor-pointer group min-w-0" 
+          <div
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer group min-w-0"
             onClick={handleHomeClick}
           >
             <img
               src="https://ifes.in/images/logo.png"
-              alt="WORSO Logo"
+              alt="IFES Logo"
               className="h-10 w-auto object-contain sm:h-20"
             />
           </div>
@@ -246,10 +281,12 @@ const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user,
             <div className="relative group/about">
               <button
                 type="button"
-                onClick={() => handleNavigation('about')}
+                onClick={() => handleNavigation("about")}
                 className="hover:text-white transition-colors py-2 flex items-center gap-1 text-inherit"
               >
-                {(effectiveLocationPrefix || siteConfig?.is_partner) ? 'About' : 'IFeS'}
+                {effectiveLocationPrefix || siteConfig?.is_partner
+                  ? "About"
+                  : "IFeS"}
                 <ChevronDown
                   size={14}
                   className="opacity-70 shrink-0 transition-transform duration-200 group-hover/about:rotate-180"
@@ -268,14 +305,25 @@ const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user,
             </div>
 
             <Link
-              to={path('/membership')}
+              to={path("/membership")}
               className="normal-case hover:text-white transition-colors"
             >
               Membership
             </Link>
-            
-            <Link to={path('/roboclub')} className="flex gap-2 items-center normal-case hover:text-white transition-colors">
-              <Star size={14} className={location.pathname.endsWith('/roboclub') ? 'text-yellow-400' : 'text-yellow-500'} /> EX Clubs
+
+            <Link
+              to={path("/roboclub")}
+              className="flex gap-2 items-center normal-case hover:text-white transition-colors"
+            >
+              <Star
+                size={14}
+                className={
+                  location.pathname.endsWith("/roboclub")
+                    ? "text-yellow-400"
+                    : "text-yellow-500"
+                }
+              />{" "}
+              EX Clubs
             </Link>
 
             <div className="relative group">
@@ -286,7 +334,7 @@ const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user,
                 className="hover:text-white transition-colors flex items-center gap-1 normal-case"
               >
                 <Trophy className="w-3 h-3 text-yellow-500" />
-                {siteConfig?.is_partner ? 'Local Events' : 'E-Sport'}
+                {siteConfig?.is_partner ? "Local Events" : "E-Sport"}
               </a>
             </div>
 
@@ -316,19 +364,21 @@ const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user,
                   className="opacity-70 shrink-0 transition-transform duration-200 group-hover:rotate-180"
                 />
               </button>
-              <div className="absolute left-1/2 -translate-x-1/2 mt-3 w-48 
+              <div
+                className="absolute left-1/2 -translate-x-1/2 mt-3 w-48 
                               bg-slate-800/95 backdrop-blur-md 
                               rounded-lg shadow-xl border border-white/10
                               opacity-0 invisible group-hover:opacity-100 group-hover:visible
-                              transition-all duration-200 z-50">
+                              transition-all duration-200 z-50"
+              >
                 <Link
-                  to={path('/nep-nea')}
+                  to={path("/nep-nea")}
                   className="block px-4 py-2.5 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-t-lg transition"
                 >
                   NEP/NEA
                 </Link>
                 <Link
-                  to={path('/ifes-tv-ott')}
+                  to={path("/ifes-tv-ott")}
                   className="block px-4 py-2.5 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-b-lg transition"
                 >
                   IFES TV - OTT
@@ -338,19 +388,40 @@ const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user,
           </div>
 
           {/* Mobile Menu Button */}
-          <button className="md:hidden text-white p-2 -m-2 touch-manipulation" onClick={toggleMobileMenu} aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}>
+          <button
+            className="md:hidden text-white p-2 -m-2 touch-manipulation"
+            onClick={toggleMobileMenu}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+          >
             {isMobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
           </button>
         </div>
 
         {/* Mobile menu overlay + panel */}
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="Mobile menu">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={toggleMobileMenu} aria-hidden="true" />
-            <div className={`absolute top-0 right-0 bottom-0 w-full max-w-[320px] sm:max-w-sm ${theme.bgGradient || 'bg-[#0a0f1a]'} border-l border-white/10 shadow-2xl overflow-y-auto`}>
+          <div
+            className="fixed inset-0 z-50 md:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile menu"
+          >
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={toggleMobileMenu}
+              aria-hidden="true"
+            />
+            <div
+              className={`absolute top-0 right-0 bottom-0 w-full max-w-[320px] sm:max-w-sm ${theme.bgGradient || "bg-[#0a0f1a]"} border-l border-white/10 shadow-2xl overflow-y-auto`}
+            >
               <div className="flex justify-between items-center p-4 border-b border-white/10">
-                <span className="text-white font-bold text-sm uppercase">Menu</span>
-                <button className="text-white p-2 -m-2" onClick={toggleMobileMenu} aria-label="Close menu">
+                <span className="text-white font-bold text-sm uppercase">
+                  Menu
+                </span>
+                <button
+                  className="text-white p-2 -m-2"
+                  onClick={toggleMobileMenu}
+                  aria-label="Close menu"
+                >
                   <X size={24} />
                 </button>
               </div>
@@ -358,14 +429,19 @@ const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user,
                 <button
                   type="button"
                   onClick={() => setAboutMobileOpen((o) => !o)}
-                  className={`text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors flex items-center justify-between gap-2 ${aboutMobileOpen ? 'bg-white/5 text-white' : ''
-                    }`}
+                  className={`text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors flex items-center justify-between gap-2 ${
+                    aboutMobileOpen ? "bg-white/5 text-white" : ""
+                  }`}
                   aria-expanded={aboutMobileOpen}
                 >
-                  <span>{(effectiveLocationPrefix || siteConfig?.is_partner) ? 'About' : 'Ifes'}</span>
+                  <span>
+                    {effectiveLocationPrefix || siteConfig?.is_partner
+                      ? "About"
+                      : "Ifes"}
+                  </span>
                   <ChevronDown
                     size={16}
-                    className={`shrink-0 opacity-80 transition-transform ${aboutMobileOpen ? 'rotate-180' : ''}`}
+                    className={`shrink-0 opacity-80 transition-transform ${aboutMobileOpen ? "rotate-180" : ""}`}
                     aria-hidden
                   />
                 </button>
@@ -382,48 +458,66 @@ const Navbar = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user,
                     />
                   </div>
                 )}
-                <Link to={path('/membership')} onClick={closeAnd()} className="px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
+                <Link
+                  to={path("/membership")}
+                  onClick={closeAnd()}
+                  className="px-6 py-4 hover:bg-white/5 hover:text-white transition-colors"
+                >
                   Membership
                 </Link>
 
-                <button onClick={closeAnd(() => handleNavigation('teams'))} className="text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
+                <button
+                  onClick={closeAnd(() => handleNavigation("teams"))}
+                  className="text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors"
+                >
                   Teams / Players
                 </button>
                 <Link
-                  to={path('/challenges')}
+                  to={path("/challenges")}
                   onClick={closeAnd()}
                   className="text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2"
                 >
                   <Trophy className="w-3 h-3 text-yellow-500 flex-shrink-0" />
-                  {siteConfig?.is_partner ? 'Local Events' : 'WRC Challenges'}
+                  {siteConfig?.is_partner ? "Local Events" : "WRC Challenges"}
                 </Link>
-                <Link to={path('/partner-with-us')} onClick={closeAnd()} className="px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
+                <Link
+                  to={path("/partner-with-us")}
+                  onClick={closeAnd()}
+                  className="px-6 py-4 hover:bg-white/5 hover:text-white transition-colors"
+                >
                   Become a Partner
                 </Link>
                 <div className="mt-4 pt-4 border-t border-white/10 px-6">
                   <button
                     onClick={closeAnd(openMemberPortal)}
-                    className={`text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 ${isMemberPortalActive
-                      ? activePortalButtonClass
-                      : `${theme.bgPrimary || siteConfig?.colors?.primary || 'bg-blue-600'}`
-                      }`}
+                    className={`text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 ${
+                      isMemberPortalActive
+                        ? activePortalButtonClass
+                        : `${theme.bgPrimary || siteConfig?.colors?.primary || "bg-blue-600"}`
+                    }`}
                   >
                     <User size={16} />
-                    {isMemberAuthenticated ? 'Member Portal' : 'Member Login'}
+                    {isMemberAuthenticated ? "Member Portal" : "Member Login"}
                   </button>
                   <button
                     onClick={closeAnd(openPartnerPortal)}
-                    className={`text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 mt-3 border ${isPartnerPortalActive
-                      ? activePortalButtonClass
-                      : 'bg-slate-700/70 border-slate-500/50'
-                      }`}
+                    className={`text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 mt-3 border ${
+                      isPartnerPortalActive
+                        ? activePortalButtonClass
+                        : "bg-slate-700/70 border-slate-500/50"
+                    }`}
                   >
                     <User size={16} />
-                    {isPartnerAuthenticated ? 'Partner Portal' : 'Partner Login'}
+                    {isPartnerAuthenticated
+                      ? "Partner Portal"
+                      : "Partner Login"}
                   </button>
                   {(isMemberAuthenticated || isPartnerAuthenticated) && (
                     <div className="mt-3 space-y-1">
-                      <button onClick={closeAnd(logout)} className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-red-600/15 text-red-400 flex items-center gap-2 text-sm">
+                      <button
+                        onClick={closeAnd(logout)}
+                        className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-red-600/15 text-red-400 flex items-center gap-2 text-sm"
+                      >
                         <LogOut size={14} /> Logout
                       </button>
                     </div>

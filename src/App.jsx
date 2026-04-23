@@ -448,11 +448,11 @@ const AppContent = ({
               <Route path="/roboclub-dashboard" element={<RoboClubDashboard mode="dashboard" />} />
 
               <Route path="/about" element={<AboutLayout setView={setViewRespectingLocation} />}>
-                <Route index element={<Navigate to="about-worso" replace />} />
+                <Route index element={<Navigate to="about-ifes" replace />} />
                 {ABOUT_PAGE_ROUTES.map(({ path, Component }) => (
                   <Route key={path} path={path} element={<Component />} />
                 ))}
-                <Route path="*" element={<Navigate to="about-worso" replace />} />
+                <Route path="*" element={<Navigate to="about-ifes" replace />} />
               </Route>
               <Route path="/governance" element={<Navigate to="/about/mission-vision" replace />} />
               <Route path="/associates/join-worso" element={<JoinWorsoView />} />
@@ -510,11 +510,11 @@ const AppContent = ({
               />
               <Route path="/:locationCode/roboclub-dashboard" element={<RoboClubDashboard mode="dashboard" />} />
               <Route path="/:locationCode/about" element={<AboutLayout setView={setViewRespectingLocation} />}>
-                <Route index element={<Navigate to="about-worso" replace />} />
+                <Route index element={<Navigate to="about-ifes" replace />} />
                 {ABOUT_PAGE_ROUTES.map(({ path, Component }) => (
                   <Route key={`loc-${path}`} path={path} element={<Component />} />
                 ))}
-                <Route path="*" element={<Navigate to="about-worso" replace />} />
+                <Route path="*" element={<Navigate to="about-ifes" replace />} />
               </Route>
               <Route path="/:locationCode/governance" element={<GovernanceLocationRedirect />} />
               <Route path="/:locationCode/associates/join-worso" element={<JoinWorsoView />} />

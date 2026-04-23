@@ -535,7 +535,7 @@ export const HERO_AUDIENCE_TAGS = [
 ];
 
 export const ROBOCLUB_ABOUT = {
-  headline: 'Build real robots. Learn with mentors. Compete on a global stage.',
+  headline: 'Build, lead, and represent your esports club on the world stage',
   intro:
     'The EX Club Program by International Federation of Esports is designed to empower institutions, colleges, universities, gaming communities, and independent groups to become part of a global esports ecosystem.Whether you are a campus club, gaming community, or a group of passionate players—EX Clubs provide you with the platform to organize, compete, and grow within an internationally connected network.',
   mission:
