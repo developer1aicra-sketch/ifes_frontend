@@ -322,9 +322,10 @@ export default function TechnoXianApp({
             <StadiumHome setPage={setPage} isAuthenticated={isAuthenticated} />
           )}
         </div>
-        {setView && currentSite ? (
+        {/* updated code */}
+        {/* {setView && currentSite ? (
           <Footer setView={setView} switchSite={switchSite} currentSite={currentSite} />
-        ) : null}
+        ) : null} */}
       </div>
     );
   }

@@ -19,11 +19,11 @@ export const StadiumHome = ({ setPage, isAuthenticated }) => {
 // const  [page,setPage] = useState("home")
   return (
     <div className="animate-fadeIn">
-      <Navbar
+      {/* <Navbar
         onOpenCertificate={() => setIsCertificateOpen(true)}
         onNavigateHome={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         isAuthenticated={isAuthenticated}
-      />
+      /> */}
  
       <HeroSection setPage={setPage} />
       <MakersSocialProofSection />

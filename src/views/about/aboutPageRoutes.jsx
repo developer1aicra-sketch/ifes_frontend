@@ -11,7 +11,7 @@ import RefereesPage from './pages/RefereesPage';
 
 /** Ordered list matching `aboutRouteConfig.ABOUT_NAV` */
 export const ABOUT_PAGE_ROUTES = [
-  { path: 'about-worso', Component: AboutWorsoPage },
+  { path: 'about-ifes', Component: AboutWorsoPage },
   { path: 'mission-vision', Component: MissionVisionPage },
   { path: 'strategy', Component: StrategyPage },
   { path: 'presidents-message', Component: PresidentMessagePage },

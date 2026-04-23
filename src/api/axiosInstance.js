@@ -32,7 +32,7 @@ const deleteRequestHeader = (headers, key) => {
 
 // Create axios instance
 const axiosInstance = axios.create({
-  baseURL: "https://ifes-backend.vercel.app/api",
+  baseURL: "https://api.ifes.in/api",
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

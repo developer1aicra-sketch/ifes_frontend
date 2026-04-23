@@ -15,7 +15,7 @@ const AdvisoryBoardGrid = ({
 
   return (
     <div className={`space-y-8 ${className}`}>
-      <div className="space-y-4">
+      {/* <div className="space-y-4">
         <div className="flex items-center gap-3">
           <Award className="text-blue-600 shrink-0" size={28} />
           <h2 className="text-2xl md:text-3xl font-bold text-slate-900">{title}</h2>
@@ -23,8 +23,8 @@ const AdvisoryBoardGrid = ({
         {description ? (
           <p className="text-base md:text-lg text-slate-600 max-w-3xl leading-relaxed">{description}</p>
         ) : null}
-      </div>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+      </div> */}
+      {/* <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {members.map((person) => (
           <PersonCard
             key={person.id}
@@ -34,7 +34,7 @@ const AdvisoryBoardGrid = ({
             image={person.image}
           />
         ))}
-      </div>
+      </div> */}
     </div>
   );
 };

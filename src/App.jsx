@@ -435,7 +435,7 @@ const AppContent = ({
               <Route path="/teams" element={<TeamsView />} />
               <Route path="/challenges" element={<TechnoxianView />} />
               <Route
-                path="/roboclub"
+                path="/exclubs"
                 element={
                   <RoboClubDashboard
                     setView={setViewRespectingLocation}

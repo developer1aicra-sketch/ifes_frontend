@@ -5,7 +5,7 @@ import { getPartnerCode } from '../api/partnerCode';
 import { getAuthToken, getRoboclubAuthToken } from '../api/authToken';
 import { getLocationCodeFromPath } from './locationRoutes';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ifes-backend.vercel.app/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.ifes.in/api';
 
 const getPartnerCodeForRequest = () => {
   const fromStore = getPartnerCode();
