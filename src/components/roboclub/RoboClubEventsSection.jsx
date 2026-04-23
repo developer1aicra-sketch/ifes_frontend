@@ -396,10 +396,10 @@ const RoboClubEventsSection = () => {
   return (
     <section
       id="competitions-events"
-      className="py-24 border-t border-white/5 relative overflow-hidden"
+      className="border-t border-white/5 relative overflow-hidden"
       style={sectionStyle}
     >
-      {/* Subtle cyan grid — same as reference screenshot */}
+      
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -408,13 +408,13 @@ const RoboClubEventsSection = () => {
         }}
       />
 
-      {/* Glow orbs */}
+     
       <div className="absolute top-1/2 left-0 w-72 h-72 bg-cyan-600/10 rounded-full blur-[90px] pointer-events-none" />
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-700/10 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="max-w-6xl mx-auto px-6 relative z-10">
+      {/* <div className="max-w-6xl mx-auto px-6 relative z-10">
 
-        {/* Section header */}
+       
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-12">
           <div>
             <span className="text-cyan-400 font-bold tracking-widest text-xs uppercase">
@@ -430,7 +430,7 @@ const RoboClubEventsSection = () => {
             </p>
           </div>
 
-          {/* Filter pills */}
+          
           <div className="flex flex-wrap gap-2">
             {FILTERS.map((f) => (
               <button
@@ -465,7 +465,7 @@ const RoboClubEventsSection = () => {
             <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-cyan-600/10 blur-[120px] pointer-events-none" />
             <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-violet-600/10 blur-[120px] pointer-events-none" />
 
-            {/* Pagination controls */}
+           
             <div className="flex items-center justify-between gap-3 mb-5">
               <button
                 type="button"
@@ -519,7 +519,7 @@ const RoboClubEventsSection = () => {
                         className="group rounded-2xl overflow-hidden border border-slate-800 hover:border-cyan-500/35 transition-colors h-full flex flex-col"
                         style={cardStyle}
                       >
-                        {/* Card image */}
+                      
                         <div className="relative h-52 overflow-hidden shrink-0">
                           <div className="absolute inset-0 bg-gradient-to-t from-[#020b10] via-[#020b10]/30 to-transparent z-10" />
                           <RoboClubRemoteImage
@@ -573,7 +573,7 @@ const RoboClubEventsSection = () => {
                           </>
                         ) : null}
 
-                        {/* Card body */}
+                       
                         <div className="p-6 flex flex-col flex-1 min-h-0">
                           <div className="flex items-start justify-between gap-4 mb-2">
                             <h3 className="text-lg font-black text-white leading-snug">{ev.name}</h3>
@@ -603,7 +603,7 @@ const RoboClubEventsSection = () => {
             </AnimatePresence>
           </div>
         )}
-      </div>
+      </div> */}
     </section>
   );
 };

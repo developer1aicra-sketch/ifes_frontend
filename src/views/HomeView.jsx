@@ -54,8 +54,8 @@ import { galleryImages } from "../assets/gallery";
 import { PARTNER_HOME_STATIC } from "../data/partnerHomeStatic";
 import TrophyVideo from "../assets/technoxian zrc_1.mp4";
 import { useNavigate } from "react-router-dom";
-import homologo1 from "../assets/homelogo/escom.png"
-import homologo2 from "../assets/homelogo/escom2.png"
+import homologo1 from "../assets/homelogo/escom.png";
+import homologo2 from "../assets/homelogo/escom2.png";
 
 // Countdown Timer Component - Updated for 07-08 August 2026
 const CountdownTimer = () => {
@@ -795,7 +795,7 @@ const HomeView = ({
             <div className="lg:col-span-2 glow-card rounded-2xl p-5 flex flex-col md:flex-row gap-5 items-center">
               <div className="w-full md:w-2/5 bg-gradient-to-br from-gray-900 to-black rounded-xl p-3 text-center border border-cyan-400/50 overflow-hidden">
                 <img
-                  src="https://futuretech.media/wp-content/uploads/2025/08/es2.jpg"
+                  src={homologo2}
                   alt="esports"
                   className="w-full h-full object-cover rounded-lg"
                 />
@@ -1060,37 +1060,38 @@ const HomeView = ({
 
               {/* updated latest code */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 text-sm md:text-base">
-  {[
-    { icon: "🎮", text: "Game Publishers & Developers" },
-    { icon: "🏆", text: "Tournament Organizers" },
-    { icon: "🎥", text: "Content Creators & Influencers" },
-    { icon: "💼", text: "Brands & Sponsors" },
-    { icon: "🎓", text: "Universities & Training Institutes" },
-    { icon: "🌍", text: "National Federations & Governments" },
-  ].map((item, i) => (
-    <div
-      key={i}
-      className="h-[90px] flex items-center
+                {[
+                  { icon: "🎮", text: "Game Publishers & Developers" },
+                  { icon: "🏆", text: "Tournament Organizers" },
+                  { icon: "🎥", text: "Content Creators & Influencers" },
+                  { icon: "💼", text: "Brands & Sponsors" },
+                  { icon: "🎓", text: "Universities & Training Institutes" },
+                  { icon: "🌍", text: "National Federations & Governments" },
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className="h-[90px] flex items-center
       border border-cyan-500/30 px-4 rounded-2xl 
       bg-black/50 backdrop-blur-md 
       hover:bg-cyan-500/10 hover:border-cyan-400 
       transition-all duration-200"
-    >
-      <div className="flex items-center gap-2 text-left w-full">
-        <span className="text-base">{item.icon}</span>
-        <span className="leading-snug text-white/90">
-          {item.text}
-        </span>
-      </div>
-    </div>
-  ))}
+                  >
+                    <div className="flex items-center gap-2 text-left w-full">
+                      <span className="text-base">{item.icon}</span>
+                      <span className="leading-snug text-white/90">
+                        {item.text}
+                      </span>
+                    </div>
+                  </div>
+                ))}
 
-  {/* SIRF YEH MOVE KIYA HAI */}
-  <p className="col-span-2 flex items-center text-sm md:text-base text-slate-300 leading-relaxed text-left">
-    Join International Federation of Esports—connect, collaborate,
-    and shape the global esports ecosystem. Inquire or partner today.
-  </p>
-</div>
+                {/* SIRF YEH MOVE KIYA HAI */}
+                <p className="col-span-2 flex items-center text-sm md:text-base text-slate-300 leading-relaxed text-left">
+                  Join International Federation of Esports—connect, collaborate,
+                  and shape the global esports ecosystem. Inquire or partner
+                  today.
+                </p>
+              </div>
             </div>
 
             {/* RIGHT SECTION - FutureTech media with API */}
@@ -1533,11 +1534,21 @@ const HomeView = ({
                     {headline && (
                       <article className="flex flex-col h-full space-y-3">
                         {/* IMAGE HEIGHT INCREASED */}
-                        {headline.featuredImage && (
+                        {/* {headline.featuredImage && (
                           <div className="rounded-lg overflow-hidden">
                             <img
                               src={headline.featuredImage}
                               alt={headline.title}
+                              className="w-full h-[240px] object-cover transition duration-500 hover:scale-105"
+                            />
+                          </div>
+                        )} */}
+
+                        {homologo1 && (
+                          <div className="rounded-lg overflow-hidden">
+                            <img
+                              src={homologo1}
+                              alt="headline image"
                               className="w-full h-[240px] object-cover transition duration-500 hover:scale-105"
                             />
                           </div>

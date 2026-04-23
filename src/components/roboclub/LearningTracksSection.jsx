@@ -271,15 +271,15 @@ const topicIcon = (i, mutedClass) => {
 };
 
 const LearningTracksSection = () => (
-  <section id="learning-tracks" className="py-24 bg-[#020b10] border-t border-white/5 relative overflow-hidden">
+  <section id="learning-tracks" className="bg-[#020b10] border-t border-white/5 relative overflow-hidden">
     
-    {/* Background Tech Overlays */}
+  
     <div className="absolute inset-0 bg-[linear-gradient(to_right,#06b6d408_1px,transparent_1px),linear-gradient(to_bottom,#06b6d408_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
     <div className="absolute -top-24 -left-24 w-96 h-96 bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-    <div className="max-w-6xl mx-auto px-6 relative z-10">
+    {/* <div className="max-w-6xl mx-auto px-6 relative z-10">
       
-      {/* 🎯 Header Section */}
+     
       <div className="text-center mb-20 max-w-2xl mx-auto">
         <span className="text-cyan-400 font-black tracking-[0.4em] text-[10px] uppercase px-4 py-1 rounded-full border border-cyan-500/20 bg-cyan-500/5 inline-block mb-4">
           Learning Paths
@@ -310,7 +310,7 @@ const LearningTracksSection = () => (
                 skin.shell
               } ${isFeatured ? 'p-8 lg:p-9 lg:scale-[1.05] z-10' : 'p-7 lg:p-8'}`}
             >
-              {/* Badge for Track Level */}
+            
               <div className="mb-6">
                  <span className={`inline-flex px-3 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest ${skin.badge.className}`}>
                     {skin.badge.label}
@@ -330,7 +330,7 @@ const LearningTracksSection = () => (
                 </div>
               </div>
 
-              {/* Milestones List */}
+              
               <ol className="space-y-5 flex-1 mb-6 relative z-10">
                 {track.topics.map((topic, stepIdx) => (
                   <li key={topic.title} className="flex gap-4 group/item">
@@ -362,7 +362,7 @@ const LearningTracksSection = () => (
           );
         })}
       </div>
-    </div>
+    </div> */}
   </section>
 );
 
