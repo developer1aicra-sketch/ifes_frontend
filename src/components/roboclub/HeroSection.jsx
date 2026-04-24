@@ -343,16 +343,16 @@ const HeroSection = ({ setPage }) => {
 />
 
   {/* Original Box */}
-  <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/50 bg-cyan-500/10 px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.3em] text-cyan-300 backdrop-blur-sm shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+  {/* <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/50 bg-cyan-500/10 px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.3em] text-cyan-300 backdrop-blur-sm shadow-[0_0_15px_rgba(6,182,212,0.3)]">
     
-    {/* Ping Dot */}
+  
     <span className="relative flex h-2.5 w-2.5">
       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75"></span>
       <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]"></span>
     </span>
 
     TECHNOXIAN 2026
-  </div>
+  </div> */}
 
 </div>
             </motion.div>

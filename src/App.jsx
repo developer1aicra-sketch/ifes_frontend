@@ -52,6 +52,8 @@ import { StoreView } from './views/StoreView';
 import RoboClubAuth from './views/RoboClubAuth';
 import RoboClubDashboard from './views/RoboClub';
 import GlobalLoadingOverlay from './components/GlobalLoadingOverlay';
+import NationalEsportsPartner from './components/partner/NationalEsportsPartner'
+
 const viewToPath = (view) => {
   if (!view) return '/';
 
@@ -125,6 +127,8 @@ const viewToPath = (view) => {
       return '/corporate-membership';
     case 'membership':
       return '/membership';
+      case 'national-esports-partner':
+  return '/national-esports-partner';
     default:
       return '/';
   }
@@ -475,6 +479,7 @@ const AppContent = ({
               <Route path="/partner/login" element={<PartnerLoginRoute user={user} setView={setViewRespectingLocation} setUser={setUser} currentSite={currentSite} locationPrefix={locationPrefix} />} />
               <Route path="/login-partner-admin" element={<Navigate to="/partner/login" replace />} />
 
+
               <Route path="/member/portal" element={<MemberPortalRoute user={user} currentSite={currentSite} setView={setViewRespectingLocation} setUser={setUser} locationPrefix={locationPrefix} />} />
               <Route path="/member-dashboard" element={<Navigate to="/member/portal" replace />} />
               {/* Partner portal: bare /partner/portal redirects; canonical route is /:partnerCode/partner/portal */}
@@ -539,9 +544,12 @@ const AppContent = ({
               <Route path="/:locationCode/news/latest" element={<NewsListView type="latest" {...newsPropsWithPrefix} />} />
               <Route path="/:locationCode/news/most" element={<NewsListView type="most" {...newsPropsWithPrefix} />} />
               <Route path="/:locationCode/news/:id" element={<NewsArticleRoute {...newsPropsWithPrefix} />} />
-
+              <Route path="/national-esports-partner" element={<NationalEsportsPartner />} />
               {/* Location home - must be last among location routes */}
               <Route path="/:locationCode" element={<LocationView setView={setViewRespectingLocation} siteConfig={currentSite} {...newsPropsWithPrefix} />} />
+
+              {/* npa */}
+              <Route path="/national-esports-partner" element={<NationalEsportsPartner />} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
