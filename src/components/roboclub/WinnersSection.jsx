@@ -1358,7 +1358,7 @@ function WinnersSection() {
             Hall of Fame
           </h1>
           <p className="text-[#ffdc96]/80 text-lg mt-2 tracking-wide">
-            Celebrating the legends of the World Robotics Championship
+            Celebrating the legends of the Esport
           </p>
           <div className="w-32 h-0.5 bg-gradient-to-r from-transparent via-yellow-400 to-transparent mx-auto mt-5" />
         </div>
