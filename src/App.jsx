@@ -53,6 +53,7 @@ import RoboClubAuth from './views/RoboClubAuth';
 import RoboClubDashboard from './views/RoboClub';
 import GlobalLoadingOverlay from './components/GlobalLoadingOverlay';
 import NationalEsportsPartner from './components/partner/NationalEsportsPartner'
+import IFESTvott from './components/partner/IFESTvott'
 
 const viewToPath = (view) => {
   if (!view) return '/';
@@ -550,6 +551,7 @@ const AppContent = ({
 
               {/* npa */}
               <Route path="/national-esports-partner" element={<NationalEsportsPartner />} />
+              <Route path="/ifes-tvott" element={<IFESTvott />} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

@@ -658,22 +658,22 @@ const Footer = ({ setView, switchSite, currentSite }) => {
             <ul className="space-y-3 text-sm">
               <li>
                 <button onClick={() => handleAboutSectionClick("advisory-board")} className="hover:text-white transition-colors text-left w-full py-1">
-                  ADVISORY BOARD
+                  Advisory Board
                 </button>
               </li>
               <li>
                 <button onClick={() => handleAboutSectionClick("executive-committee")} className="hover:text-white transition-colors text-left w-full py-1">
-                  EXECUTIVE COMMITTEE
+                  Executive Committe
                 </button>
               </li>
               <li>
                 <button onClick={() => handleAboutSectionClick("federation-services")} className="hover:text-white transition-colors text-left w-full py-1">
-                  FEDERATION SERVICES
+                  Federation Services
                 </button>
               </li>
               <li>
                 <button onClick={() => handleAboutSectionClick("working-at-worso")} className="hover:text-white transition-colors text-left w-full py-1">
-                  WORKING AT IFeS
+                   Working At IFeS
                 </button>
               </li>
             </ul>
