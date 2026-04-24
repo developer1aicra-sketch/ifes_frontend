@@ -56,6 +56,7 @@ import TrophyVideo from "../assets/technoxian zrc_1.mp4";
 import { useNavigate } from "react-router-dom";
 import homologo1 from "../assets/homelogo/escom.png";
 import homologo2 from "../assets/homelogo/escom2.png";
+import worldimage from "../assets/homelogo/world.png"
 
 // Countdown Timer Component - Updated for 07-08 August 2026
 const CountdownTimer = () => {
@@ -818,7 +819,7 @@ const HomeView = ({
                 </button>
               </div>
             </div>
-            <div className="glow-card rounded-2xl p-5">
+            {/* <div className="glow-card rounded-2xl p-5">
               <div className="flex justify-between border-b border-white/10 pb-2 text-sm">
                 <span className="font-semibold text-cyan-400">
                   🏅 WORLD RANKING
@@ -862,7 +863,14 @@ const HomeView = ({
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
+            <div className="glow-card rounded-2xl p-3 overflow-hidden">
+  <img
+    src={worldimage}
+    alt="World Ranking"
+    className="w-full h-[220px] object-cover rounded-xl hover:scale-105 transition duration-500"
+  />
+</div>
           </div>
         </div>
       </section>
