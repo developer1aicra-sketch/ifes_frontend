@@ -670,9 +670,9 @@ const HomeView = ({
                     <span className="text-slate-400 text-[13px] whitespace-nowrap overflow-hidden text-ellipsis">
                       Sponsorship & Expo Booking Window Open
                     </span>
-                    <span className="text-cyan-400 font-semibold text-[14px]">
+                    {/* <span className="text-cyan-400 font-semibold text-[14px]">
                       $2.5M
-                    </span>
+                    </span> */}
                   </div>
 
                   {/* <button className="w-full mt-6 py-3 rounded-lg text-base font-semibold text-white bg-gradient-to-r from-cyan-600 to-purple-600 hover:brightness-110 transition shadow-lg shadow-cyan-500/20">
@@ -783,7 +783,9 @@ const HomeView = ({
                 IFES <span className="text-cyan-400 ml-1">EVENTS</span>
               </h2>
               <p className="text-slate-400 text-xs mt-1">
-                Ongoing Robotics Clashes · Global Scoreboard
+                IFES EVENTS Deliver global tournaments, industry summits, and
+                grassroots programs, connecting players, federations, and brands
+                to grow competitive esports worldwide.
               </p>
             </div>
             <div className="bg-black/50 border border-cyan-500/40 rounded-full px-3 py-1 text-[10px] font-mono">
@@ -1301,66 +1303,91 @@ const HomeView = ({
             Testimonials
           </h2>
 
-       <div className="grid md:grid-cols-3 gap-6">
-  {/* CARD 1 - Vikash Goel */}
-  <div className="group relative p-[1px] rounded-xl bg-gradient-to-r from-cyan-500/40 via-blue-500/30 to-transparent">
-    <div className="relative p-8 min-h-[260px] bg-slate-900/80 backdrop-blur-md rounded-xl border border-white/5 flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-cyan-500/10">
-      {/* IMAGE - pravatar placeholder for Vikash */}
-      <img
-        src="https://i.pravatar.cc/80?img=8"
-        alt="Vikash Goel"
-        className="w-20 h-20 rounded-full object-cover mb-4 border-2 border-cyan-400/30"
-      />
-      {/* NAME + DESIGNATION */}
-      <div className="mb-4">
-        <h4 className="text-white text-sm font-semibold">Vikash Goel</h4>
-        <p className="text-xs text-slate-400">Founder & CEO eSport XO</p>
-      </div>
-      {/* TESTIMONIAL STATEMENT */}
-      <p className="text-sm text-slate-300 leading-relaxed">
-        “The International Federation of Esports is building a unified global framework that strengthens competitive gaming worldwide. IFES’s leadership in governance, collaboration, and innovation is helping esports mature into a structured, credible, and internationally respected sporting ecosystem.”
-      </p>
-    </div>
-  </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* CARD 1 - Vikash Goel */}
+            <div className="group relative p-[1px] rounded-xl bg-gradient-to-r from-cyan-500/40 via-blue-500/30 to-transparent">
+              <div className="relative p-8 min-h-[260px] bg-slate-900/80 backdrop-blur-md rounded-xl border border-white/5 flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-cyan-500/10">
+                {/* IMAGE - pravatar placeholder for Vikash */}
+                <img
+                  src="https://escom.ifes.in/assets/speakers/VIKAS%20GOEL.jpg"
+                  alt="Vikash Goel"
+                  className="w-20 h-20 rounded-full object-cover mb-4 border-2 border-cyan-400/30"
+                />
+                {/* NAME + DESIGNATION */}
+                <div className="mb-4">
+                  <h4 className="text-white text-sm font-semibold">
+                    Vikash Goel
+                  </h4>
+                  <p className="text-xs text-slate-400">
+                    Founder & CEO eSport XO
+                  </p>
+                </div>
+                {/* TESTIMONIAL STATEMENT */}
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  “The International Federation of Esports is building a unified
+                  global framework that strengthens competitive gaming
+                  worldwide. IFES’s leadership in governance, collaboration, and
+                  innovation is helping esports mature into a structured,
+                  credible, and internationally respected sporting ecosystem.”
+                </p>
+              </div>
+            </div>
 
-  {/* CARD 2 - Santanu Basu */}
-  <div className="group relative p-[1px] rounded-xl bg-gradient-to-r from-purple-500/40 via-pink-500/30 to-transparent">
-    <div className="relative p-8 min-h-[260px] bg-slate-900/80 backdrop-blur-md rounded-xl border border-white/5 flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/10">
-      <img
-        src="https://i.pravatar.cc/80?img=18"
-        alt="Santanu Basu"
-        className="w-20 h-20 rounded-full object-cover mb-4 border-2 border-purple-400/30"
-      />
-      <div className="mb-4">
-        <h4 className="text-white text-sm font-semibold">Santanu Basu</h4>
-        <p className="text-xs text-slate-400">Founder of Lets Game Now</p>
-      </div>
-      <p className="text-sm text-slate-300 leading-relaxed">
-        “IFES plays a vital role in connecting global esports stakeholders through structured competitions and transparent governance. Their commitment to education, inclusivity, and professional development creates meaningful opportunities for players, organizations, and emerging esports communities across regions.”
-      </p>
-    </div>
-  </div>
+            {/* CARD 2 - Santanu Basu */}
+            <div className="group relative p-[1px] rounded-xl bg-gradient-to-r from-purple-500/40 via-pink-500/30 to-transparent">
+              <div className="relative p-8 min-h-[260px] bg-slate-900/80 backdrop-blur-md rounded-xl border border-white/5 flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/10">
+                <img
+                  src="https://escom.ifes.in/assets/speakers/SANTANU%20BASU.jpg"
+                  alt="Santanu Basu"
+                  className="w-20 h-20 rounded-full object-cover mb-4 border-2 border-purple-400/30"
+                />
+                <div className="mb-4">
+                  <h4 className="text-white text-sm font-semibold">
+                    Santanu Basu
+                  </h4>
+                  <p className="text-xs text-slate-400">
+                    Founder of Lets Game Now
+                  </p>
+                </div>
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  “IFES plays a vital role in connecting global esports
+                  stakeholders through structured competitions and transparent
+                  governance. Their commitment to education, inclusivity, and
+                  professional development creates meaningful opportunities for
+                  players, organizations, and emerging esports communities
+                  across regions.”
+                </p>
+              </div>
+            </div>
 
-  {/* CARD 3 - Utkarsh Rampal */}
-  <div className="group relative p-[1px] rounded-xl bg-gradient-to-r from-pink-500/40 via-rose-500/30 to-transparent">
-    <div className="relative p-8 min-h-[260px] bg-slate-900/80 backdrop-blur-md rounded-xl border border-white/5 flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-pink-500/10">
-      <img
-        src="https://i.pravatar.cc/80?img=28"
-        alt="Utkarsh Rampal"
-        className="w-20 h-20 rounded-full object-cover mb-4 border-2 border-pink-400/30"
-      />
-      <div className="mb-4">
-        <h4 className="text-white text-sm font-semibold">Utkarsh Rampal</h4>
-        <p className="text-xs text-slate-400">GR Content Manager, Sportskeeda</p>
-      </div>
-      <p className="text-sm text-slate-300 leading-relaxed">
-        “Through visionary leadership and innovative platforms like e-World, IFES is transforming how esports competitions operate globally. Their focus on integrity, collaboration, and talent development positions the federation as a driving force behind the future of competitive gaming.”
-      </p>
-    </div>
-  </div>
+            {/* CARD 3 - Utkarsh Rampal */}
+            <div className="group relative p-[1px] rounded-xl bg-gradient-to-r from-pink-500/40 via-rose-500/30 to-transparent">
+              <div className="relative p-8 min-h-[260px] bg-slate-900/80 backdrop-blur-md rounded-xl border border-white/5 flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-pink-500/10">
+                <img
+                  src="https://escom.ifes.in/assets/speakers/UTKARSH%20RAMPAL.jpg"
+                  alt="Utkarsh Rampal"
+                  className="w-20 h-20 rounded-full object-cover mb-4 border-2 border-pink-400/30"
+                />
+                <div className="mb-4">
+                  <h4 className="text-white text-sm font-semibold">
+                    Utkarsh Rampal
+                  </h4>
+                  <p className="text-xs text-slate-400">
+                    GR Content Manager, Sportskeeda
+                  </p>
+                </div>
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  “Through visionary leadership and innovative platforms like
+                  e-World, IFES is transforming how esports competitions operate
+                  globally. Their focus on integrity, collaboration, and talent
+                  development positions the federation as a driving force behind
+                  the future of competitive gaming.”
+                </p>
+              </div>
+            </div>
 
-  {/* CARD 4 - NEW DESIGN: Chaetan Chandgude (Unique gradient / orange-amber) */}
-  <div className="group relative p-[1px] rounded-xl bg-gradient-to-r from-amber-500/40 via-orange-500/30 to-rose-500/30">
+            {/* CARD 4 - NEW DESIGN: Chaetan Chandgude (Unique gradient / orange-amber) */}
+            {/* <div className="group relative p-[1px] rounded-xl bg-gradient-to-r from-amber-500/40 via-orange-500/30 to-rose-500/30">
     <div className="relative p-8 min-h-[260px] bg-slate-900/80 backdrop-blur-md rounded-xl border border-white/5 flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:shadow-amber-500/10">
       <img
         src="https://i.pravatar.cc/80?img=42"
@@ -1375,8 +1402,8 @@ const HomeView = ({
         “IFES is shaping a sustainable esports ecosystem by combining technology, governance, and global partnerships. Their dedication to diversity, education, and structured growth ensures esports continues evolving as a professional industry with lasting global impact.”
       </p>
     </div>
-  </div>
-</div>
+  </div> */}
+          </div>
         </div>
       </section>
 

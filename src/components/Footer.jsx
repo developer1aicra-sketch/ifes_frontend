@@ -422,6 +422,35 @@ const Footer = ({ setView, switchSite, currentSite }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Initialize Tawk.to chat widget
+  useEffect(() => {
+    // Check if Tawk.to script is already loaded
+    if (window.Tawk_API) return;
+
+    // Create and load Tawk.to script
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://embed.tawk.to/672f046b2480f5b4f59b11cb/1ic7qihii';
+    script.charset = 'UTF-8';
+    script.setAttribute('crossorigin', '*');
+    
+    // Initialize Tawk_API object before script loads
+    window.Tawk_API = window.Tawk_API || {};
+    window.Tawk_LoadStart = new Date();
+    
+    script.onload = () => {
+      console.log('Tawk.to chat widget loaded successfully');
+    };
+    
+    document.body.appendChild(script);
+    
+    // Cleanup function (optional - keeps widget on unmount)
+    return () => {
+      // Don't remove script on unmount to maintain chat history
+      // The widget will persist across navigation
+    };
+  }, []);
+
   // Build country codes for LocationSwitcher from API (fallback to DEFAULT_LOCATION_CODES)
   const countryCodes = useMemo(() => {
     const fromApi = partners
@@ -521,7 +550,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
   return (
     <footer className={`${themeConfig?.colors?.gradient || 'bg-[#0a0f1a]'} text-slate-400 pt-10`}>
       <div className="container mx-auto px-4 sm:px-6 max-w-[1600px]">
-        {/* Four-column layout */}
+        {/* Four-column layout - removed bg-red-500 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 lg:gap-16 mb-10 md:mb-12">
           
           {/* Column 1: Logo and content */}

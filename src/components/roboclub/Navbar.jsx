@@ -356,35 +356,38 @@ const Navbar = ({
             </div>
 
             {/* Partner Dropdown */}
-            <div className="relative group">
-              <button className="hover:text-white transition-colors flex items-center gap-1">
-                Partner
-                <ChevronDown
-                  size={14}
-                  className="opacity-70 shrink-0 transition-transform duration-200 group-hover:rotate-180"
-                />
-              </button>
-              <div
-                className="absolute left-1/2 -translate-x-1/2 mt-3 w-48 
-                              bg-slate-800/95 backdrop-blur-md 
-                              rounded-lg shadow-xl border border-white/10
-                              opacity-0 invisible group-hover:opacity-100 group-hover:visible
-                              transition-all duration-200 z-50"
-              >
-                <Link
-                  to={path("/nep-nea")}
-                  className="block px-4 py-2.5 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-t-lg transition"
-                >
-                  NEP/NEA
-                </Link>
-                <Link
-                  to={path("/ifes-tv-ott")}
-                  className="block px-4 py-2.5 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-b-lg transition"
-                >
-                  IFES TV - OTT
-                </Link>
-              </div>
-            </div>
+          <div className="relative group">
+  <button className="hover:text-white transition-colors flex items-center gap-1">
+    Partner
+    <ChevronDown
+      size={14}
+      className="opacity-70 shrink-0 transition-transform duration-200 group-hover:rotate-180"
+    />
+  </button>
+
+  <div
+    className="absolute left-1/2 -translate-x-1/2 mt-3 w-48 
+    bg-slate-800/95 backdrop-blur-md 
+    rounded-lg shadow-xl border border-white/10
+    opacity-0 invisible group-hover:opacity-100 group-hover:visible
+    transition-all duration-200 z-50"
+  >
+    {/* 🔥 FIX: Link ki jagah setView use */}
+   <button
+  onClick={() => setView("national-esports-partner")}
+  className="block w-full text-left px-4 py-2.5 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-t-lg transition"
+>
+  NEP/NEA
+</button>
+
+    <button
+      onClick={() => setView('ifes-tv-ott')}
+      className="w-full text-left px-4 py-2.5 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-b-lg transition"
+    >
+      IFES TV - OTT
+    </button>
+  </div>
+</div>
           </div>
 
           {/* Mobile Menu Button */}

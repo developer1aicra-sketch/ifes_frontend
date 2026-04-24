@@ -559,7 +559,7 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
                   transition-all duration-200 z-50">
 
     <Link
-      to={path('/nep-nea')}
+      to={path('/national-esports-partner')}
       className="block px-4 py-2.5 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-t-lg transition"
     >
       NEP/NEA
