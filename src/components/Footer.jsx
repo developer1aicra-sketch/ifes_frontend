@@ -27,7 +27,7 @@
 //   { segment: 'executive-committee', label: 'EXECUTIVE COMMITTEE' },
 //   { segment: 'federation-services', label: 'FEDERATION SERVICES' },
 //   // { segment: 'tech-for-good', label: 'Gaming For Robotics' },
-//   { segment: 'working-at-worso', label: 'WORKING AT IFeS' },
+//   { segment: 'working-at-ifes', label: 'WORKING AT IFeS' },
 // ];
 
 // const Footer = ({ setView, switchSite, currentSite }) => {
@@ -366,7 +366,7 @@ const ABOUT_SECTION_LINKS = [
   { segment: 'advisory-board', label: 'ADVISORY BOARD' },
   { segment: 'executive-committee', label: 'EXECUTIVE COMMITTEE' },
   { segment: 'federation-services', label: 'FEDERATION SERVICES' },
-  { segment: 'working-at-worso', label: 'WORKING AT IFeS' },
+  { segment: 'working-at-ifes', label: 'WORKING AT IFeS' },
 ];
 
 const Footer = ({ setView, switchSite, currentSite }) => {
@@ -663,7 +663,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
               </li>
               <li>
                 <button onClick={() => handleAboutSectionClick("executive-committee")} className="hover:text-white transition-colors text-left w-full py-1">
-                  Executive Committe
+                  Executive Committee
                 </button>
               </li>
               <li>
@@ -672,7 +672,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
                 </button>
               </li>
               <li>
-                <button onClick={() => handleAboutSectionClick("working-at-worso")} className="hover:text-white transition-colors text-left w-full py-1">
+                <button onClick={() => handleAboutSectionClick("working-at-ifes")} className="hover:text-white transition-colors text-left w-full py-1">
                    Working At IFeS
                 </button>
               </li>
@@ -708,7 +708,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
         <div className="py-4 md:py-4 border-t border-slate-700/50 flex justify-center">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center">
             <div className="text-xs text-slate-500 text-center">
-              © 2026 World Robotics Sports Organization. All Rights Reserved.
+              Copyright © International Federation of eSports 2026. All Rights Reserved.
             </div>
           </div>
         </div>

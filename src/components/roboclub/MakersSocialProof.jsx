@@ -7,7 +7,7 @@ const DEFAULT_AVATAR_IMG_IDS = [11, 12, 13, 14];
  */
 const MakersSocialProof = ({
   className = '',
-  headline = '12,000+ Makers',
+  headline = '12,000+ Gamers',
   subheadline = 'Joined this season',
   avatarImgIds = DEFAULT_AVATAR_IMG_IDS,
 }) => {

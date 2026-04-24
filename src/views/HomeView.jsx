@@ -789,10 +789,10 @@ const HomeView = ({
                 to grow competitive esports worldwide.
               </p>
             </div>
-            <div className="bg-black/50 border border-cyan-500/40 rounded-full px-3 py-1 text-[10px] font-mono">
+            {/* <div className="bg-black/50 border border-cyan-500/40 rounded-full px-3 py-1 text-[10px] font-mono">
               <span className="w-2 h-2 bg-red-500 rounded-full inline-block animate-pulse mr-1"></span>
               3 ACTIVE ARENAS
-            </div>
+            </div> */}
           </div>
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 glow-card rounded-2xl p-5 flex flex-col md:flex-row gap-5 items-center">
@@ -814,9 +814,12 @@ const HomeView = ({
                   explore the latest trends, innovations, and opportunities in
                   eSports.
                 </p>
-                <button className="mt-3 bg-cyan-800/40 border border-cyan-400 px-5 py-1.5 rounded-full text-[11px] font-semibold hover:bg-cyan-600/60 transition">
-                  JOIN SPECTATE <Radio size={12} className="inline ml-1" />
-                </button>
+               <button
+  onClick={() => window.open("https://escom.ifes.in/", "_blank")}
+  className="mt-3 bg-cyan-800/40 border border-cyan-400 px-5 py-1.5 rounded-full text-[11px] font-semibold hover:bg-cyan-600/60 transition"
+>
+  JOIN SPECTATE <Radio size={12} className="inline ml-1" />
+</button>
               </div>
             </div>
             {/* <div className="glow-card rounded-2xl p-5">
@@ -1033,9 +1036,9 @@ const HomeView = ({
                   BUILDING THE COMPLETE ESPORTS ECOSYSTEM
                 </h4>
 
-                <span className="text-[9px] md:text-[10px] bg-cyan-900/60 px-2 py-1 rounded font-medium tracking-wide">
+                {/* <span className="text-[9px] md:text-[10px] bg-cyan-900/60 px-2 py-1 rounded font-medium tracking-wide">
                   QUARTERFINALS
-                </span>
+                </span> */}
               </div>
               {/* Subtitle */}
               <p className="text-[11px] md:text-sm text-cyan-300 mt-2">
@@ -1754,7 +1757,7 @@ const HomeView = ({
                 <Building size={14} className="inline mr-2" /> PARTNER WITH US
               </button>
               <button className="border border-white/20 px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-white/10 transition">
-                <FileText size={14} className="inline mr-2" /> RULEBOOK & KIT
+                <FileText size={14} className="inline mr-2" /> DOWNLOAD & BROCHURE
               </button>
             </div>
           </div>
