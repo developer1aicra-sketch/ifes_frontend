@@ -156,7 +156,6 @@
 //             </a>
 //           </div>
 
-
 //           {/* <Link to={path('/partner-with-us')} className="hover:text-white transition-colors">
 //             Become a Partner
 //           </Link> */}
@@ -337,67 +336,86 @@
 
 // export default Navigation;
 
+// latest code
 
+import { useState, useEffect } from "react";
+import { Trophy, Menu, X, User, LogOut, Star, ChevronDown } from "lucide-react";
+import logo from "../assets/logo.png";
+import { Link, useLocation } from "react-router-dom";
+import { useThemeClasses } from "../hooks/useThemeClasses";
+import { pathWithLocationPrefix } from "../utils/locationRoutes";
+import { useEffectiveLocationPrefix } from "../hooks/useEffectiveLocationPrefix";
+import { usePartnerAboutMegaMenuItems } from "../hooks/usePartnerAboutMegaMenuItems";
+import { partnerLogout, clearPartnerAuth, getPartnerAuth } from "../utils/api";
+import navlogo from "../assets/homelogo/logo.png";
+import { clearAuthToken, getAuthToken } from "../api/authToken";
+import {
+  AboutWorsoDesktopMegaMenu,
+  AboutWorsoMobileLinks,
+} from "./AboutWorsoMegaMenu";
 
-
-// latest code 
-
-import { useState, useEffect } from 'react';
-import { Trophy, Menu, X, User, LogOut, Star, ChevronDown } from 'lucide-react';
-import logo from '../assets/logo.png';
-import { Link, useLocation } from 'react-router-dom';
-import { useThemeClasses } from '../hooks/useThemeClasses';
-import { pathWithLocationPrefix } from '../utils/locationRoutes';
-import { useEffectiveLocationPrefix } from '../hooks/useEffectiveLocationPrefix';
-import { usePartnerAboutMegaMenuItems } from '../hooks/usePartnerAboutMegaMenuItems';
-import { partnerLogout, clearPartnerAuth, getPartnerAuth } from '../utils/api';
-import { clearAuthToken, getAuthToken } from '../api/authToken';
-import { AboutWorsoDesktopMegaMenu, AboutWorsoMobileLinks } from './AboutWorsoMegaMenu';
-
-const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, user, setUser }) => {
+const Navigation = ({
+  setView,
+  toggleMobileMenu,
+  isMobileMenuOpen,
+  siteConfig,
+  user,
+  setUser,
+}) => {
   const [aboutMobileOpen, setAboutMobileOpen] = useState(false);
   const theme = useThemeClasses();
   const location = useLocation();
   const effectiveLocationPrefix = useEffectiveLocationPrefix(siteConfig);
   const path = (p) => pathWithLocationPrefix(effectiveLocationPrefix, p);
-  const { isRegionalChapter, partnerTabs, loading: partnerAboutNavLoading } =
-    usePartnerAboutMegaMenuItems(effectiveLocationPrefix);
+  const {
+    isRegionalChapter,
+    partnerTabs,
+    loading: partnerAboutNavLoading,
+  } = usePartnerAboutMegaMenuItems(effectiveLocationPrefix);
   const partnerSession = getPartnerAuth();
-  const isPartnerAuthenticated = Boolean(partnerSession?.token && partnerSession?.partner);
+  const isPartnerAuthenticated = Boolean(
+    partnerSession?.token && partnerSession?.partner,
+  );
   /** Member portal: when member token exists */
   const isMemberAuthenticated = Boolean(getAuthToken());
   const isMemberPortalActive =
-    location.pathname === '/member/portal' || location.pathname.endsWith('/member/portal');
+    location.pathname === "/member/portal" ||
+    location.pathname.endsWith("/member/portal");
   const isPartnerPortalActive =
-    location.pathname === '/partner/portal' || location.pathname.endsWith('/partner/portal');
-  const activePortalButtonClass = 'bg-blue-600 ring-2 ring-blue-300/80 border-blue-300/70';
+    location.pathname === "/partner/portal" ||
+    location.pathname.endsWith("/partner/portal");
+  const activePortalButtonClass =
+    "bg-blue-600 ring-2 ring-blue-300/80 border-blue-300/70";
 
   const openMemberPortal = () => {
     if (!isMemberAuthenticated) {
-      setView('member-login');
+      setView("member-login");
       return;
     }
-    setUser?.((prev) => (prev?.type === 'member' ? prev : { type: 'member', email: prev?.email }));
-    setView('member-dashboard');
+    setUser?.((prev) =>
+      prev?.type === "member" ? prev : { type: "member", email: prev?.email },
+    );
+    setView("member-dashboard");
   };
 
   const openPartnerPortal = () => {
     if (!isPartnerAuthenticated) {
-      setView('partner-login');
+      setView("partner-login");
       return;
     }
     setUser?.({
-      type: 'admin',
-      role: 'partner',
+      type: "admin",
+      role: "partner",
       email: partnerSession.partner.contactEmail ?? partnerSession.email,
       token: partnerSession.token,
       partner: partnerSession.partner,
     });
-    setView('partner-dashboard');
+    setView("partner-dashboard");
   };
 
   const logout = async () => {
-    const shouldLogoutPartner = Boolean(partnerSession?.token) && user?.type !== 'member';
+    const shouldLogoutPartner =
+      Boolean(partnerSession?.token) && user?.type !== "member";
     const shouldLogoutMember = Boolean(getAuthToken()) && !shouldLogoutPartner;
     try {
       if (shouldLogoutPartner && partnerSession?.token) {
@@ -409,15 +427,15 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
       if (shouldLogoutMember) clearAuthToken();
       if (shouldLogoutPartner) clearPartnerAuth();
       setUser?.(null);
-      setView('home');
+      setView("home");
     }
   };
 
   if (
-    location.pathname === '/roboclub' ||
-    location.pathname === '/login' ||
-    location.pathname.endsWith('/roboclub') ||
-    location.pathname.endsWith('/login')
+    location.pathname === "/roboclub" ||
+    location.pathname === "/login" ||
+    location.pathname.endsWith("/roboclub") ||
+    location.pathname.endsWith("/login")
   ) {
     return null;
   }
@@ -439,48 +457,67 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
           <div className="flex justify-end items-center gap-2">
             <button
               onClick={openMemberPortal}
-              className={`flex items-center gap-1.5 text-[13px] font-medium py-1 px-2.5 rounded-md transition-all duration-200 ${isMemberPortalActive
+              className={`flex items-center gap-1.5 text-[13px] font-medium py-1 px-2.5 rounded-md transition-all duration-200 ${
+                isMemberPortalActive
                   ? `text-white ${activePortalButtonClass}`
-                  : 'text-gray-400 hover:text-white hover:bg-white/10'
-                }`}
+                  : "text-gray-400 hover:text-white hover:bg-white/10"
+              }`}
             >
               <User size={13} className="shrink-0" />
-              <span>{isMemberAuthenticated ? 'Member Portal' : 'Member Login'}</span>
+              <span>
+                {isMemberAuthenticated ? "Member Portal" : "Member Login"}
+              </span>
             </button>
             <div className="w-px h-3 bg-white/20" aria-hidden="true" />
             <button
               onClick={openPartnerPortal}
-              className={`flex items-center gap-1.5 text-[13px] font-medium py-1 px-2.5 rounded-md transition-all duration-200 ${isPartnerPortalActive
+              className={`flex items-center gap-1.5 text-[13px] font-medium py-1 px-2.5 rounded-md transition-all duration-200 ${
+                isPartnerPortalActive
                   ? `text-white ${activePortalButtonClass}`
-                  : 'text-gray-400 hover:text-white hover:bg-white/10'
-                }`}
+                  : "text-gray-400 hover:text-white hover:bg-white/10"
+              }`}
             >
               <User size={13} className="shrink-0" />
-              <span>{isPartnerAuthenticated ? 'Partner Portal' : 'Partner Login'}</span>
+              <span>
+                {isPartnerAuthenticated ? "Partner Portal" : "Partner Login"}
+              </span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Main Navigation */}
-      <nav className={`sticky top-0 z-40 transition-all duration-300 ${theme.bgGradient || 'bg-[#0a0f1a]'} border-b border-white/10`}>
+      <nav
+        className={`sticky top-0 z-40 transition-all duration-300 ${theme.bgGradient || "bg-[#0a0f1a]"} border-b border-white/10`}
+      >
         <div className="container mx-auto px-4 sm:px-6 py-2 md:py-1 flex justify-between items-center max-w-[1600px]">
-          <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group min-w-0" onClick={() => setView('home')}>
-            <img
-              src="https://ifes.in/images/logo.png"
-              alt="WORSO Logo"
-              className="h-10 w-auto object-contain sm:h-20"
-            />
+          <div
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer group min-w-0"
+            onClick={() => setView("home")}
+          >
+         <div className="flex items-center gap-3">
+  <img
+    src={navlogo}
+    alt="WORSO Logo"
+    className="h-10 w-auto object-contain sm:h-20"
+  />
+
+  <span className="text-sm sm:text-lg font-semibold text-white leading-tight">
+    International Federation of Esports (IFeS)
+  </span>
+</div>
           </div>
 
           <div className="hidden md:flex items-center gap-6 lg:gap-8 font-bold text-[14px] uppercase tracking-widest text-slate-300">
             <div className="relative group/about">
               <button
                 type="button"
-                onClick={() => setView('about')}
+                onClick={() => setView("about")}
                 className="hover:text-white transition-colors py-2 flex items-center gap-1 text-inherit"
               >
-                {(effectiveLocationPrefix || siteConfig.is_partner) ? 'About' : 'IFeS'}
+                {effectiveLocationPrefix || siteConfig.is_partner
+                  ? "About"
+                  : "IFeS"}
                 <ChevronDown
                   size={14}
                   className="opacity-70 shrink-0 transition-transform duration-200 group-hover/about:rotate-180"
@@ -498,97 +535,118 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
               />
             </div>
 
-            <Link
-              to={path('/membership')}
-              className="normal-case"
-            >
+            <Link to={path("/membership")} className="normal-case">
               Membership
             </Link>
-            <Link to={path('/exclubs')} className="flex gap-2 items-center normal-case">
-              <Star size={14} className={location.pathname.endsWith('/exclubs') ? 'text-yellow-400' : 'text-yellow-500'} /> EX Clubs
+            <Link
+              to={path("/exclubs")}
+              className="flex gap-2 items-center normal-case"
+            >
+              <Star
+                size={14}
+                className={
+                  location.pathname.endsWith("/exclubs")
+                    ? "text-yellow-400"
+                    : "text-yellow-500"
+                }
+              />{" "}
+              EX Clubs
             </Link>
 
             <div className="relative group">
               <a
-                href="https://ifes.in/esportsworldcup/"
+                href="https://esportsworldcup.ifes.in/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white transition-colors flex items-center gap-1 normal-case"
               >
                 <Trophy className="w-3 h-3 text-yellow-500" />
-                {siteConfig.is_partner ? 'Local Events' : 'E-Sport'}
+                {siteConfig.is_partner ? "Local Events" : "E-Sport"}
               </a>
             </div>
 
             {/* updated code */}
             <div className="relative group">
-              <button className="hover:text-white transition-colors">
-                Event
-              </button>
-
-              {/* Dropdown */}
-              <div className="absolute left-0 mt-2 w-44 bg-slate-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                <a
-                  href="https://www.escom.ifes.in/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white"
-                >
-                  ESCOM-2.0
-                </a>
-              </div>
+              <a
+                href="https://www.escom.ifes.in/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors normal-case"
+              >
+                Escom-2.0
+              </a>
             </div>
 
             {/* Partner Dropdown */}
-           <div className="relative group">
-  
-  {/* Button */}
-  <button className="hover:text-white transition-colors flex items-center gap-1">
-    Partner
-    <ChevronDown
-      size={14}
-      className="opacity-70 shrink-0 transition-transform duration-200 group-hover:rotate-180"
-    />
-  </button>
+            <div className="relative group">
+              {/* Button */}
+              <button className="hover:text-white transition-colors flex items-center gap-1">
+                Partner
+                <ChevronDown
+                  size={14}
+                  className="opacity-70 shrink-0 transition-transform duration-200 group-hover:rotate-180"
+                />
+              </button>
 
-  {/* Dropdown */}
-  <div className="absolute left-1/2 -translate-x-1/2 mt-3 w-48 
+              {/* Dropdown */}
+              <div
+                className="absolute left-1/2 -translate-x-1/2 mt-3 w-48 
                   bg-slate-800/95 backdrop-blur-md 
                   rounded-lg shadow-xl border border-white/10
                   opacity-0 invisible group-hover:opacity-100 group-hover:visible
-                  transition-all duration-200 z-50">
+                  transition-all duration-200 z-50"
+              >
+                <Link
+                  to={path("/national-esports-partner")}
+                  className="block px-4 py-2.5 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-t-lg transition"
+                >
+                  NEP/NEA
+                </Link>
 
-    <Link
-      to={path('/national-esports-partner')}
-      className="block px-4 py-2.5 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-t-lg transition"
-    >
-      NEP/NEA
-    </Link>
-
-    <Link
-      to={path('/ifes-tvott')}
-      className="block px-4 py-2.5 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-b-lg transition"
-    >
-      IFES TV - OTT
-    </Link>
-
-  </div>
-</div>
+                <Link
+                  to={path("/ifes-tvott")}
+                  className="block px-4 py-2.5 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-b-lg transition"
+                >
+                  IFES TV - OTT
+                </Link>
+              </div>
+            </div>
           </div>
 
-          <button className="md:hidden text-white p-2 -m-2 touch-manipulation" onClick={toggleMobileMenu} aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}>
+          <button
+            className="md:hidden text-white p-2 -m-2 touch-manipulation"
+            onClick={toggleMobileMenu}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+          >
             {isMobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
           </button>
         </div>
 
         {/* Mobile menu overlay + panel */}
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="Mobile menu">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={toggleMobileMenu} aria-hidden="true" />
-            <div className={`absolute top-0 right-0 bottom-0 w-full max-w-[320px] sm:max-w-sm ${theme.bgGradient || 'bg-[#0a0f1a]'} border-l border-white/10 shadow-2xl overflow-y-auto`}>
+          <div
+            className="fixed inset-0 z-50 md:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile menu"
+          >
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={toggleMobileMenu}
+              aria-hidden="true"
+            />
+            <div
+              className={`absolute top-0 right-0 bottom-0 w-full max-w-[320px] sm:max-w-sm ${theme.bgGradient || "bg-[#0a0f1a]"} border-l border-white/10 shadow-2xl overflow-y-auto`}
+            >
               <div className="flex justify-between items-center p-4 border-b border-white/10">
-                <span className="text-white font-bold text-sm uppercase">Menu</span>
-                <button className="text-white p-2 -m-2" onClick={toggleMobileMenu} aria-label="Close menu">
+                <span className="text-white font-bold text-sm uppercase">
+                  Menu
+                </span>
+                <button
+                  className="text-white p-2 -m-2"
+                  onClick={toggleMobileMenu}
+                  aria-label="Close menu"
+                >
                   <X size={24} />
                 </button>
               </div>
@@ -596,14 +654,19 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
                 <button
                   type="button"
                   onClick={() => setAboutMobileOpen((o) => !o)}
-                  className={`text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors flex items-center justify-between gap-2 ${aboutMobileOpen ? 'bg-white/5 text-white' : ''
-                    }`}
+                  className={`text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors flex items-center justify-between gap-2 ${
+                    aboutMobileOpen ? "bg-white/5 text-white" : ""
+                  }`}
                   aria-expanded={aboutMobileOpen}
                 >
-                  <span>{(effectiveLocationPrefix || siteConfig.is_partner) ? 'About' : 'Ifes'}</span>
+                  <span>
+                    {effectiveLocationPrefix || siteConfig.is_partner
+                      ? "About"
+                      : "Ifes"}
+                  </span>
                   <ChevronDown
                     size={16}
-                    className={`shrink-0 opacity-80 transition-transform ${aboutMobileOpen ? 'rotate-180' : ''}`}
+                    className={`shrink-0 opacity-80 transition-transform ${aboutMobileOpen ? "rotate-180" : ""}`}
                     aria-hidden
                   />
                 </button>
@@ -620,48 +683,66 @@ const Navigation = ({ setView, toggleMobileMenu, isMobileMenuOpen, siteConfig, u
                     />
                   </div>
                 )}
-                <Link to={path('/membership')} onClick={closeAnd()} className="px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
+                <Link
+                  to={path("/membership")}
+                  onClick={closeAnd()}
+                  className="px-6 py-4 hover:bg-white/5 hover:text-white transition-colors"
+                >
                   Membership
                 </Link>
 
-                <button onClick={closeAnd(() => setView('teams'))} className="text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
+                <button
+                  onClick={closeAnd(() => setView("teams"))}
+                  className="text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors"
+                >
                   Teams / Players
                 </button>
                 <Link
-                  to={path('/challenges')}
+                  to={path("/challenges")}
                   onClick={closeAnd()}
                   className="text-left px-6 py-4 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2"
                 >
                   <Trophy className="w-3 h-3 text-yellow-500 flex-shrink-0" />
-                  {siteConfig.is_partner ? 'Local Events' : 'WRC Challenges'}
+                  {siteConfig.is_partner ? "Local Events" : "WRC Challenges"}
                 </Link>
-                <Link to={path('/partner-with-us')} onClick={closeAnd()} className="px-6 py-4 hover:bg-white/5 hover:text-white transition-colors">
+                <Link
+                  to={path("/partner-with-us")}
+                  onClick={closeAnd()}
+                  className="px-6 py-4 hover:bg-white/5 hover:text-white transition-colors"
+                >
                   Become a Partner
                 </Link>
                 <div className="mt-4 pt-4 border-t border-white/10 px-6">
                   <button
                     onClick={closeAnd(openMemberPortal)}
-                    className={`text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 ${isMemberPortalActive
-                      ? activePortalButtonClass
-                      : `${theme.bgPrimary || siteConfig.colors.primary}`
-                      }`}
+                    className={`text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 ${
+                      isMemberPortalActive
+                        ? activePortalButtonClass
+                        : `${theme.bgPrimary || siteConfig.colors.primary}`
+                    }`}
                   >
                     <User size={16} />
-                    {isMemberAuthenticated ? 'Member Portal' : 'Member Login'}
+                    {isMemberAuthenticated ? "Member Portal" : "Member Login"}
                   </button>
                   <button
                     onClick={closeAnd(openPartnerPortal)}
-                    className={`text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 mt-3 border ${isPartnerPortalActive
-                      ? activePortalButtonClass
-                      : 'bg-slate-700/70 border-slate-500/50'
-                      }`}
+                    className={`text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 mt-3 border ${
+                      isPartnerPortalActive
+                        ? activePortalButtonClass
+                        : "bg-slate-700/70 border-slate-500/50"
+                    }`}
                   >
                     <User size={16} />
-                    {isPartnerAuthenticated ? 'Partner Portal' : 'Partner Login'}
+                    {isPartnerAuthenticated
+                      ? "Partner Portal"
+                      : "Partner Login"}
                   </button>
                   {(isMemberAuthenticated || isPartnerAuthenticated) && (
                     <div className="mt-3 space-y-1">
-                      <button onClick={closeAnd(logout)} className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-red-600/15 text-red-400 flex items-center gap-2 text-sm">
+                      <button
+                        onClick={closeAnd(logout)}
+                        className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-red-600/15 text-red-400 flex items-center gap-2 text-sm"
+                      >
                         <LogOut size={14} /> Logout
                       </button>
                     </div>
