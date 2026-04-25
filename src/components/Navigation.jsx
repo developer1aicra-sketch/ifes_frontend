@@ -502,9 +502,9 @@ const Navigation = ({
     className="h-10 w-auto object-contain sm:h-20"
   />
 
-  <span className="text-sm sm:text-lg font-semibold text-white leading-tight">
+  {/* <span className="text-sm sm:text-lg font-semibold text-white leading-tight">
     International Federation of Esports (IFeS)
-  </span>
+  </span> */}
 </div>
           </div>
 
@@ -573,7 +573,7 @@ const Navigation = ({
                 rel="noopener noreferrer"
                 className="hover:text-white transition-colors normal-case"
               >
-                Escom-2.0
+                ESCOM-2.0
               </a>
             </div>
 
