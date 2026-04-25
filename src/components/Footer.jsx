@@ -27,7 +27,7 @@
 //   { segment: 'executive-committee', label: 'EXECUTIVE COMMITTEE' },
 //   { segment: 'federation-services', label: 'FEDERATION SERVICES' },
 //   // { segment: 'tech-for-good', label: 'Gaming For Robotics' },
-//   { segment: 'working-at-worso', label: 'WORKING AT IFeS' },
+//   { segment: 'working-at-ifes', label: 'WORKING AT IFeS' },
 // ];
 
 // const Footer = ({ setView, switchSite, currentSite }) => {
@@ -66,7 +66,7 @@
 //       try {
 //         setLoading(true);
 //         const data = await fetchPartners();
-        
+
 //         if (data.success && data.partners && data.partners.length > 0) {
 //           setPartners(data.partners);
 //         }
@@ -218,7 +218,7 @@
 //               </a>
 //             </div>
 //             <div className="flex flex-col gap-2 mb-6">
-          
+
 //               {footerAddress ? (
 //                 <div className="flex items-center gap-2 text-xs text-slate-400">
 //                   <MapPin size={14} className="flex-shrink-0" />
@@ -336,37 +336,49 @@
 
 // export default Footer;
 
-
-
-// latest updated code 
-import { useState, useEffect, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { FaFacebookF, FaInstagram, FaLinkedinIn, FaYoutube } from "react-icons/fa";
+// latest updated code
+import { useState, useEffect, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaLinkedinIn,
+  FaYoutube,
+} from "react-icons/fa";
 import { Mail, Phone, MapPin } from "lucide-react";
-import { fetchPartners, getCurrentSubdomain, findPartnerBySubdomain, getPrimaryPartnerByLocation } from '../utils/api';
-import { getLocationCodeFromPath, pathWithLocationPrefix } from '../utils/locationRoutes';
-import { useTheme } from '../contexts/ThemeContext';
-import { useLocationPrefix } from '../hooks/useLocationPrefix';
-import LocationSwitcher, { DEFAULT_LOCATION_CODES } from './LocationSwitcher';
+import {
+  fetchPartners,
+  getCurrentSubdomain,
+  findPartnerBySubdomain,
+  getPrimaryPartnerByLocation,
+} from "../utils/api";
+import {
+  getLocationCodeFromPath,
+  pathWithLocationPrefix,
+} from "../utils/locationRoutes";
+import { useTheme } from "../contexts/ThemeContext";
+import { useLocationPrefix } from "../hooks/useLocationPrefix";
+import LocationSwitcher, { DEFAULT_LOCATION_CODES } from "./LocationSwitcher";
+import footerlogo from "../assets/homelogo/logo.png";
 
 // Default footer contact & social when NOT on a partner route (/XX or /XX/...)
 const DEFAULT_FOOTER = {
-  email: 'info@ifes.in',
-  phone: '+91 9555022200',
-  address: '',
+  email: "info@ifes.in",
+  phone: "+91 9555022200",
+  address: "",
   social: {
-    facebook: 'https://www.facebook.com/IFeScommunity',
-    instagram: 'https://www.instagram.com/ifesassociation',
-    linkedin: 'https://in.linkedin.com/company/IFeS',
-    youtube: 'https://www.youtube.com/@IFeSassociation',
+    facebook: "https://www.facebook.com/IFeScommunity",
+    instagram: "https://www.instagram.com/ifesassociation",
+    linkedin: "https://in.linkedin.com/company/IFeS",
+    youtube: "https://www.youtube.com/@IFeSassociation",
   },
 };
 
 const ABOUT_SECTION_LINKS = [
-  { segment: 'advisory-board', label: 'ADVISORY BOARD' },
-  { segment: 'executive-committee', label: 'EXECUTIVE COMMITTEE' },
-  { segment: 'federation-services', label: 'FEDERATION SERVICES' },
-  { segment: 'working-at-worso', label: 'WORKING AT IFeS' },
+  { segment: "advisory-board", label: "ADVISORY BOARD" },
+  { segment: "executive-committee", label: "EXECUTIVE COMMITTEE" },
+  { segment: "federation-services", label: "FEDERATION SERVICES" },
+  { segment: "working-at-ifes", label: "WORKING AT IFeS" },
 ];
 
 const Footer = ({ setView, switchSite, currentSite }) => {
@@ -380,7 +392,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
 
   // Route countryCode (e.g. /TH, /AE). If present, LocationRouteHandler owns theme switching.
   const routeCountryCode = useMemo(() => {
-    const seg = routerLocation.pathname.split('/').filter(Boolean)[0];
+    const seg = routerLocation.pathname.split("/").filter(Boolean)[0];
     const code = seg ? String(seg).toUpperCase().trim() : null;
     if (!code) return null;
     const isTwoLetter = code.length === 2 && /^[A-Z]{2}$/.test(code);
@@ -390,7 +402,7 @@ const Footer = ({ setView, switchSite, currentSite }) => {
   // Only treat as "partner route" when path starts with a valid location code (same as LocationRouteHandler).
   const isOnPartnerRoute = useMemo(
     () => getLocationCodeFromPath(routerLocation.pathname) != null,
-    [routerLocation.pathname]
+    [routerLocation.pathname],
   );
 
   const activeCountryCode = routeCountryCode || selectedLocation || null;
@@ -405,14 +417,14 @@ const Footer = ({ setView, switchSite, currentSite }) => {
       try {
         setLoading(true);
         const data = await fetchPartners();
-        
+
         if (data.success && data.partners && data.partners.length > 0) {
           setPartners(data.partners);
         }
         setError(null);
       } catch (err) {
-        console.error('Failed to load partners:', err);
-        setError('Failed to load partners data');
+        console.error("Failed to load partners:", err);
+        setError("Failed to load partners data");
       } finally {
         setLoading(false);
       }
@@ -428,22 +440,22 @@ const Footer = ({ setView, switchSite, currentSite }) => {
     if (window.Tawk_API) return;
 
     // Create and load Tawk.to script
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     script.async = true;
-    script.src = 'https://embed.tawk.to/672f046b2480f5b4f59b11cb/1ic7qihii';
-    script.charset = 'UTF-8';
-    script.setAttribute('crossorigin', '*');
-    
+    script.src = "https://embed.tawk.to/672f046b2480f5b4f59b11cb/1ic7qihii";
+    script.charset = "UTF-8";
+    script.setAttribute("crossorigin", "*");
+
     // Initialize Tawk_API object before script loads
     window.Tawk_API = window.Tawk_API || {};
     window.Tawk_LoadStart = new Date();
-    
+
     script.onload = () => {
-      console.log('Tawk.to chat widget loaded successfully');
+      console.log("Tawk.to chat widget loaded successfully");
     };
-    
+
     document.body.appendChild(script);
-    
+
     // Cleanup function (optional - keeps widget on unmount)
     return () => {
       // Don't remove script on unmount to maintain chat history
@@ -464,11 +476,13 @@ const Footer = ({ setView, switchSite, currentSite }) => {
   // Map countryCode -> themeColor for LocationSwitcher. API data + Blue fallback.
   const locationThemeMap = useMemo(() => {
     const map = {};
-    countryCodes.forEach(code => {
-      map[code] = 'Blue';
+    countryCodes.forEach((code) => {
+      map[code] = "Blue";
     });
-    partners.forEach(partner => {
-      const code = partner?.countryCode ? String(partner.countryCode).toUpperCase().trim() : null;
+    partners.forEach((partner) => {
+      const code = partner?.countryCode
+        ? String(partner.countryCode).toUpperCase().trim()
+        : null;
       if (code && partner.isActive && partner.themeColor) {
         if (countryCodes.includes(code)) {
           map[code] = partner.themeColor;
@@ -486,7 +500,10 @@ const Footer = ({ setView, switchSite, currentSite }) => {
 
     // 1) Persisted selection (countryCode)
     if (selectedLocation) {
-      const locationPartner = getPrimaryPartnerByLocation(partners, selectedLocation);
+      const locationPartner = getPrimaryPartnerByLocation(
+        partners,
+        selectedLocation,
+      );
       if (locationPartner?.themeColor) {
         updateTheme(locationPartner.themeColor, selectedLocation);
         return;
@@ -502,28 +519,30 @@ const Footer = ({ setView, switchSite, currentSite }) => {
 
     // 3) Fallback
     if (!partnerToUse) {
-      partnerToUse = partners.find(p => p.isActive) || partners[0];
+      partnerToUse = partners.find((p) => p.isActive) || partners[0];
     }
 
-    const partnerCode = partnerToUse?.countryCode ? String(partnerToUse.countryCode).toUpperCase().trim() : null;
+    const partnerCode = partnerToUse?.countryCode
+      ? String(partnerToUse.countryCode).toUpperCase().trim()
+      : null;
     if (partnerToUse?.themeColor) {
       updateTheme(partnerToUse.themeColor, partnerCode);
     }
   }, [partners, routeCountryCode, selectedLocation, updateTheme]);
 
   const aboutBasePath = useMemo(
-    () => pathWithLocationPrefix(locationPrefix || '', '/about'),
+    () => pathWithLocationPrefix(locationPrefix || "", "/about"),
     [locationPrefix],
   );
 
   const isOnAboutPage = useMemo(() => {
-    const p = routerLocation.pathname || '';
-    if (p.endsWith('/governance') || p === '/governance') return true;
+    const p = routerLocation.pathname || "";
+    if (p.endsWith("/governance") || p === "/governance") return true;
     return p === aboutBasePath || p.startsWith(`${aboutBasePath}/`);
   }, [routerLocation.pathname, aboutBasePath]);
 
   const activeAboutSection = useMemo(() => {
-    const p = routerLocation.pathname || '';
+    const p = routerLocation.pathname || "";
     if (!p.startsWith(`${aboutBasePath}/`)) return null;
     const seg = p.slice(aboutBasePath.length + 1);
     return ABOUT_SECTION_LINKS.some((l) => l.segment === seg) ? seg : null;
@@ -534,31 +553,42 @@ const Footer = ({ setView, switchSite, currentSite }) => {
     window.scrollTo(0, 0);
   };
 
-  const footerEmail = isOnPartnerRoute && activePartner
-    ? (activePartner?.footerInfo?.email || activePartner?.contactEmail || DEFAULT_FOOTER.email)
-    : DEFAULT_FOOTER.email;
-  const footerPhone = isOnPartnerRoute && activePartner
-    ? (activePartner?.footerInfo?.phone || activePartner?.phoneNumber || DEFAULT_FOOTER.phone)
-    : DEFAULT_FOOTER.phone;
-  const footerAddress = isOnPartnerRoute && activePartner
-    ? (activePartner?.footerInfo?.address || activePartner?.location || DEFAULT_FOOTER.address)
-    : DEFAULT_FOOTER.address;
-  const social = isOnPartnerRoute && activePartner?.socialLinks
-    ? { ...DEFAULT_FOOTER.social, ...activePartner.socialLinks }
-    : DEFAULT_FOOTER.social;
+  const footerEmail =
+    isOnPartnerRoute && activePartner
+      ? activePartner?.footerInfo?.email ||
+        activePartner?.contactEmail ||
+        DEFAULT_FOOTER.email
+      : DEFAULT_FOOTER.email;
+  const footerPhone =
+    isOnPartnerRoute && activePartner
+      ? activePartner?.footerInfo?.phone ||
+        activePartner?.phoneNumber ||
+        DEFAULT_FOOTER.phone
+      : DEFAULT_FOOTER.phone;
+  const footerAddress =
+    isOnPartnerRoute && activePartner
+      ? activePartner?.footerInfo?.address ||
+        activePartner?.location ||
+        DEFAULT_FOOTER.address
+      : DEFAULT_FOOTER.address;
+  const social =
+    isOnPartnerRoute && activePartner?.socialLinks
+      ? { ...DEFAULT_FOOTER.social, ...activePartner.socialLinks }
+      : DEFAULT_FOOTER.social;
 
   return (
-    <footer className={`${themeConfig?.colors?.gradient || 'bg-[#0a0f1a]'} text-slate-400 pt-10`}>
+    <footer
+      className={`${themeConfig?.colors?.gradient || "bg-[#0a0f1a]"} text-slate-400 pt-10`}
+    >
       <div className="container mx-auto px-4 sm:px-6 max-w-[1600px]">
         {/* Four-column layout - removed bg-red-500 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 lg:gap-16 mb-10 md:mb-12">
-          
           {/* Column 1: Logo and content */}
           <div className="flex flex-col">
             {/* Logo with text side by side */}
             <div className="flex items-center gap-3 mb-6">
               <img
-                src="https://ifes.in/images/logo.png"
+                src={footerlogo}
                 alt="IFeS Logo"
                 className="h-12 w-auto object-contain"
               />
@@ -566,86 +596,154 @@ const Footer = ({ setView, switchSite, currentSite }) => {
                 International Federation of Esports (IFeS)
               </p>
             </div>
-            
+
             {/* Content moved up - removed extra spacing */}
             <div className="mb-4">
               <p className="text-slate-400 text-sm leading-relaxed mb-4">
-                Unites global esports ecosystem, enabling competitions, governance, and industry growth
+                Unites global esports ecosystem, enabling competitions,
+                governance, and industry growth
               </p>
-              
+
               {/* Location with icon - better color */}
               <div className="flex items-start gap-3 mb-3">
-                <MapPin size={16} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                <MapPin
+                  size={16}
+                  className="text-cyan-400 flex-shrink-0 mt-0.5"
+                />
                 <p className="text-slate-400 text-sm">
                   10 US Complex, Jasola, New Delhi (India) - 110076
                 </p>
               </div>
-              
+
               {/* Email with icon - better color */}
               <div className="flex items-center gap-3 mb-2">
                 <Mail size={16} className="text-cyan-400 flex-shrink-0" />
-                <a href="mailto:contact@ifes.in" className="text-slate-400 hover:text-white transition-colors text-sm">
+                <a
+                  href="mailto:contact@ifes.in"
+                  className="text-slate-400 hover:text-white transition-colors text-sm"
+                >
                   contact@ifes.in
                 </a>
               </div>
-              
+
               {/* Phone with icon - better color */}
               <div className="flex items-center gap-3">
                 <Phone size={16} className="text-cyan-400 flex-shrink-0" />
-                <a href="tel:+917042198418" className="text-slate-400 hover:text-white transition-colors text-sm">
+                <a
+                  href="tel:+917042198418"
+                  className="text-slate-400 hover:text-white transition-colors text-sm"
+                >
                   +91 70421 98418
                 </a>
               </div>
             </div>
-            
+
             {/* Follow Us section */}
             <div className="mt-4">
-              <h4 className="text-white font-bold mb-3 text-sm uppercase tracking-wider">Follow Us</h4>
+              <h4 className="text-white font-bold mb-3 text-sm uppercase tracking-wider">
+                Follow Us
+              </h4>
               <div className="flex gap-3 text-lg">
-                <a href={social.facebook || "https://www.facebook.com/IFeScommunity"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="Facebook"><FaFacebookF /></a>
-                <a href={social.instagram || "https://www.instagram.com/iFeSassociation"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="Instagram"><FaInstagram /></a>
-                <a href={social.linkedin || "https://in.linkedin.com/company/IFeS"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="LinkedIn"><FaLinkedinIn /></a>
-                <a href={social.youtube || "https://www.youtube.com/@IFeSassociation"} className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50" aria-label="YouTube"><FaYoutube /></a>
+                <a
+                  href={
+                    social.facebook || "https://www.facebook.com/IFeScommunity"
+                  }
+                  className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50"
+                  aria-label="Facebook"
+                >
+                  <FaFacebookF />
+                </a>
+                <a
+                  href={
+                    social.instagram ||
+                    "https://www.instagram.com/iFeSassociation"
+                  }
+                  className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50"
+                  aria-label="Instagram"
+                >
+                  <FaInstagram />
+                </a>
+                <a
+                  href={
+                    social.linkedin || "https://in.linkedin.com/company/IFeS"
+                  }
+                  className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50"
+                  aria-label="LinkedIn"
+                >
+                  <FaLinkedinIn />
+                </a>
+                <a
+                  href={
+                    social.youtube || "https://www.youtube.com/@IFeSassociation"
+                  }
+                  className="hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50"
+                  aria-label="YouTube"
+                >
+                  <FaYoutube />
+                </a>
               </div>
             </div>
           </div>
 
           {/* Column 2: Quick Links */}
           <div className="flex flex-col">
-            <h4 className="text-white font-bold mb-6 text-sm uppercase tracking-wider">Quick Links</h4>
+            <h4 className="text-white font-bold mb-6 text-sm uppercase tracking-wider">
+              Quick Links
+            </h4>
             <ul className="space-y-3 text-sm">
               <li>
-                <button onClick={() => setView("games")} className="hover:text-white transition-colors text-left w-full py-1">
+                <button
+                  onClick={() => setView("games")}
+                  className="hover:text-white transition-colors text-left w-full py-1"
+                >
                   Games
                 </button>
               </li>
               <li>
-                <button onClick={() => setView("events")} className="hover:text-white transition-colors text-left w-full py-1">
+                <button
+                  onClick={() => setView("events")}
+                  className="hover:text-white transition-colors text-left w-full py-1"
+                >
                   Events
                 </button>
               </li>
               <li>
-                <button onClick={() => setView("ranking")} className="hover:text-white transition-colors text-left w-full py-1">
+                <button
+                  onClick={() => setView("ranking")}
+                  className="hover:text-white transition-colors text-left w-full py-1"
+                >
                   Ranking
                 </button>
               </li>
               <li>
-                <button onClick={() => setView("ifes-tv")} className="hover:text-white transition-colors text-left w-full py-1">
+                <button
+                  onClick={() => setView("ifes-tv")}
+                  className="hover:text-white transition-colors text-left w-full py-1"
+                >
                   IFeS TV - OTT
                 </button>
               </li>
               <li>
-                <button onClick={() => setView("news")} className="hover:text-white transition-colors text-left w-full py-1">
+                <button
+                  onClick={() => setView("news")}
+                  className="hover:text-white transition-colors text-left w-full py-1"
+                >
                   News
                 </button>
               </li>
               <li>
-                <button onClick={() => setView("privacy-policy")} className="hover:text-white transition-colors text-left w-full py-1">
+                <button
+                  onClick={() => setView("privacy-policy")}
+                  className="hover:text-white transition-colors text-left w-full py-1"
+                >
                   Privacy Policy
                 </button>
               </li>
               <li>
-                <button onClick={() => setView("terms")} className="hover:text-white transition-colors text-left w-full py-1">
+                <button
+                  onClick={() => setView("terms")}
+                  className="hover:text-white transition-colors text-left w-full py-1"
+                >
                   Terms of Use
                 </button>
               </li>
@@ -654,26 +752,40 @@ const Footer = ({ setView, switchSite, currentSite }) => {
 
           {/* Column 3: Governance */}
           <div className="flex flex-col">
-            <h4 className="text-white font-bold mb-6 text-sm uppercase tracking-wider">Governance</h4>
+            <h4 className="text-white font-bold mb-6 text-sm uppercase tracking-wider">
+              Governance
+            </h4>
             <ul className="space-y-3 text-sm">
               <li>
-                <button onClick={() => handleAboutSectionClick("advisory-board")} className="hover:text-white transition-colors text-left w-full py-1">
+                <button
+                  onClick={() => handleAboutSectionClick("advisory-board")}
+                  className="hover:text-white transition-colors text-left w-full py-1"
+                >
                   Advisory Board
                 </button>
               </li>
               <li>
-                <button onClick={() => handleAboutSectionClick("executive-committee")} className="hover:text-white transition-colors text-left w-full py-1">
-                  Executive Committe
+                <button
+                  onClick={() => handleAboutSectionClick("executive-committee")}
+                  className="hover:text-white transition-colors text-left w-full py-1"
+                >
+                  Executive Committee
                 </button>
               </li>
               <li>
-                <button onClick={() => handleAboutSectionClick("federation-services")} className="hover:text-white transition-colors text-left w-full py-1">
+                <button
+                  onClick={() => handleAboutSectionClick("federation-services")}
+                  className="hover:text-white transition-colors text-left w-full py-1"
+                >
                   Federation Services
                 </button>
               </li>
               <li>
-                <button onClick={() => handleAboutSectionClick("working-at-worso")} className="hover:text-white transition-colors text-left w-full py-1">
-                   Working At IFeS
+                <button
+                  onClick={() => handleAboutSectionClick("working-at-ifes")}
+                  className="hover:text-white transition-colors text-left w-full py-1"
+                >
+                  Working At IFeS
                 </button>
               </li>
             </ul>
@@ -708,7 +820,8 @@ const Footer = ({ setView, switchSite, currentSite }) => {
         <div className="py-4 md:py-4 border-t border-slate-700/50 flex justify-center">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center">
             <div className="text-xs text-slate-500 text-center">
-              © 2026 World Robotics Sports Organization. All Rights Reserved.
+              Copyright © International Federation of eSports 2026. All Rights
+              Reserved.
             </div>
           </div>
         </div>

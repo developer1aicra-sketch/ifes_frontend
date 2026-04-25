@@ -1086,7 +1086,7 @@ const MembershipPage = () => {
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold text-black mb-3">Who is joining today?</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Select the category that best describes you to get started with your robotics journey.
+                Select the category that best describes you to get started with your esport journey.
               </p>
             </div>
 
@@ -1127,7 +1127,7 @@ const MembershipPage = () => {
           >
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-black mb-3">Select your Membership Plan</h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">Unlock exclusive benefits tailored for your robotics journey.</p>
+              <p className="text-gray-600 max-w-2xl mx-auto">Unlock exclusive benefits tailored for your esport journey.</p>
             </div>
 
             {/* {isStudentCategory && (

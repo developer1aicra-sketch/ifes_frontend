@@ -19,6 +19,6 @@ export const ABOUT_PAGE_ROUTES = [
   { path: 'executive-committee', Component: ExecutiveCommitteePage },
   { path: 'federation-services', Component: FederationServicesPage },
   { path: 'tech-for-good', Component: TechForGoodPage },
-  { path: 'working-at-worso', Component: WorkingAtWorsoPage },
+  { path: 'working-at-ifes', Component: WorkingAtWorsoPage },
   { path: 'referees', Component: RefereesPage },
 ];

@@ -87,6 +87,7 @@ import {
 } from "../AboutWorsoMegaMenu";
 import { useLocationPrefix } from "../../hooks/useLocationPrefix";
 import exclub from "../../assets/exclublogo/exclub.png";
+import exlogo from "../../assets/homelogo/logo.png"
 
 const Navbar = ({
   setView,
@@ -269,11 +270,11 @@ const Navbar = ({
             className="flex items-center gap-2 sm:gap-3 cursor-pointer group min-w-0"
             onClick={handleHomeClick}
           >
-            <img
-              src="https://ifes.in/images/logo.png"
-              alt="IFES Logo"
-              className="h-10 w-auto object-contain sm:h-20"
-            />
+          <img
+  src={exlogo}
+  alt="IFES Logo"
+  className="h-10 w-auto object-contain sm:h-20"
+/>
           </div>
 
           {/* Navigation Items */}
@@ -328,7 +329,7 @@ const Navbar = ({
 
             <div className="relative group">
               <a
-                href="https://ifes.in/esportsworldcup/"
+                href="https://esportsworldcup.ifes.in/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white transition-colors flex items-center gap-1 normal-case"

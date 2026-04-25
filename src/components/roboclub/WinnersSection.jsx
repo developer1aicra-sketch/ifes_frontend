@@ -1189,9 +1189,9 @@ function ChampionCard({ champion, type, onClick }) {
         </p>
 
         {/* Tournament Label */}
-        <p className="text-xs text-[#7c9bc2] mt-2">
+        {/* <p className="text-xs text-[#7c9bc2] mt-2">
           World Robotics Championship • Season 2026
-        </p>
+        </p> */}
 
         {/* Medal */}
         <div className="flex justify-center gap-2 mt-3 text-xs text-yellow-400">
